@@ -1,0 +1,362 @@
+/* =======================
+   Components.css (completo)
+   Estilos de partidos + clasificación
+   ======================= */
+
+/* ---------- Lista de partidos (tal como tenías) ---------- */
+
+#matches {
+  margin-top: 1.5em;
+  list-style: none;
+  padding: 0;
+}
+
+#matches li {
+  background: var(--color-bg-card);
+  margin-bottom: 1.1em;
+  padding: 1.1em 1em 0.9em 1em;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px var(--color-shadow);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  border: 1.5px solid var(--color-card-border, #e0e0e0);
+  transition: box-shadow 0.2s, border 0.2s;
+}
+
+#matches li:hover {
+  box-shadow: 0 4px 16px var(--color-shadow);
+  border: 1.5px solid var(--color-primary);
+}
+
+/* Margen extra para la última fila de clasificación */
+#matches li.clas-row:last-child {
+  margin-bottom: 2.8em;
+}
+
+#matches li.proximo-partido {
+  background: var(--color-proximo-partido-bg);
+  font-weight: bold;
+  border-left: 5px solid var(--color-proximo-partido-border);
+  box-shadow: 0 2px 8px var(--color-proximo-partido-shadow);
+  position: relative;
+  z-index: 1;
+}
+
+/* Compat: si en clasificación seguías usando esta clase en algún punto */
+#matches li.fila-clas-destacada {
+  background: var(--color-proximo-partido-bg);
+  font-weight: bold;
+  border-left: 5px solid var(--color-proximo-partido-border);
+  box-shadow: 0 2px 8px var(--color-proximo-partido-shadow);
+}
+
+/* Cabecera de cada partido */
+.partido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1em;
+  background: var(--color-header-bg, #f5f7fa);
+  border-radius: 7px;
+  padding: 0.25em 0.7em;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-bottom: 0.2em;
+}
+.partido-jornada {
+  font-size: 1em;
+  font-weight: 600;
+}
+.partido-fecha {
+  font-size: 0.98em;
+  font-weight: 400;
+  color: var(--color-fecha, #666);
+}
+
+/* Equipos */
+.partido-equipos {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  font-size: 1.13em;
+  font-weight: 500;
+  margin-bottom: 0.1em;
+  text-align: center;
+  min-height: 2.5em;
+}
+.partido-local,
+.partido-visit {
+  justify-self: center;
+  text-align: center;
+}
+.partido-vs {
+  justify-self: center;
+  align-self: center;
+  color: var(--color-vs, #aaa);
+  font-size: 0.95em;
+  font-weight: 400;
+  padding: 0 1.1em;
+  border-radius: 5px;
+}
+
+/* Instalación */
+.partido-instalacion {
+  font-size: 0.97em;
+  color: var(--color-primary);
+  text-align: right;
+  margin-top: 0.1em;
+  font-style: italic;
+  word-break: break-word;
+}
+
+/* Remarcar equipo propio en la lista de partidos */
+.equipo-remarcado {
+  color: var(--color-primary);
+  font-weight: bold;
+  text-shadow: 0 1px 2px var(--color-remarcado-shadow1, #fff6),
+    0 0 1px var(--color-remarcado-shadow2, #0002);
+}
+
+/* Botón calendario en partidos */
+.btn-calendario {
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0.2em;
+  margin-left: 0.3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.btn-calendario:hover,
+.btn-calendario:focus {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+
+.btn-calendario svg{
+  margin-top: -10px;
+}
+
+/* Pull-to-refresh: caret y texto en una sola fila */
+#pullToRefresh.pull-to-refresh {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.2s;
+  color: var(--color-primary);
+  font-size: 1.2em;
+  user-select: none;
+  gap: 0.5em;
+}
+#pullToRefresh.active {
+  height: 48px;
+}
+.ptr-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  transition: transform 0.2s;
+  vertical-align: middle;
+  color: var(--color-primary);
+}
+.ptr-icon.rotate {
+  transform: rotate(180deg);
+}
+.ptr-text {
+  display: inline-block;
+  font-family: inherit;
+  transition: transform 0.2s;
+}
+
+/* Logos */
+.logo-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5em;
+  width: 2.5em;
+  margin: 0 0.35em 0 0;
+  background: #fff url("loyola_hockey.png") center/contain no-repeat;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px var(--color-shadow);
+}
+.logo-equipo {
+  display: inline-block;
+  vertical-align: middle;
+  height: 2.2em;
+  width: 2.2em;
+  margin-right: 0.8em;
+  margin-left: 0;
+  background: #fff url("loyola_hockey.png") center/contain no-repeat;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px var(--color-shadow);
+  border: 1px solid #eee;
+  flex-shrink: 0;
+}
+.equipoOpt .logo-equipo {
+  flex-shrink: 0;
+  height: 2em;
+  width: 2em;
+  margin: 0;
+  background: #fff url("loyola_hockey.png") center/contain no-repeat;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px var(--color-shadow);
+  border: 1px solid #eee;
+}
+
+/* Controles generales */
+button {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 0.5em 1em;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5em;
+  margin-top: 0.5em;
+}
+select {
+  background-color: var(--color-menu-bg);
+  color: var(--color-menu-text);
+  border: 1px solid var(--color-card-border);
+  border-radius: 4px;
+  padding: 0.4em 0.6em;
+}
+select option {
+  color: var(--color-text);
+  background: var(--color-bg-card);
+}
+
+/* ---------- Clasificación (responsive, mobile-first) ---------- */
+/* Nota: usamos clases específicas para no interferir con la lista de partidos.
+         Aun así, como las filas son <li>, heredarán padding/bordes del base.
+         Por eso redefinimos lo necesario con más especificidad. */
+
+#matches li.clas-row {
+  /* Override del base para maquetar en grid */
+  display: grid;
+  grid-template-columns: 2.8em 1fr auto;
+  grid-template-rows: auto auto; /* meta en segunda fila */
+  gap: 0.35em 0.6em;
+  align-items: center;
+  padding: 0.85em 0.9em; /* un poco más compacto que el base */
+  border-radius: 10px;
+  background: var(--color-bg-card);
+  border: 1.5px solid var(--color-card-border, #e0e0e0);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  margin-bottom: 0.9em;
+}
+
+#matches li.clas-row:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 16px var(--color-shadow);
+}
+
+#matches li.clas-row.fav {
+  background: var(--color-proximo-partido-bg);
+  border-left: 5px solid var(--color-proximo-partido-border);
+  box-shadow: 0 2px 8px var(--color-proximo-partido-shadow);
+}
+
+/* Cols principales (clasificación) */
+.clas-pos {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  width: 2.2em;
+  height: 2.2em;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--color-header-bg, #f5f7fa);
+  color: var(--color-primary);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.clas-team {
+  grid-column: 2;
+  grid-row: 1;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+.clas-pts {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  display: flex;
+  align-items: baseline;
+  gap: 0.25em;
+  color: var(--color-text);
+}
+.clas-pts .pts {
+  font-size: 1.2em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.clas-pts .pts-label {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+/* Meta en chips */
+.clas-meta {
+  grid-column: 2 / 4;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em 0.5em;
+  margin-top: 0.1em;
+}
+.clas-chip {
+  font-size: 0.86em;
+  padding: 0.18em 0.5em;
+  border: 1px solid var(--color-card-border, #e0e0e0);
+  border-radius: 999px;
+  background: var(--color-bg);
+  color: var(--color-fecha);
+  line-height: 1.4;
+}
+
+/* Más aire en pantallas grandes para clasificación */
+@media (min-width: 480px) {
+  #matches li.clas-row {
+    grid-template-columns: 3.1em 1fr auto;
+    padding: 0.9em 1em;
+  }
+  .clas-pts .pts {
+    font-size: 1.3em;
+  }
+}
+
+/* Cabecera de competición */
+.competicion-header {
+  width: 100%;
+  text-align: center;
+  font-size: 1.25em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.7em 0 0.3em 0;
+  margin-bottom: 0.2em;
+  border-radius: 10px;
+  background: var(--color-header-bg, #f5f7fa);
+  color: var(--color-primary);
+  box-shadow: 0 1px 6px var(--color-shadow);
+  border: 1.5px solid var(--color-card-border, #e0e0e0);
+  transition: background 0.2s, color 0.2s;
+}
+[data-theme="dark"] .competicion-header {
+  background: var(--color-header-bg-dark, #23272e);
+  color: var(--color-primary-dark, #e0e0e0);
+  border-color: var(--color-card-border-dark, #444);
+  box-shadow: 0 1px 8px var(--color-shadow-dark, #0006);
+}

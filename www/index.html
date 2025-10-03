@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Partidos Loyola Indautxu A</title>
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="layout.css" />
+    <link rel="stylesheet" href="components.css" />
+    <link rel="stylesheet" href="responsive.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-left">
+        <button id="menuBtn" class="menu-btn">&#9776;</button>
+        <span class="logo-header" id="logoHeader"></span>
+        <span id="headerTitle"></span>
+      </div>
+    </header>
+    <!-- Menú lateral y overlay fuera del header para stacking global -->
+    <nav
+      id="sideMenu"
+      class="side-menu"
+      aria-label="Menú lateral"
+      data-i18n-aria="side_menu_aria"
+    >
+      <div class="side-menu-content">
+        <h3 data-i18n="select_team">Selecciona equipo</h3>
+        <select id="equipoLoyolaSelect" style="margin-bottom:1em;display:block;width:100%;"></select>
+        <hr />
+        <label for="langSelect" data-i18n="select_lang">Idioma</label>
+        <select id="langSelect">
+          <option value="es">Español</option>
+          <option value="eu">Euskera</option>
+        </select>
+        <hr />
+        <label for="themeSelect" data-i18n="select_theme">Tema</label>
+        <select id="themeSelect">
+          <option value="auto" data-i18n="theme_auto">Automático</option>
+          <option value="light" data-i18n="theme_light">Claro</option>
+          <option value="dark" data-i18n="theme_dark">Oscuro</option>
+        </select>
+      </div>
+    </nav>
+    <div id="sideMenuOverlay" class="side-menu-overlay"></div>
+    <main>
+      <div id="pullToRefresh" class="pull-to-refresh">
+        <span id="ptrIcon" class="ptr-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+          >
+            <path
+              d="M7 10l5 5 5-5"
+              stroke="currentColor"
+              stroke-width="2"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+        <span id="ptrText" class="ptr-text">Desliza para refrescar...</span>
+      </div>
+      <ul id="matches"></ul>
+    </main>
+    <nav
+      class="bottom-nav"
+      aria-label="Navegación principal"
+      data-i18n-aria="bottom_nav_aria"
+    >
+      <button id="navPartidos" class="nav-btn active" data-i18n="nav_matches">
+        Partidos
+      </button>
+      <button id="navClas" class="nav-btn" data-i18n="nav_clas">
+        Clasificación
+      </button>
+    </nav>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

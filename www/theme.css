@@ -1,0 +1,134 @@
+/* theme.css — paleta refinada con buen contraste (WCAG AA) y coherencia entre claro/oscuro)
+   - Mantengo los mismos nombres de variables para no romper tu CSS/JS
+   - Usa HSL para facilitar ajustes finos
+   - La “llamada a la acción” (var(--color-primary)) es un turquesa deportivo
+   - El “próximo partido” usa un ámbar suave coordinado
+*/
+
+/* ========== BASE (por defecto: claro, salvo que el sistema prefiera oscuro) ========== */
+:root {
+  /* Brand / Acción */
+  --color-primary: hsl(
+    186 72% 32%
+  ); /* #0f7f82: turquesa oscuro (accesible sobre blanco) */
+  --color-text: hsl(210 15% 18%); /* #2a2f33 */
+  --color-bg: hsl(210 20% 98%); /* #f6f8fa */
+  --color-bg-card: hsl(0 0% 100%); /* #ffffff */
+  --color-text-header: hsl(0 0% 100%); /* #ffffff */
+  --color-bg-header: hsl(197 72% 16%); /* #0e3a43: cabecera y bottom-nav */
+  --color-shadow: #0000003a;
+  --color-card-border: hsl(210 20% 86%); /* #d5dce3 */
+
+  /* Meta / UI */
+  --color-header-bg: hsl(210 25% 97%); /* chips de cabecera de cada partido */
+  --color-fecha: hsl(210 8% 40%);
+  --color-vs: hsl(210 10% 65%);
+  --color-menu-bg: var(--color-bg-card);
+  --color-menu-text: var(
+    --color-text
+  ); /* <- corregido: texto oscuro en claro */
+  --color-overlay: #00000066;
+
+  /* Acentos: proximo partido & activos */
+  --color-active-team: hsl(42 100% 47%); /* #ffb300 */
+  --color-proximo-partido-bg: hsl(45 100% 90%); /* #fff3c4 suave */
+  --color-proximo-partido-border: hsl(42 96% 47%); /* #f59e0b / ámbar */
+  --color-proximo-partido-shadow: #f6e6b366;
+
+  /* pequeños brillos para remarcados */
+  --color-remarcado-shadow1: #ffffff66;
+  --color-remarcado-shadow2: #00000022;
+}
+
+/* ========== OSCURO (según preferencia del sistema) ========== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: hsl(
+      186 72% 58%
+    ); /* turquesa claro para contraste en oscuro */
+    --color-text: hsl(210 15% 92%);
+    --color-bg: hsl(210 16% 12%); /* #1e2428 */
+    --color-bg-card: hsl(210 16% 16%); /* #272d31 */
+    --color-text-header: hsl(0 0% 100%);
+    --color-bg-header: hsl(197 70% 10%); /* #0a2429 */
+    --color-shadow: #000000aa;
+    --color-card-border: hsl(210 12% 26%);
+
+    --color-header-bg: hsl(210 12% 20%);
+    --color-fecha: hsl(210 8% 72%);
+    --color-vs: hsl(210 10% 58%);
+    --color-menu-bg: var(--color-bg-card);
+    --color-menu-text: var(
+      --color-primary
+    ); /* acento turquesa sobre fondo oscuro */
+    --color-overlay: #000000cc;
+
+    --color-active-team: hsl(
+      186 72% 32%
+    ); /* activa/seleccionado: turquesa oscuro */
+    --color-proximo-partido-bg: hsl(
+      45 30% 20%
+    ); /* ámbar muy oscuro, legible en tema oscuro */
+    --color-proximo-partido-border: hsl(42 80% 55%);
+    --color-proximo-partido-shadow: #00000066;
+
+    --color-remarcado-shadow1: #22222266;
+    --color-remarcado-shadow2: #ffffff22;
+  }
+}
+
+/* ========== FORZAR TEMA MANUAL (select de tu menú) ========== */
+body[data-theme="light"] {
+  --color-primary: hsl(186 72% 32%);
+  --color-text: hsl(210 15% 18%);
+  --color-bg: hsl(210 20% 98%);
+  --color-bg-card: hsl(0 0% 100%);
+  --color-text-header: hsl(0 0% 100%);
+  --color-bg-header: hsl(197 72% 16%);
+  --color-shadow: #0000003a;
+  --color-card-border: hsl(210 20% 86%);
+  --color-header-bg: hsl(210 25% 97%);
+  --color-fecha: hsl(210 8% 40%);
+  --color-vs: hsl(210 10% 65%);
+  --color-menu-bg: var(--color-bg-card);
+  --color-menu-text: var(
+    --color-text
+  ); /* <- corregido: texto oscuro en claro */
+  --color-overlay: #00000066;
+  --color-active-team: hsl(42 100% 47%);
+  --color-proximo-partido-bg: hsl(45 100% 90%);
+  --color-proximo-partido-border: hsl(42 96% 47%);
+  --color-proximo-partido-shadow: #f6e6b366;
+  --color-remarcado-shadow1: #ffffff66;
+  --color-remarcado-shadow2: #00000022;
+}
+
+body[data-theme="dark"] {
+  --color-primary: hsl(186 72% 58%);
+  --color-text: hsl(210 15% 92%);
+  --color-bg: hsl(210 16% 12%);
+  --color-bg-card: hsl(210 16% 16%);
+  --color-text-header: hsl(0 0% 100%);
+  --color-bg-header: hsl(197 70% 10%);
+  --color-shadow: #000000aa;
+  --color-card-border: hsl(210 12% 26%);
+  --color-header-bg: hsl(210 12% 20%);
+  --color-fecha: hsl(210 8% 72%);
+  --color-vs: hsl(210 10% 58%);
+  --color-menu-bg: var(--color-bg-card);
+  --color-menu-text: var(--color-primary); /* acento turquesa en oscuro */
+  --color-overlay: #000000cc;
+  --color-active-team: hsl(186 72% 32%);
+  --color-proximo-partido-bg: hsl(45 30% 20%);
+  --color-proximo-partido-border: hsl(42 80% 55%);
+  --color-proximo-partido-shadow: #00000066;
+  --color-remarcado-shadow1: #22222266;
+  --color-remarcado-shadow2: #ffffff22;
+}
+
+/* Accesibilidad: foco visible en elementos interactivos que usan var(--color-primary) */
+:where(button, [role="button"], a, select, .nav-btn, .equipoOpt):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-primary), #0000 70%);
+}

@@ -1,0 +1,39 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+
+# Capacitor
+capacitor.settings.gradle
+capacitor.build.gradle
+capacitor-cordova-android-plugins/
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/.idea/
+android/.DS_Store
+
+# Android
+*.apk
+*.ap_
+*.dex
+*.class
+*.jar
+*.keystore
+*.so
+*.log
+*.iml
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+.idea/
+.DS_Store
+
+# VS Code
+.vscode/
