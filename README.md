@@ -1,54 +1,56 @@
 
-# Loyola Hockey Matches (APK híbrida)
 
-Aplicación web y APK híbrida para consultar partidos y clasificaciones de los equipos "Loyola Indautxu" de hockey patines, integrando funcionalidades avanzadas:
+# Loyola Hockey Matches
 
-## Funcionalidades principales
+Aplicación web y móvil (Capacitor) para consultar, filtrar y visualizar los partidos y clasificaciones de los equipos de hockey del Loyola.
 
-- Consulta de partidos y clasificación de todos los equipos Loyola en varias competiciones.
-- Selección dinámica de equipo y competición.
-- Internacionalización: español y euskera.
-- Selector de tema: claro, oscuro y automático (adaptado al sistema).
-- Navegación intuitiva entre partidos y clasificación.
-- Menú lateral y selector rápido de equipo.
-- Pull-to-refresh en móviles para actualizar datos.
-- Integración con Capacitor para funcionamiento nativo en Android (APK).
-- Detección automática de entorno (web/nativo) y uso de plugins Capacitor.
-- Gestión avanzada de errores con overlays y reintentos.
-- Almacenamiento local de preferencias y equipo seleccionado.
+## Descripción
 
-## Estructura del proyecto
+Este proyecto actúa como un scrapper/cliente de la API de la Federación Vasca de Patinaje, permitiendo a los usuarios:
+- Ver la clasificación de los equipos Loyola en sus competiciones.
+- Consultar el calendario de partidos de cada equipo Loyola.
+- Filtrar por equipo y competición.
+- Acceder a detalles de partidos, localización y añadir eventos al calendario.
 
-- `www/` → Código web (HTML, JS, CSS, internacionalización, UI)
-- `capacitor.config.json` → Configuración Capacitor
-- `package.json` → Scripts y dependencias
-- `android/` → Proyecto Android generado por Capacitor
+## Estructura principal
 
-## Cómo compilar la APK
+- `www/api.js`: Funciones para consultar la API (real o proxy) y obtener datos de clasificaciones, calendarios y equipos Loyola.
+- `www/components/clasificacion.js`: Renderiza la tabla de clasificación.
+- `www/components/partidos.js`: Renderiza la lista de partidos y sus detalles.
+- `www/utils/helpers.js`: Utilidades para parsear, filtrar y transformar los datos recibidos de la API.
+- `www/core/init.js`: Inicialización de la app, selección de equipo, eventos de UI y carga de datos.
+- `www/index.html`: Entrada principal de la app.
+- `android/`: Proyecto Android generado por Capacitor para empaquetar la app como aplicación móvil.
 
-1. Instala dependencias globales:
+## Flujo de funcionamiento
+
+1. El usuario selecciona un equipo Loyola y una competición.
+2. La app consulta la API para obtener el calendario de partidos y la clasificación.
+3. Los datos se procesan y muestran en la interfaz, permitiendo filtrar, ver detalles y añadir partidos al calendario.
+
+## Instalación y ejecución
+
+1. Instala dependencias:
    ```sh
-   npm install -g @capacitor/cli http-server
+   npm install
    ```
-2. Inicializa Capacitor (si no está hecho):
+2. Ejecuta la app en modo desarrollo:
    ```sh
-   npx cap init
-   npx cap add android
+   npm start
    ```
-3. Copia el contenido web:
-   ```sh
-   npx cap copy
-   ```
-4. Abre en Android Studio:
+3. Para compilar y ejecutar en Android:
    ```sh
    npx cap open android
    ```
-5. Compila y genera la APK desde Android Studio.
 
-## Uso local como webapp
+## Tecnologías usadas
+- JavaScript (ES6+)
+- Capacitor (para soporte móvil)
+- HTML5, CSS3
 
-```sh
-npm install -g http-server
-npm start
-```
-Abre [http://localhost:8080](http://localhost:8080)
+## Créditos
+Desarrollado por el club Loyola para la gestión y consulta de partidos de hockey patines.
+
+---
+
+¿Tienes dudas o quieres contribuir? Abre un issue o contacta con el club.

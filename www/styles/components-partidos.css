@@ -1,0 +1,175 @@
+/* =======================
+   components-partidos.css
+   Estilos de Partidos
+   ======================= */
+
+#matches {
+  margin-top: 1.5em;
+  list-style: none;
+  padding: 0;
+}
+
+#matches li {
+  background: var(--color-bg-card);
+  margin-bottom: 1.1em;
+  padding: 1.1em 1em 0.9em 1em;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px var(--color-shadow);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  border: 1.5px solid var(--color-card-border, #e0e0e0);
+  transition: box-shadow 0.2s, border 0.2s;
+}
+
+#matches li:hover {
+  box-shadow: 0 4px 16px var(--color-shadow);
+  border: 1.5px solid var(--color-primary);
+}
+
+#matches li.proximo-partido {
+  background: var(--color-proximo-partido-bg);
+  font-weight: bold;
+  border-left: 5px solid var(--color-proximo-partido-border);
+  box-shadow: 0 2px 8px var(--color-proximo-partido-shadow);
+  position: relative;
+  z-index: 1;
+}
+
+/* Cabecera partido */
+.partido-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "jornada calendario"
+    "fecha   calendario";
+  align-items: center;
+  gap: 0.15rem 0.75rem;
+  margin-bottom: 0.4rem;
+  background: var(--color-header-bg, #f5f7fa);
+  border-radius: 7px;
+  padding: 0.25em 0.7em;
+}
+
+.partido-jornada {
+  grid-area: jornada;
+  font-size: 1em;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--color-primary);
+  background: var(--badge-bg, #0a93964d);
+  padding: 0.25em 0.6em;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.partido-fecha {
+  grid-area: fecha;
+  font-size: 0.95em;
+  font-weight: 400;
+  color: var(--muted, #6b7280);
+}
+
+.partido-calendario {
+  grid-area: calendario;
+  justify-self: end;
+}
+
+/* Equipos */
+.partido-equipos {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  font-size: 1.13em;
+  font-weight: 500;
+  margin-bottom: 0.1em;
+  text-align: center;
+  min-height: 2.5em;
+}
+
+.partido-local,
+.partido-visit {
+  justify-self: center;
+  text-align: center;
+}
+
+.partido-vs {
+  justify-self: center;
+  align-self: center;
+  color: var(--color-vs, #aaa);
+  font-size: 0.95em;
+  font-weight: 400;
+  padding: 0 0.9em;
+  border-radius: 5px;
+}
+
+/* Resultado */
+.partido-resultado-row {
+  text-align: center;
+  margin: 0.25rem 0 0.55rem;
+}
+
+.partido-resultado {
+  display: inline-block;
+  font-size: 1.45em;
+  font-weight: 800;
+  line-height: 1.1;
+  padding: 0.1em 0.45em;
+  border-radius: 8px;
+  background: var(--score-bg, #11111108);
+  box-shadow: 0 1px 2px var(--color-shadow);
+}
+
+/* Instalación */
+.partido-instalacion {
+  font-size: 0.97em;
+  color: var(--color-primary);
+  text-align: right;
+  margin-top: 0.1em;
+  font-style: italic;
+  word-break: break-word;
+}
+
+/* Equipo remarcado */
+.equipo-remarcado {
+  color: var(--color-primary);
+  font-weight: bold;
+  text-shadow: 0 1px 2px #fff6, 0 0 1px #0002;
+}
+
+/* Botón calendario */
+.btn-calendario {
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0.2em;
+  margin-left: 0.3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.btn-calendario:hover,
+.btn-calendario:focus {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+.btn-calendario svg {
+  margin-top: -10px;
+}
+
+/* Responsive */
+@media (max-width: 360px) {
+  .partido-equipos {
+    grid-template-columns: 1fr 2.2em 1fr;
+  }
+  .partido-local,
+  .partido-visit {
+    word-break: break-word;
+  }
+}

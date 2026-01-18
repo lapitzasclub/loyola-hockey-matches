@@ -164,21 +164,19 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100vw;
+  padding-top: 5px;
 }
 /* Botón hamburguesa más grande y área pulsable mayor */
 .menu-btn {
-  font-size: 1.3em;
-  width: 1.7em;
-  height: 1.7em;
-  min-width: 32px;
-  min-height: 32px;
+  font-size: 2.2em;
+  padding: 0 10px !important;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: none;
   border-radius: 50%;
-  margin: 0;
+  margin: 0 5px 0 0;
   cursor: pointer;
   transition: background 0.2s;
 }

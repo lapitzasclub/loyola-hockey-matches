@@ -1,0 +1,179 @@
+// calendar.js
+// Funciones relacionadas con el calendario extraídas de ui.js
+import { safeStr, parseFecha } from "./helpers.js";
+import { t } from "../i18n.js";
+
+export function escICS(s) {
+  // Use String.raw for escaping and replaceAll for all matches
+  return safeStr(s)
+    .replaceAll(",", String.raw`\,`)
+    .replaceAll(";", String.raw`\;`);
+}
+
+export function toGCalUTC(dt) {
+  return dt
+    .toISOString()
+    .replaceAll("-", "")
+    .replaceAll(":", "")
+    .replace(/\.\d{3}Z$/, "Z");
+}
+
+export function defaultRangeForDay(d) {
+  if (!d || Number.isNaN(d.getTime()))
+    return { startLocal: null, endLocal: null };
+  const startLocal = new Date(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate(),
+    12,
+    0,
+    0
+  );
+  const endLocal = new Date(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate(),
+    14,
+    0,
+    0
+  );
+  return { startLocal, endLocal };
+}
+
+export function isNativePlatform() {
+  const C = globalThis.Capacitor;
+  if (C?.isNativePlatform?.()) return true;
+  if (typeof C?.getPlatform === "function") {
+    const p = C.getPlatform();
+    if (p && p !== "web") return true;
+  }
+  if (C?.platform && C.platform !== "web") return true;
+  if (globalThis.location?.protocol === "file:") return true;
+  return false;
+}
+
+export function createCalendarButton(p) {
+  const btnCal = document.createElement("button");
+  btnCal.className = "btn-calendario";
+  btnCal.title = t("add_to_calendar") || "Añadir al calendario";
+  btnCal.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="4"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+  btnCal.addEventListener("click", () => handleCalendarClick(p));
+  return btnCal;
+}
+
+export function buildEventTitle(p) {
+  const equipos = `${safeStr(p?.EquipoLocal || "")} vs ${safeStr(
+    p?.EquipoVisit || ""
+  )}`.trim();
+  return equipos || "Partido hockey";
+}
+
+export function buildEventDescription(p) {
+  let desc = "";
+  if (p?.NombreCompeticion) {
+    desc = t("ics_desc", p.NombreCompeticion);
+  }
+  let gmapsUrl = "";
+  if (p?.CoordenadasGPS && p?.Instalacion) {
+    const [lat, lng] = String(p.CoordenadasGPS).split(",");
+    const label = encodeURIComponent(p.Instalacion);
+    gmapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
+      lat
+    )}%2C${encodeURIComponent(lng)}%20(${label})`;
+    desc += `\n\nUbicación: ${safeStr(p.Instalacion)}\nMapa: ${gmapsUrl}`;
+  }
+  return { desc, gmapsUrl };
+}
+
+export function buildEventLocation(p) {
+  if (p?.CoordenadasGPS && p?.Instalacion) {
+    const [lat, lng] = String(p.CoordenadasGPS).split(",");
+    const label = encodeURIComponent(p.Instalacion);
+    return `https://maps.google.com/?q=${encodeURIComponent(
+      lat
+    )}%2C${encodeURIComponent(lng)}%20(${label})`;
+  }
+  return p?.Instalacion || t("ics_location_unknown");
+}
+
+export function buildEventTimes(p) {
+  const dateObj = parseFecha(p?.Fecha);
+  const { startLocal, endLocal } = defaultRangeForDay(dateObj);
+  return { dateObj, startLocal, endLocal };
+}
+
+export function openGoogleCalendar(title, startLocal, endLocal, desc, loc) {
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${toGCalUTC(startLocal)}/${toGCalUTC(endLocal)}`,
+    details: desc,
+    location: loc,
+  });
+  const gcalUrl = `https://calendar.google.com/calendar/render?${params.toString()}`;
+  try {
+    globalThis.open(gcalUrl, "_blank");
+  } catch {
+    globalThis.location.href = gcalUrl;
+  }
+}
+
+export function downloadICS(title, startLocal, endLocal, desc, loc, dateObj) {
+  let start = "",
+    end = "";
+  if (startLocal && endLocal) {
+    const pad = (n) => String(n).padStart(2, "0");
+    const fmt = (d) =>
+      `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(
+        d.getHours()
+      )}${pad(d.getMinutes())}00`;
+    start = fmt(startLocal);
+    end = fmt(endLocal);
+  } else if (dateObj) {
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const d = String(dateObj.getDate()).padStart(2, "0");
+    start = `${y}${m}${d}T120000`;
+    end = `${y}${m}${d}T140000`;
+  }
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Loyola Hockey Matches//ES",
+    "BEGIN:VEVENT",
+    `SUMMARY:${escICS(title)}`,
+    `DESCRIPTION:${escICS(desc)}`,
+    start ? `DTSTART:${start}` : "",
+    end ? `DTEND:${end}` : "",
+    loc ? `LOCATION:${escICS(loc)}` : "",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const blob = new Blob([ics.replaceAll("\n", "\r\n")], {
+    type: "text/calendar",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${(title || "partido").replaceAll(" ", "_")}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 500);
+}
+
+export function handleCalendarClick(p) {
+  const title = buildEventTitle(p);
+  const { desc } = buildEventDescription(p);
+  const loc = buildEventLocation(p);
+  const { dateObj, startLocal, endLocal } = buildEventTimes(p);
+  if (isNativePlatform() && startLocal && endLocal) {
+    openGoogleCalendar(title, startLocal, endLocal, desc, loc);
+    return;
+  }
+  downloadICS(title, startLocal, endLocal, desc, loc, dateObj);
+}

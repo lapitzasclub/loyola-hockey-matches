@@ -1,0 +1,322 @@
+/* Caret space for position change indicator */
+.caret-space {
+  display: inline-block;
+  width: 1.1em;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 1em;
+  margin-right: 0.1em;
+}
+.caret-up {
+  color: #1aaf5d;
+  font-size: 1em;
+}
+.caret-down {
+  color: #e74c3c;
+  font-size: 1em;
+}
+/* Column widths for standings table */
+.col-pos-width { width: 5ch; }
+.col-team-width { width: auto; }
+.col-pts-width { width: 3.2ch; }
+.col-j-width { width: 3.0ch; }
+.col-g-width { width: 3.0ch; }
+.col-e-width { width: 3.0ch; }
+.col-p-width { width: 3.0ch; }
+.col-f-width { width: 3.2ch; }
+.col-c-width { width: 3.2ch; }
+.col-dif-width { width: 3.6ch; }
+/* =======================
+   components-clasificacion.css
+   Estilos de Clasificación
+   ======================= */
+
+/* ---- Variables locales del componente ---- */
+:root {
+  /* Anchos */
+  --col-pos-w: 2.1rem; /* columna # */
+  --col-pts-w: 3.2ch; /* PTS */
+  --col-num-w: 3ch; /* PJ, PG, PE, PP, GF, GC, DG */
+
+  /* Stripes (modo oscuro por defecto) */
+  --col-stripe-1: color-mix(in srgb, var(--color-bg-card) 90%, #000);
+  --col-stripe-2: color-mix(in srgb, var(--color-bg-card) 96%, #000);
+}
+
+/* Ajustes para tema claro */
+[data-theme="light"] {
+  --col-stripe-1: color-mix(in srgb, var(--color-bg-card) 92%, #000);
+  --col-stripe-2: color-mix(in srgb, var(--color-bg-card) 97%, #000);
+}
+
+/* ---- Contenedor tarjeta ---- */
+#matches li.clas-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.clas-table-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-card-border, #e0e0e0);
+  background: var(--color-bg-card);
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+/* ---- Tabla ---- */
+.clas-table {
+  width: 100%;
+  table-layout: fixed; /* respeta widths por columna */
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cabecera */
+.clas-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--color-header-bg, #f5f7fa);
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.42em 0.36em;
+  border-bottom: 1px solid var(--color-card-border, #e0e0e0);
+}
+
+/* Celdas */
+.clas-table td {
+  padding: 0.46em 0.36em;
+  font-size: 0.84rem;
+  border-bottom: 1px solid var(--color-card-border, #e0e0e0);
+  background: var(--color-bg-card);
+}
+
+.clas-table tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--color-bg-card), #000 2%);
+}
+
+/* ---- Anchos por columna (sin <colgroup>) ---- */
+.clas-table thead th:nth-child(1),
+.clas-table tbody td:nth-child(1) {
+  width: var(--col-pos-w);
+}
+
+.clas-table thead th:nth-child(3),
+.clas-table tbody td:nth-child(3) {
+  width: var(--col-pts-w);
+}
+
+.clas-table thead th:nth-child(4),
+.clas-table thead th:nth-child(5),
+.clas-table thead th:nth-child(6),
+.clas-table thead th:nth-child(7),
+.clas-table thead th:nth-child(8),
+.clas-table thead th:nth-child(9),
+.clas-table thead th:nth-child(10),
+.clas-table tbody td:nth-child(4),
+.clas-table tbody td:nth-child(5),
+.clas-table tbody td:nth-child(6),
+.clas-table tbody td:nth-child(7),
+.clas-table tbody td:nth-child(8),
+.clas-table tbody td:nth-child(9),
+.clas-table tbody td:nth-child(10) {
+  width: var(--col-num-w);
+}
+
+/* ---- Columnas pegajosas (sin solapes) ---- */
+.clas-table th.col-pos,
+.clas-table td.col-pos {
+  position: sticky;
+  left: 0;
+  z-index: 5; /* por encima del team */
+  width: var(--col-pos-w);
+  text-align: center;
+  font-weight: 800;
+  background: var(--color-bg-card); /* tapa stripes detrás */
+  border-right: 1px solid var(--color-card-border);
+  padding-left: 0.2rem;
+  padding-right: 0.2rem;
+  background-clip: padding-box;
+}
+
+.clas-table th.col-team,
+.clas-table td.col-team {
+  position: sticky;
+  left: var(--col-pos-w); /* a continuación de # */
+  z-index: 4;
+  min-width: 7.2rem; /* ancho mínimo móvil */
+  background: var(--color-bg-card); /* tapa stripes detrás */
+  border-right: 1px solid var(--color-card-border);
+  overflow: hidden; /* necesario para ellipsis */
+  background-clip: padding-box;
+}
+
+/* Nombre del equipo (ellipsis) */
+.clas-table .team-name {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.1;
+  color: var(--color-text);
+  width: 100%;
+}
+
+/* Numéricas */
+.clas-table td.col-num,
+.clas-table th.col-num,
+.clas-table td.col-pts,
+.clas-table th.col-pts {
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.clas-table td.col-pts .val {
+  display: inline-block;
+  min-width: 2ch;
+  font-weight: 900;
+  font-size: 0.92rem;
+}
+
+/* ---- Stripes verticales (alternos) ---- */
+.clas-table thead th:nth-child(3),
+.clas-table tbody td:nth-child(3),
+.clas-table thead th:nth-child(5),
+.clas-table tbody td:nth-child(5),
+.clas-table thead th:nth-child(7),
+.clas-table tbody td:nth-child(7),
+.clas-table thead th:nth-child(9),
+.clas-table tbody td:nth-child(9) {
+  background: var(--col-stripe-1) !important;
+}
+
+.clas-table thead th:nth-child(4),
+.clas-table tbody td:nth-child(4),
+.clas-table thead th:nth-child(6),
+.clas-table tbody td:nth-child(6),
+.clas-table thead th:nth-child(8),
+.clas-table tbody td:nth-child(8),
+.clas-table thead th:nth-child(10),
+.clas-table tbody td:nth-child(10) {
+  background: var(--col-stripe-2);
+}
+
+/* Hover y fila destacada */
+.clas-table tbody tr:hover td {
+  filter: brightness(1.02);
+}
+
+.clas-table tbody tr.fav td {
+  background: var(--color-proximo-partido-bg, #fff3c4);
+  color: var(--color-text, #2a2f33);
+  font-weight: bold;
+}
+
+@media (prefers-color-scheme: dark) {
+  .clas-table tbody tr.fav td {
+    background: var(--color-proximo-partido-bg, #3a2d12);
+    color: var(--color-text, #e0e0e0);
+  }
+}
+
+[data-theme="dark"] .clas-table tbody tr.fav td {
+  background: var(--color-proximo-partido-bg, #3a2d12);
+  color: var(--color-text, #e0e0e0);
+}
+
+/* Bordes redondeados */
+.clas-table thead th:first-child {
+  border-top-left-radius: 10px;
+}
+.clas-table thead th:last-child {
+  border-top-right-radius: 10px;
+}
+.clas-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+}
+.clas-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 360px) {
+  :root {
+    --col-pos-w: 1.9rem;
+  } /* # más estrecho */
+  .clas-table th.col-team,
+  .clas-table td.col-team {
+    min-width: 6.2rem;
+  }
+  .clas-table thead th {
+    font-size: 0.66rem;
+    padding: 0.38em 0.32em;
+  }
+  .clas-table td {
+    padding: 0.42em 0.32em;
+    font-size: 0.8rem;
+  }
+}
+
+/* ---- Acordeón de clasificación ---- */
+.clas-accordion {
+  border-radius: 1em;
+  margin-bottom: 1em;
+  box-shadow: 0 2px 8px #0001;
+  border: none;
+  overflow: hidden;
+}
+.clas-acc-btn {
+  width: 100%;
+  background: var(--color-header-bg, #f7fafd);
+  color: var(--color-text, #1a1a1a);
+  border: none;
+  outline: none;
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 1em;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  border-bottom: 1px solid #e0e0e0;
+}
+.clas-acc-btn[aria-expanded="true"] {
+  background: var(--color-primary, #2a5cff);
+  color: #fff;
+}
+.clas-acc-btn:focus {
+  outline: 2px solid var(--color-primary, #2a5cff);
+  outline-offset: 2px;
+}
+.clas-acc-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
+}
+.clas-acc-content.open {
+  max-height: 1000px;
+  transition: max-height 0.5s cubic-bezier(.4,0,.2,1);
+}
+@media (max-width: 600px) {
+  .clas-accordion { margin-bottom: 0.7em; }
+  .clas-acc-btn { font-size: 1em; padding: 0.8em; }
+}
+
+@media (prefers-color-scheme: dark) {
+  .clas-acc-btn {
+    background: #23272e;
+    color: #f7fafd;
+  }
+  .clas-acc-btn[aria-expanded="true"] {
+    background: #2c63bb;
+    color: #fff;
+  }
+}
