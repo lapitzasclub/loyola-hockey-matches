@@ -1,0 +1,25 @@
+/* spinner.css - animación de carga accesible */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 3.5em;
+  width: 100%;
+}
+.spinner {
+  width: 2.2em;
+  height: 2.2em;
+  border: 0.32em solid #e0e0e0;
+  border-top: 0.32em solid var(--color-primary, #0f7f82);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+body[data-theme="dark"] .spinner {
+  border: 0.32em solid #333;
+  border-top: 0.32em solid var(--color-primary, #0f7f82);
+}

@@ -1,11 +1,17 @@
 // pullToRefresh.js
 // Lógica de pull-to-refresh
-import { t } from "../i18n.js";
-import { renderClasificacion } from "../components/ui.js";
-import { setCompeticionHeader } from "./header.js";
-import { getEquiposLoyola, getEquipoSeleccionado } from "../state/equipos.js";
 import { getClasificacionLiga } from "../api.js";
+import { renderClasificacion } from "../components/ui.js";
+import { t } from "../i18n.js";
+import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
+import { invalidateApiCache } from "../utils/apiCache.js";
+import { setCompeticionHeader } from "./header.js";
 
+/**
+ * Configura el pull-to-refresh para recargar datos y limpiar caché.
+ * Permite refrescar la vista de partidos o clasificación deslizando hacia abajo.
+ * @param {Function} mostrarPartidosYClasificacion - Callback para mostrar partidos.
+ */
 export function setupPullToRefresh(mostrarPartidosYClasificacion) {
   const ptr = document.getElementById("pullToRefresh");
   const ptrIcon = document.getElementById("ptrIcon");
@@ -82,6 +88,8 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
       if (delta > threshold) {
         refreshing = true;
         if (ptrText) ptrText.textContent = "Actualizando...";
+        // Invalidar caché API antes de refrescar
+        invalidateApiCache();
         const navClasEl = document.getElementById("navClas");
         try {
           if (navClasEl?.classList.contains("active")) {

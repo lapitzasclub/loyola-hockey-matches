@@ -3,11 +3,21 @@
 const DEBUG = true;
 
 // ===== Helpers de color =====
+/**
+ * Obtiene el valor de una variable CSS del documento.
+ * @param {string} name - Nombre de la variable CSS (ej: --color-bg-header).
+ * @returns {string} Valor de la variable CSS.
+ */
 export function cssVar(name) {
   return getComputedStyle(document.documentElement)
     .getPropertyValue(name)
     .trim();
 }
+/**
+ * Convierte cualquier valor de color CSS a formato hexadecimal #rrggbb.
+ * @param {string} colorStr - Color en cualquier formato CSS válido.
+ * @returns {string} Color en formato hexadecimal.
+ */
 export function hexFromAny(colorStr) {
   try {
     const ctx = document.createElement("canvas").getContext("2d");
@@ -23,6 +33,12 @@ export function hexFromAny(colorStr) {
     return "#0e3a43";
   }
 }
+/**
+ * Resuelve el color de fondo efectivo de un selector, en formato hexadecimal.
+ * @param {string} selector - Selector CSS del elemento.
+ * @param {string} fallback - Color de respaldo si no se encuentra el elemento.
+ * @returns {string} Color hexadecimal resuelto.
+ */
 export function resolvedColor(selector, fallback) {
   const el = document.querySelector(selector);
   const ctx = document.createElement("canvas").getContext("2d");
@@ -43,6 +59,10 @@ export function resolvedColor(selector, fallback) {
 
 // ===== Scheduler para aplicar tras cambios de tema/render =====
 let _barsT;
+/**
+ * Programa la aplicación de los colores de las barras del sistema tras un cambio de tema/render.
+ * @param {number} [delay=80] - Retardo en milisegundos antes de aplicar.
+ */
 export function scheduleApplySystemBars(delay = 80) {
   if (_barsT) clearTimeout(_barsT);
   _barsT = setTimeout(() => {
@@ -53,6 +73,11 @@ export function scheduleApplySystemBars(delay = 80) {
 }
 
 // ===== Aplicación real a barras del sistema =====
+/**
+ * Aplica los colores actuales del UI a la StatusBar y NavigationBar (web y nativo).
+ * Lee los colores del DOM y los aplica usando Capacitor si está disponible.
+ * @returns {Promise<void>}
+ */
 export async function applySystemBars() {
   const C = window.Capacitor;
   const platform = C?.getPlatform?.();
@@ -119,6 +144,10 @@ export async function applySystemBars() {
 }
 
 // Observador opcional para re-aplicar si alguien cambia data-theme desde fuera
+/**
+ * Observa cambios en el atributo data-theme del body para re-aplicar los colores del sistema.
+ * @returns {MutationObserver} Observador creado.
+ */
 export function observeThemeAttribute() {
   const obs = new MutationObserver(() => scheduleApplySystemBars());
   obs.observe(document.body, {

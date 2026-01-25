@@ -1,8 +1,14 @@
 // calendar.js
 // Funciones relacionadas con el calendario extraídas de ui.js
+
 import { safeStr, parseFecha } from "./helpers.js";
 import { t } from "../i18n.js";
 
+/**
+ * Escapa caracteres especiales para el formato ICS de calendario.
+ * @param {string} s - Cadena a escapar.
+ * @returns {string} Cadena escapada para ICS.
+ */
 export function escICS(s) {
   // Use String.raw for escaping and replaceAll for all matches
   return safeStr(s)
@@ -10,6 +16,11 @@ export function escICS(s) {
     .replaceAll(";", String.raw`\;`);
 }
 
+/**
+ * Convierte una fecha a formato UTC compatible con Google Calendar.
+ * @param {Date} dt - Fecha a convertir.
+ * @returns {string} Fecha en formato UTC para Google Calendar.
+ */
 export function toGCalUTC(dt) {
   return dt
     .toISOString()
@@ -18,6 +29,11 @@ export function toGCalUTC(dt) {
     .replace(/\.\d{3}Z$/, "Z");
 }
 
+/**
+ * Devuelve el rango horario por defecto (12:00-14:00) para un día dado.
+ * @param {Date} d - Fecha base.
+ * @returns {{startLocal: Date|null, endLocal: Date|null}} Rango horario local.
+ */
 export function defaultRangeForDay(d) {
   if (!d || Number.isNaN(d.getTime()))
     return { startLocal: null, endLocal: null };
@@ -40,6 +56,10 @@ export function defaultRangeForDay(d) {
   return { startLocal, endLocal };
 }
 
+/**
+ * Detecta si la plataforma es nativa (no web).
+ * @returns {boolean} True si es plataforma nativa, false si es web.
+ */
 export function isNativePlatform() {
   const C = globalThis.Capacitor;
   if (C?.isNativePlatform?.()) return true;
@@ -52,6 +72,11 @@ export function isNativePlatform() {
   return false;
 }
 
+/**
+ * Crea un botón para añadir un evento al calendario.
+ * @param {object} p - Objeto partido con datos del evento.
+ * @returns {HTMLButtonElement} Botón de calendario.
+ */
 export function createCalendarButton(p) {
   const btnCal = document.createElement("button");
   btnCal.className = "btn-calendario";
@@ -61,6 +86,11 @@ export function createCalendarButton(p) {
   return btnCal;
 }
 
+/**
+ * Construye el título del evento para el calendario.
+ * @param {object} p - Objeto partido.
+ * @returns {string} Título del evento.
+ */
 export function buildEventTitle(p) {
   const equipos = `${safeStr(p?.EquipoLocal || "")} vs ${safeStr(
     p?.EquipoVisit || ""
@@ -68,6 +98,11 @@ export function buildEventTitle(p) {
   return equipos || "Partido hockey";
 }
 
+/**
+ * Construye la descripción y el enlace de mapa para el evento.
+ * @param {object} p - Objeto partido.
+ * @returns {{desc: string, gmapsUrl: string}} Descripción y URL de Google Maps.
+ */
 export function buildEventDescription(p) {
   let desc = "";
   if (p?.NombreCompeticion) {
@@ -85,6 +120,11 @@ export function buildEventDescription(p) {
   return { desc, gmapsUrl };
 }
 
+/**
+ * Construye la localización del evento para el calendario.
+ * @param {object} p - Objeto partido.
+ * @returns {string} Localización o enlace de Google Maps.
+ */
 export function buildEventLocation(p) {
   if (p?.CoordenadasGPS && p?.Instalacion) {
     const [lat, lng] = String(p.CoordenadasGPS).split(",");
@@ -96,12 +136,25 @@ export function buildEventLocation(p) {
   return p?.Instalacion || t("ics_location_unknown");
 }
 
+/**
+ * Calcula las fechas y horas de inicio y fin del evento.
+ * @param {object} p - Objeto partido.
+ * @returns {{dateObj: Date, startLocal: Date|null, endLocal: Date|null}} Fechas y horas del evento.
+ */
 export function buildEventTimes(p) {
   const dateObj = parseFecha(p?.Fecha);
   const { startLocal, endLocal } = defaultRangeForDay(dateObj);
   return { dateObj, startLocal, endLocal };
 }
 
+/**
+ * Abre Google Calendar con los datos del evento pre-rellenados.
+ * @param {string} title - Título del evento.
+ * @param {Date} startLocal - Fecha/hora de inicio.
+ * @param {Date} endLocal - Fecha/hora de fin.
+ * @param {string} desc - Descripción del evento.
+ * @param {string} loc - Localización del evento.
+ */
 export function openGoogleCalendar(title, startLocal, endLocal, desc, loc) {
   const params = new URLSearchParams({
     action: "TEMPLATE",
@@ -118,6 +171,15 @@ export function openGoogleCalendar(title, startLocal, endLocal, desc, loc) {
   }
 }
 
+/**
+ * Descarga un archivo ICS con los datos del evento para añadir al calendario.
+ * @param {string} title - Título del evento.
+ * @param {Date} startLocal - Fecha/hora de inicio.
+ * @param {Date} endLocal - Fecha/hora de fin.
+ * @param {string} desc - Descripción del evento.
+ * @param {string} loc - Localización del evento.
+ * @param {Date} dateObj - Fecha base del evento.
+ */
 export function downloadICS(title, startLocal, endLocal, desc, loc, dateObj) {
   let start = "",
     end = "";
@@ -166,6 +228,10 @@ export function downloadICS(title, startLocal, endLocal, desc, loc, dateObj) {
   }, 500);
 }
 
+/**
+ * Maneja el click en el botón de calendario, eligiendo entre Google Calendar o descarga ICS.
+ * @param {object} p - Objeto partido con los datos del evento.
+ */
 export function handleCalendarClick(p) {
   const title = buildEventTitle(p);
   const { desc } = buildEventDescription(p);

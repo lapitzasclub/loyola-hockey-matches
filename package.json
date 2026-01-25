@@ -1,6 +1,6 @@
 {
   "name": "loyola-hockey-matches",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "App híbrida para mostrar partidos de Loyola Indautxu A (scrapping web FVP)",
   "scripts": {
     "start": "nodemon server.js & browser-sync start --proxy 'localhost:8080' --files 'www/*.html,www/*.css,www/*.js' --no-open --port 3000"

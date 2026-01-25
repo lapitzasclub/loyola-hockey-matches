@@ -6,6 +6,11 @@ import { setCompeticionHeader } from "./header.js";
 import { getEquiposLoyola, getEquipoSeleccionado } from "../state/equipos.js";
 import { getClasificacionLiga } from "../api.js";
 
+/**
+ * Configura la navegación inferior y los listeners de los botones de navegación.
+ * Cambia entre la vista de partidos y la de clasificación.
+ * @param {Function} mostrarPartidosYClasificacion - Callback para mostrar partidos.
+ */
 export function setupNavigation(mostrarPartidosYClasificacion) {
   const navPartidos = document.getElementById("navPartidos");
   const navClas = document.getElementById("navClas");
@@ -20,7 +25,7 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
       navPartidos.classList.remove("active");
       const matchesList = document.getElementById("matches");
       matchesList.innerHTML = "";
-      matchesList.innerHTML = `<li>${t("loading")}</li>`;
+      matchesList.innerHTML = `<li><div class='spinner-container'><div class='spinner' aria-label='Cargando'></div></div></li>`;
       if (!getEquipoSeleccionado()) {
         matchesList.innerHTML = `<li>Selecciona un equipo Loyola</li>`;
         setCompeticionHeader("");

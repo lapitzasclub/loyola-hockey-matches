@@ -10,31 +10,9 @@ import { getLang, setLang, t, updateTexts } from "../i18n.js";
 import { applyTheme, getSystemTheme, getTheme, listenSystemScheme, setTheme } from "../theme.js";
 import { observeThemeAttribute, scheduleApplySystemBars } from "../systemBars.js";
 
-export async function mostrarPartidosYClasificacion() {
-  const matchesList = document.getElementById("matches");
-  const headerTitle = document.getElementById("headerTitle");
-  if (!getEquipoSeleccionado()) {
-    matchesList.innerHTML = `<li>Selecciona un equipo Loyola</li>`;
-    if (headerTitle) headerTitle.textContent = "";
-    setCompeticionHeader("");
-    return;
-  }
-  const [idComp, idEquipo] = getEquipoSeleccionado().split("|");
-  const eq = getEquiposLoyola().find(
-    (e) => e.idCompeticion == idComp && e.idEquipoComp == idEquipo
-  );
-  if (headerTitle)
-    headerTitle.textContent = eq?.nombreEquipo || "Equipo Loyola";
-  setCompeticionHeader(eq?.nombreCompeticion || "");
-  matchesList.innerHTML = `<li>${t("loading")}</li>`;
-  try {
-    const raw = await import("../api.js").then(m => m.getCalendarioLoyola(idEquipo, idComp));
-    renderPartidos(matchesList, raw);
-  } catch (e) {
-    matchesList.innerHTML = `<li>${t("error", e?.message || String(e))}</li>`;
-  }
-}
-
+/**
+ * Inicializa la app: tema, idioma, listeners y render inicial.
+ */
 export async function initApp() {
   try {
     const themeSelect = document.getElementById("themeSelect");
@@ -55,7 +33,36 @@ export async function initApp() {
       langSelect.addEventListener("change", async (e) => {
         setLang(e.target.value);
         updateTexts();
-        await mostrarPartidosYClasificacion();
+        // Detectar pestaña activa y recargar solo esa vista
+        const navPartidos = document.getElementById("navPartidos");
+        const navClas = document.getElementById("navClas");
+        if (navClas && navClas.classList.contains("active")) {
+          // Si está activa la pestaña de clasificación, recargar clasificación
+          const matchesList = document.getElementById("matches");
+          matchesList.innerHTML = `<li>${t("loading")}</li>`;
+          const { getEquiposLoyola, getEquipoSeleccionado } = await import("../state/equipos.js");
+          const { setCompeticionHeader } = await import("./header.js");
+          const { renderClasificacion } = await import("../components/ui.js");
+          const { getClasificacionLiga } = await import("../api.js");
+          if (!getEquipoSeleccionado()) {
+            matchesList.innerHTML = `<li>Selecciona un equipo Loyola</li>`;
+            setCompeticionHeader("");
+            return;
+          }
+          const [idComp] = getEquipoSeleccionado().split("|");
+          const eq = getEquiposLoyola().find((e) => e.idCompeticion == idComp);
+          setCompeticionHeader(eq?.nombreCompeticion || "");
+          try {
+            const raw = await getClasificacionLiga(idComp);
+            matchesList.innerHTML = "";
+            renderClasificacion(matchesList, raw);
+          } catch (e) {
+            matchesList.innerHTML = `<li>${t("error", e?.message || String(e))}</li>`;
+          }
+        } else {
+          // Por defecto, recargar partidos
+          await mostrarPartidosYClasificacion();
+        }
       });
     }
     setupNavigation(mostrarPartidosYClasificacion);
@@ -88,5 +95,33 @@ export async function initApp() {
     await mostrarPartidosYClasificacion();
   } catch (err) {
     mostrarPantallaErrorGlobal(err, cargarSelectorEquiposLoyola, mostrarPartidosYClasificacion);
+  }
+}
+
+/**
+ * Muestra la pantalla de partidos y clasificación para el equipo seleccionado.
+ */
+export async function mostrarPartidosYClasificacion() {
+  const matchesList = document.getElementById("matches");
+  const headerTitle = document.getElementById("headerTitle");
+  if (!getEquipoSeleccionado()) {
+    matchesList.innerHTML = `<li>Selecciona un equipo Loyola</li>`;
+    if (headerTitle) headerTitle.textContent = "";
+    setCompeticionHeader("");
+    return;
+  }
+  const [idComp, idEquipo] = getEquipoSeleccionado().split("|");
+  const eq = getEquiposLoyola().find(
+    (e) => e.idCompeticion == idComp && e.idEquipoComp == idEquipo
+  );
+  if (headerTitle)
+    headerTitle.textContent = eq?.nombreEquipo || "Equipo Loyola";
+  setCompeticionHeader(eq?.nombreCompeticion || "");
+  matchesList.innerHTML = `<li>${t("loading")}</li>`;
+  try {
+    const raw = await import("../api.js").then(m => m.getCalendarioLoyola(idEquipo, idComp));
+    renderPartidos(matchesList, raw);
+  } catch (e) {
+    matchesList.innerHTML = `<li>${t("error", e?.message || String(e))}</li>`;
   }
 }

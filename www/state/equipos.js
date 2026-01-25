@@ -48,6 +48,13 @@ export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion,
         sideMenu.classList.remove("open");
         sideMenuOverlay.classList.remove("open");
       }
+      // Forzar navegación a Partidos y actualizar navbar
+      const navPartidos = document.getElementById("navPartidos");
+      const navClas = document.getElementById("navClas");
+      if (navPartidos && navClas) {
+        navPartidos.classList.add("active");
+        navClas.classList.remove("active");
+      }
       await mostrarPartidosYClasificacion();
     });
     setEquipoSeleccionado(selector.value || null);
