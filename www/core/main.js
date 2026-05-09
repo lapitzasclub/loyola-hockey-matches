@@ -1,7 +1,7 @@
 
 "use strict";
 import { initApp } from "./init.js";
-import { emitPartidoHubEvent } from "../signalrBus.js";
+import { emitPartidoHubEvent } from "../services.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { isNative } from "../utils/env.js";
 

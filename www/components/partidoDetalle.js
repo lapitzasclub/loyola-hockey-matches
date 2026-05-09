@@ -1,5 +1,9 @@
-import { subscribePartidoHubEvents } from "../signalrBus.js";
-import { callPartidoHubServerMethod, getEstadisticaPartido, getPartido } from "../services.js";
+import {
+  callPartidoHubServerMethod,
+  getEstadisticaPartido,
+  getPartido,
+  subscribePartidoHubEvents,
+} from "../services.js";
 
 function parseApiArrayResponse(raw) {
   if (!raw) return null;
