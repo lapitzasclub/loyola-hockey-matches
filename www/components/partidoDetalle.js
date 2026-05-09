@@ -116,6 +116,9 @@ function createDetalleState(idPartido) {
     statsResumen: [],
     localKey: null,
     visitKey: null,
+    currentView: "partido",
+    currentTab: "resumen",
+    viewStack: [],
   };
 }
 
@@ -124,15 +127,27 @@ export function openPartidoDetalle(idPartido) {
   const modal = document.createElement("div");
   modal.className = "partido-detalle-modal";
   modal.innerHTML = `
-    <div class="partido-detalle-header">
-      <button class="partido-detalle-close" aria-label="Cerrar">&times;</button>
-      <div class="partido-detalle-header-content" id="partido-detalle-header-content"></div>
+    <div class="partido-detalle-shell">
+      <div class="partido-detalle-grabber"></div>
+      <div class="partido-detalle-header">
+        <button class="partido-detalle-back" aria-label="Volver" hidden>←</button>
+        <div class="partido-detalle-header-content" id="partido-detalle-header-content"></div>
+        <button class="partido-detalle-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="partido-detalle-body" id="partido-detalle-body"></div>
     </div>
-    <div class="partido-detalle-body" id="partido-detalle-body"></div>
   `;
   document.body.appendChild(modal);
   document.body.classList.add("modal-abierto");
   modal.querySelector(".partido-detalle-close").onclick = closePartidoDetalle;
+  modal.querySelector(".partido-detalle-back").onclick = () => {
+    const state = window.__partidoDetalleState;
+    if (!state?.viewStack?.length) return;
+    state.currentView = state.viewStack.pop() || "partido";
+    const headerEl = document.getElementById("partido-detalle-header-content");
+    const bodyEl = document.getElementById("partido-detalle-body");
+    renderAll(state, headerEl, bodyEl);
+  };
   cargarDetallePartido(idPartido);
 }
 
@@ -163,10 +178,16 @@ async function waitForSignalRConnected(timeout = 4000) {
   }
 }
 
-function ensureBaseLayout(bodyEl) {
+function ensureBaseLayout(bodyEl, state) {
   bodyEl.innerHTML = `
-    <div class="partido-detalle-tabs">
-      <button class="tab-btn active" data-tab="resumen">Resumen</button>
+    <div class="partido-detalle-view-header">
+      <div>
+        <div class="partido-detalle-view-kicker">Detalle</div>
+        <div class="partido-detalle-view-title">Partido</div>
+      </div>
+    </div>
+    <div class="partido-detalle-tabs" role="tablist" aria-label="Secciones del partido">
+      <button class="tab-btn" data-tab="resumen">Resumen</button>
       <button class="tab-btn" data-tab="alineaciones">Alineaciones</button>
       <button class="tab-btn" data-tab="eventos">Eventos</button>
       <button class="tab-btn" data-tab="penaltis">Penaltis</button>
@@ -179,24 +200,51 @@ function ensureBaseLayout(bodyEl) {
 
   bodyEl.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.onclick = () => {
-      bodyEl.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      const tab = btn.dataset.tab;
-      bodyEl.querySelectorAll(".tab-content").forEach((panel) => {
-        panel.hidden = panel.id !== `tab-${tab}`;
-      });
+      state.currentTab = btn.dataset.tab;
+      updateTabVisibility(bodyEl, state.currentTab);
     };
+  });
+
+  updateTabVisibility(bodyEl, state.currentTab || "resumen");
+}
+
+function updateTabVisibility(bodyEl, activeTab) {
+  bodyEl.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tab === activeTab);
+  });
+  bodyEl.querySelectorAll(".tab-content").forEach((panel) => {
+    panel.hidden = panel.id !== `tab-${activeTab}`;
   });
 }
 
+function updateChrome(state, modal) {
+  const backBtn = modal?.querySelector(".partido-detalle-back");
+  if (!backBtn) return;
+  backBtn.hidden = !state.viewStack.length;
+}
+
 function renderAll(state, headerEl, bodyEl) {
+  const modal = bodyEl.closest(".partido-detalle-modal");
+  updateChrome(state, modal);
   if (state.partido) {
     setHeaderContent(headerEl, renderPartidoHeader(state), "renderAll");
+  }
+  if (state.currentView !== "partido") {
+    bodyEl.innerHTML = `
+      <div class="partido-detalle-subview-placeholder">
+        <div class="partido-detalle-empty">Vista en preparación.</div>
+      </div>
+    `;
+    return;
+  }
+  if (!bodyEl.querySelector("#tab-resumen")) {
+    ensureBaseLayout(bodyEl, state);
   }
   bodyEl.querySelector("#tab-resumen").innerHTML = renderResumen(state);
   bodyEl.querySelector("#tab-alineaciones").innerHTML = renderAlineaciones(state);
   bodyEl.querySelector("#tab-eventos").innerHTML = renderEventos(state);
   bodyEl.querySelector("#tab-penaltis").innerHTML = renderPenaltis(state);
+  updateTabVisibility(bodyEl, state.currentTab || "resumen");
 }
 
 function mergeTruthy(prev, next) {
@@ -284,7 +332,7 @@ async function cargarDetallePartido(idPartido) {
   window.__partidoDetalleState = state;
 
   setHeaderContent(headerEl, "Cargando...", "init-loading");
-  ensureBaseLayout(bodyEl);
+  ensureBaseLayout(bodyEl, state);
   renderAll(state, headerEl, bodyEl);
 
   const partidoRes = await getPartido(idPartido);

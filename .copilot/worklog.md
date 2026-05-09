@@ -37,3 +37,6 @@
 - Se confirmó visualmente que el detalle de partido ya carga alineaciones, eventos, penaltis y marcador usando el flujo SignalR replicado desde la web original.
 - Se aclaró una regla funcional del hockey de esta competición: el header `2-4` es correcto como resultado por puntos/tiempos, mientras que los eventos muestran marcadores parciales acumulados del juego.
 - Se abrió la siguiente línea de trabajo: rediseñar la navegación del detalle y de futuras stats de jugador con criterio mobile-first, evitando modales anidadas y tablas anchas poco usables en móvil.
+- Se aplicó una primera mejora mobile-first al detalle de partido: nueva shell tipo hoja/pantalla, grabber superior, header con botón de retroceso preparado, título de vista interna y conservación explícita de pestaña/vista en el estado.
+- La arquitectura del detalle queda preparada para futuras subvistas internas (por ejemplo stats de jugador) sin necesidad de abrir modales anidadas.
+- La build se verificó tras esta primera pasada de UX móvil.

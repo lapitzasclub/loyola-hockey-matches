@@ -10,7 +10,8 @@
 - [ ] Verificar que la cabecera ya no pierde competición/equipos/árbitros después de `getEstadisticaPartido`.
 - [x] Confirmar si, tras mover los handlers a nivel global, empiezan a entrar en la app `recibirEventosIniciales`, `recibirAlinIniciales`, `recibirPenaltisIniciales` y `recibirMarcadorPartido` para el partido `4175`.
 - [x] Verificar que el detalle ya muestra visualmente alineaciones, eventos y marcador con los datos de SignalR.
-- [ ] Diseñar el siguiente flujo mobile-first para detalle de partido y futuras stats de jugador, evitando modales anidadas y tablas horizontales grandes.
+- [ ] Seguir refinando el detalle mobile-first: reducir dependencia visual de tablas anchas y sustituir progresivamente vistas tabulares por tarjetas/filas compactas cuando tenga sentido.
+- [ ] Implementar la primera subvista interna real dentro del detalle (stats de jugador), usando navegación interna en lugar de modal sobre modal.
 - [ ] Localizar e integrar el endpoint exacto de stats de jugador usado por la web (`openStatsJugador(...)`) con una UI adaptada a móvil.
 - [ ] Revisar el flujo completo de SignalR y documentar cómo debe funcionar, incluyendo diferencias entre web local, web desplegada y app nativa.
 
