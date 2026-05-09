@@ -23,7 +23,9 @@ Aplicación híbrida para seguir partidos y clasificaciones de equipos de hockey
 - `www/components/` contiene renderizado de partidos, clasificación y detalle.
 - `www/styles/components-partido-detalle.css` contiene el estilo del modal de detalle de partido, integrado con el sistema global de tema.
 - `www/components/partidoDetalle.js` ya soporta payloads reales del hub para detalle: `recibirEventosIniciales`, `recibirPenaltisIniciales`, `recibirAlinIniciales`, `recibirMarcadorPartido`, además de alineaciones `JugLocal/JugVisit/PortLocal/PortVisit/TecnLocal/TecnVisit`.
+- Los handlers del hub en tiempo real deben vivir globalmente desde `www/core/main.js`, igual que en la web original, para no perder los payloads iniciales antes de que el modal se monte.
 - `www/services.js` concentra acceso a datos remotos y parte de la integración en tiempo real.
+- `www/signalrBus.js` actúa como bus simple de eventos para desacoplar los handlers globales del hub del modal de detalle.
 - `www/state/` guarda estado de equipos y overlays.
 - `www/utils/` contiene helpers, caché, calendario y utilidades de clasificación/partidos.
 
@@ -55,6 +57,7 @@ El proyecto compila con `vite build`, pero está en una transición parcial desd
    - Depende de scripts globales y `window.hubProxy`.
    - Hay mezcla entre `window.signalR` y `$.connection`.
    - `index.html` carga recursos externos de hubs que conviene revisar.
+   - Un riesgo específico detectado era registrar los handlers del detalle demasiado tarde, perdiendo potencialmente los callbacks iniciales que en la web original llegan inmediatamente tras abrir el partido.
 
 3. Capa de servicios inconsistente
    - Parte del acceso a la API usa `post()` con caché.

@@ -22,3 +22,13 @@
 - Se añadieron trazas defensivas al modal de detalle para diagnosticar si el header se sobreescribe o si el problema es de renderizado final en DOM.
 - Se integró la pantalla de detalle de partido con el sistema global de tema claro/oscuro, moviendo su estilo a `www/styles/components-partido-detalle.css`.
 - Se rehízo `www/components/partidoDetalle.js` para aproximar el detalle real de `competicion.js`: resumen, alineaciones por equipo, porteros, cuerpo técnico, eventos enriquecidos y penaltis por lado.
+- Se añadió `joinGroup(modalidad)` en `www/core/main.js` al conectar/reconectar SignalR, como hace la web original con `unirseAModalidad()`.
+- Se corrigió `www/components/partidoDetalle.js` para fusionar cabecera rica de `GetParametrosPartido` con el fallback de `GetEstadisticaPartido` sin perder competición, equipos ni árbitros.
+- Se añadió instrumentación adicional en `joinSelectedModalidad()` para ver si `joinGroup` existe y si realmente se ejecuta en runtime.
+- Se confirmó con trazas de la web original que el partido `4175` sí recibe `recibirEventosIniciales`, `recibirPenaltisIniciales`, `recibirAlinIniciales` y `recibirMarcadorPartido` pese a reportar `SeguimientoDirecto:false` y `Estadisticas:false` en cabecera.
+- Se detectó una diferencia crítica con la web original: allí los handlers de SignalR viven globalmente desde el arranque, mientras en la app se registraban tarde dentro del modal de detalle.
+- Se movió el registro de handlers de SignalR a `www/core/main.js` y se creó `www/signalrBus.js` como bus global para reenviar eventos del hub al detalle abierto.
+- `www/components/partidoDetalle.js` dejó de sobrescribir `hubProxy.client` y ahora se suscribe al bus global, filtrando por `idPartido`.
+- Se añadió también captura global de `cronoPartido` para dejar la arquitectura alineada con `competicion.js`.
+- Se verificó que la build sigue pasando tras esta reestructuración del flujo SignalR.
+- Se detectó y corrigió un fallo de ruta en dev: `signalrBus.js` se había creado fuera de `www`, pero Vite usa `root: 'www'`, así que el import resolvía a `/signalrBus.js` y rompía el arranque con 404. El fichero se movió a `www/signalrBus.js`.

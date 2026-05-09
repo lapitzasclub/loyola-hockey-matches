@@ -1,3 +1,4 @@
+import { subscribePartidoHubEvents } from "../signalrBus.js";
 import { callPartidoHubServerMethod, getEstadisticaPartido, getPartido } from "../services.js";
 
 function parseApiArrayResponse(raw) {
@@ -139,16 +140,9 @@ export function closePartidoDetalle() {
     if (window.signalR?.enDirecto?.server?.salirDePartido && window.__partidoDetalleId) {
       callPartidoHubServerMethod("salirDePartido", window.__partidoDetalleId);
     }
-    if (window.signalR?.enDirecto?.client) {
-      const client = window.signalR.enDirecto.client;
-      client.marcadorPartido = null;
-      client.eventosPartido = null;
-      client.penaltisPartido = null;
-      client.alineacionPartido = null;
-      client.recibirEventosIniciales = null;
-      client.recibirPenaltisIniciales = null;
-      client.recibirAlinIniciales = null;
-      client.recibirMarcadorPartido = null;
+    if (window.__partidoDetalleUnsub) {
+      window.__partidoDetalleUnsub();
+      window.__partidoDetalleUnsub = null;
     }
     window.__partidoDetalleId = null;
     window.__partidoDetalleState = null;
@@ -201,10 +195,26 @@ function renderAll(state, headerEl, bodyEl) {
   bodyEl.querySelector("#tab-penaltis").innerHTML = renderPenaltis(state);
 }
 
+function mergeTruthy(prev, next) {
+  if (!prev) return next;
+  if (!next) return prev;
+  const merged = { ...prev };
+  for (const [key, value] of Object.entries(next)) {
+    if (Array.isArray(value)) {
+      if (value.length) merged[key] = value;
+      continue;
+    }
+    if (value !== undefined && value !== null && value !== "") {
+      merged[key] = value;
+    }
+  }
+  return merged;
+}
+
 function updatePartido(state, payload) {
   const normalizado = normalizarPartido(payload);
   if (!normalizado) return;
-  state.partido = normalizado;
+  state.partido = mergeTruthy(state.partido, normalizado);
   state.modalidad = normalizado.modalidad || state.modalidad;
   state.localKey = normalizado.idEquipoLocal || state.localKey;
   state.visitKey = normalizado.idEquipoVisit || state.visitKey;
@@ -290,58 +300,34 @@ async function cargarDetallePartido(idPartido) {
   updateEstadisticaPayload(state, estadistica);
   renderAll(state, headerEl, bodyEl);
 
-  console.log("[SignalR] Registrando handlers en hubProxy...");
-  const client = window.hubProxy.client;
-
-  client.marcadorPartido = (data) => {
-    console.log("[SignalR] EVENT: marcadorPartido", data);
-    updatePartido(state, data);
+  console.log("[SignalR] Suscribiendo modal al bus global del hub...");
+  window.__partidoDetalleUnsub = subscribePartidoHubEvents(({ type, payload, idPartido: incomingId }) => {
+    if (!incomingId || String(incomingId) !== String(idPartido)) return;
+    console.log(`[SignalR] EVENT modal desde bus: ${type} para partido ${incomingId}`, payload);
+    switch (type) {
+      case "marcadorPartido":
+      case "recibirMarcadorPartido":
+      case "cronoPartido":
+        updatePartido(state, payload);
+        break;
+      case "eventosPartido":
+      case "recibirEventosIniciales":
+        updateEventos(state, payload);
+        break;
+      case "penaltisPartido":
+      case "recibirPenaltisIniciales":
+        updatePenaltis(state, payload);
+        break;
+      case "alineacionPartido":
+      case "recibirAlinIniciales":
+        updateAlineaciones(state, payload);
+        break;
+      default:
+        return;
+    }
     renderAll(state, headerEl, bodyEl);
-  };
-
-  client.eventosPartido = (data) => {
-    console.log("[SignalR] EVENT: eventosPartido", data);
-    updateEventos(state, data);
-    renderAll(state, headerEl, bodyEl);
-  };
-
-  client.penaltisPartido = (data) => {
-    console.log("[SignalR] EVENT: penaltisPartido", data);
-    updatePenaltis(state, data);
-    renderAll(state, headerEl, bodyEl);
-  };
-
-  client.alineacionPartido = (data) => {
-    console.log("[SignalR] EVENT: alineacionPartido", data);
-    updateAlineaciones(state, data);
-    renderAll(state, headerEl, bodyEl);
-  };
-
-  client.recibirEventosIniciales = (datosActuales, idpartido) => {
-    console.log(`[SignalR] EVENT: recibirEventosIniciales para partido ${idpartido}`, datosActuales);
-    updateEventos(state, datosActuales);
-    renderAll(state, headerEl, bodyEl);
-  };
-
-  client.recibirPenaltisIniciales = (datosActuales, idpartido) => {
-    console.log(`[SignalR] EVENT: recibirPenaltisIniciales para partido ${idpartido}`, datosActuales);
-    updatePenaltis(state, datosActuales);
-    renderAll(state, headerEl, bodyEl);
-  };
-
-  client.recibirAlinIniciales = (datosActuales, idpartido) => {
-    console.log(`[SignalR] EVENT: recibirAlinIniciales para partido ${idpartido}`, datosActuales);
-    updateAlineaciones(state, datosActuales);
-    renderAll(state, headerEl, bodyEl);
-  };
-
-  client.recibirMarcadorPartido = (resultados, idpartido) => {
-    console.log(`[SignalR] EVENT: recibirMarcadorPartido para partido ${idpartido}`, resultados);
-    updatePartido(state, resultados);
-    renderAll(state, headerEl, bodyEl);
-  };
-
-  console.log("[SignalR] Handlers registrados en hubProxy.");
+  });
+  console.log("[SignalR] Modal suscrito al bus global del hub.");
   if (window.hubProxy.server.unirseAPartido) {
     try {
       console.log("[SignalR] Llamando a unirseAPartido en el hub:", idPartido);
