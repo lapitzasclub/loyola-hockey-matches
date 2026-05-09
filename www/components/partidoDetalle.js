@@ -700,20 +700,20 @@ function renderPorterosCards(porteros, modalidad) {
 function renderTecnicosCards(tecnicos, modalidad) {
   if (!tecnicos.length) return "";
   const isHp = modalidad !== "hl";
-  const items = tecnicos.map((t) => {
+  const items = tecnicos.map((tecnico) => {
     const posMap = { 3: "ENT", 4: "ENT2", 5: "DEL", 6: "AUX" };
-    const pos = posMap[t.IdPosicion] || t.IdPosicion || "TEC";
+    const pos = posMap[tecnico.IdPosicion] || tecnico.IdPosicion || "TEC";
     const chips = [
-      isHp ? renderStatChip("Az", t.Azules) : "",
-      isHp ? renderStatChip("Rj", t.Rojas) : "",
-      renderStatChip("Min", t.Minutos),
+      isHp ? renderStatChip("Az", tecnico.Azules) : "",
+      isHp ? renderStatChip("Rj", tecnico.Rojas) : "",
+      renderStatChip("Min", tecnico.Minutos),
     ].filter(Boolean).join("");
     return `
       <article class="alineacion-item alineacion-item-staff">
         <div class="alineacion-item-main">
           <div class="alineacion-dorsal alineacion-dorsal-role">${escapeHtml(pos)}</div>
           <div class="alineacion-info">
-            <div class="alineacion-name">${escapeHtml(t.ApellidosNombre ?? "")}</div>
+            <div class="alineacion-name">${escapeHtml(tecnico.ApellidosNombre ?? "")}</div>
             ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(t("detail_no_incidents"))}</div>`}
           </div>
         </div>
