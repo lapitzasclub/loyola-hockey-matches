@@ -4,7 +4,7 @@ import { t } from "../i18n.js";
 import { renderClasificacion } from "../components/ui.js";
 import { setCompeticionHeader } from "./header.js";
 import { getEquiposLoyola, getEquipoSeleccionado } from "../state/equipos.js";
-import { getClasificacionLiga } from "../api.js";
+import { getClasificacionLiga } from "../services.js";
 
 /**
  * Configura la navegación inferior y los listeners de los botones de navegación.

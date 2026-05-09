@@ -1,6 +1,6 @@
 // equipos.js
 // Carga y gestión del selector de equipos
-import { getEquiposLoyolaTodasCompeticiones } from "../api.js";
+import { getEquiposLoyolaTodasCompeticiones } from "../services.js";
 
 let _equiposLoyola = [];
 let _equipoSeleccionado = null;

@@ -3,7 +3,11 @@
   "version": "1.2.0",
   "description": "App híbrida para mostrar partidos de Loyola Indautxu A (scrapping web FVP)",
   "scripts": {
-    "start": "nodemon server.js & browser-sync start --proxy 'localhost:8080' --files 'www/*.html,www/*.css,www/*.js' --no-open --port 3000"
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "cap:sync": "npx cap sync",
+    "cap:copy": "npx cap copy"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -12,11 +16,13 @@
     "@capgo/capacitor-navigation-bar": "^7.1.33",
     "express": "^5.1.0",
     "http-proxy": "^1.18.1",
-    "http-proxy-middleware": "^3.0.5"
+    "http-proxy-middleware": "^3.0.5",
+    "jquery": "^4.0.0"
   },
   "devDependencies": {
     "browser-sync": "^3.0.4",
     "live-server": "^1.2.2",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "vite": "^7.3.1"
   }
 }

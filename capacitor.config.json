@@ -1,7 +1,7 @@
 {
   "appId": "com.loyola.hockeymatches",
   "appName": "loyola-hockey-matches",
-  "webDir": "www",
+  "webDir": "dist",
   "bundledWebRuntime": false,
   "plugins": {
     "CapacitorHttp": {

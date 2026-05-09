@@ -1,6 +1,6 @@
 // clasificacion.js — clasificación en tabla estilo BeSoccer
 
-import { getCalendarioTodosEquipos } from "../api.js";
+import { getCalendarioTodosEquipos } from "../services.js";
 import { getEquipoLabel } from "../equipo.js";
 import { t } from "../i18n.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";

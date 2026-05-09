@@ -31,4 +31,9 @@
 - `www/components/partidoDetalle.js` dejó de sobrescribir `hubProxy.client` y ahora se suscribe al bus global, filtrando por `idPartido`.
 - Se añadió también captura global de `cronoPartido` para dejar la arquitectura alineada con `competicion.js`.
 - Se verificó que la build sigue pasando tras esta reestructuración del flujo SignalR.
-- Se detectó y corrigió un fallo de ruta en dev: `signalrBus.js` se había creado fuera de `www`, pero Vite usa `root: 'www'`, así que el import resolvía a `/signalrBus.js` y rompía el arranque con 404. El fichero se movió a `www/signalrBus.js`.
+- Se detectó y corrigió un fallo de ruta en dev: `signalrBus.js` se había creado fuera de `www`, pero Vite usa `root: 'www'`, así que el import resolvía a `/signalrBus.js` y rompía el arranque con 404.
+- Para evitar más fragilidad con un módulo nuevo suelto, el bus global de eventos de SignalR se integró finalmente dentro de `www/services.js`, eliminando la dependencia externa a `www/signalrBus.js`.
+- Se verificó con trazas reales de la app que, tras mover los handlers a nivel global, ya entran correctamente `recibirEventosIniciales`, `recibirPenaltisIniciales`, `recibirAlinIniciales` y `recibirMarcadorPartido` para el partido `4175`.
+- Se confirmó visualmente que el detalle de partido ya carga alineaciones, eventos, penaltis y marcador usando el flujo SignalR replicado desde la web original.
+- Se aclaró una regla funcional del hockey de esta competición: el header `2-4` es correcto como resultado por puntos/tiempos, mientras que los eventos muestran marcadores parciales acumulados del juego.
+- Se abrió la siguiente línea de trabajo: rediseñar la navegación del detalle y de futuras stats de jugador con criterio mobile-first, evitando modales anidadas y tablas anchas poco usables en móvil.

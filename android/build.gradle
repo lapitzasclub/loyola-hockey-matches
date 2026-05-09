@@ -1,5 +1,22 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
+// Patch to fix Proguard error in Capacitor library when using newer AGP versions
+// This replaces 'proguard-android.txt' with 'proguard-android-optimize.txt' in the capacitor library's build.gradle
+def patchFile(filePath) {
+    def targetFile = file(filePath)
+    if (targetFile.exists()) {
+        def content = targetFile.text
+        if (content.contains("'proguard-android.txt'")) {
+            targetFile.text = content.replace("'proguard-android.txt'", "'proguard-android-optimize.txt'")
+            println "Patched ${filePath} to use proguard-android-optimize.txt"
+        }
+    }
+}
+
+patchFile('../node_modules/@capacitor/android/capacitor/build.gradle')
+patchFile('../node_modules/@capacitor/status-bar/android/build.gradle')
+patchFile('../node_modules/@capgo/capacitor-navigation-bar/android/build.gradle')
+
 buildscript {
     
     repositories {
@@ -7,7 +24,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.13.2'
+        classpath 'com.android.tools.build:gradle:9.0.1'
         classpath 'com.google.gms:google-services:4.4.2'
 
         // NOTE: Do not place your application dependencies here; they belong

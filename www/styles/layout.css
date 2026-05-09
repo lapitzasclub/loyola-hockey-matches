@@ -141,17 +141,9 @@ body[data-theme="dark"] .nav-btn.active {
 }
 /* Header y navegación */
 body::before {
-  content: "";
-  display: block;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: env(safe-area-inset-top, 0px);
-  background: var(--color-bg-header);
-  z-index: 10000;
+  /* Eliminar capa superior que causa solape en Android */
+  content: none !important;
 }
-/* layout.css: estructura general, header, main, nav, menú lateral */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -169,7 +161,7 @@ body {
   min-height: 44px;
   background: var(--color-bg-header);
   color: var(--color-text-header);
-  padding-top: env(safe-area-inset-top, 0.3em);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 0.7em);
   padding-right: 0.7em;
   padding-bottom: 0.3em;
   padding-left: 0.5em;
@@ -270,18 +262,4 @@ main {
   flex: 1 1 0;
   overflow-y: auto;
   padding-bottom: calc(2em + env(safe-area-inset-bottom, 0px));
-}
-.bottom-nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--color-bg-header) !important;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  box-shadow: 0 -2px 8px var(--color-shadow);
-  z-index: 100;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  min-height: var(--bottom-nav-height, 56px);
 }

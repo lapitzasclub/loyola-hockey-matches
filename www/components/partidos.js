@@ -36,6 +36,12 @@ export function renderPartidos(matchesList, raw) {
     const p = partidos[idx];
     const li = renderPartidoLi(p, equipoSel, lang, proximoIdx, idx);
     if (idx === proximoIdx) proximoLi = li;
+    // Abrir detalle de partido al hacer click
+    li.onclick = () => {
+      if (p.IdPartido) {
+        import('./partidoDetalle.js').then(mod => mod.openPartidoDetalle(p.IdPartido));
+      }
+    };
     matchesList.appendChild(li);
   }
   scrollToProximo(proximoLi);

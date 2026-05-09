@@ -57,6 +57,22 @@ export function defaultRangeForDay(d) {
 }
 
 /**
+ * Parsea una hora en formato habitual de partido (HH:mm o HH:mm:ss).
+ * @param {string} horaStr - Hora en texto.
+ * @returns {{hours: number, minutes: number}|null}
+ */
+export function parseHora(horaStr) {
+  if (!horaStr) return null;
+  const match = String(horaStr).trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return { hours, minutes };
+}
+
+/**
  * Detecta si la plataforma es nativa (no web).
  * @returns {boolean} True si es plataforma nativa, false si es web.
  */
@@ -138,12 +154,33 @@ export function buildEventLocation(p) {
 
 /**
  * Calcula las fechas y horas de inicio y fin del evento.
+ * Usa la hora real del partido cuando está disponible.
+ * Si no existe, usa el rango por defecto 12:00-14:00.
+ *
  * @param {object} p - Objeto partido.
  * @returns {{dateObj: Date, startLocal: Date|null, endLocal: Date|null}} Fechas y horas del evento.
  */
 export function buildEventTimes(p) {
   const dateObj = parseFecha(p?.Fecha);
-  const { startLocal, endLocal } = defaultRangeForDay(dateObj);
+  if (!dateObj || Number.isNaN(dateObj.getTime())) {
+    return { dateObj: null, startLocal: null, endLocal: null };
+  }
+
+  const hora = parseHora(p?.Hora);
+  if (!hora) {
+    const { startLocal, endLocal } = defaultRangeForDay(dateObj);
+    return { dateObj, startLocal, endLocal };
+  }
+
+  const startLocal = new Date(
+    dateObj.getFullYear(),
+    dateObj.getMonth(),
+    dateObj.getDate(),
+    hora.hours,
+    hora.minutes,
+    0
+  );
+  const endLocal = new Date(startLocal.getTime() + 2 * 60 * 60 * 1000);
   return { dateObj, startLocal, endLocal };
 }
 

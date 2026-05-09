@@ -51,42 +51,42 @@ export function parseFecha(fechaStr) {
 }
 
 /**
- * Devuelve el índice del próximo partido no finalizado.
+ * Devuelve el índice del próximo partido relevante para hacer scroll.
+ *
+ * Regla de negocio:
+ * - Un partido pasado sin resultado final puede ser aplazado o suspendido, así que no debe
+ *   considerarse automáticamente como el próximo.
+ * - Se prioriza el primer partido de hoy o futuro.
+ * - Si no existe ninguno, se resalta el último partido no finalizado; si todos terminaron,
+ *   se resalta el último de la lista.
+ *
  * @param {Array} partidos - Lista de partidos.
  * @param {Date} now - Fecha actual.
  * @returns {number} Índice del próximo partido.
  */
 export function getProximoPartidoIdx(partidos, now) {
-  // Buscar el partido más próximo que aún no ha terminado
+  if (!Array.isArray(partidos) || partidos.length === 0) return -1;
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let ultimoNoFinalizadoPasado = -1;
+
   for (let i = 0; i < partidos.length; i++) {
     const p = partidos[i];
     const dateObj = parseFecha(p.Fecha);
-    // Si el partido es hoy o anterior y NO tiene resultado, es la jornada activa
-    if (
-      dateObj &&
-      dateObj <= now &&
-      !(p.EstadoPartido == 2 && p.GolesLocal != null && p.GolesVisit != null)
-    ) {
-      return i;
+    const estaFinalizado =
+      p.EstadoPartido == 2 && p.GolesLocal != null && p.GolesVisit != null;
+
+    if (!dateObj) continue;
+
+    if (dateObj < today) {
+      if (!estaFinalizado) ultimoNoFinalizadoPasado = i;
+      continue;
     }
-    // Si el partido es hoy o anterior y tiene resultado, seguimos buscando
-    // Si el partido es futuro, lo marcamos solo si todos los anteriores ya tienen resultado
-    if (dateObj && dateObj > now) {
-      // Verificar si todos los anteriores tienen resultado
-      let todosAnterioresFinalizados = true;
-      for (let j = 0; j < i; j++) {
-        const prev = partidos[j];
-        if (!(prev.EstadoPartido == 2 && prev.GolesLocal != null && prev.GolesVisit != null)) {
-          todosAnterioresFinalizados = false;
-          break;
-        }
-      }
-      if (todosAnterioresFinalizados) {
-        return i;
-      }
-    }
+
+    return i;
   }
-  // Si todos los partidos han terminado, resaltar el último
+
+  if (ultimoNoFinalizadoPasado !== -1) return ultimoNoFinalizadoPasado;
   return partidos.length - 1;
 }
 

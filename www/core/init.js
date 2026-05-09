@@ -5,10 +5,11 @@ import { setupPullToRefresh } from "./pullToRefresh.js";
 import { cargarSelectorEquiposLoyola, getEquiposLoyola, getEquipoSeleccionado } from "../state/equipos.js";
 import { setCompeticionHeader } from "./header.js";
 import { mostrarPantallaErrorGlobal } from "../state/errorOverlay.js";
-import { renderPartidos } from "../components/ui.js";
+import { renderPartidos, renderClasificacion } from "../components/ui.js";
 import { getLang, setLang, t, updateTexts } from "../i18n.js";
 import { applyTheme, getSystemTheme, getTheme, listenSystemScheme, setTheme } from "../theme.js";
 import { observeThemeAttribute, scheduleApplySystemBars } from "../systemBars.js";
+import { getClasificacionLiga, getCalendarioLoyola } from "../services.js";
 
 /**
  * Inicializa la app: tema, idioma, listeners y render inicial.
@@ -40,10 +41,7 @@ export async function initApp() {
           // Si está activa la pestaña de clasificación, recargar clasificación
           const matchesList = document.getElementById("matches");
           matchesList.innerHTML = `<li>${t("loading")}</li>`;
-          const { getEquiposLoyola, getEquipoSeleccionado } = await import("../state/equipos.js");
-          const { setCompeticionHeader } = await import("./header.js");
-          const { renderClasificacion } = await import("../components/ui.js");
-          const { getClasificacionLiga } = await import("../api.js");
+          // Ya importados arriba
           if (!getEquipoSeleccionado()) {
             matchesList.innerHTML = `<li>Selecciona un equipo Loyola</li>`;
             setCompeticionHeader("");
@@ -119,7 +117,7 @@ export async function mostrarPartidosYClasificacion() {
   setCompeticionHeader(eq?.nombreCompeticion || "");
   matchesList.innerHTML = `<li>${t("loading")}</li>`;
   try {
-    const raw = await import("../api.js").then(m => m.getCalendarioLoyola(idEquipo, idComp));
+    const raw = await getCalendarioLoyola(idEquipo, idComp);
     renderPartidos(matchesList, raw);
   } catch (e) {
     matchesList.innerHTML = `<li>${t("error", e?.message || String(e))}</li>`;

@@ -1,6 +1,6 @@
 // pullToRefresh.js
 // Lógica de pull-to-refresh
-import { getClasificacionLiga } from "../api.js";
+import { getClasificacionLiga } from "../services.js";
 import { renderClasificacion } from "../components/ui.js";
 import { t } from "../i18n.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";

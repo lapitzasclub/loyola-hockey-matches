@@ -8,8 +8,10 @@
 - [ ] Validar en local que SignalR carga correctamente `/signalr/hubs`, negocia por el proxy de Vite y recibe eventos reales de partido en el modal de detalle.
 - [ ] Verificar en runtime los nuevos logs de `joinSelectedModalidad()` (`hasJoinGroup`, `state`, `modalidad`) y confirmar si `joinGroup(modalidad)` llega a ejecutarse realmente.
 - [ ] Verificar que la cabecera ya no pierde competición/equipos/árbitros después de `getEstadisticaPartido`.
-- [ ] Confirmar si, tras mover los handlers a nivel global, empiezan a entrar en la app `recibirEventosIniciales`, `recibirAlinIniciales`, `recibirPenaltisIniciales` y `recibirMarcadorPartido` para el partido `4175`.
-- [ ] Si siguen sin entrar, comparar el comportamiento del hub usando `/signalr` local frente a URL remota directa para aislar si el problema está en el proxy/entorno.
+- [x] Confirmar si, tras mover los handlers a nivel global, empiezan a entrar en la app `recibirEventosIniciales`, `recibirAlinIniciales`, `recibirPenaltisIniciales` y `recibirMarcadorPartido` para el partido `4175`.
+- [x] Verificar que el detalle ya muestra visualmente alineaciones, eventos y marcador con los datos de SignalR.
+- [ ] Diseñar el siguiente flujo mobile-first para detalle de partido y futuras stats de jugador, evitando modales anidadas y tablas horizontales grandes.
+- [ ] Localizar e integrar el endpoint exacto de stats de jugador usado por la web (`openStatsJugador(...)`) con una UI adaptada a móvil.
 - [ ] Revisar el flujo completo de SignalR y documentar cómo debe funcionar, incluyendo diferencias entre web local, web desplegada y app nativa.
 
 ## Prioridad media
