@@ -1,3 +1,4 @@
+import { t } from "../i18n.js";
 import {
   callPartidoHubServerMethod,
   getEstadisticaPartido,
@@ -130,7 +131,7 @@ export function openPartidoDetalle(idPartido) {
     <div class="partido-detalle-shell">
       <div class="partido-detalle-grabber"></div>
       <div class="partido-detalle-header">
-        <button class="partido-detalle-back" aria-label="Volver" hidden>←</button>
+        <button class="partido-detalle-back" aria-label="Volver" hidden disabled>←</button>
         <div class="partido-detalle-header-content" id="partido-detalle-header-content"></div>
         <button class="partido-detalle-close" aria-label="Cerrar">&times;</button>
       </div>
@@ -180,17 +181,11 @@ async function waitForSignalRConnected(timeout = 4000) {
 
 function ensureBaseLayout(bodyEl, state) {
   bodyEl.innerHTML = `
-    <div class="partido-detalle-view-header">
-      <div>
-        <div class="partido-detalle-view-kicker">Detalle</div>
-        <div class="partido-detalle-view-title">Partido</div>
-      </div>
-    </div>
     <div class="partido-detalle-tabs" role="tablist" aria-label="Secciones del partido">
-      <button class="tab-btn" data-tab="resumen">Resumen</button>
-      <button class="tab-btn" data-tab="alineaciones">Alineaciones</button>
-      <button class="tab-btn" data-tab="eventos">Eventos</button>
-      <button class="tab-btn" data-tab="penaltis">Penaltis</button>
+      <button class="tab-btn" data-tab="resumen">${escapeHtml(t("detail_summary"))}</button>
+      <button class="tab-btn" data-tab="alineaciones">${escapeHtml(t("detail_lineups"))}</button>
+      <button class="tab-btn" data-tab="eventos">${escapeHtml(t("detail_events"))}</button>
+      <button class="tab-btn" data-tab="penaltis">${escapeHtml(t("detail_penalties"))}</button>
     </div>
     <section class="tab-content" id="tab-resumen"></section>
     <section class="tab-content" id="tab-alineaciones" hidden></section>
@@ -220,7 +215,9 @@ function updateTabVisibility(bodyEl, activeTab) {
 function updateChrome(state, modal) {
   const backBtn = modal?.querySelector(".partido-detalle-back");
   if (!backBtn) return;
-  backBtn.hidden = !state.viewStack.length;
+  const canGoBack = !!state.viewStack.length;
+  backBtn.hidden = !canGoBack;
+  backBtn.disabled = !canGoBack;
 }
 
 function renderAll(state, headerEl, bodyEl) {
@@ -232,7 +229,7 @@ function renderAll(state, headerEl, bodyEl) {
   if (state.currentView !== "partido") {
     bodyEl.innerHTML = `
       <div class="partido-detalle-subview-placeholder">
-        <div class="partido-detalle-empty">Vista en preparación.</div>
+        <div class="partido-detalle-empty">${escapeHtml(t("detail_loading_view"))}</div>
       </div>
     `;
     return;
@@ -331,7 +328,7 @@ async function cargarDetallePartido(idPartido) {
   window.__partidoDetalleId = String(idPartido);
   window.__partidoDetalleState = state;
 
-  setHeaderContent(headerEl, "Cargando...", "init-loading");
+  setHeaderContent(headerEl, escapeHtml(t("loading")), "init-loading");
   ensureBaseLayout(bodyEl, state);
   renderAll(state, headerEl, bodyEl);
 
@@ -342,9 +339,9 @@ async function cargarDetallePartido(idPartido) {
     updatePartido(state, partidoData[0]);
     setHeaderContent(headerEl, renderPartidoHeader(state), "getPartido");
   } else if (partidoRes?.error) {
-    setHeaderContent(headerEl, `<div>Error: ${partidoRes.message || "No se pudo cargar el partido"}</div>`, "getPartido-error");
+    setHeaderContent(headerEl, `<div>${escapeHtml(t("error", partidoRes.message || t("detail_match_load_error")))}</div>`, "getPartido-error");
   } else {
-    setHeaderContent(headerEl, "<div>No se encontraron datos del partido</div>", "getPartido-empty");
+    setHeaderContent(headerEl, `<div>${escapeHtml(t("detail_match_no_data"))}</div>`, "getPartido-empty");
   }
 
   const estadistica = await getEstadisticaPartido(idPartido);
@@ -409,7 +406,7 @@ function renderPartidoHeader(state) {
   const fechaHora = [formatFecha(p.fecha), formatHora(p.hora)].filter(Boolean).join(" · ");
   const estado = p.estado || "";
   const arbitros = p.arbitros.length
-    ? `<div class="partido-detalle-arbitros"><strong>Árbitros:</strong><br>${p.arbitros.map(escapeHtml).join("<br>")}</div>`
+    ? `<div class="partido-detalle-arbitros"><strong>${escapeHtml(t("detail_referees"))}:</strong><br>${p.arbitros.map(escapeHtml).join("<br>")}</div>`
     : "";
 
   return `
@@ -423,7 +420,7 @@ function renderPartidoHeader(state) {
         <img class="partido-detalle-team-logo" src="${logoUrl(p.logoLocal)}" alt="${escapeHtml(p.local)}">
       </div>
       <div class="partido-detalle-score-center">
-        <div class="partido-detalle-status">${escapeHtml(estado || "PARTIDO")}</div>
+        <div class="partido-detalle-status">${escapeHtml(estado || t("detail_match"))}</div>
         <div class="partido-detalle-score-line">
           <span>${escapeHtml(p.golesLocal)}${bonusLocal}</span>
           <span>-</span>
@@ -444,21 +441,21 @@ function renderPartidoHeader(state) {
 
 function renderResumen(state) {
   const p = state.partido;
-  if (!p) return '<div class="partido-detalle-empty">Sin resumen disponible.</div>';
+  if (!p) return `<div class="partido-detalle-empty">${escapeHtml(t("detail_summary_title"))}</div>`;
 
   const resumen = buildStatsSummary(state.statsResumen);
   return `
     <div class="partido-detalle-section">
-      <div class="partido-detalle-section-title">Resumen del partido</div>
+      <div class="partido-detalle-section-title">${escapeHtml(t("detail_summary_title"))}</div>
       <div class="partido-detalle-summary-grid">
-        ${renderSummaryCell(p.localAbrev || "LOC", resumen.golesLocal, "Goles")}
-        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.golesVisit, "Goles")}
-        ${renderSummaryCell(p.localAbrev || "LOC", resumen.faltasLocal, "Faltas")}
-        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.faltasVisit, "Faltas")}
-        ${renderSummaryCell(p.localAbrev || "LOC", resumen.azulesLocal, "Azules")}
-        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.azulesVisit, "Azules")}
-        ${renderSummaryCell(p.localAbrev || "LOC", resumen.rojasLocal, "Rojas")}
-        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.rojasVisit, "Rojas")}
+        ${renderSummaryCell(p.localAbrev || "LOC", resumen.golesLocal, t("detail_goals"))}
+        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.golesVisit, t("detail_goals"))}
+        ${renderSummaryCell(p.localAbrev || "LOC", resumen.faltasLocal, t("detail_fouls"))}
+        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.faltasVisit, t("detail_fouls"))}
+        ${renderSummaryCell(p.localAbrev || "LOC", resumen.azulesLocal, t("detail_blue_cards"))}
+        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.azulesVisit, t("detail_blue_cards"))}
+        ${renderSummaryCell(p.localAbrev || "LOC", resumen.rojasLocal, t("detail_red_cards"))}
+        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.rojasVisit, t("detail_red_cards"))}
       </div>
     </div>
   `;
@@ -605,81 +602,132 @@ function renderAlineacionEquipo(nombre, jugadores, porteros, tecnicos, modalidad
   return `
     <section class="partido-detalle-section alineacion-card">
       <div class="alineacion-team-title">${escapeHtml(nombre)}</div>
-      ${renderJugadoresTable(jugadores, modalidad)}
-      ${renderPorterosTable(porteros, modalidad)}
-      ${renderTecnicosTable(tecnicos, modalidad)}
+      ${renderJugadoresCards(jugadores, modalidad)}
+      ${renderPorterosCards(porteros, modalidad)}
+      ${renderTecnicosCards(tecnicos, modalidad)}
     </section>
   `;
 }
 
-function renderJugadoresTable(jugadores, modalidad) {
-  if (!jugadores.length) return '<div class="partido-detalle-empty small">Sin jugadores.</div>';
-  const isHp = modalidad !== "hl";
-  const head = isHp
-    ? "<tr><th>Nº</th><th>5i</th><th>Nombre</th><th>G</th><th>As</th><th>Pe</th><th>FD</th><th>F-></th><th>F<-</th><th>Az</th><th>Rj</th><th>Min.</th></tr>"
-    : "<tr><th>Nº</th><th>Pos</th><th>6i</th><th>Nombre</th><th>G</th><th>As</th><th>F-></th><th>F<-</th><th>Min.</th></tr>";
-
-  const rows = jugadores.map((j) => {
-    const inicial = j.Inicial ? "●" : "";
-    const cap = j.Capitan ? " (C)" : "";
-    if (isHp) {
-      const pe = j.TirosPenalti ? `${j.GolPenalti || 0}/${j.TirosPenalti}` : "";
-      const fd = j.TirosFD ? `${j.GolFD || 0}/${j.TirosFD}` : "";
-      return `<tr><td>${escapeHtml(j.Dorsal)}</td><td>${escapeHtml(inicial)}</td><td>${escapeHtml((j.ApellidosNombre || "") + cap)}</td><td>${escapeHtml(j.Goles ?? "")}</td><td>${escapeHtml(j.Asist ?? "")}</td><td>${escapeHtml(pe)}</td><td>${escapeHtml(fd)}</td><td>${escapeHtml(j.FaltaReal ?? "")}</td><td>${escapeHtml(j.FaltaRec ?? "")}</td><td>${escapeHtml(j.Azules ?? "")}</td><td>${escapeHtml(j.Rojas ?? "")}</td><td>${escapeHtml(j.Minutos || "")}</td></tr>`;
-    }
-    const pos = `${j.Capitan ? "C" : ""}${j.AsistCap ? "A" : ""}`;
-    return `<tr><td>${escapeHtml(j.Dorsal)}</td><td>${escapeHtml(pos)}</td><td>${escapeHtml(inicial)}</td><td>${escapeHtml(j.ApellidosNombre ?? "")}</td><td>${escapeHtml(j.Goles ?? "")}</td><td>${escapeHtml(j.Asist ?? "")}</td><td>${escapeHtml(j.FaltaReal ?? "")}</td><td>${escapeHtml(j.FaltaRec ?? "")}</td><td>${escapeHtml(j.Minutos || "")}</td></tr>`;
-  }).join("");
-
-  return `<div class="table-wrap"><table class="detalle-table"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`;
+function renderStatChip(label, value, variant = "") {
+  if (value === undefined || value === null || value === "" || value === 0 || value === "0/0") return "";
+  return `<span class="alineacion-chip ${variant}">${escapeHtml(label)} <strong>${escapeHtml(value)}</strong></span>`;
 }
 
-function renderPorterosTable(porteros, modalidad) {
+function renderJugadoresCards(jugadores, modalidad) {
+  if (!jugadores.length) return `<div class="partido-detalle-empty small">${escapeHtml(t("detail_players"))}: 0</div>`;
+  const isHp = modalidad !== "hl";
+  const items = jugadores.map((j) => {
+    const tags = [j.Inicial ? t("detail_starter") : "", j.Capitan ? t("detail_captain") : "", j.AsistCap ? t("detail_assistant_captain") : ""]
+      .filter(Boolean)
+      .map((tag) => `<span class="alineacion-tag">${escapeHtml(tag)}</span>`)
+      .join("");
+    const pe = j.TirosPenalti ? `${j.GolPenalti || 0}/${j.TirosPenalti}` : "";
+    const fd = j.TirosFD ? `${j.GolFD || 0}/${j.TirosFD}` : "";
+    const chips = [
+      renderStatChip("G", j.Goles),
+      renderStatChip("As", j.Asist),
+      isHp ? renderStatChip("Pe", pe) : "",
+      isHp ? renderStatChip("FD", fd) : "",
+      renderStatChip("F+", j.FaltaReal),
+      renderStatChip("F-", j.FaltaRec),
+      isHp ? renderStatChip("Az", j.Azules) : "",
+      isHp ? renderStatChip("Rj", j.Rojas) : "",
+      renderStatChip("Min", j.Minutos),
+    ].filter(Boolean).join("");
+
+    return `
+      <article class="alineacion-item">
+        <div class="alineacion-item-main">
+          <div class="alineacion-dorsal">${escapeHtml(j.Dorsal ?? "--")}</div>
+          <div class="alineacion-info">
+            <div class="alineacion-name-row">
+              <div class="alineacion-name">${escapeHtml(j.ApellidosNombre ?? "")}</div>
+              ${tags ? `<div class="alineacion-tags">${tags}</div>` : ""}
+            </div>
+            ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(t("detail_no_highlights"))}</div>`}
+          </div>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_players"))}</div><div class="alineacion-list">${items}</div></div>`;
+}
+
+function renderPorterosCards(porteros, modalidad) {
   if (!porteros.length) return "";
   const isHp = modalidad !== "hl";
-  const head = isHp
-    ? "<tr><th colspan='3'>Porteros/as</th><th>G</th><th>Tir</th><th>%</th><th>F-></th><th>F<-</th><th>Az</th><th>Rj</th><th>Min.</th></tr>"
-    : "<tr><th colspan='3'>Porteros/as</th><th>G</th><th>Tir</th><th>%</th><th>F-></th><th>F<-</th><th>Min.</th></tr>";
-
-  const rows = porteros.map((p) => {
+  const items = porteros.map((p) => {
     const goles = Number(p.Goles || 0);
     const paradasBase = Number(p.Paradas || 0);
     const tiros = paradasBase + goles;
     const pct = tiros ? `${((1 - goles / tiros) * 100).toFixed(2)}%` : "";
-    const inicial = p.Inicial ? "●" : "";
-    const cap = p.Capitan ? " (C)" : "";
-    if (isHp) {
-      return `<tr><td>${escapeHtml(p.Dorsal)}</td><td>${escapeHtml(inicial)}</td><td>${escapeHtml((p.ApellidosNombre || "") + cap)}</td><td>${escapeHtml(goles || "")}</td><td>${escapeHtml(tiros || "")}</td><td>${escapeHtml(pct)}</td><td>${escapeHtml(p.FaltaReal ?? "")}</td><td>${escapeHtml(p.FaltaRec ?? "")}</td><td>${escapeHtml(p.Azules ?? "")}</td><td>${escapeHtml(p.Rojas ?? "")}</td><td>${escapeHtml(p.Minutos || "")}</td></tr>`;
-    }
-    return `<tr><td>${escapeHtml(p.Dorsal)}</td><td>${escapeHtml(inicial)}</td><td>${escapeHtml(p.ApellidosNombre ?? "")}</td><td>${escapeHtml(goles || "")}</td><td>${escapeHtml(tiros || "")}</td><td>${escapeHtml(pct)}</td><td>${escapeHtml(p.FaltaReal ?? "")}</td><td>${escapeHtml(p.FaltaRec ?? "")}</td><td>${escapeHtml(p.Minutos || "")}</td></tr>`;
+    const tags = [p.Inicial ? t("detail_starter") : "", p.Capitan ? t("detail_captain") : ""]
+      .filter(Boolean)
+      .map((tag) => `<span class="alineacion-tag">${escapeHtml(tag)}</span>`)
+      .join("");
+    const chips = [
+      renderStatChip("GC", goles),
+      renderStatChip("Tir", tiros),
+      renderStatChip("%", pct),
+      renderStatChip("F+", p.FaltaReal),
+      renderStatChip("F-", p.FaltaRec),
+      isHp ? renderStatChip("Az", p.Azules) : "",
+      isHp ? renderStatChip("Rj", p.Rojas) : "",
+      renderStatChip("Min", p.Minutos),
+    ].filter(Boolean).join("");
+
+    return `
+      <article class="alineacion-item alineacion-item-goalie">
+        <div class="alineacion-item-main">
+          <div class="alineacion-dorsal">${escapeHtml(p.Dorsal ?? "--")}</div>
+          <div class="alineacion-info">
+            <div class="alineacion-name-row">
+              <div class="alineacion-name">${escapeHtml(p.ApellidosNombre ?? "")}</div>
+              ${tags ? `<div class="alineacion-tags">${tags}</div>` : ""}
+            </div>
+            ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(t("detail_no_highlights"))}</div>`}
+          </div>
+        </div>
+      </article>
+    `;
   }).join("");
 
-  return `<div class="table-wrap"><table class="detalle-table detalle-table-sub"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`;
+  return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_goalkeepers"))}</div><div class="alineacion-list">${items}</div></div>`;
 }
 
-function renderTecnicosTable(tecnicos, modalidad) {
+function renderTecnicosCards(tecnicos, modalidad) {
   if (!tecnicos.length) return "";
   const isHp = modalidad !== "hl";
-  const head = isHp
-    ? "<tr><th colspan='2'>Cuerpo técnico</th><th>Az</th><th>Rj</th></tr>"
-    : "<tr><th colspan='2'>Cuerpo técnico</th></tr>";
-
-  const rows = tecnicos.map((t) => {
+  const items = tecnicos.map((t) => {
     const posMap = { 3: "ENT", 4: "ENT2", 5: "DEL", 6: "AUX" };
     const pos = posMap[t.IdPosicion] || t.IdPosicion || "TEC";
-    if (isHp) {
-      return `<tr><td><span class="staff-badge">${escapeHtml(pos)}</span></td><td>${escapeHtml(t.ApellidosNombre ?? "")}</td><td>${escapeHtml(t.Azules ?? "")}</td><td>${escapeHtml(t.Rojas ?? "")}</td></tr>`;
-    }
-    return `<tr><td><span class="staff-badge">${escapeHtml(pos)}</span></td><td>${escapeHtml(t.ApellidosNombre ?? "")}</td></tr>`;
+    const chips = [
+      isHp ? renderStatChip("Az", t.Azules) : "",
+      isHp ? renderStatChip("Rj", t.Rojas) : "",
+      renderStatChip("Min", t.Minutos),
+    ].filter(Boolean).join("");
+    return `
+      <article class="alineacion-item alineacion-item-staff">
+        <div class="alineacion-item-main">
+          <div class="alineacion-dorsal alineacion-dorsal-role">${escapeHtml(pos)}</div>
+          <div class="alineacion-info">
+            <div class="alineacion-name">${escapeHtml(t.ApellidosNombre ?? "")}</div>
+            ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(t("detail_no_incidents"))}</div>`}
+          </div>
+        </div>
+      </article>
+    `;
   }).join("");
 
-  return `<div class="table-wrap"><table class="detalle-table detalle-table-sub"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`;
+  return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_staff"))}</div><div class="alineacion-list">${items}</div></div>`;
 }
 
 function renderPenaltis(state) {
   const penaltis = state.penaltis;
   if (!Array.isArray(penaltis) || !penaltis.length) {
-    return '<div class="partido-detalle-empty">No hay lanzamientos de penalti.</div>';
+    return `<div class="partido-detalle-empty">${escapeHtml(t("detail_penalty_shots_none"))}</div>`;
   }
 
   const localId = state.localKey != null ? String(state.localKey) : null;
@@ -690,8 +738,8 @@ function renderPenaltis(state) {
 
   return `
     <div class="penaltis-grid">
-      ${renderPenaltisColumn(state.partido?.local || "Local", local.length ? local : rest)}
-      ${visit.length ? renderPenaltisColumn(state.partido?.visit || "Visitante", visit) : ""}
+      ${renderPenaltisColumn(state.partido?.local || t("detail_local"), local.length ? local : rest)}
+      ${visit.length ? renderPenaltisColumn(state.partido?.visit || t("detail_visitor"), visit) : ""}
     </div>
   `;
 }

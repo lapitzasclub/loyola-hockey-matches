@@ -40,3 +40,7 @@
 - Se aplicó una primera mejora mobile-first al detalle de partido: nueva shell tipo hoja/pantalla, grabber superior, header con botón de retroceso preparado, título de vista interna y conservación explícita de pestaña/vista en el estado.
 - La arquitectura del detalle queda preparada para futuras subvistas internas (por ejemplo stats de jugador) sin necesidad de abrir modales anidadas.
 - La build se verificó tras esta primera pasada de UX móvil.
+- Se mejoró el contraste del detalle en modo noche, especialmente en pestañas activas y en la legibilidad de la sección de eventos.
+- Se empezó a internacionalizar de forma explícita `www/components/partidoDetalle.js`, añadiendo claves propias al diccionario de `www/i18n.js` para tabs, resumen, alineaciones, eventos, penaltis, árbitros y estados vacíos.
+- Se eliminaron heurísticas frágiles basadas en comparar cadenas ya traducidas y se sustituyeron por claves de i18n dedicadas del detalle.
+- La build se volvió a verificar tras la pasada de contraste e i18n del detalle.

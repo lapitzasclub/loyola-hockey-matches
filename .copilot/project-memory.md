@@ -23,9 +23,10 @@ Aplicación híbrida para seguir partidos y clasificaciones de equipos de hockey
 - `www/components/` contiene renderizado de partidos, clasificación y detalle.
 - `www/styles/components-partido-detalle.css` contiene el estilo del modal de detalle de partido, integrado con el sistema global de tema.
 - `www/components/partidoDetalle.js` ya soporta payloads reales del hub para detalle: `recibirEventosIniciales`, `recibirPenaltisIniciales`, `recibirAlinIniciales`, `recibirMarcadorPartido`, además de alineaciones `JugLocal/JugVisit/PortLocal/PortVisit/TecnLocal/TecnVisit`.
+- El detalle de partido ya usa `t(...)` y claves específicas de `www/i18n.js` para parte de su UI; cualquier texto nuevo en detalle debería entrar por ese diccionario y no como literal duro.
 - Los handlers del hub en tiempo real deben vivir globalmente desde `www/core/main.js`, igual que en la web original, para no perder los payloads iniciales antes de que el modal se monte.
 - `www/services.js` concentra acceso a datos remotos y parte de la integración en tiempo real.
-- `www/signalrBus.js` actúa como bus simple de eventos para desacoplar los handlers globales del hub del modal de detalle.
+- El bus de eventos SignalR quedó integrado finalmente en `www/services.js`; la referencia histórica a `www/signalrBus.js` ya no representa el estado final.
 - `www/state/` guarda estado de equipos y overlays.
 - `www/utils/` contiene helpers, caché, calendario y utilidades de clasificación/partidos.
 
