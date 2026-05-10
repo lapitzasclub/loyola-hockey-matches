@@ -6,11 +6,25 @@ import { cargarSelectorEquiposLoyola, getEquiposLoyola, getEquipoSeleccionado } 
 import { setCompeticionHeader } from "./header.js";
 import { mostrarPantallaErrorGlobal } from "../state/errorOverlay.js";
 import { renderPartidos, renderClasificacion } from "../components/ui.js";
+import { preloadPartidoDetalleModule } from "../components/partidos.js";
 import { getLang, setLang, t, updateTexts } from "../i18n.js";
 import { applyTheme, getSystemTheme, getTheme, listenSystemScheme, setTheme } from "../theme.js";
 import { observeThemeAttribute, scheduleApplySystemBars } from "../systemBars.js";
 import { getClasificacionLiga, getCalendarioLoyola } from "../services.js";
 import { isNative } from "../utils/env.js";
+
+function scheduleDetalleWarmup() {
+  const warm = () => {
+    void preloadPartidoDetalleModule();
+  };
+
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(warm, { timeout: 1200 });
+    return;
+  }
+
+  window.setTimeout(warm, 250);
+}
 
 function createMobileBackCoordinator() {
   let installed = false;
@@ -141,6 +155,7 @@ export async function initApp() {
     observeThemeAttribute();
     window.addEventListener("load", () => scheduleApplySystemBars(1));
     updateTexts();
+    scheduleDetalleWarmup();
     const langSelect = document.getElementById("langSelect");
     if (langSelect) {
       langSelect.value = getLang();

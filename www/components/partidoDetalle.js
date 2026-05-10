@@ -182,6 +182,8 @@ function renderAll(state, headerEl, bodyEl) {
   if (state.partido) {
     const headerHtml = getCurrentView(state) === "jugador" ? renderJugadorHeader(state) : renderPartidoHeader(state);
     setHeaderContent(headerEl, headerHtml, "renderAll");
+  } else if (getCurrentView(state) === "partido" && state.loadingMatch) {
+    setHeaderContent(headerEl, renderPartidoHeaderSkeleton(), "renderAll-skeleton");
   }
   if (getCurrentView(state) !== "partido") {
     bodyEl.innerHTML = renderSubview(state);
@@ -192,6 +194,10 @@ function renderAll(state, headerEl, bodyEl) {
   if (!bodyEl.querySelector("#tab-resumen")) {
     ensureBaseLayout(bodyEl, state);
     scrollDetalleToTop(bodyEl);
+  }
+  if (state.loadingMatch && !state.partido) {
+    renderDetalleSkeleton(bodyEl);
+    return;
   }
   bodyEl.querySelector("#tab-resumen").innerHTML = renderResumen(state);
   bodyEl.querySelector("#tab-alineaciones").innerHTML = renderAlineaciones(state);
@@ -220,6 +226,8 @@ function bindPlayerLinks(rootEl, state, headerEl) {
         renderAll(state, headerEl, bodyEl);
       }, "forward");
       syncMobileBackState();
+      await nextFrame();
+      await nextFrame();
       await hydrateJugadorStats(state, headerEl, bodyEl);
     };
   });
@@ -322,12 +330,12 @@ function renderJugadorSubview(state) {
 
   const partidoStats = jugador.partidoStats || {};
   const globales = jugador.statsGlobales;
+  const hasGlobales = !!globales;
   const foto = getJugadorFotoUrl(globales?.foto);
   const competicionesOrdenadas = emptyArray(globales?.competiciones)
     .slice()
     .sort((a, b) => safeNumber(b?.partidos || emptyArray(b?.filas).length) - safeNumber(a?.partidos || emptyArray(a?.filas).length));
   const allRows = competicionesOrdenadas.flatMap((comp) => emptyArray(comp?.filas));
-  const headerChips = renderStatsChipsFromRows(allRows, jugador.licenciaTipo || "j", state.modalidad || "hp");
   const competicionesHtml = competicionesOrdenadas.length
     ? competicionesOrdenadas.map((comp, index) => renderJugadorCompeticion(comp, jugador.licenciaTipo || "j", state.modalidad || "hp", { open: index === 0 })).join("")
     : "";
@@ -351,20 +359,55 @@ function renderJugadorSubview(state) {
   return `
     <div class="partido-detalle-player-sheet subview-enter">
       <section class="partido-detalle-section partido-detalle-player-card partido-detalle-player-card-hero">
-        <div class="partido-detalle-player-hero partido-detalle-player-hero-lg">
-          <img class="partido-detalle-player-photo" src="${foto}" alt="${escapeHtml(jugador.nombre || "Jugador")}">
-          <div>
-            <div class="partido-detalle-player-meta partido-detalle-player-meta-compact">${[globales?.nacionalidad ? `${escapeHtml(t("detail_player_nationality"))}: ${escapeHtml(globales.nacionalidad)}` : "", globales?.nacimiento ? `${escapeHtml(t("detail_player_birth"))}: ${escapeHtml(globales.nacimiento)}` : ""].filter(Boolean).join(" · ")}</div>
+        <div class="partido-detalle-player-block ${hasGlobales ? "is-ready" : "is-loading"}">
+          <div class="partido-detalle-player-block-loading partido-detalle-player-hero partido-detalle-player-hero-lg">
+            <span class="partido-detalle-skeleton skeleton-photo"></span>
+            <div class="partido-detalle-player-skeleton-meta">
+              <span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span>
+              <span class="partido-detalle-skeleton skeleton-line skeleton-line-sm"></span>
+            </div>
+          </div>
+          <div class="partido-detalle-player-block-content partido-detalle-player-hero partido-detalle-player-hero-lg">
+            <img class="partido-detalle-player-photo" src="${foto}" alt="${escapeHtml(jugador.nombre || "Jugador")}" loading="eager" decoding="async" onload="this.classList.add('is-loaded')">
+            <div>
+              <div class="partido-detalle-player-meta partido-detalle-player-meta-compact">${[globales?.nacionalidad ? `${escapeHtml(t("detail_player_nationality"))}: ${escapeHtml(globales.nacionalidad)}` : "", globales?.nacimiento ? `${escapeHtml(t("detail_player_birth"))}: ${escapeHtml(globales.nacimiento)}` : ""].filter(Boolean).join(" · ")}</div>
+            </div>
           </div>
         </div>
-        ${jugador.loading ? `<div class="partido-detalle-empty small">${escapeHtml(t("loading"))}...</div>` : ""}
         ${jugador.error ? `<div class="partido-detalle-empty small">${escapeHtml(jugador.error)}</div>` : ""}
       </section>
       <section class="partido-detalle-section partido-detalle-player-events-card">
         <div class="partido-detalle-section-title">${escapeHtml(t("detail_match"))}</div>
-        ${(partidoChips || timeline) ? `<div class="partido-detalle-player-section-body">${partidoChips ? `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact">${partidoChips}</div>` : ""}<div class="partido-detalle-player-events-list">${timeline}</div></div>` : `<div class="partido-detalle-empty small">${escapeHtml(t("detail_player_no_events"))}</div>`}
+        <div class="partido-detalle-player-section-body">
+          ${partidoChips ? `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact">${partidoChips}</div>` : `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact"><span class="partido-detalle-skeleton skeleton-chip"></span><span class="partido-detalle-skeleton skeleton-chip"></span></div>`}
+          <div class="partido-detalle-player-events-list">${timeline}</div>
+        </div>
       </section>
-      ${competicionesHtml ? `<section class="partido-detalle-section partido-detalle-player-events-card"><div class="partido-detalle-section-title">${escapeHtml(t("detail_player_statistics"))}</div><div class="partido-detalle-player-competitions">${competicionesHtml}</div></section>` : ""}
+      <section class="partido-detalle-section partido-detalle-player-events-card">
+        <div class="partido-detalle-section-title">${escapeHtml(t("detail_player_statistics"))}</div>
+        <div class="partido-detalle-player-block ${hasGlobales ? "is-ready" : "is-loading"}">
+          <div class="partido-detalle-player-block-loading partido-detalle-player-competitions">
+            <div class="partido-detalle-player-competition partido-detalle-player-competition-skeleton">
+              <div class="partido-detalle-player-competition-bar">
+                <div class="partido-detalle-player-competition-summary-main">
+                  <span class="partido-detalle-skeleton skeleton-line skeleton-line-sm"></span>
+                  <span class="partido-detalle-skeleton skeleton-line skeleton-line-xs"></span>
+                </div>
+                <div class="partido-detalle-player-competition-summary-side">
+                  <span class="partido-detalle-skeleton skeleton-chip"></span>
+                </div>
+              </div>
+              <div class="partido-detalle-player-history-list-skeleton">
+                <div class="partido-detalle-player-history-row partido-detalle-player-history-row-skeleton"><span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span><span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span></div>
+                <div class="partido-detalle-player-history-row partido-detalle-player-history-row-skeleton"><span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span><span class="partido-detalle-skeleton skeleton-line skeleton-line-sm"></span></div>
+              </div>
+            </div>
+          </div>
+          <div class="partido-detalle-player-block-content">
+            ${competicionesHtml ? `<div class="partido-detalle-player-competitions">${competicionesHtml}</div>` : `<div class="partido-detalle-empty small">${escapeHtml(t("detail_no_matches_available"))}</div>`}
+          </div>
+        </div>
+      </section>
     </div>
   `;
 }
@@ -373,12 +416,13 @@ function renderJugadorHeader(state) {
   const jugador = state.selectedJugador;
   if (!jugador) return `<div>${escapeHtml(t("detail_match"))}</div>`;
   const nombre = jugador.statsGlobales?.nombre || jugador.nombre || "Jugador";
+  const meta = jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : "";
 
   return `
-    <div class="partido-detalle-subheader subview-enter">
+    <div class="partido-detalle-subheader subview-enter${jugador.loading ? " partido-detalle-subheader-loading" : ""}">
       <div class="partido-detalle-subheader-top">${escapeHtml(jugador.teamName || jugador.teamType || t("detail_match"))}</div>
       <div class="partido-detalle-subheader-title">${escapeHtml(nombre)}</div>
-      <div class="partido-detalle-subheader-meta">${jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : ""}</div>
+      <div class="partido-detalle-subheader-meta">${meta || (jugador.loading ? `<span class="partido-detalle-skeleton skeleton-line skeleton-line-xs"></span>` : "")}</div>
     </div>
   `;
 }
@@ -521,6 +565,10 @@ function scrollDetalleToTop(bodyEl) {
   if (bodyEl) bodyEl.scrollTop = 0;
 }
 
+function nextFrame() {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 async function transitionDetalleView(bodyEl, mutateAndRender, direction = "forward") {
   if (!bodyEl) {
     await mutateAndRender();
@@ -542,6 +590,8 @@ async function transitionDetalleView(bodyEl, mutateAndRender, direction = "forwa
 
   await mutateAndRender();
   scrollDetalleToTop(bodyEl);
+  await nextFrame();
+  await nextFrame();
 
   const nextView = bodyEl.firstElementChild;
   if (nextView) {
@@ -781,16 +831,19 @@ async function cargarDetallePartido(idPartido) {
   const partidoData = parseApiArrayResponse(partidoRes);
   if (Array.isArray(partidoData) && partidoData.length > 0) {
     updatePartido(state, partidoData[0]);
+    state.loadingMatch = false;
     setHeaderContent(headerEl, renderPartidoHeader(state), "getPartido");
   } else if (partidoRes?.error) {
     setHeaderContent(headerEl, `<div>${escapeHtml(t("error", partidoRes.message || t("detail_match_load_error")))}</div>`, "getPartido-error");
   } else {
+    state.loadingMatch = false;
     setHeaderContent(headerEl, `<div>${escapeHtml(t("detail_match_no_data"))}</div>`, "getPartido-empty");
   }
 
   const estadistica = await getEstadisticaPartido(idPartido);
   console.log("[API] getEstadisticaPartido", estadistica);
   updateEstadisticaPayload(state, estadistica);
+  state.loadingStats = false;
   renderAll(state, headerEl, bodyEl);
 
   console.log("[SignalR] Suscribiendo modal al bus global del hub...");
@@ -839,6 +892,67 @@ async function cargarDetallePartido(idPartido) {
   } else {
     console.error("[SignalR] Método unirseAPartido no disponible en hubProxy.server.");
   }
+}
+
+function renderPartidoHeaderSkeleton() {
+  return `
+    <div class="partido-detalle-topline partido-detalle-skeleton-lines">
+      <span class="partido-detalle-skeleton skeleton-line skeleton-line-sm"></span>
+      <span class="partido-detalle-skeleton skeleton-line skeleton-line-xs"></span>
+    </div>
+    <div class="partido-detalle-scoreboard partido-detalle-scoreboard-skeleton">
+      <div class="partido-detalle-team partido-detalle-team-local">
+        <span class="partido-detalle-skeleton skeleton-logo"></span>
+        <span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span>
+      </div>
+      <div class="partido-detalle-score-center">
+        <span class="partido-detalle-skeleton skeleton-chip"></span>
+        <div class="partido-detalle-score-line partido-detalle-score-line-skeleton">
+          <span class="partido-detalle-skeleton skeleton-score"></span>
+        </div>
+      </div>
+      <div class="partido-detalle-team partido-detalle-team-visit">
+        <span class="partido-detalle-skeleton skeleton-logo"></span>
+        <span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span>
+      </div>
+    </div>
+    <div class="partido-detalle-meta partido-detalle-skeleton-lines">
+      <span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span>
+    </div>
+  `;
+}
+
+function renderDetalleSkeleton(bodyEl) {
+  bodyEl.querySelector("#tab-resumen").innerHTML = `
+    <div class="partido-detalle-section partido-detalle-section-skeleton">
+      <div class="partido-detalle-section-title">${escapeHtml(t("detail_summary_title"))}</div>
+      <div class="partido-detalle-skeleton-card">
+        <span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span>
+        <span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span>
+        <span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span>
+        <span class="partido-detalle-skeleton skeleton-line skeleton-line-sm"></span>
+      </div>
+    </div>
+  `;
+  bodyEl.querySelector("#tab-alineaciones").innerHTML = `
+    <div class="partido-detalle-section partido-detalle-section-skeleton">
+      <div class="partido-detalle-section-title">${escapeHtml(t("detail_lineups"))}</div>
+      <div class="partido-detalle-skeleton-card"><span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span><span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span></div>
+    </div>
+  `;
+  bodyEl.querySelector("#tab-eventos").innerHTML = `
+    <div class="partido-detalle-section partido-detalle-section-skeleton">
+      <div class="partido-detalle-section-title">${escapeHtml(t("detail_events_title"))}</div>
+      <div class="partido-detalle-skeleton-card"><span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span><span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span></div>
+    </div>
+  `;
+  bodyEl.querySelector("#tab-penaltis").innerHTML = `
+    <div class="partido-detalle-section partido-detalle-section-skeleton">
+      <div class="partido-detalle-section-title">${escapeHtml(t("detail_penalties"))}</div>
+      <div class="partido-detalle-skeleton-card"><span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span></div>
+    </div>
+  `;
+  updateTabVisibility(bodyEl, getCurrentTab(window.__partidoDetalleState || {}));
 }
 
 function renderPartidoHeader(state) {

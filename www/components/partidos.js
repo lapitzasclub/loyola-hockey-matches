@@ -6,6 +6,15 @@ import { createCalendarButton } from "../utils/calendar.js";
 import { extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
 import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml, scrollToProximo } from "../utils/partidosHelpers.js";
 
+let partidoDetalleModulePromise = null;
+
+export function preloadPartidoDetalleModule() {
+  if (!partidoDetalleModulePromise) {
+    partidoDetalleModulePromise = import("./partidoDetalle.js");
+  }
+  return partidoDetalleModulePromise;
+}
+
 /**
  * Renderiza la lista de partidos en el elemento dado.
  * Expone el histórico de partidos en window._partidosLoyola para la clasificación.
@@ -27,6 +36,7 @@ export function renderPartidos(matchesList, raw) {
     return;
   }
   matchesList.innerHTML = "";
+  void preloadPartidoDetalleModule();
   const equipoSel = getEquipoNombreCompleto();
   const lang = getLang() === "eu" ? "eu" : "es";
   const now = new Date();
@@ -37,9 +47,18 @@ export function renderPartidos(matchesList, raw) {
     const li = renderPartidoLi(p, equipoSel, lang, proximoIdx, idx);
     if (idx === proximoIdx) proximoLi = li;
     // Abrir detalle de partido al hacer click
+    const warmupDetalle = () => {
+      void preloadPartidoDetalleModule();
+      li.removeEventListener("pointerenter", warmupDetalle);
+      li.removeEventListener("touchstart", warmupDetalle);
+      li.removeEventListener("focusin", warmupDetalle);
+    };
+    li.addEventListener("pointerenter", warmupDetalle, { passive: true });
+    li.addEventListener("touchstart", warmupDetalle, { passive: true, once: true });
+    li.addEventListener("focusin", warmupDetalle, { once: true });
     li.onclick = () => {
       if (p.IdPartido) {
-        import('./partidoDetalle.js').then(mod => mod.openPartidoDetalle(p.IdPartido));
+        preloadPartidoDetalleModule().then(mod => mod.openPartidoDetalle(p.IdPartido));
       }
     };
     matchesList.appendChild(li);

@@ -100,6 +100,8 @@ export function createDetalleState(idPartido) {
     statsResumen: [],
     localKey: null,
     visitKey: null,
+    loadingMatch: true,
+    loadingStats: true,
     selectedJugador: null,
     navigation: {
       currentView: "partido",
