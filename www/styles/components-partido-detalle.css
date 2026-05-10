@@ -10,6 +10,8 @@
   background: color-mix(in srgb, var(--color-bg) 55%, rgba(0, 0, 0, 0.45));
   backdrop-filter: blur(6px);
   color: var(--color-text);
+  opacity: 0;
+  transition: opacity 280ms ease, backdrop-filter 280ms ease;
 }
 
 .partido-detalle-shell {
@@ -20,6 +22,29 @@
   height: 100%;
   background: var(--color-bg-card);
   overflow: hidden;
+  transform: translateY(28px) scale(0.985);
+  opacity: 0.96;
+  transform-origin: center bottom;
+  transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1), opacity 280ms ease;
+}
+
+.partido-detalle-modal.is-open {
+  opacity: 1;
+}
+
+.partido-detalle-modal.is-open .partido-detalle-shell {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.partido-detalle-modal.is-closing {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+}
+
+.partido-detalle-modal.is-closing .partido-detalle-shell {
+  transform: translateY(22px) scale(0.992);
+  opacity: 0.92;
 }
 
 .partido-detalle-grabber {
@@ -240,6 +265,27 @@ body[data-theme="dark"] .tab-btn {
 body[data-theme="dark"] .tab-btn.active {
   background: #66def0;
   color: #082028;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partido-detalle-modal,
+  .partido-detalle-shell {
+    transition: none;
+  }
+
+  .partido-detalle-modal,
+  .partido-detalle-modal.is-open,
+  .partido-detalle-modal.is-closing {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+  }
+
+  .partido-detalle-shell,
+  .partido-detalle-modal.is-open .partido-detalle-shell,
+  .partido-detalle-modal.is-closing .partido-detalle-shell {
+    transform: none;
+    opacity: 1;
+  }
 }
 
 .tab-content {

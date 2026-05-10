@@ -124,7 +124,7 @@ function createDetalleState(idPartido) {
 }
 
 export function openPartidoDetalle(idPartido) {
-  closePartidoDetalle();
+  closePartidoDetalle({ immediate: true });
   const modal = document.createElement("div");
   modal.className = "partido-detalle-modal";
   modal.innerHTML = `
@@ -139,8 +139,9 @@ export function openPartidoDetalle(idPartido) {
     </div>
   `;
   document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add("is-open"));
   document.body.classList.add("modal-abierto");
-  modal.querySelector(".partido-detalle-close").onclick = closePartidoDetalle;
+  modal.querySelector(".partido-detalle-close").onclick = () => closePartidoDetalle();
   modal.querySelector(".partido-detalle-back").onclick = () => {
     const state = window.__partidoDetalleState;
     if (!state?.viewStack?.length) return;
@@ -152,9 +153,13 @@ export function openPartidoDetalle(idPartido) {
   cargarDetallePartido(idPartido);
 }
 
-export function closePartidoDetalle() {
+export function closePartidoDetalle(options = {}) {
+  const { immediate = false } = options;
   const modal = document.querySelector(".partido-detalle-modal");
-  if (modal) {
+  if (!modal) return;
+  if (modal.dataset.closing === "true") return;
+
+  const cleanup = () => {
     modal.remove();
     document.body.classList.remove("modal-abierto");
     if (window.signalR?.enDirecto?.server?.salirDePartido && window.__partidoDetalleId) {
@@ -166,7 +171,24 @@ export function closePartidoDetalle() {
     }
     window.__partidoDetalleId = null;
     window.__partidoDetalleState = null;
+  };
+
+  if (immediate) {
+    cleanup();
+    return;
   }
+
+  modal.dataset.closing = "true";
+  modal.classList.remove("is-open");
+  modal.classList.add("is-closing");
+
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  if (reduceMotion) {
+    cleanup();
+    return;
+  }
+
+  window.setTimeout(cleanup, 280);
 }
 
 async function waitForSignalRConnected(timeout = 4000) {
