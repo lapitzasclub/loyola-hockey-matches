@@ -26,6 +26,12 @@ import {
   setCurrentView,
 } from "./partidoDetalleUtils.js";
 
+function syncMobileBackState() {
+  try {
+    window.dispatchEvent(new CustomEvent("app:overlay-state-changed"));
+  } catch {}
+}
+
 function setHeaderContent(headerEl, html, reason = "") {
   headerEl.innerHTML = html;
   console.log("[Detalle] Header actualizado", {
@@ -64,6 +70,7 @@ export function openPartidoDetalle(idPartido) {
   if (bodyScrollEl) bodyScrollEl.scrollTop = 0;
   requestAnimationFrame(() => modal.classList.add("is-open"));
   document.body.classList.add("modal-abierto");
+  syncMobileBackState();
   modal.querySelector(".partido-detalle-close").onclick = () => closePartidoDetalle();
   modal.querySelector(".partido-detalle-back").onclick = async () => {
     const state = window.__partidoDetalleState;
@@ -74,6 +81,7 @@ export function openPartidoDetalle(idPartido) {
       setCurrentView(state, popView(state) || "partido");
       renderAll(state, headerEl, bodyEl);
     }, "back");
+    syncMobileBackState();
   };
   cargarDetallePartido(idPartido);
 }
@@ -96,6 +104,7 @@ export function closePartidoDetalle(options = {}) {
     }
     window.__partidoDetalleId = null;
     window.__partidoDetalleState = null;
+    syncMobileBackState();
   };
 
   if (immediate) {
@@ -210,6 +219,7 @@ function bindPlayerLinks(rootEl, state, headerEl) {
         setCurrentView(state, "jugador");
         renderAll(state, headerEl, bodyEl);
       }, "forward");
+      syncMobileBackState();
       await hydrateJugadorStats(state, headerEl, bodyEl);
     };
   });
