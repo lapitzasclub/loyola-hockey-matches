@@ -444,29 +444,36 @@ function renderResumen(state) {
   if (!p) return `<div class="partido-detalle-empty">${escapeHtml(t("detail_summary_title"))}</div>`;
 
   const resumen = buildStatsSummary(state.statsResumen);
+  const rows = [
+    { label: t("detail_goals"), local: resumen.golesLocal, visit: resumen.golesVisit },
+    { label: t("detail_fouls"), local: resumen.faltasLocal, visit: resumen.faltasVisit },
+    { label: t("detail_blue_cards"), local: resumen.azulesLocal, visit: resumen.azulesVisit },
+    { label: t("detail_red_cards"), local: resumen.rojasLocal, visit: resumen.rojasVisit },
+  ];
+
   return `
     <div class="partido-detalle-section">
       <div class="partido-detalle-section-title">${escapeHtml(t("detail_summary_title"))}</div>
-      <div class="partido-detalle-summary-grid">
-        ${renderSummaryCell(p.localAbrev || "LOC", resumen.golesLocal, t("detail_goals"))}
-        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.golesVisit, t("detail_goals"))}
-        ${renderSummaryCell(p.localAbrev || "LOC", resumen.faltasLocal, t("detail_fouls"))}
-        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.faltasVisit, t("detail_fouls"))}
-        ${renderSummaryCell(p.localAbrev || "LOC", resumen.azulesLocal, t("detail_blue_cards"))}
-        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.azulesVisit, t("detail_blue_cards"))}
-        ${renderSummaryCell(p.localAbrev || "LOC", resumen.rojasLocal, t("detail_red_cards"))}
-        ${renderSummaryCell(p.visitAbrev || "VIS", resumen.rojasVisit, t("detail_red_cards"))}
+      <div class="partido-detalle-summary-table-wrap">
+        <table class="partido-detalle-summary-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>${escapeHtml(p.localAbrev || "LOC")}</th>
+              <th>${escapeHtml(p.visitAbrev || "VIS")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <th scope="row">${escapeHtml(row.label)}</th>
+                <td>${escapeHtml(row.local)}</td>
+                <td>${escapeHtml(row.visit)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
       </div>
-    </div>
-  `;
-}
-
-function renderSummaryCell(team, value, label) {
-  return `
-    <div class="partido-detalle-summary-cell">
-      <div class="partido-detalle-summary-team">${escapeHtml(team)}</div>
-      <div class="partido-detalle-summary-value">${escapeHtml(value)}</div>
-      <div class="partido-detalle-summary-label">${escapeHtml(label)}</div>
     </div>
   `;
 }

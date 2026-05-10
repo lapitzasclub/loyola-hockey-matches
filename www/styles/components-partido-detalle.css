@@ -265,31 +265,49 @@ body[data-theme="dark"] .tab-btn.active {
   text-transform: uppercase;
 }
 
-.partido-detalle-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.partido-detalle-summary-table-wrap {
+  overflow-x: auto;
 }
 
-.partido-detalle-summary-cell {
-  padding: 0.9rem 0.8rem;
+.partido-detalle-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.partido-detalle-summary-table th,
+.partido-detalle-summary-table td {
+  padding: 0.85rem 0.8rem;
   border-top: 1px solid var(--color-card-border);
 }
 
-.partido-detalle-summary-team {
-  font-size: 0.8rem;
+.partido-detalle-summary-table thead th {
+  font-size: 0.78rem;
+  font-weight: 800;
   color: var(--color-fecha);
   text-transform: uppercase;
 }
 
-.partido-detalle-summary-value {
-  margin-top: 0.25rem;
-  font-size: 1.35rem;
-  font-weight: 900;
+.partido-detalle-summary-table thead th:first-child {
+  width: 42%;
+  text-align: left;
 }
 
-.partido-detalle-summary-label {
-  font-size: 0.82rem;
-  color: var(--color-fecha);
+.partido-detalle-summary-table thead th:not(:first-child),
+.partido-detalle-summary-table tbody td {
+  text-align: center;
+}
+
+.partido-detalle-summary-table tbody th {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: left;
+}
+
+.partido-detalle-summary-table tbody td {
+  font-size: 1.2rem;
+  font-weight: 900;
 }
 
 .partido-detalle-empty {
