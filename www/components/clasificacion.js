@@ -21,50 +21,56 @@ function getClasificacionStorageKey(grupo) {
  * @param {any} raw - Respuesta cruda de la API.
  */
 export function renderClasificacion(matchesList, raw) {
+  renderClasificacionContent(matchesList, raw);
+}
+
+/**
+ * Orquesta el render asíncrono de la clasificación y de sus datos auxiliares.
+ *
+ * @param {HTMLElement} matchesList Elemento donde renderizar la clasificación.
+ * @param {any} raw Respuesta cruda de la API.
+ * @returns {void}
+ */
+async function renderClasificacionContent(matchesList, raw) {
   // Mostrar spinner mientras se procesa la carga (útil si tarda en calcular flechas)
   matchesList.innerHTML = `<li><div class='spinner-container'><div class='spinner' aria-label='Cargando'></div></div></li>`;
-  (async () => {
-    const data = decodeApiRaw(raw);
-    if (data?.__error) {
-      matchesList.innerHTML = `<li>${t("error", data.__error)}</li>`;
-      return;
-    }
-    // Si la API retorna {d: ""} o similar, decodeApiRaw devuelve null o string vacío
-    if (!data || (Array.isArray(data) && data.length === 0)) {
-      matchesList.innerHTML = `<li>${t("no_clasificacion", getEquipoLabel())}</li>`;
-      return;
-    }
-    if (!Array.isArray(data)) {
-      matchesList.innerHTML = `<li>${t("no_clasificacion", getEquipoLabel())}</li>`;
-      return;
-    }
+  const data = decodeApiRaw(raw);
+  if (data?.__error) {
+    matchesList.innerHTML = `<li>${t("error", data.__error)}</li>`;
+    return;
+  }
+  // Si la API retorna {d: ""} o similar, decodeApiRaw devuelve null o string vacío
+  if (!data || (Array.isArray(data) && data.length === 0)) {
+    matchesList.innerHTML = `<li>${t("no_clasificacion", getEquipoLabel())}</li>`;
+    return;
+  }
+  if (!Array.isArray(data)) {
+    matchesList.innerHTML = `<li>${t("no_clasificacion", getEquipoLabel())}</li>`;
+    return;
+  }
 
+  // Obtener el calendario de todos los equipos de la competición para calcular flechas
+  const idCompeticion = data[0]?.IdCompeticion ?? null;
+  let partidos = [];
+  if (idCompeticion) {
+    const idsEquipos = Array.from(new Set(data.map((eq) => eq.IdEquipo || eq.IdEquipoComp)));
+    try {
+      partidos = await getCalendarioTodosEquipos(idCompeticion, idsEquipos);
+    } catch {}
+  }
+  window._partidosLoyola = partidos;
 
-    // Obtener el calendario de todos los equipos de la competición para calcular flechas
-    let idCompeticion = null;
-    if (data[0]?.IdCompeticion) idCompeticion = data[0].IdCompeticion;
-    let partidos = [];
-    if (idCompeticion) {
-      // Obtener todos los ids de equipo de la competición (de todos los grupos)
-      const idsEquipos = Array.from(new Set(data.map(eq => eq.IdEquipo || eq.IdEquipoComp)));
-      try {
-        partidos = await getCalendarioTodosEquipos(idCompeticion, idsEquipos);
-      } catch {}
-    }
-    window._partidosLoyola = partidos;
-
-    matchesList.innerHTML = "";
-    const selectedInfo = getSelectedEquipoInfo();
-    const grupos = groupClasificacionData(data);
-    const gruposKeys = Object.keys(grupos);
-    if (gruposKeys.length === 1) {
-      const grupo = gruposKeys[0];
-      const table = renderClasificacionTable(grupo, grupos[grupo], selectedInfo);
-      matchesList.appendChild(table);
-    } else {
-      renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo);
-    }
-  })();
+  matchesList.innerHTML = "";
+  const selectedInfo = getSelectedEquipoInfo();
+  const grupos = groupClasificacionData(data);
+  const gruposKeys = Object.keys(grupos);
+  if (gruposKeys.length === 1) {
+    const grupo = gruposKeys[0];
+    const table = renderClasificacionTable(grupo, grupos[grupo], selectedInfo);
+    matchesList.appendChild(table);
+  } else {
+    renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo);
+  }
 }
 
 /**

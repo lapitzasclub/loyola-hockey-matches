@@ -3,6 +3,14 @@ import { isNative, getHttp } from "./utils/env.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";
 
+/**
+ * Emite un evento del hub de partido sobre el bus interno del cliente.
+ *
+ * @param {string} type Tipo lógico del evento.
+ * @param {unknown} payload Payload asociado al evento.
+ * @param {string|number|null} idPartido Identificador del partido relacionado.
+ * @returns {void}
+ */
 export function emitPartidoHubEvent(type, payload, idPartido) {
   window.dispatchEvent(
     new CustomEvent(PARTIDO_HUB_BUS_EVENT, {
@@ -11,6 +19,12 @@ export function emitPartidoHubEvent(type, payload, idPartido) {
   );
 }
 
+/**
+ * Suscribe un listener al bus local de eventos de partido.
+ *
+ * @param {(detail: {type: string, payload: unknown, idPartido: string|null}) => void} handler Callback del suscriptor.
+ * @returns {() => void} Función para desuscribirse.
+ */
 export function subscribePartidoHubEvents(handler) {
   const listener = (event) => handler(event.detail);
   window.addEventListener(PARTIDO_HUB_BUS_EVENT, listener);
@@ -100,6 +114,15 @@ const HEADERS = {
   "x-requested-with": "XMLHttpRequest",
 };
 
+/**
+ * Ejecuta una petición POST a la API real o al proxy, con caché local.
+ *
+ * @param {object} options Opciones de petición.
+ * @param {string} options.url URL absoluta o relativa del endpoint.
+ * @param {string} options.body Cuerpo JSON serializado.
+ * @param {boolean} options.preferNative Indica si debe priorizar el plugin nativo HTTP.
+ * @returns {Promise<unknown>} Respuesta cruda del endpoint.
+ */
 async function post({ url, body, preferNative }) {
   // --- CACHE ---
   const cached = getCachedApi(url, body);
@@ -139,6 +162,13 @@ async function post({ url, body, preferNative }) {
   return result;
 }
 
+/**
+ * Verifica que la respuesta no sea una página HTML de error camuflada como éxito.
+ *
+ * @param {unknown} raw Respuesta cruda del transporte.
+ * @returns {unknown} La propia respuesta si parece válida.
+ * @throws {Error} Si la respuesta parece HTML en vez de JSON.
+ */
 function ensureJsonOrThrow(raw) {
   if (typeof raw === "string" && raw.trim().startsWith("<")) {
     throw new Error(

@@ -13,6 +13,11 @@ import { observeThemeAttribute, scheduleApplySystemBars } from "../systemBars.js
 import { getClasificacionLiga, getCalendarioLoyola } from "../services.js";
 import { isNative } from "../utils/env.js";
 
+/**
+ * Programa la precarga diferida del módulo pesado del detalle de partido.
+ *
+ * @returns {void}
+ */
 function scheduleDetalleWarmup() {
   const warm = () => {
     void preloadPartidoDetalleModule();
@@ -26,6 +31,12 @@ function scheduleDetalleWarmup() {
   window.setTimeout(warm, 250);
 }
 
+/**
+ * Crea el coordinador ligero del botón atrás para web y entorno nativo.
+ * Gestiona side menu, detalle de partido y subvista de jugador.
+ *
+ * @returns {{install: () => void, syncHistory: () => void, closeSideMenu: () => void}}
+ */
 function createMobileBackCoordinator() {
   let installed = false;
   let handlingBack = false;
@@ -226,6 +237,11 @@ export async function initApp() {
 
 /**
  * Muestra la pantalla de partidos y clasificación para el equipo seleccionado.
+ */
+/**
+ * Carga y renderiza la lista de partidos del equipo actualmente seleccionado.
+ *
+ * @returns {Promise<void>} Promesa resuelta al terminar la carga principal.
  */
 export async function mostrarPartidosYClasificacion() {
   const matchesList = document.getElementById("matches");
