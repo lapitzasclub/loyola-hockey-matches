@@ -158,7 +158,8 @@ function renderAll(state, headerEl, bodyEl) {
   const modal = bodyEl.closest(".partido-detalle-modal");
   updateChrome(state, modal);
   if (state.partido) {
-    setHeaderContent(headerEl, renderPartidoHeader(state), "renderAll");
+    const headerHtml = getCurrentView(state) === "jugador" ? renderJugadorHeader(state) : renderPartidoHeader(state);
+    setHeaderContent(headerEl, headerHtml, "renderAll");
   }
   if (getCurrentView(state) !== "partido") {
     bodyEl.innerHTML = renderSubview(state);
@@ -207,14 +208,14 @@ function renderJugadorSubview(state) {
   const jugador = state.selectedJugador;
   if (!jugador) {
     return `
-      <div class="partido-detalle-subview-placeholder">
+      <div class="partido-detalle-subview-placeholder subview-enter">
         <div class="partido-detalle-empty">Jugador no disponible.</div>
       </div>
     `;
   }
 
   return `
-    <section class="partido-detalle-section partido-detalle-player-sheet">
+    <section class="partido-detalle-section partido-detalle-player-sheet subview-enter">
       <div class="partido-detalle-section-title">Detalle de jugador</div>
       <div class="partido-detalle-player-card">
         <div class="partido-detalle-player-eyebrow">${escapeHtml(jugador.teamType || "")}${jugador.role ? ` · ${escapeHtml(jugador.role)}` : ""}</div>
@@ -223,6 +224,20 @@ function renderJugadorSubview(state) {
       </div>
       <div class="partido-detalle-empty">Base preparada. Siguiente paso: resolver estadísticas y eventos del jugador dentro del partido.</div>
     </section>
+  `;
+}
+
+function renderJugadorHeader(state) {
+  const jugador = state.selectedJugador;
+  const p = state.partido;
+  if (!jugador) return `<div>${escapeHtml(t("detail_match"))}</div>`;
+
+  return `
+    <div class="partido-detalle-subheader subview-enter">
+      <div class="partido-detalle-subheader-top">${escapeHtml(p?.localAbrev || p?.visitAbrev || t("detail_match"))}</div>
+      <div class="partido-detalle-subheader-title">${escapeHtml(jugador.nombre || "Jugador")}</div>
+      <div class="partido-detalle-subheader-meta">${jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : ""}${jugador.role ? `${jugador.dorsal ? " · " : ""}${escapeHtml(jugador.role)}` : ""}</div>
+    </div>
   `;
 }
 

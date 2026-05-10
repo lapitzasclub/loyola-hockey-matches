@@ -12,18 +12,22 @@ function getJugadorPayload(persona, teamType, role) {
 }
 
 function renderAlineacionItem({ marker, name, tags = "", chips = "", emptyText = t("detail_no_highlights"), extraClass = "", playerPayload = null }) {
+  const content = `
+    <div class="alineacion-item-main">
+      <div class="alineacion-dorsal">${marker}</div>
+      <div class="alineacion-info">
+        <div class="alineacion-name-row">
+          <div class="alineacion-name">${escapeHtml(name ?? "")}</div>
+          ${tags ? `<div class="alineacion-tags">${tags}</div>` : ""}
+        </div>
+        ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(emptyText)}</div>`}
+      </div>
+    </div>
+  `;
+
   return `
     <article class="alineacion-item ${extraClass}">
-      <div class="alineacion-item-main">
-        <div class="alineacion-dorsal">${marker}</div>
-        <div class="alineacion-info">
-          <div class="alineacion-name-row">
-            <div class="alineacion-name">${playerPayload ? `<button type="button" class="partido-detalle-player-link" data-player='${escapeHtml(JSON.stringify(playerPayload))}'>${escapeHtml(name ?? "")}</button>` : escapeHtml(name ?? "")}</div>
-            ${tags ? `<div class="alineacion-tags">${tags}</div>` : ""}
-          </div>
-          ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(emptyText)}</div>`}
-        </div>
-      </div>
+      ${playerPayload ? `<button type="button" class="alineacion-item-button partido-detalle-player-link" data-player='${escapeHtml(JSON.stringify(playerPayload))}'>${content}</button>` : content}
     </article>
   `;
 }
