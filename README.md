@@ -1,83 +1,121 @@
-
-
-
 # Loyola Hockey Matches
 
-Aplicación web y móvil (Capacitor) para consultar, filtrar y visualizar los partidos y clasificaciones de los equipos de hockey del Loyola.
+Aplicación web y móvil, basada en Capacitor, para consultar calendario, clasificación y detalle en vivo de los equipos de hockey patines del Loyola.
 
-## Descripción
+## Estado actual
 
-Este proyecto actúa como un scrapper/cliente de la API de la Federación Vasca de Patinaje, permitiendo a los usuarios:
-- Ver la clasificación de los equipos Loyola en sus competiciones.
-- Consultar el calendario de partidos de cada equipo Loyola.
-- Filtrar por equipo y competición.
-- Acceder a detalles de partidos, localización y añadir eventos al calendario (Google Calendar/ICS).
-- Visualizar la app en modo claro/oscuro/auto, con integración de barras de sistema en móvil.
+El proyecto está funcional y en uso, con una base ya bastante más ordenada que la original.
+En las últimas iteraciones se ha trabajado sobre todo en:
 
-## Estructura principal del proyecto
+- detalle de partido mobile-first
+- integración real con SignalR y endpoints legacy de la FVP
+- subvista de jugador dentro del modal de partido
+- refactor progresivo de `partidoDetalle.js` a módulos más pequeños
+- limpieza técnica, JSDoc y lint
 
-- `www/api.js`: Funciones para consultar la API (real o proxy) y obtener datos de clasificaciones, calendarios y equipos Loyola.
-- `www/components/clasificacion.js`: Renderiza la tabla de clasificación.
-- `www/components/partidos.js`: Renderiza la lista de partidos y sus detalles.
-- `www/components/ui.js`: Componentes y utilidades de UI.
-- `www/core/init.js`: Inicialización de la app, selección de equipo, eventos de UI y carga de datos.
-- `www/core/navigation.js`: Lógica de navegación y gestión de rutas.
-- `www/core/pullToRefresh.js`: Lógica para refresco por arrastre.
-- `www/core/header.js`: Gestión de la cabecera de competición.
-- `www/core/main.js`: Arranque principal de la app.
-- `www/utils/apiCache.js`: Lógica de caché para peticiones API (Map + localStorage).
-- `www/utils/helpers.js`: Utilidades generales para parseo, filtrado y transformación de datos.
-- `www/utils/env.js`: Detección de entorno y helpers de plataforma.
-- `www/utils/partidosHelpers.js`: Helpers específicos para partidos.
-- `www/utils/clasificacionHelpers.js`: Helpers específicos para clasificación.
-- `www/utils/calendar.js`: Utilidades para exportar partidos a calendario (Google/ICS).
-- `www/systemBars.js`: Gestión de colores de barras de sistema (StatusBar/NavigationBar).
-- `www/theme.js`: Gestión de tema (claro/oscuro/auto) y reacciones al cambio.
-- `www/index.html`: Entrada principal de la app.
-- `android/`: Proyecto Android generado por Capacitor para empaquetar la app como aplicación móvil.
+## Stack
 
-## Flujo de funcionamiento
+- JavaScript ES modules
+- Vite
+- Capacitor Android
+- HTML y CSS
+- jQuery + SignalR clásico para tiempo real
 
-1. El usuario selecciona un equipo Loyola y una competición desde el menú lateral.
-2. La app consulta la API para obtener el calendario de partidos y la clasificación, usando caché local para eficiencia.
-3. Los datos se procesan y muestran en la interfaz, permitiendo filtrar, ver detalles, navegar entre jornadas y añadir partidos al calendario.
-4. El usuario puede cambiar el tema visual (claro/oscuro/auto) y la app adapta las barras del sistema en móvil.
+## Estructura relevante
 
-## Instalación y ejecución
+### Código fuente
 
-1. Instala dependencias:
-   ```sh
+- `www/core/`
+  - arranque, navegación, pull-to-refresh e integración móvil
+- `www/components/`
+  - renderizado de clasificación, partidos y detalle de partido
+- `www/services.js`
+  - acceso a endpoints legacy y bus local de eventos de partido
+- `www/i18n.js`
+  - textos de la aplicación
+- `www/styles/components-partido-detalle.css`
+  - estilos del modal de detalle de partido
+
+### Módulos recientes del detalle de partido
+
+- `www/components/partidoDetalle.js`
+  - coordinador principal del modal
+- `www/components/partidoDetalleUtils.js`
+  - utilidades y estado base
+- `www/components/partidoDetalleAlineaciones.js`
+  - render de alineaciones
+- `www/components/partidoDetalleEventos.js`
+  - render de eventos
+- `www/components/partidoDetalleJugadorStats.js`
+  - helpers y render de estadísticas de jugador
+- `www/components/partidoDetalleJugadorData.js`
+  - resolución de datos del jugador y eventos asociados
+- `www/components/partidoDetalleJugadorView.js`
+  - cabecera compacta de jugador
+- `www/components/partidoDetalleRender.js`
+  - render base del partido, skeletons, resumen y penaltis
+- `www/components/partidoDetalleState.js`
+  - actualización y normalización de estado del detalle
+
+### Otros directorios
+
+- `android/`
+  - proyecto Android de Capacitor
+- `dist/`
+  - salida generada de build, no se versiona
+- `.copilot/`
+  - memoria operativa del proyecto
+
+## Scripts
+
+```bash
+npm start      # desarrollo con Vite
+npm run build  # build web
+npm run serve  # preview local de build
+npm run lint   # lint de www/**/*.js
+npm run cap:copy
+npm run cap:sync
+```
+
+## Desarrollo
+
+1. Instalar dependencias:
+   ```bash
    npm install
    ```
-2. Ejecuta la app en modo desarrollo:
-   ```sh
+2. Arrancar entorno local:
+   ```bash
    npm start
    ```
-3. Para compilar y ejecutar en Android:
-   ```sh
-   npx cap open android
+3. Verificar calidad estática:
+   ```bash
+   npm run lint
+   ```
+4. Si hay cambios nativos, sincronizar Capacitor:
+   ```bash
+   npm run cap:sync
    ```
 
-## Buenas prácticas y detalles técnicos
+## Convenciones actuales
 
-- Código modularizado en ES6, con helpers y lógica separada por dominio.
-- Todas las funciones principales están documentadas con JSDoc en español.
-- Uso de async/await para peticiones y lógica asíncrona.
-- Lógica de caché para evitar peticiones innecesarias a la API.
-- Soporte para exportar partidos a Google Calendar y archivos ICS.
-- Adaptación visual automática a tema claro/oscuro y barras de sistema en móvil.
+- El detalle de partido se está refactorizando por cortes pequeños y seguros.
+- Los textos visibles deben pasar por `t(...)` y `www/i18n.js`.
+- `dist/` y ficheros temporales no deben commitearse.
+- Se prefiere JSDoc útil en español, no decorativo.
+- Antes de tocar flujo delicado del modal, conviene validar la UX real en móvil.
 
-## Tecnologías usadas
-- JavaScript (ES6+)
-- Capacitor (para soporte móvil)
-- HTML5, CSS3
+## Estado de calidad
 
-## Créditos y agradecimientos
+- ESLint está configurado con `eslint.config.js`.
+- `npm run lint` debe quedar limpio antes de cerrar una iteración.
+- Parte del código legacy sigue coexistiendo con la estructura modular moderna, sobre todo alrededor de SignalR y algunos endpoints históricos.
 
-Desarrollado por el club Loyola para la gestión y consulta de partidos de hockey patines.
+## Próximos focos razonables
 
-Inspirado y apoyado por la comunidad de la Federación Vasca de Patinaje.
+- seguir reduciendo el peso de `www/components/partidoDetalle.js`
+- continuar la documentación JSDoc en módulos antiguos
+- endurecer más la integración con servicios legacy sin romper la UX actual
 
----
+## Notas
 
-¿Tienes dudas, sugerencias o quieres contribuir? Abre un issue o contacta con el club.
+La carpeta `.copilot/` mantiene memoria de trabajo del proyecto para poder retomarlo rápido entre sesiones.

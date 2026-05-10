@@ -4,7 +4,7 @@
 
 Proyecto: `loyola-hockey-matches`
 
-Aplicación híbrida para seguir partidos y clasificaciones de equipos de hockey patines del Loyola. Usa una base web modular en JavaScript y empaquetado Android con Capacitor.
+Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de los equipos de hockey patines del Loyola. La base sigue conviviendo con servicios legacy de la FVP, pero en esta fase ya tiene un detalle de partido mucho más trabajado, móvil y modular.
 
 ## Stack actual
 
@@ -13,93 +13,99 @@ Aplicación híbrida para seguir partidos y clasificaciones de equipos de hockey
 - Capacitor Android
 - HTML/CSS
 - jQuery + SignalR clásico para tiempo real
+- ESLint con configuración local (`eslint.config.js`)
 
 ## Arquitectura observada
 
 - `www/` contiene el frontend fuente.
-- `dist/` contiene la build web generada por Vite.
+- `dist/` contiene la build generada y ya debe tratarse como salida no versionada.
 - `android/` contiene el proyecto Android de Capacitor.
 - `www/core/` contiene arranque, navegación e inicialización.
 - `www/components/` contiene renderizado de partidos, clasificación y detalle.
-- `www/styles/components-partido-detalle.css` contiene el estilo del modal de detalle de partido, integrado con el sistema global de tema.
-- `www/components/partidoDetalle.js` ya soporta payloads reales del hub para detalle: `recibirEventosIniciales`, `recibirPenaltisIniciales`, `recibirAlinIniciales`, `recibirMarcadorPartido`, además de alineaciones `JugLocal/JugVisit/PortLocal/PortVisit/TecnLocal/TecnVisit`.
-- El detalle de partido ya usa `t(...)` y claves específicas de `www/i18n.js` para parte de su UI; cualquier texto nuevo en detalle debería entrar por ese diccionario y no como literal duro.
-- Los handlers del hub en tiempo real deben vivir globalmente desde `www/core/main.js`, igual que en la web original, para no perder los payloads iniciales antes de que el modal se monte.
-- `www/services.js` concentra acceso a datos remotos y parte de la integración en tiempo real.
-- El bus de eventos SignalR quedó integrado finalmente en `www/services.js`; la referencia histórica a `www/signalrBus.js` ya no representa el estado final.
-- `www/state/` guarda estado de equipos y overlays.
-- `www/utils/` contiene helpers, caché, calendario y utilidades de clasificación/partidos.
+- `www/services.js` concentra acceso a datos remotos y el bus local de eventos de partido.
+- `www/styles/components-partido-detalle.css` contiene el estilo del modal de detalle de partido.
 
-## Estado actual del proyecto
+## Estado actual del detalle de partido
 
-El proyecto compila con `vite build`, pero está en una transición parcial desde una estructura legacy a una más moderna.
+El detalle de partido ha pasado de ser un archivo monolítico a una estructura más separada, manteniendo la UX estable durante el refactor.
 
-### Señales de transición incompleta
+### Módulos actuales del detalle
 
-- `README.md` no refleja del todo la estructura real.
-- Hay dependencias legacy todavía presentes (`express`, `http-proxy`, `browser-sync`, `live-server`, `nodemon`).
-- `server.js` fue eliminado, pero aún quedan rastros del enfoque anterior.
-- Se mezcla código modular moderno con globals y scripts legacy de SignalR.
+- `www/components/partidoDetalle.js`
+  - coordinador principal del modal
+  - navegación interna entre partido y jugador
+  - transición entre subviews
+  - hidratación de estadísticas de jugador
+  - coordinación de SignalR y ciclo de vida del modal
+- `www/components/partidoDetalleUtils.js`
+  - utilidades base y estado
+- `www/components/partidoDetalleAlineaciones.js`
+  - render de alineaciones
+- `www/components/partidoDetalleEventos.js`
+  - render de eventos
+- `www/components/partidoDetalleJugadorStats.js`
+  - parser de stats, foto, chips, timeline y render histórico del jugador
+- `www/components/partidoDetalleJugadorData.js`
+  - resolución de jugador y eventos asociados
+- `www/components/partidoDetalleJugadorView.js`
+  - cabecera compacta de jugador
+- `www/components/partidoDetalleRender.js`
+  - render base del partido, skeletons, resumen y penaltis
+- `www/components/partidoDetalleState.js`
+  - actualización de estado del detalle
 
-## Problemas detectados
+## Decisiones recientes importantes
 
-1. Bug claro en `www/components/clasificacion.js`
-   - Se usa `currKey` en `localStorage.setItem(currKey, ...)` pero no está definido.
+- El refactor del detalle de jugador se rehízo de forma conservadora, en cortes pequeños y validados uno a uno.
+- Se abortó una extracción demasiado agresiva porque rompía visualmente la subvista de jugador.
+- La frontera segura comprobada ha sido:
+  - helpers de stats
+  - resolución de datos de jugador
+  - helpers de presentación de jugador
+  - cabecera de jugador
+  - render base del partido
+  - resumen y penaltis
+  - actualización de estado del detalle
+- La parte que queda más pegada al coordinador principal es:
+  - `renderJugadorSubview`
+  - `hydrateJugadorStats`
+  - transiciones del modal
+  - binding de acordeones
+  - carga inicial y subscripción al hub
 
-2. Bug funcional en scroll al próximo partido
-   - La lógica de `getProximoPartidoIdx()` trataba partidos pasados sin resultado final como si fueran el próximo partido.
-   - Eso hace que un aplazado o suspendido pueda robar el foco al siguiente partido real.
+## Calidad y tooling
 
-3. Bug funcional en exportación ICS
-   - La generación de eventos ICS no estaba usando la hora real del partido.
-   - Se aplicaba siempre el rango por defecto 12:00-14:00 aunque el partido tuviera `Hora` informada.
+- Se añadió `eslint.config.js`.
+- Existe script `npm run lint` en `package.json`.
+- El lint quedó limpio durante esta fase.
+- Se añadió y extendió JSDoc útil en varios módulos clave.
 
-4. Integración SignalR frágil
-   - Depende de scripts globales y `window.hubProxy`.
-   - Hay mezcla entre `window.signalR` y `$.connection`.
-   - `index.html` carga recursos externos de hubs que conviene revisar.
-   - Un riesgo específico detectado era registrar los handlers del detalle demasiado tarde, perdiendo potencialmente los callbacks iniciales que en la web original llegan inmediatamente tras abrir el partido.
+## Git y ficheros generados
 
-3. Capa de servicios inconsistente
-   - Parte del acceso a la API usa `post()` con caché.
-   - `getEquiposLoyolaTodasCompeticiones()` usa `fetch()` directo.
+- `dist/` no debe versionarse.
+- Los temporales tipo `tmp_*.js` tampoco deben versionarse.
+- `.gitignore` se corrigió para reflejar esto de forma explícita.
+- `package-lock.json` sigue ignorado por decisión actual del repo.
 
-6. Rendimiento mejorable
-   - `getCalendarioTodosEquipos()` hace peticiones secuenciales por equipo.
+## Riesgos y límites actuales
 
-7. Dependencia de estado global
-   - Uso frecuente de `window.*` y `localStorage` para coordinar módulos.
+- Sigue habiendo mezcla entre arquitectura moderna y globals legacy, sobre todo en SignalR.
+- `partidoDetalle.js` sigue siendo el núcleo delicado: cualquier corte adicional debe justificarse bien.
+- No conviene tocar de golpe navegación, hidratación y transición del detalle de jugador.
 
-## Build
+## Estado general del proyecto
 
-Comando probado:
+La base está claramente más sana que al inicio de esta fase:
 
-```bash
-npm run build
-```
+- detalle de jugador funcional y estable
+- botón atrás Android integrado
+- shell/skeleton del detalle suavizado
+- lint limpio
+- README y memoria técnica actualizados
+- módulos del detalle ya mucho mejor separados
 
-Resultado:
-- build correcta
-- aviso por script legacy `jquery.signalR-2.4.3.min.js`
-- aviso de resolución de `loyola_hockey.png`
+## Recomendación de trabajo siguiente
 
-## Evaluación técnica
-
-Base funcional aceptable, pero conviene estabilizar el proyecto antes de añadir nuevas funcionalidades grandes.
-
-## Recomendación de trabajo
-
-1. Verificación funcional real en local
-2. Corrección de bugs evidentes
-3. Limpieza de dependencias y restos legacy
-4. Endurecer la integración de SignalR
-5. Unificar acceso a API y reducir globals
-
-## Convención para esta carpeta
-
-Mantener actualizados al menos:
-- estado general
-- decisiones técnicas
-- riesgos
-- tareas siguientes
-- hallazgos nuevos
+1. Seguir reduciendo `partidoDetalle.js` solo si aparece otra frontera realmente clara.
+2. Si no, priorizar limpieza, JSDoc y endurecimiento técnico sobre más fragmentación.
+3. Mantener validación visual real después de cada iteración del detalle.

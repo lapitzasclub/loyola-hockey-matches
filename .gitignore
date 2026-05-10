@@ -6,6 +6,14 @@ yarn-error.log*
 package-lock.json
 pnpm-lock.yaml
 
+# Build output
+dist/
+
+# Temporary and local scratch files
+tmp_*.js
+*.tmp
+*.temp
+
 # Capacitor
 capacitor.settings.gradle
 capacitor.build.gradle
@@ -35,5 +43,5 @@ captures/
 .idea/
 .DS_Store
 
-# VS Code
+# Editors
 .vscode/
