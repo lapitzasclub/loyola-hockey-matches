@@ -1,6 +1,7 @@
 import { t } from "../i18n.js";
 import {
   callPartidoHubServerMethod,
+  getEstadisticaJugador,
   getEstadisticaPartido,
   getPartido,
   subscribePartidoHubEvents,
@@ -34,6 +35,12 @@ function setHeaderContent(headerEl, html, reason = "") {
   });
 }
 
+function getPlayerStatsData(raw) {
+  const parsed = parseApiArrayResponse(raw);
+  if (Array.isArray(parsed)) return parsed[0] || null;
+  return parsed && typeof parsed === "object" ? parsed : null;
+}
+
 
 export function openPartidoDetalle(idPartido) {
   closePartidoDetalle({ immediate: true });
@@ -51,16 +58,22 @@ export function openPartidoDetalle(idPartido) {
     </div>
   `;
   document.body.appendChild(modal);
+  const shellEl = modal.querySelector(".partido-detalle-shell");
+  const bodyScrollEl = modal.querySelector(".partido-detalle-body");
+  if (shellEl) shellEl.scrollTop = 0;
+  if (bodyScrollEl) bodyScrollEl.scrollTop = 0;
   requestAnimationFrame(() => modal.classList.add("is-open"));
   document.body.classList.add("modal-abierto");
   modal.querySelector(".partido-detalle-close").onclick = () => closePartidoDetalle();
-  modal.querySelector(".partido-detalle-back").onclick = () => {
+  modal.querySelector(".partido-detalle-back").onclick = async () => {
     const state = window.__partidoDetalleState;
     if (!getViewStack(state).length) return;
-    setCurrentView(state, popView(state) || "partido");
     const headerEl = document.getElementById("partido-detalle-header-content");
     const bodyEl = document.getElementById("partido-detalle-body");
-    renderAll(state, headerEl, bodyEl);
+    await transitionDetalleView(bodyEl, async () => {
+      setCurrentView(state, popView(state) || "partido");
+      renderAll(state, headerEl, bodyEl);
+    }, "back");
   };
   cargarDetallePartido(idPartido);
 }
@@ -164,10 +177,12 @@ function renderAll(state, headerEl, bodyEl) {
   if (getCurrentView(state) !== "partido") {
     bodyEl.innerHTML = renderSubview(state);
     bindPlayerLinks(bodyEl, state, headerEl);
+    bindPlayerAccordions(bodyEl);
     return;
   }
   if (!bodyEl.querySelector("#tab-resumen")) {
     ensureBaseLayout(bodyEl, state);
+    scrollDetalleToTop(bodyEl);
   }
   bodyEl.querySelector("#tab-resumen").innerHTML = renderResumen(state);
   bodyEl.querySelector("#tab-alineaciones").innerHTML = renderAlineaciones(state);
@@ -179,7 +194,7 @@ function renderAll(state, headerEl, bodyEl) {
 
 function bindPlayerLinks(rootEl, state, headerEl) {
   rootEl.querySelectorAll(".partido-detalle-player-link").forEach((btn) => {
-    btn.onclick = () => {
+    btn.onclick = async () => {
       let payload = null;
       try {
         payload = JSON.parse(btn.dataset.player || "null");
@@ -189,8 +204,13 @@ function bindPlayerLinks(rootEl, state, headerEl) {
       state.selectedJugador = payload ? resolveJugadorDetalle(state, payload) : null;
       if (!state.selectedJugador) return;
       pushView(state, getCurrentView(state));
-      setCurrentView(state, "jugador");
-      renderAll(state, headerEl, rootEl.closest("#partido-detalle-body") || rootEl);
+      state.selectedJugador.loading = true;
+      const bodyEl = rootEl.closest("#partido-detalle-body") || rootEl;
+      await transitionDetalleView(bodyEl, async () => {
+        setCurrentView(state, "jugador");
+        renderAll(state, headerEl, bodyEl);
+      }, "forward");
+      await hydrateJugadorStats(state, headerEl, bodyEl);
     };
   });
 }
@@ -203,44 +223,52 @@ function resolveJugadorDetalle(state, payload) {
 
   const groups = teamType === "local"
     ? [
-        { role: "jugador", items: emptyArray(alin.JugLocal) },
-        { role: "portero", items: emptyArray(alin.PortLocal) },
-        { role: "tecnico", items: emptyArray(alin.TecnLocal) },
+        { role: "jugador", items: emptyArray(alin.JugLocal), licenciaTipo: "j" },
+        { role: "portero", items: emptyArray(alin.PortLocal), licenciaTipo: "p" },
+        { role: "tecnico", items: emptyArray(alin.TecnLocal), licenciaTipo: "j" },
       ]
     : teamType === "visitante"
       ? [
-          { role: "jugador", items: emptyArray(alin.JugVisit) },
-          { role: "portero", items: emptyArray(alin.PortVisit) },
-          { role: "tecnico", items: emptyArray(alin.TecnVisit) },
+          { role: "jugador", items: emptyArray(alin.JugVisit), licenciaTipo: "j" },
+          { role: "portero", items: emptyArray(alin.PortVisit), licenciaTipo: "p" },
+          { role: "tecnico", items: emptyArray(alin.TecnVisit), licenciaTipo: "j" },
         ]
       : [];
 
   let match = null;
+  let matchedGroup = null;
   for (const group of groups) {
     match = group.items.find((item) => {
       const itemDorsal = String(item?.Dorsal || "").trim();
       const itemNombre = String(item?.ApellidosNombre || item?.NombreApellidos || "").trim().toLowerCase();
-      return (dorsal && itemDorsal === dorsal) || (nombre && itemNombre === nombre);
+      const itemLicencia = String(item?.IdLicencia || "").trim();
+      const payloadLicencia = String(payload?.idLicencia || "").trim();
+      return (payloadLicencia && itemLicencia === payloadLicencia) || (dorsal && itemDorsal === dorsal) || (nombre && itemNombre === nombre);
     });
     if (match) {
-      return {
-        ...payload,
-        role: group.role,
-        teamName: teamType === "local" ? state.partido?.local : state.partido?.visit,
-        teamLogo: teamType === "local" ? state.partido?.logoLocal : state.partido?.logoVisit,
-        nombre: match.ApellidosNombre || match.NombreApellidos || payload.nombre,
-        dorsal: match.Dorsal ?? payload.dorsal,
-        stats: match,
-        eventos: getJugadorEventos(state.eventos, { dorsal, nombre, teamType }),
-      };
+      matchedGroup = group;
+      break;
     }
   }
 
   return {
     ...payload,
+    role: match ? matchedGroup.role : payload.role,
+    licenciaTipo: payload.licenciaTipo || matchedGroup?.licenciaTipo || "j",
+    idLicencia: match?.IdLicencia ?? payload?.idLicencia ?? null,
     teamName: teamType === "local" ? state.partido?.local : teamType === "visitante" ? state.partido?.visit : "",
     teamLogo: teamType === "local" ? state.partido?.logoLocal : teamType === "visitante" ? state.partido?.logoVisit : null,
-    eventos: getJugadorEventos(state.eventos, { dorsal, nombre, teamType }),
+    nombre: match?.ApellidosNombre || match?.NombreApellidos || payload.nombre,
+    dorsal: match?.Dorsal ?? payload.dorsal,
+    partidoStats: match || null,
+    eventos: getJugadorEventos(state.eventos, {
+      dorsal: match?.Dorsal ?? dorsal,
+      nombre: match?.ApellidosNombre || match?.NombreApellidos || nombre,
+      teamType,
+    }),
+    statsGlobales: null,
+    loading: false,
+    error: "",
   };
 }
 
@@ -277,61 +305,376 @@ function renderJugadorSubview(state) {
   if (!jugador) {
     return `
       <div class="partido-detalle-subview-placeholder subview-enter">
-        <div class="partido-detalle-empty">Jugador no disponible.</div>
+        <div class="partido-detalle-empty">${escapeHtml(t("detail_player_unavailable"))}</div>
       </div>
     `;
   }
 
-  const stats = jugador.stats || {};
+  const partidoStats = jugador.partidoStats || {};
+  const globales = jugador.statsGlobales;
+  const foto = getJugadorFotoUrl(globales?.foto);
+  const competicionesOrdenadas = emptyArray(globales?.competiciones)
+    .slice()
+    .sort((a, b) => safeNumber(b?.partidos || emptyArray(b?.filas).length) - safeNumber(a?.partidos || emptyArray(a?.filas).length));
+  const allRows = competicionesOrdenadas.flatMap((comp) => emptyArray(comp?.filas));
+  const headerChips = renderStatsChipsFromRows(allRows, jugador.licenciaTipo || "j", state.modalidad || "hp");
+  const competicionesHtml = competicionesOrdenadas.length
+    ? competicionesOrdenadas.map((comp, index) => renderJugadorCompeticion(comp, jugador.licenciaTipo || "j", state.modalidad || "hp", { open: index === 0 })).join("")
+    : "";
   const timeline = emptyArray(jugador.eventos).map((ev) => {
     const period = escapeHtml(ev.CodPeriodo || "");
     const crono = escapeHtml(ev.Crono || "");
     const tipo = escapeHtml(ev.IdTipoEvento || ev.Descripcion || "Evento");
     return `<div class="partido-detalle-player-event"><span>${period} ${crono}</span><strong>${tipo}</strong></div>`;
-  }).join("") || `<div class="partido-detalle-empty small">Sin eventos registrados.</div>`;
+  }).join("") || `<div class="partido-detalle-empty small">${escapeHtml(t("detail_player_no_events"))}</div>`;
 
-  const chips = [
-    stats.Goles != null ? `<span class="alineacion-chip">G <strong>${escapeHtml(stats.Goles)}</strong></span>` : "",
-    stats.Asist != null ? `<span class="alineacion-chip">As <strong>${escapeHtml(stats.Asist)}</strong></span>` : "",
-    stats.FaltaReal != null ? `<span class="alineacion-chip">F+ <strong>${escapeHtml(stats.FaltaReal)}</strong></span>` : "",
-    stats.FaltaRec != null ? `<span class="alineacion-chip">F- <strong>${escapeHtml(stats.FaltaRec)}</strong></span>` : "",
-    stats.Azules != null ? `<span class="alineacion-chip">Az <strong>${escapeHtml(stats.Azules)}</strong></span>` : "",
-    stats.Rojas != null ? `<span class="alineacion-chip">Rj <strong>${escapeHtml(stats.Rojas)}</strong></span>` : "",
-    stats.Minutos != null ? `<span class="alineacion-chip">Min <strong>${escapeHtml(stats.Minutos)}</strong></span>` : "",
+  const partidoChips = [
+    partidoStats.Goles != null ? `<span class="alineacion-chip">G <strong>${escapeHtml(partidoStats.Goles)}</strong></span>` : "",
+    partidoStats.Asist != null ? `<span class="alineacion-chip">As <strong>${escapeHtml(partidoStats.Asist)}</strong></span>` : "",
+    partidoStats.FaltaReal != null ? `<span class="alineacion-chip">F+ <strong>${escapeHtml(partidoStats.FaltaReal)}</strong></span>` : "",
+    partidoStats.FaltaRec != null ? `<span class="alineacion-chip">F- <strong>${escapeHtml(partidoStats.FaltaRec)}</strong></span>` : "",
+    partidoStats.Azules != null ? `<span class="alineacion-chip">Az <strong>${escapeHtml(partidoStats.Azules)}</strong></span>` : "",
+    partidoStats.Rojas != null ? `<span class="alineacion-chip">Rj <strong>${escapeHtml(partidoStats.Rojas)}</strong></span>` : "",
+    partidoStats.Minutos != null ? `<span class="alineacion-chip">Min <strong>${escapeHtml(partidoStats.Minutos)}</strong></span>` : "",
   ].filter(Boolean).join("");
 
   return `
-    <section class="partido-detalle-section partido-detalle-player-sheet subview-enter">
-      <div class="partido-detalle-section-title">Detalle de jugador</div>
-      <div class="partido-detalle-player-card">
-        <div class="partido-detalle-player-hero">
-          ${jugador.teamLogo ? `<img class="partido-detalle-player-team-logo" src="${logoUrl(jugador.teamLogo)}" alt="${escapeHtml(jugador.teamName || "")}">` : ""}
+    <div class="partido-detalle-player-sheet subview-enter">
+      <section class="partido-detalle-section partido-detalle-player-card partido-detalle-player-card-hero">
+        <div class="partido-detalle-player-hero partido-detalle-player-hero-lg">
+          <img class="partido-detalle-player-photo" src="${foto}" alt="${escapeHtml(jugador.nombre || "Jugador")}">
           <div>
-            <div class="partido-detalle-player-eyebrow">${escapeHtml(jugador.teamName || jugador.teamType || "")}${jugador.role ? ` · ${escapeHtml(jugador.role)}` : ""}</div>
-            <div class="partido-detalle-player-name">${escapeHtml(jugador.nombre || "Sin nombre")}</div>
-            <div class="partido-detalle-player-meta">${jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : "Sin dorsal"}</div>
+            <div class="partido-detalle-player-meta partido-detalle-player-meta-compact">${[globales?.nacionalidad ? `${escapeHtml(t("detail_player_nationality"))}: ${escapeHtml(globales.nacionalidad)}` : "", globales?.nacimiento ? `${escapeHtml(t("detail_player_birth"))}: ${escapeHtml(globales.nacimiento)}` : ""].filter(Boolean).join(" · ")}</div>
           </div>
         </div>
-        ${chips ? `<div class="alineacion-chips partido-detalle-player-chips">${chips}</div>` : `<div class="partido-detalle-empty small">Sin estadísticas destacadas.</div>`}
-      </div>
-      <section class="partido-detalle-section partido-detalle-player-events-card">
-        <div class="partido-detalle-section-title">Acciones del partido</div>
-        <div class="partido-detalle-player-events-list">${timeline}</div>
+        ${jugador.loading ? `<div class="partido-detalle-empty small">${escapeHtml(t("loading"))}...</div>` : ""}
+        ${jugador.error ? `<div class="partido-detalle-empty small">${escapeHtml(jugador.error)}</div>` : ""}
       </section>
-    </section>
+      <section class="partido-detalle-section partido-detalle-player-events-card">
+        <div class="partido-detalle-section-title">${escapeHtml(t("detail_match"))}</div>
+        ${(partidoChips || timeline) ? `<div class="partido-detalle-player-section-body">${partidoChips ? `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact">${partidoChips}</div>` : ""}<div class="partido-detalle-player-events-list">${timeline}</div></div>` : `<div class="partido-detalle-empty small">${escapeHtml(t("detail_player_no_events"))}</div>`}
+      </section>
+      ${competicionesHtml ? `<section class="partido-detalle-section partido-detalle-player-events-card"><div class="partido-detalle-section-title">${escapeHtml(t("detail_player_statistics"))}</div><div class="partido-detalle-player-competitions">${competicionesHtml}</div></section>` : ""}
+    </div>
   `;
 }
 
 function renderJugadorHeader(state) {
   const jugador = state.selectedJugador;
   if (!jugador) return `<div>${escapeHtml(t("detail_match"))}</div>`;
+  const nombre = jugador.statsGlobales?.nombre || jugador.nombre || "Jugador";
 
   return `
     <div class="partido-detalle-subheader subview-enter">
       <div class="partido-detalle-subheader-top">${escapeHtml(jugador.teamName || jugador.teamType || t("detail_match"))}</div>
-      <div class="partido-detalle-subheader-title">${escapeHtml(jugador.nombre || "Jugador")}</div>
-      <div class="partido-detalle-subheader-meta">${jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : ""}${jugador.role ? `${jugador.dorsal ? " · " : ""}${escapeHtml(jugador.role)}` : ""}</div>
+      <div class="partido-detalle-subheader-title">${escapeHtml(nombre)}</div>
+      <div class="partido-detalle-subheader-meta">${jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : ""}</div>
     </div>
+  `;
+}
+
+async function hydrateJugadorStats(state, headerEl, bodyEl) {
+  const jugador = state.selectedJugador;
+  if (!jugador?.idLicencia) {
+    jugador.loading = false;
+    jugador.error = t("detail_player_no_license");
+    renderAll(state, headerEl, bodyEl);
+    return;
+  }
+
+  try {
+    const statsRes = await getEstadisticaJugador(jugador.idLicencia);
+    jugador.statsGlobales = getPlayerStatsData(statsRes);
+    console.log("[Detalle jugador] statsGlobales", {
+      idLicencia: jugador.idLicencia,
+      nombre: jugador.statsGlobales?.nombre,
+      competiciones: emptyArray(jugador.statsGlobales?.competiciones).length,
+      filasPorCompeticion: emptyArray(jugador.statsGlobales?.competiciones).map((comp) => ({
+        titulo: comp?.titulo,
+        filas: emptyArray(comp?.filas).length,
+      })),
+      raw: jugador.statsGlobales,
+    });
+    jugador.error = jugador.statsGlobales ? "" : t("detail_player_load_error");
+  } catch (error) {
+    jugador.error = error?.message || t("detail_player_load_error");
+  } finally {
+    jugador.loading = false;
+    renderAll(state, headerEl, bodyEl);
+  }
+}
+
+function getJugadorFotoUrl(foto) {
+  const key = String(foto || "sinfoto").trim();
+  if (!key || key === "sinfoto") {
+    return "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/licencias/foto/no_foto.png";
+  }
+  return `https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/licencias/foto/${encodeURIComponent(key)}.jpg`;
+}
+
+function safeNumber(value) {
+  return Number(value) || 0;
+}
+
+function hasPositive(value) {
+  return Number(value) > 0;
+}
+
+function getJugadorStatColumns(tipo, modalidad) {
+  const colPts = {
+    key: "Pts",
+    label: "Pts",
+    cell: (row) => {
+      const value = safeNumber(row?.gol) + safeNumber(row?.asist);
+      return hasPositive(value) ? value : "";
+    },
+    totalAdd: (acc, row) => acc + safeNumber(row?.gol) + safeNumber(row?.asist),
+    totalRender: (total) => total,
+  };
+  const colG = { key: "G", label: "G", cell: (row) => hasPositive(row?.gol) ? row.gol : "", totalAdd: (acc, row) => acc + safeNumber(row?.gol), totalRender: (total) => total };
+  const colAs = { key: "As", label: "As", cell: (row) => hasPositive(row?.asist) ? row.asist : "", totalAdd: (acc, row) => acc + safeNumber(row?.asist), totalRender: (total) => total };
+  const colFD = {
+    key: "FD",
+    label: "FD",
+    cell: (row) => hasPositive(row?.FD) ? `${safeNumber(row?.FDGol)}/${safeNumber(row?.FD)}` : "",
+    totalAdd: (acc, row) => ({ gol: (acc.gol || 0) + safeNumber(row?.FDGol), tot: (acc.tot || 0) + safeNumber(row?.FD) }),
+    totalRender: (total) => total?.tot > 0 ? `${total.gol}/${total.tot}` : "",
+  };
+  const colPen = {
+    key: "Pen",
+    label: "Pen",
+    cell: (row) => hasPositive(row?.Pen) ? `${safeNumber(row?.PenGol)}/${safeNumber(row?.Pen)}` : "",
+    totalAdd: (acc, row) => ({ gol: (acc.gol || 0) + safeNumber(row?.PenGol), tot: (acc.tot || 0) + safeNumber(row?.Pen) }),
+    totalRender: (total) => total?.tot > 0 ? `${total.gol}/${total.tot}` : "",
+  };
+  const colTA = { key: "TA", label: "TA", cell: (row) => hasPositive(row?.TA) ? row.TA : "", totalAdd: (acc, row) => acc + safeNumber(row?.TA), totalRender: (total) => total };
+  const colTR = { key: "TR", label: "TR", cell: (row) => hasPositive(row?.TR) ? row.TR : "", totalAdd: (acc, row) => acc + safeNumber(row?.TR), totalRender: (total) => total };
+  const colMin = { key: "Min", label: "Min", cell: (row) => hasPositive(row?.MinutosSancion) ? row.MinutosSancion : "", totalAdd: (acc, row) => acc + safeNumber(row?.MinutosSancion), totalRender: (total) => total };
+  const colGR = { key: "GR", label: "GR", cell: (row) => hasPositive(row?.GolesRecibidos) ? row.GolesRecibidos : "", totalAdd: (acc, row) => acc + safeNumber(row?.GolesRecibidos), totalRender: (total) => total };
+  const colTRec = {
+    key: "TRec",
+    label: "TirR",
+    cell: (row) => {
+      const value = safeNumber(row?.GolesRecibidos) + safeNumber(row?.Tiros);
+      return hasPositive(value) ? value : "";
+    },
+    totalAdd: (acc, row) => acc + safeNumber(row?.GolesRecibidos) + safeNumber(row?.Tiros),
+    totalRender: (total) => total,
+  };
+  const colSave = {
+    key: "Save",
+    label: "%Par",
+    cell: (row) => {
+      const shots = safeNumber(row?.GolesRecibidos) + safeNumber(row?.Tiros);
+      if (!shots) return "";
+      return `${((1 - safeNumber(row?.GolesRecibidos) / shots) * 100).toFixed(1)}%`;
+    },
+    totalAdd: (acc, row) => ({ gr: (acc.gr || 0) + safeNumber(row?.GolesRecibidos), shots: (acc.shots || 0) + safeNumber(row?.GolesRecibidos) + safeNumber(row?.Tiros) }),
+    totalRender: (total) => total?.shots > 0 ? `${((1 - total.gr / total.shots) * 100).toFixed(1)}%` : "",
+  };
+
+  if (tipo === "p") {
+    return modalidad === "hp"
+      ? [colGR, colTRec, colSave, colTA, colTR]
+      : [colGR, colTRec, colSave, colMin];
+  }
+
+  return modalidad === "hl"
+    ? [colPts, colG, colAs, colMin]
+    : [colG, colAs, colFD, colPen, colTA, colTR, colMin];
+}
+
+function buildTotalsForColumns(rows, columns) {
+  const totals = {};
+  columns.forEach((column) => {
+    const seed = ["FD", "Pen", "Save"].includes(column.key) ? {} : 0;
+    totals[column.key] = emptyArray(rows).reduce((acc, row) => column.totalAdd(acc, row), seed);
+  });
+  return totals;
+}
+
+function renderStatsChipsFromRows(rows, tipo, modalidad) {
+  const columns = getJugadorStatColumns(tipo, modalidad);
+  const totals = buildTotalsForColumns(rows, columns);
+  return columns.map((column) => {
+    const rendered = column.totalRender(totals[column.key], rows);
+    return rendered !== "" && rendered !== 0
+      ? `<span class="alineacion-chip">${escapeHtml(column.label)} <strong>${escapeHtml(rendered)}</strong></span>`
+      : "";
+  }).join("");
+}
+
+function scrollDetalleToTop(bodyEl) {
+  const modal = bodyEl?.closest?.(".partido-detalle-modal");
+  const shellEl = modal?.querySelector?.(".partido-detalle-shell");
+  if (shellEl) shellEl.scrollTop = 0;
+  if (bodyEl) bodyEl.scrollTop = 0;
+}
+
+async function transitionDetalleView(bodyEl, mutateAndRender, direction = "forward") {
+  if (!bodyEl) {
+    await mutateAndRender();
+    return;
+  }
+
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  if (reduceMotion) {
+    await mutateAndRender();
+    return;
+  }
+
+  const activeView = bodyEl.firstElementChild;
+  if (activeView) {
+    activeView.classList.remove("subview-enter", "subview-enter-back");
+    activeView.classList.add(direction === "back" ? "subview-leave-back" : "subview-leave");
+    await new Promise((resolve) => window.setTimeout(resolve, 180));
+  }
+
+  await mutateAndRender();
+  scrollDetalleToTop(bodyEl);
+
+  const nextView = bodyEl.firstElementChild;
+  if (nextView) {
+    nextView.classList.remove("subview-leave", "subview-leave-back");
+    nextView.classList.add(direction === "back" ? "subview-enter-back" : "subview-enter");
+  }
+}
+
+function bindPlayerAccordions(rootEl) {
+  rootEl.querySelectorAll(".partido-detalle-player-competition").forEach((detailsEl) => {
+    if (detailsEl.dataset.accordionBound === "true") return;
+    detailsEl.dataset.accordionBound = "true";
+
+    const summaryEl = detailsEl.querySelector(".partido-detalle-player-competition-bar");
+    const contentEl = detailsEl.querySelector(".partido-detalle-player-history-list");
+    if (!summaryEl || !contentEl) return;
+
+    if (detailsEl.open) {
+      contentEl.style.height = "auto";
+      contentEl.style.opacity = "1";
+    } else {
+      contentEl.style.height = "0px";
+      contentEl.style.opacity = "0";
+    }
+
+    let animation = null;
+
+    summaryEl.addEventListener("click", (event) => {
+      event.preventDefault();
+      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+      if (reduceMotion) {
+        detailsEl.open = !detailsEl.open;
+        contentEl.style.height = detailsEl.open ? "auto" : "0px";
+        contentEl.style.opacity = detailsEl.open ? "1" : "0";
+        return;
+      }
+
+      const isOpening = !detailsEl.open;
+      const startHeight = `${contentEl.offsetHeight}px`;
+
+      if (animation) animation.cancel();
+
+      if (isOpening) {
+        detailsEl.open = true;
+        const endHeight = `${contentEl.scrollHeight}px`;
+        contentEl.style.overflow = "hidden";
+        contentEl.style.height = startHeight === "0px" ? "0px" : startHeight;
+        contentEl.style.opacity = "0";
+        animation = contentEl.animate(
+          [
+            { height: "0px", opacity: 0 },
+            { height: endHeight, opacity: 1 },
+          ],
+          {
+            duration: 320,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            fill: "forwards",
+          },
+        );
+        animation.onfinish = () => {
+          contentEl.style.height = "auto";
+          contentEl.style.opacity = "1";
+          contentEl.style.overflow = "visible";
+          animation = null;
+        };
+      } else {
+        const measuredStart = startHeight === "0px" ? `${contentEl.scrollHeight}px` : startHeight;
+        contentEl.style.overflow = "hidden";
+        contentEl.style.height = measuredStart;
+        contentEl.style.opacity = "1";
+        animation = contentEl.animate(
+          [
+            { height: measuredStart, opacity: 1 },
+            { height: "0px", opacity: 0 },
+          ],
+          {
+            duration: 280,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            fill: "forwards",
+          },
+        );
+        animation.onfinish = () => {
+          detailsEl.open = false;
+          contentEl.style.height = "0px";
+          contentEl.style.opacity = "0";
+          contentEl.style.overflow = "hidden";
+          animation = null;
+        };
+      }
+    });
+  });
+}
+
+function renderJugadorCompeticion(competicion, tipo, modalidad, options = {}) {
+  const filas = emptyArray(competicion?.filas);
+  const columns = getJugadorStatColumns(tipo, modalidad);
+  const totals = buildTotalsForColumns(filas, columns);
+  const rowHtml = filas.map((fila) => {
+    const statChips = columns.map((column) => {
+      const value = column.cell(fila);
+      return value !== "" && value !== 0
+        ? `<span class="alineacion-chip">${escapeHtml(column.label)} <strong>${escapeHtml(value)}</strong></span>`
+        : "";
+    }).join("");
+
+    return `
+      <article class="partido-detalle-player-history-row partido-detalle-player-history-row-compact">
+        <div class="partido-detalle-player-history-main">
+          <div class="partido-detalle-player-history-date">${escapeHtml(fila.Fecha || "")}</div>
+          <div class="partido-detalle-player-matchup">
+            <span class="partido-detalle-player-teamside">${escapeHtml(fila.loc || "")}</span>
+            <strong>${escapeHtml(fila.marcador || "-")}</strong>
+            <span class="partido-detalle-player-teamside">${escapeHtml(fila.vis || "")}</span>
+          </div>
+        </div>
+        ${statChips ? `<div class="alineacion-chips partido-detalle-player-history-inline-chips">${statChips}</div>` : ""}
+      </article>
+    `;
+  }).join("");
+
+  const compChips = columns.map((column) => {
+    const rendered = column.totalRender(totals[column.key], filas);
+    return rendered !== "" && rendered !== 0
+      ? `<span class="alineacion-chip">${escapeHtml(column.label)} <strong>${escapeHtml(rendered)}</strong></span>`
+      : "";
+  }).join("");
+
+  return `
+    <details class="partido-detalle-player-competition"${options.open ? " open" : ""}>
+      <summary class="partido-detalle-player-competition-bar">
+        <div class="partido-detalle-player-competition-summary-main">
+          <div class="partido-detalle-player-competition-title">${escapeHtml(competicion?.titulo || "Competición")}</div>
+          <div class="partido-detalle-player-competition-meta">${escapeHtml(t("detail_matches_count", competicion?.partidos || filas.length))}</div>
+        </div>
+        <div class="partido-detalle-player-competition-summary-side">
+          <div class="alineacion-chips partido-detalle-player-history-chips">${compChips}</div>
+          <span class="partido-detalle-player-competition-chevron" aria-hidden="true"></span>
+        </div>
+      </summary>
+      <div class="partido-detalle-player-history-list">
+        ${rowHtml || `<div class="partido-detalle-empty small">${escapeHtml(t("detail_no_matches_available"))}</div>`}
+      </div>
+    </details>
   `;
 }
 

@@ -27,6 +27,8 @@ function buildEventPlayerPayload(ev, slot = 1) {
     teamType: Number(ev.LocalVisit) === 1 ? "local" : Number(ev.LocalVisit) === 2 ? "visitante" : null,
     dorsal: dorsal || null,
     nombre,
+    idLicencia: slot === 1 ? (ev.IdLicencia1 ?? null) : (ev.IdLicencia2 ?? null),
+    licenciaTipo: "j",
     eventSlot: slot,
     data: ev,
   };

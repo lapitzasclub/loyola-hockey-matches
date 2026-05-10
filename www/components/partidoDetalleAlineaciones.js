@@ -7,6 +7,8 @@ function getJugadorPayload(persona, teamType, role) {
     teamType,
     dorsal: persona?.Dorsal ?? null,
     nombre: persona?.ApellidosNombre || persona?.NombreApellidos || "",
+    idLicencia: persona?.IdLicencia ?? null,
+    licenciaTipo: role === "portero" ? "p" : "j",
     data: persona,
   };
 }

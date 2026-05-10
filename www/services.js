@@ -301,3 +301,23 @@ export async function getEstadisticaPartido(idPartido) {
   }
 }
 
+/**
+ * Obtiene las estadísticas agregadas e histórico de un jugador.
+ * @param {string|number} idLicencia - ID de licencia del jugador.
+ * @param {string} tipo - Tipo de licencia, normalmente "j" o "p".
+ * @param {string} modalidad - Modalidad, normalmente "hp" o "hl".
+ * @returns {Promise<any>} Respuesta de la API.
+ */
+export async function getEstadisticaJugador(idLicencia) {
+  const REAL = "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx/GetEstadisticasJugador";
+  const PROXY = "/api/GetEstadisticasJugador";
+  const body = JSON.stringify({ idlicencia: String(idLicencia) });
+  const url = isNative() ? REAL : PROXY;
+  try {
+    const raw = await post({ url, body, preferNative: true });
+    return ensureJsonOrThrow(raw);
+  } catch (e) {
+    return { error: true, message: e.message };
+  }
+}
+
