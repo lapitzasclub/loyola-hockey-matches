@@ -1,12 +1,24 @@
 import { t } from "../i18n.js";
 import { emptyArray, escapeHtml, parseApiArrayResponse } from "./partidoDetalleUtils.js";
 
+/**
+ * Normaliza la respuesta cruda del endpoint de estadísticas de jugador.
+ *
+ * @param {unknown} raw Payload devuelto por la API o por el proxy.
+ * @returns {object|null} Bloque principal de estadísticas del jugador o null.
+ */
 export function getPlayerStatsData(raw) {
   const parsed = parseApiArrayResponse(raw);
   if (Array.isArray(parsed)) return parsed[0] || null;
   return parsed && typeof parsed === "object" ? parsed : null;
 }
 
+/**
+ * Construye la URL pública de la foto del jugador.
+ *
+ * @param {string} foto Identificador de foto devuelto por la API.
+ * @returns {string} URL absoluta de la imagen del jugador.
+ */
 export function getJugadorFotoUrl(foto) {
   const key = String(foto || "sinfoto").trim();
   if (!key || key === "sinfoto") {
@@ -15,14 +27,33 @@ export function getJugadorFotoUrl(foto) {
   return `https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/licencias/foto/${encodeURIComponent(key)}.jpg`;
 }
 
+/**
+ * Convierte un valor potencialmente vacío o no numérico a número seguro.
+ *
+ * @param {unknown} value Valor de entrada.
+ * @returns {number} Número normalizado, o 0 si no es válido.
+ */
 export function safeNumber(value) {
   return Number(value) || 0;
 }
 
+/**
+ * Indica si un valor numérico es estrictamente positivo.
+ *
+ * @param {unknown} value Valor de entrada.
+ * @returns {boolean} True si el valor es mayor que cero.
+ */
 export function hasPositive(value) {
   return Number(value) > 0;
 }
 
+/**
+ * Devuelve la configuración de columnas de estadísticas según tipo de licencia y modalidad.
+ *
+ * @param {string} tipo Tipo de licencia, por ejemplo j o p.
+ * @param {string} modalidad Modalidad de hockey activa.
+ * @returns {Array<object>} Definición de columnas y acumuladores para render.
+ */
 export function getJugadorStatColumns(tipo, modalidad) {
   const colPts = {
     key: "Pts",
@@ -87,6 +118,13 @@ export function getJugadorStatColumns(tipo, modalidad) {
     : [colG, colAs, colFD, colPen, colTA, colTR, colMin];
 }
 
+/**
+ * Acumula los totales de una colección de filas en base a la definición de columnas.
+ *
+ * @param {Array<object>} rows Filas de estadísticas de una competición.
+ * @param {Array<object>} columns Configuración de columnas calculadas.
+ * @returns {object} Mapa de acumulados por clave de columna.
+ */
 export function buildTotalsForColumns(rows, columns) {
   const totals = {};
   columns.forEach((column) => {
@@ -96,6 +134,14 @@ export function buildTotalsForColumns(rows, columns) {
   return totals;
 }
 
+/**
+ * Genera chips agregados de estadísticas a partir de una colección de filas.
+ *
+ * @param {Array<object>} rows Filas históricas de la competición.
+ * @param {string} tipo Tipo de licencia del jugador.
+ * @param {string} modalidad Modalidad del partido.
+ * @returns {string} HTML con chips de resumen.
+ */
 export function renderStatsChipsFromRows(rows, tipo, modalidad) {
   const columns = getJugadorStatColumns(tipo, modalidad);
   const totals = buildTotalsForColumns(rows, columns);
@@ -107,6 +153,12 @@ export function renderStatsChipsFromRows(rows, tipo, modalidad) {
   }).join("");
 }
 
+/**
+ * Renderiza el timeline de eventos del partido relacionados con el jugador.
+ *
+ * @param {Array<object>} eventos Eventos ya filtrados del jugador.
+ * @returns {string} HTML del timeline o del estado vacío.
+ */
 export function renderJugadorTimeline(eventos) {
   return emptyArray(eventos).map((ev) => {
     const period = escapeHtml(ev.CodPeriodo || "");
@@ -116,6 +168,12 @@ export function renderJugadorTimeline(eventos) {
   }).join("") || `<div class="partido-detalle-empty small">${escapeHtml(t("detail_player_no_events"))}</div>`;
 }
 
+/**
+ * Renderiza los chips rápidos del bloque del partido actual para el jugador.
+ *
+ * @param {object} [partidoStats={}] Estadísticas del jugador en el partido actual.
+ * @returns {string} HTML con chips del partido.
+ */
 export function renderPartidoJugadorChips(partidoStats = {}) {
   return [
     partidoStats.Goles != null ? `<span class="alineacion-chip">G <strong>${escapeHtml(partidoStats.Goles)}</strong></span>` : "",
@@ -128,6 +186,16 @@ export function renderPartidoJugadorChips(partidoStats = {}) {
   ].filter(Boolean).join("");
 }
 
+/**
+ * Renderiza una competición histórica del jugador en formato acordeón.
+ *
+ * @param {object} competicion Datos de una competición histórica.
+ * @param {string} tipo Tipo de licencia del jugador.
+ * @param {string} modalidad Modalidad del partido.
+ * @param {object} [options={}] Opciones de render.
+ * @param {boolean} [options.open=false] Indica si el acordeón debe abrirse inicialmente.
+ * @returns {string} HTML de la competición.
+ */
 export function renderJugadorCompeticion(competicion, tipo, modalidad, options = {}) {
   const filas = emptyArray(competicion?.filas);
   const columns = getJugadorStatColumns(tipo, modalidad);

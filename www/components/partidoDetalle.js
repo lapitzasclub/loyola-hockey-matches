@@ -36,12 +36,25 @@ import {
 import { resolveJugadorDetalle } from "./partidoDetalleJugadorData.js";
 import { renderJugadorHeader } from "./partidoDetalleJugadorView.js";
 
+/**
+ * Notifica al coordinador global que el estado de overlays ha cambiado.
+ *
+ * @returns {void}
+ */
 function syncMobileBackState() {
   try {
     window.dispatchEvent(new CustomEvent("app:overlay-state-changed"));
   } catch {}
 }
 
+/**
+ * Actualiza el contenido HTML de la cabecera del modal y deja una traza de depuración.
+ *
+ * @param {HTMLElement} headerEl Contenedor de cabecera del modal.
+ * @param {string} html HTML ya renderizado de la cabecera.
+ * @param {string} [reason=""] Motivo opcional para depuración.
+ * @returns {void}
+ */
 function setHeaderContent(headerEl, html, reason = "") {
   headerEl.innerHTML = html;
   console.log("[Detalle] Header actualizado", {
@@ -52,6 +65,12 @@ function setHeaderContent(headerEl, html, reason = "") {
 }
 
 
+/**
+ * Abre el modal de detalle de un partido y arranca su ciclo de carga.
+ *
+ * @param {string|number} idPartido Identificador del partido a abrir.
+ * @returns {void}
+ */
 export function openPartidoDetalle(idPartido) {
   closePartidoDetalle({ immediate: true });
   const modal = document.createElement("div");
@@ -90,6 +109,13 @@ export function openPartidoDetalle(idPartido) {
   cargarDetallePartido(idPartido);
 }
 
+/**
+ * Cierra el modal de detalle de partido y libera sus recursos asociados.
+ *
+ * @param {object} [options={}] Opciones de cierre.
+ * @param {boolean} [options.immediate=false] Si es true, evita la animación de salida.
+ * @returns {void}
+ */
 export function closePartidoDetalle(options = {}) {
   const { immediate = false } = options;
   const modal = document.querySelector(".partido-detalle-modal");
@@ -129,6 +155,12 @@ export function closePartidoDetalle(options = {}) {
   window.setTimeout(cleanup, 280);
 }
 
+/**
+ * Espera a que la conexión SignalR esté plenamente operativa.
+ *
+ * @param {number} [timeout=4000] Tiempo máximo de espera en milisegundos.
+ * @returns {Promise<void>} Promesa resuelta cuando el hub está conectado.
+ */
 async function waitForSignalRConnected(timeout = 4000) {
   const start = Date.now();
   while ($.connection.hub.state !== $.signalR.connectionState.connected) {
@@ -180,6 +212,15 @@ function updateChrome(state, modal) {
   backBtn.disabled = !canGoBack;
 }
 
+/**
+ * Re-renderiza el estado completo del modal, cabecera incluida.
+ * Decide si mostrar la vista del partido o la subvista de jugador.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @param {HTMLElement} headerEl Contenedor de cabecera del modal.
+ * @param {HTMLElement} bodyEl Contenedor principal de contenido del modal.
+ * @returns {void}
+ */
 function renderAll(state, headerEl, bodyEl) {
   const modal = bodyEl.closest(".partido-detalle-modal");
   updateChrome(state, modal);
@@ -211,10 +252,18 @@ function renderAll(state, headerEl, bodyEl) {
   bindPlayerLinks(bodyEl, state, headerEl);
 }
 
+/**
+ * Enlaza los elementos interactivos que abren la subvista de jugador.
+ *
+ * @param {HTMLElement} rootEl Nodo raíz donde buscar enlaces de jugador.
+ * @param {object} state Estado interno del detalle de partido.
+ * @param {HTMLElement} headerEl Contenedor de cabecera del modal.
+ * @returns {void}
+ */
 function bindPlayerLinks(rootEl, state, headerEl) {
   rootEl.querySelectorAll(".partido-detalle-player-link").forEach((btn) => {
     btn.onclick = async () => {
-      let payload = null;
+      let payload;
       try {
         payload = JSON.parse(btn.dataset.player || "null");
       } catch {
@@ -237,6 +286,12 @@ function bindPlayerLinks(rootEl, state, headerEl) {
   });
 }
 
+/**
+ * Renderiza la subvista activa distinta de la vista principal del partido.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @returns {string} HTML de la subvista activa.
+ */
 function renderSubview(state) {
   if (getCurrentView(state) === "jugador") {
     return renderJugadorSubview(state);
@@ -248,6 +303,13 @@ function renderSubview(state) {
   `;
 }
 
+/**
+ * Renderiza la hoja completa del detalle de jugador dentro del modal.
+ * Mantiene la shell estable y revela el contenido hidratado por bloques.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @returns {string} HTML de la subvista de jugador.
+ */
 function renderJugadorSubview(state) {
   const jugador = state.selectedJugador;
   if (!jugador) {
@@ -265,7 +327,6 @@ function renderJugadorSubview(state) {
   const competicionesOrdenadas = emptyArray(globales?.competiciones)
     .slice()
     .sort((a, b) => safeNumber(b?.partidos || emptyArray(b?.filas).length) - safeNumber(a?.partidos || emptyArray(a?.filas).length));
-  const allRows = competicionesOrdenadas.flatMap((comp) => emptyArray(comp?.filas));
   const competicionesHtml = competicionesOrdenadas.length
     ? competicionesOrdenadas.map((comp, index) => renderJugadorCompeticion(comp, jugador.licenciaTipo || "j", state.modalidad || "hp", { open: index === 0 })).join("")
     : "";
@@ -328,6 +389,14 @@ function renderJugadorSubview(state) {
   `;
 }
 
+/**
+ * Hidrata las estadísticas globales del jugador seleccionado y relanza el render.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @param {HTMLElement} headerEl Contenedor de cabecera del modal.
+ * @param {HTMLElement} bodyEl Contenedor principal del modal.
+ * @returns {Promise<void>} Promesa resuelta cuando termina la carga del jugador.
+ */
 async function hydrateJugadorStats(state, headerEl, bodyEl) {
   const jugador = state.selectedJugador;
   if (!jugador?.idLicencia) {
@@ -360,6 +429,12 @@ async function hydrateJugadorStats(state, headerEl, bodyEl) {
 }
 
 
+/**
+ * Fuerza el scroll del modal y del contenedor de contenido al inicio.
+ *
+ * @param {HTMLElement} bodyEl Contenedor principal del modal.
+ * @returns {void}
+ */
 function scrollDetalleToTop(bodyEl) {
   const modal = bodyEl?.closest?.(".partido-detalle-modal");
   const shellEl = modal?.querySelector?.(".partido-detalle-shell");
@@ -367,10 +442,23 @@ function scrollDetalleToTop(bodyEl) {
   if (bodyEl) bodyEl.scrollTop = 0;
 }
 
+/**
+ * Espera al siguiente frame de render del navegador.
+ *
+ * @returns {Promise<void>} Promesa resuelta en el siguiente requestAnimationFrame.
+ */
 function nextFrame() {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }
 
+/**
+ * Ejecuta la transición animada entre la vista principal del partido y una subvista.
+ *
+ * @param {HTMLElement} bodyEl Contenedor principal del modal.
+ * @param {() => Promise<void>|void} mutateAndRender Callback que muta estado y relanza el render.
+ * @param {string} [direction="forward"] Dirección visual de la transición.
+ * @returns {Promise<void>} Promesa resuelta al finalizar la transición.
+ */
 async function transitionDetalleView(bodyEl, mutateAndRender, direction = "forward") {
   if (!bodyEl) {
     await mutateAndRender();
@@ -402,6 +490,12 @@ async function transitionDetalleView(bodyEl, mutateAndRender, direction = "forwa
   }
 }
 
+/**
+ * Añade comportamiento animado a los acordeones de competiciones del jugador.
+ *
+ * @param {HTMLElement} rootEl Nodo raíz de la subvista de jugador.
+ * @returns {void}
+ */
 function bindPlayerAccordions(rootEl) {
   rootEl.querySelectorAll(".partido-detalle-player-competition").forEach((detailsEl) => {
     if (detailsEl.dataset.accordionBound === "true") return;
@@ -487,6 +581,13 @@ function bindPlayerAccordions(rootEl) {
   });
 }
 
+/**
+ * Fusiona dos objetos priorizando los valores útiles del nuevo payload.
+ *
+ * @param {object|null} prev Estado previo normalizado.
+ * @param {object|null} next Nuevo bloque de datos normalizado.
+ * @returns {object|null} Objeto fusionado.
+ */
 function mergeTruthy(prev, next) {
   if (!prev) return next;
   if (!next) return prev;
@@ -503,6 +604,13 @@ function mergeTruthy(prev, next) {
   return merged;
 }
 
+/**
+ * Actualiza el bloque principal del partido en el estado del modal.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @param {unknown} payload Payload crudo del partido.
+ * @returns {void}
+ */
 function updatePartido(state, payload) {
   const normalizado = normalizarPartido(payload);
   if (!normalizado) return;
@@ -512,6 +620,13 @@ function updatePartido(state, payload) {
   state.visitKey = normalizado.idEquipoVisit || state.visitKey;
 }
 
+/**
+ * Integra en el estado la respuesta del endpoint de estadísticas del partido.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @param {unknown} payload Payload crudo de estadísticas.
+ * @returns {void}
+ */
 function updateEstadisticaPayload(state, payload) {
   const parsed = parseApiArrayResponse(payload);
   if (!Array.isArray(parsed) || !parsed[0]) return;
@@ -531,16 +646,37 @@ function updateEstadisticaPayload(state, payload) {
   }
 }
 
+/**
+ * Sustituye la colección de eventos del partido en el estado actual.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @param {unknown} payload Payload crudo de eventos.
+ * @returns {void}
+ */
 function updateEventos(state, payload) {
   const parsed = parseApiArrayResponse(payload);
   state.eventos = Array.isArray(parsed) ? parsed : [];
 }
 
+/**
+ * Sustituye la colección de penaltis del partido en el estado actual.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @param {unknown} payload Payload crudo de penaltis.
+ * @returns {void}
+ */
 function updatePenaltis(state, payload) {
   const parsed = parseApiArrayResponse(payload);
   state.penaltis = Array.isArray(parsed) ? parsed : [];
 }
 
+/**
+ * Sustituye o normaliza la estructura de alineaciones del partido en el estado.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @param {unknown} payload Payload crudo de alineaciones.
+ * @returns {void}
+ */
 function updateAlineaciones(state, payload) {
   const parsed = parseApiArrayResponse(payload);
   if (Array.isArray(parsed) && parsed[0] && typeof parsed[0] === "object") {
@@ -552,6 +688,12 @@ function updateAlineaciones(state, payload) {
   }
 }
 
+/**
+ * Carga el detalle completo del partido, engancha SignalR y activa el render reactivo del modal.
+ *
+ * @param {string|number} idPartido Identificador del partido a cargar.
+ * @returns {Promise<void>} Promesa resuelta al terminar la carga inicial.
+ */
 async function cargarDetallePartido(idPartido) {
   console.log("[SignalR] Esperando disponibilidad de window.hubProxy...");
   const start = Date.now();

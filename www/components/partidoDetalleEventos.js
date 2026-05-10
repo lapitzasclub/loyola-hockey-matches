@@ -42,8 +42,6 @@ function renderPlayerRef(prefix, payload) {
 function renderEventoTexto(ev) {
   const dorsal1 = normText(ev.Dorsal1);
   const dorsal2 = normText(ev.Dorsal2);
-  const lic1 = normText(ev.Lic1);
-  const lic2 = normText(ev.Lic2);
   const codigo = normText(ev.Codigo);
   const mins = normText(ev.MinSancion);
 

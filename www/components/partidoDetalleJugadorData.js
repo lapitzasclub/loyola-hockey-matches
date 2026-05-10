@@ -1,5 +1,13 @@
 import { emptyArray } from "./partidoDetalleUtils.js";
 
+/**
+ * Resuelve el contexto completo de un jugador seleccionado dentro del detalle de partido.
+ * Combina el payload clicable con la alineación actual y con los eventos del partido.
+ *
+ * @param {object} state Estado interno del modal de detalle de partido.
+ * @param {object} payload Datos mínimos serializados en el enlace pulsable del jugador.
+ * @returns {object} Objeto enriquecido del jugador listo para render e hidratación.
+ */
 export function resolveJugadorDetalle(state, payload) {
   const nombre = String(payload?.nombre || "").trim().toLowerCase();
   const dorsal = String(payload?.dorsal || "").trim();
@@ -57,6 +65,13 @@ export function resolveJugadorDetalle(state, payload) {
   };
 }
 
+/**
+ * Filtra los eventos del partido que afectan al jugador indicado.
+ *
+ * @param {Array<object>} eventos Eventos del partido actual.
+ * @param {object} jugadorRef Referencia mínima del jugador, dorsal, nombre y lado.
+ * @returns {Array<object>} Lista de eventos relacionados con el jugador.
+ */
 export function getJugadorEventos(eventos, jugadorRef) {
   const dorsal = String(jugadorRef?.dorsal || "").trim();
   const nombre = String(jugadorRef?.nombre || "").trim().toLowerCase();

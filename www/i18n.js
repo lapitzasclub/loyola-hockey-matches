@@ -18,8 +18,8 @@ export const i18n = {
     loyA: "Loyola Indautxu A",
     loyB: "Loyola Indautxu B",
     loading: "Cargando partidos...",
-    no_matches: (equipo) => `No hay partidos para Loyola Indautxu ${equipo}.`,
-    no_clasificacion: (equipo) => `Este equipo no se encuentra dentro de ninguna clasificación.`,
+    no_matches: (_equipo) => `No hay partidos para Loyola Indautxu ${_equipo}.`,
+    no_clasificacion: (_equipo) => `Este equipo no se encuentra dentro de ninguna clasificación.`,
     select_theme: "Tema",
     // Nota: 'error' recibirá argumentos "stringificados" de forma segura por t()
     error: (e) => `Error: ${e}`,
@@ -85,8 +85,8 @@ export const i18n = {
     loyA: "Loyola Indautxu A",
     loyB: "Loyola Indautxu B",
     loading: "Partidak kargatzen...",
-    no_matches: (equipo) => `Ez dago partidarik Loyola Indautxu ${equipo} taldearentzat.`,
-    no_clasificacion: (equipo) => `Talde hau ez dago sailkapen batean.`,
+    no_matches: (_equipo) => `Ez dago partidarik Loyola Indautxu ${_equipo} taldearentzat.`,
+    no_clasificacion: (_equipo) => `Talde hau ez dago sailkapen batean.`,
     select_theme: "Gaia",
     // Nota: 'error' recibirá argumentos "stringificados" de forma segura por t()
     error: (e) => `Errorea: ${e}`,

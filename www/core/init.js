@@ -163,7 +163,6 @@ export async function initApp() {
         setLang(e.target.value);
         updateTexts();
         // Detectar pestaña activa y recargar solo esa vista
-        const navPartidos = document.getElementById("navPartidos");
         const navClas = document.getElementById("navClas");
         if (navClas && navClas.classList.contains("active")) {
           // Si está activa la pestaña de clasificación, recargar clasificación

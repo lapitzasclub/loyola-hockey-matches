@@ -1,4 +1,4 @@
-import { getCachedApi, setCachedApi, invalidateApiCache } from "./utils/apiCache.js";
+import { getCachedApi, setCachedApi } from "./utils/apiCache.js";
 import { isNative, getHttp } from "./utils/env.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";
@@ -215,7 +215,7 @@ export async function getEquiposLoyolaTodasCompeticiones() {
     console.error("Error parseando JSON de competiciones:", e);
     return [];
   }
-  let competiciones = [];
+  let competiciones;
   try {
     competiciones = compJson.d ? JSON.parse(compJson.d) : [];
   } catch (e) {
@@ -239,7 +239,7 @@ export async function getEquiposLoyolaTodasCompeticiones() {
       console.error("Error parseando JSON de parametros:", e);
       continue;
     }
-    let params = [];
+    let params;
     try {
       params = paramJson.d ? JSON.parse(paramJson.d) : [];
     } catch (e) {

@@ -1,6 +1,12 @@
 import { t } from "../i18n.js";
 import { escapeHtml } from "./partidoDetalleUtils.js";
 
+/**
+ * Renderiza la cabecera compacta de la subvista de jugador dentro del modal.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @returns {string} HTML de la cabecera de jugador.
+ */
 export function renderJugadorHeader(state) {
   const jugador = state.selectedJugador;
   if (!jugador) return `<div>${escapeHtml(t("detail_match"))}</div>`;

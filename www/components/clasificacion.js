@@ -7,6 +7,15 @@ import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clas
 import { decodeApiRaw, safeStr } from "../utils/helpers.js";
 
 /**
+ * Genera la clave de almacenamiento local para una clasificación concreta.
+ * @param {string} grupo Nombre del grupo o competición.
+ * @returns {string} Clave de localStorage.
+ */
+function getClasificacionStorageKey(grupo) {
+  return `clasificacion:${grupo}`;
+}
+
+/**
  * Renderiza la clasificación. Si la API retorna vacío o error, muestra mensaje amigable.
  * @param {HTMLElement} matchesList - Elemento donde renderizar la clasificación.
  * @param {any} raw - Respuesta cruda de la API.
@@ -67,8 +76,7 @@ export function renderClasificacion(matchesList, raw) {
  * @returns {HTMLTableElement} Tabla HTML con la clasificación.
  */
 function renderClasificacionTable(grupo, equipos, selectedInfo) {
-  // Detect jornada actual (máximo Orden en equipos)
-  const ordenActual = Math.max(...equipos.map((eq) => Number(eq?.Orden ?? 0)));
+  const currKey = getClasificacionStorageKey(grupo);
   // Calcular posiciones previas usando helper modularizado
   let prevPosMap = {};
   try {
@@ -117,15 +125,12 @@ function renderClasificacionTable(grupo, equipos, selectedInfo) {
     const dgTxt = (dg >= 0 ? "+" : "") + dg;
     const tr = document.createElement("tr");
     // Usar IdEquipo si existe y es válido, si no IdEquipoComp
-    let eqId = null;
-    if (
+    const eqId = (
       typeof eq?.IdEquipo === "number" ||
       (typeof eq?.IdEquipo === "string" && eq.IdEquipo !== "")
-    ) {
-      eqId = String(eq.IdEquipo);
-    } else {
-      eqId = String(eq?.IdEquipoComp);
-    }
+    )
+      ? String(eq.IdEquipo)
+      : String(eq?.IdEquipoComp);
     const eqNombre = eq?.NombreEquipo?.toUpperCase();
     const eqAbrev = eq?.NombreEquipoAbrev?.toUpperCase();
     currData.push({ IdEquipo: eqId, Posicion: eq?.Posicion });

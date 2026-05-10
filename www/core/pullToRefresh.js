@@ -126,11 +126,11 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
           } else {
             await mostrarPartidosYClasificacion();
           }
-        } catch (e2) {
+        } catch (error) {
           const listEl = document.getElementById("matches");
           listEl.innerHTML = `<li>${t(
             "error",
-            error_?.message || String(error_)
+            error?.message || String(error)
           )}</li>`;
         } finally {
           setTimeout(() => {
