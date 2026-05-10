@@ -1,5 +1,11 @@
 import { t } from "../i18n.js";
-import { emptyArray, escapeHtml } from "./partidoDetalleUtils.js";
+import { emptyArray, escapeHtml, parseApiArrayResponse } from "./partidoDetalleUtils.js";
+
+export function getPlayerStatsData(raw) {
+  const parsed = parseApiArrayResponse(raw);
+  if (Array.isArray(parsed)) return parsed[0] || null;
+  return parsed && typeof parsed === "object" ? parsed : null;
+}
 
 export function getJugadorFotoUrl(foto) {
   const key = String(foto || "sinfoto").trim();
@@ -99,6 +105,27 @@ export function renderStatsChipsFromRows(rows, tipo, modalidad) {
       ? `<span class="alineacion-chip">${escapeHtml(column.label)} <strong>${escapeHtml(rendered)}</strong></span>`
       : "";
   }).join("");
+}
+
+export function renderJugadorTimeline(eventos) {
+  return emptyArray(eventos).map((ev) => {
+    const period = escapeHtml(ev.CodPeriodo || "");
+    const crono = escapeHtml(ev.Crono || "");
+    const tipo = escapeHtml(ev.IdTipoEvento || ev.Descripcion || "Evento");
+    return `<div class="partido-detalle-player-event"><span>${period} ${crono}</span><strong>${tipo}</strong></div>`;
+  }).join("") || `<div class="partido-detalle-empty small">${escapeHtml(t("detail_player_no_events"))}</div>`;
+}
+
+export function renderPartidoJugadorChips(partidoStats = {}) {
+  return [
+    partidoStats.Goles != null ? `<span class="alineacion-chip">G <strong>${escapeHtml(partidoStats.Goles)}</strong></span>` : "",
+    partidoStats.Asist != null ? `<span class="alineacion-chip">As <strong>${escapeHtml(partidoStats.Asist)}</strong></span>` : "",
+    partidoStats.FaltaReal != null ? `<span class="alineacion-chip">F+ <strong>${escapeHtml(partidoStats.FaltaReal)}</strong></span>` : "",
+    partidoStats.FaltaRec != null ? `<span class="alineacion-chip">F- <strong>${escapeHtml(partidoStats.FaltaRec)}</strong></span>` : "",
+    partidoStats.Azules != null ? `<span class="alineacion-chip">Az <strong>${escapeHtml(partidoStats.Azules)}</strong></span>` : "",
+    partidoStats.Rojas != null ? `<span class="alineacion-chip">Rj <strong>${escapeHtml(partidoStats.Rojas)}</strong></span>` : "",
+    partidoStats.Minutos != null ? `<span class="alineacion-chip">Min <strong>${escapeHtml(partidoStats.Minutos)}</strong></span>` : "",
+  ].filter(Boolean).join("");
 }
 
 export function renderJugadorCompeticion(competicion, tipo, modalidad, options = {}) {
