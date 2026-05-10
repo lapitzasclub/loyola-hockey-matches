@@ -180,16 +180,84 @@ function renderAll(state, headerEl, bodyEl) {
 function bindPlayerLinks(rootEl, state, headerEl) {
   rootEl.querySelectorAll(".partido-detalle-player-link").forEach((btn) => {
     btn.onclick = () => {
+      let payload = null;
       try {
-        state.selectedJugador = JSON.parse(btn.dataset.player || "null");
+        payload = JSON.parse(btn.dataset.player || "null");
       } catch {
-        state.selectedJugador = null;
+        payload = null;
       }
+      state.selectedJugador = payload ? resolveJugadorDetalle(state, payload) : null;
       if (!state.selectedJugador) return;
       pushView(state, getCurrentView(state));
       setCurrentView(state, "jugador");
       renderAll(state, headerEl, rootEl.closest("#partido-detalle-body") || rootEl);
     };
+  });
+}
+
+function resolveJugadorDetalle(state, payload) {
+  const nombre = String(payload?.nombre || "").trim().toLowerCase();
+  const dorsal = String(payload?.dorsal || "").trim();
+  const teamType = payload?.teamType;
+  const alin = state.alineaciones || {};
+
+  const groups = teamType === "local"
+    ? [
+        { role: "jugador", items: emptyArray(alin.JugLocal) },
+        { role: "portero", items: emptyArray(alin.PortLocal) },
+        { role: "tecnico", items: emptyArray(alin.TecnLocal) },
+      ]
+    : teamType === "visitante"
+      ? [
+          { role: "jugador", items: emptyArray(alin.JugVisit) },
+          { role: "portero", items: emptyArray(alin.PortVisit) },
+          { role: "tecnico", items: emptyArray(alin.TecnVisit) },
+        ]
+      : [];
+
+  let match = null;
+  for (const group of groups) {
+    match = group.items.find((item) => {
+      const itemDorsal = String(item?.Dorsal || "").trim();
+      const itemNombre = String(item?.ApellidosNombre || item?.NombreApellidos || "").trim().toLowerCase();
+      return (dorsal && itemDorsal === dorsal) || (nombre && itemNombre === nombre);
+    });
+    if (match) {
+      return {
+        ...payload,
+        role: group.role,
+        teamName: teamType === "local" ? state.partido?.local : state.partido?.visit,
+        teamLogo: teamType === "local" ? state.partido?.logoLocal : state.partido?.logoVisit,
+        nombre: match.ApellidosNombre || match.NombreApellidos || payload.nombre,
+        dorsal: match.Dorsal ?? payload.dorsal,
+        stats: match,
+        eventos: getJugadorEventos(state.eventos, { dorsal, nombre, teamType }),
+      };
+    }
+  }
+
+  return {
+    ...payload,
+    teamName: teamType === "local" ? state.partido?.local : teamType === "visitante" ? state.partido?.visit : "",
+    teamLogo: teamType === "local" ? state.partido?.logoLocal : teamType === "visitante" ? state.partido?.logoVisit : null,
+    eventos: getJugadorEventos(state.eventos, { dorsal, nombre, teamType }),
+  };
+}
+
+function getJugadorEventos(eventos, jugadorRef) {
+  const dorsal = String(jugadorRef?.dorsal || "").trim();
+  const nombre = String(jugadorRef?.nombre || "").trim().toLowerCase();
+  const teamType = jugadorRef?.teamType;
+  return emptyArray(eventos).filter((ev) => {
+    const sameTeam = teamType ? Number(ev.LocalVisit) === (teamType === "local" ? 1 : 2) : true;
+    const dorsal1 = String(ev?.Dorsal1 || "").trim();
+    const dorsal2 = String(ev?.Dorsal2 || "").trim();
+    const nombre1 = String(ev?.Lic1 || "").trim().toLowerCase();
+    const nombre2 = String(ev?.Lic2 || "").trim().toLowerCase();
+    return sameTeam && (
+      (dorsal && (dorsal1 === dorsal || dorsal2 === dorsal)) ||
+      (nombre && (nombre1 === nombre || nombre2 === nombre))
+    );
   });
 }
 
@@ -214,27 +282,53 @@ function renderJugadorSubview(state) {
     `;
   }
 
+  const stats = jugador.stats || {};
+  const timeline = emptyArray(jugador.eventos).map((ev) => {
+    const period = escapeHtml(ev.CodPeriodo || "");
+    const crono = escapeHtml(ev.Crono || "");
+    const tipo = escapeHtml(ev.IdTipoEvento || ev.Descripcion || "Evento");
+    return `<div class="partido-detalle-player-event"><span>${period} ${crono}</span><strong>${tipo}</strong></div>`;
+  }).join("") || `<div class="partido-detalle-empty small">Sin eventos registrados.</div>`;
+
+  const chips = [
+    stats.Goles != null ? `<span class="alineacion-chip">G <strong>${escapeHtml(stats.Goles)}</strong></span>` : "",
+    stats.Asist != null ? `<span class="alineacion-chip">As <strong>${escapeHtml(stats.Asist)}</strong></span>` : "",
+    stats.FaltaReal != null ? `<span class="alineacion-chip">F+ <strong>${escapeHtml(stats.FaltaReal)}</strong></span>` : "",
+    stats.FaltaRec != null ? `<span class="alineacion-chip">F- <strong>${escapeHtml(stats.FaltaRec)}</strong></span>` : "",
+    stats.Azules != null ? `<span class="alineacion-chip">Az <strong>${escapeHtml(stats.Azules)}</strong></span>` : "",
+    stats.Rojas != null ? `<span class="alineacion-chip">Rj <strong>${escapeHtml(stats.Rojas)}</strong></span>` : "",
+    stats.Minutos != null ? `<span class="alineacion-chip">Min <strong>${escapeHtml(stats.Minutos)}</strong></span>` : "",
+  ].filter(Boolean).join("");
+
   return `
     <section class="partido-detalle-section partido-detalle-player-sheet subview-enter">
       <div class="partido-detalle-section-title">Detalle de jugador</div>
       <div class="partido-detalle-player-card">
-        <div class="partido-detalle-player-eyebrow">${escapeHtml(jugador.teamType || "")}${jugador.role ? ` · ${escapeHtml(jugador.role)}` : ""}</div>
-        <div class="partido-detalle-player-name">${escapeHtml(jugador.nombre || "Sin nombre")}</div>
-        <div class="partido-detalle-player-meta">${jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : "Sin dorsal"}</div>
+        <div class="partido-detalle-player-hero">
+          ${jugador.teamLogo ? `<img class="partido-detalle-player-team-logo" src="${logoUrl(jugador.teamLogo)}" alt="${escapeHtml(jugador.teamName || "")}">` : ""}
+          <div>
+            <div class="partido-detalle-player-eyebrow">${escapeHtml(jugador.teamName || jugador.teamType || "")}${jugador.role ? ` · ${escapeHtml(jugador.role)}` : ""}</div>
+            <div class="partido-detalle-player-name">${escapeHtml(jugador.nombre || "Sin nombre")}</div>
+            <div class="partido-detalle-player-meta">${jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : "Sin dorsal"}</div>
+          </div>
+        </div>
+        ${chips ? `<div class="alineacion-chips partido-detalle-player-chips">${chips}</div>` : `<div class="partido-detalle-empty small">Sin estadísticas destacadas.</div>`}
       </div>
-      <div class="partido-detalle-empty">Base preparada. Siguiente paso: resolver estadísticas y eventos del jugador dentro del partido.</div>
+      <section class="partido-detalle-section partido-detalle-player-events-card">
+        <div class="partido-detalle-section-title">Acciones del partido</div>
+        <div class="partido-detalle-player-events-list">${timeline}</div>
+      </section>
     </section>
   `;
 }
 
 function renderJugadorHeader(state) {
   const jugador = state.selectedJugador;
-  const p = state.partido;
   if (!jugador) return `<div>${escapeHtml(t("detail_match"))}</div>`;
 
   return `
     <div class="partido-detalle-subheader subview-enter">
-      <div class="partido-detalle-subheader-top">${escapeHtml(p?.localAbrev || p?.visitAbrev || t("detail_match"))}</div>
+      <div class="partido-detalle-subheader-top">${escapeHtml(jugador.teamName || jugador.teamType || t("detail_match"))}</div>
       <div class="partido-detalle-subheader-title">${escapeHtml(jugador.nombre || "Jugador")}</div>
       <div class="partido-detalle-subheader-meta">${jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : ""}${jugador.role ? `${jugador.dorsal ? " · " : ""}${escapeHtml(jugador.role)}` : ""}</div>
     </div>
