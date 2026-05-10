@@ -5,32 +5,24 @@ import {
   getPartido,
   subscribePartidoHubEvents,
 } from "../services.js";
-
-function parseApiArrayResponse(raw) {
-  if (!raw) return null;
-
-  if (typeof raw === "string") {
-    try {
-      const parsed = JSON.parse(raw);
-      if (parsed?.d !== undefined) {
-        return typeof parsed.d === "string" ? JSON.parse(parsed.d) : parsed.d;
-      }
-      return parsed;
-    } catch {
-      return null;
-    }
-  }
-
-  if (raw?.d !== undefined) {
-    try {
-      return typeof raw.d === "string" ? JSON.parse(raw.d) : raw.d;
-    } catch {
-      return null;
-    }
-  }
-
-  return raw;
-}
+import { renderAlineaciones } from "./partidoDetalleAlineaciones.js";
+import {
+  createDetalleState,
+  emptyArray,
+  escapeHtml,
+  formatFecha,
+  formatHora,
+  getCurrentTab,
+  getCurrentView,
+  getViewStack,
+  logoUrl,
+  normText,
+  normalizarPartido,
+  parseApiArrayResponse,
+  popView,
+  setCurrentTab,
+  setCurrentView,
+} from "./partidoDetalleUtils.js";
 
 function setHeaderContent(headerEl, html, reason = "") {
   headerEl.innerHTML = html;
@@ -41,113 +33,6 @@ function setHeaderContent(headerEl, html, reason = "") {
   });
 }
 
-function emptyArray(value) {
-  return Array.isArray(value) ? value : [];
-}
-
-function normText(value) {
-  return value == null ? "" : String(value).trim();
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function logoUrl(id, size = 200) {
-  const key = normText(id) || "sinescudo";
-  return `https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/entidad/${size}x${size}/${key}.png`;
-}
-
-function formatFecha(fecha) {
-  if (!fecha) return "";
-  const text = String(fecha);
-  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
-    return text.slice(0, 10);
-  }
-  return text;
-}
-
-function formatHora(hora) {
-  if (!hora) return "";
-  const text = String(hora);
-  return text.length >= 5 ? text.slice(0, 5) : text;
-}
-
-function normalizarPartido(input) {
-  const p = Array.isArray(input) ? input[0] : input;
-  if (!p || typeof p !== "object") return null;
-  return {
-    raw: p,
-    modalidad: p.IdModalidadComp || "hp",
-    competicion: p.DenoComp || "",
-    jornada: p.NombreJornada || "",
-    fecha: p.Fecha || "",
-    hora: p.Hora || "",
-    instalacion: p.Instalacion || "",
-    estado: p.Periodo || p.Estado || "",
-    crono: p.Crono || "",
-    local: p.Eq1 || p.Local || "Equipo local",
-    visit: p.Eq2 || p.Visit || "Equipo visitante",
-    localAbrev: p.LocalAbrev || "",
-    visitAbrev: p.VisitAbrev || "",
-    golesLocal: p.GolesLocal ?? "-",
-    golesVisit: p.GolesVisit ?? "-",
-    arbitros: [p.Arb1, p.Arb2].filter(Boolean),
-    logoLocal: p.IdEntidadEq1 || p.IdEnt1 || p.IdEq1 || p.IdEquipoLocal || "sinescudo",
-    logoVisit: p.IdEntidadEq2 || p.IdEnt2 || p.IdEq2 || p.IdEquipoVisit || "sinescudo",
-    idEquipoLocal: p.IdEq1 || p.IdEquipoLocal || null,
-    idEquipoVisit: p.IdEq2 || p.IdEquipoVisit || null,
-    puntoBonus: p.PuntoBonus,
-  };
-}
-
-function createDetalleState(idPartido) {
-  return {
-    idPartido: String(idPartido),
-    partido: null,
-    modalidad: "hp",
-    eventos: [],
-    alineaciones: null,
-    penaltis: [],
-    statsResumen: [],
-    localKey: null,
-    visitKey: null,
-    navigation: {
-      currentView: "partido",
-      currentTab: "resumen",
-      viewStack: [],
-    },
-  };
-}
-
-function getCurrentView(state) {
-  return state.navigation?.currentView || "partido";
-}
-
-function getCurrentTab(state) {
-  return state.navigation?.currentTab || "resumen";
-}
-
-function getViewStack(state) {
-  return state.navigation?.viewStack || [];
-}
-
-function setCurrentView(state, view) {
-  state.navigation.currentView = view;
-}
-
-function setCurrentTab(state, tab) {
-  state.navigation.currentTab = tab;
-}
-
-function popView(state) {
-  return state.navigation.viewStack.pop();
-}
 
 export function openPartidoDetalle(idPartido) {
   closePartidoDetalle({ immediate: true });
@@ -629,161 +514,6 @@ function renderEventoTexto(ev) {
   }
 }
 
-function renderAlineaciones(state) {
-  const alin = state.alineaciones;
-  if (!alin) {
-    return '<div class="partido-detalle-empty">No hay alineaciones disponibles.</div>';
-  }
-
-  const local = renderAlineacionEquipo(
-    state.partido?.local || "Equipo local",
-    emptyArray(alin.JugLocal),
-    emptyArray(alin.PortLocal),
-    emptyArray(alin.TecnLocal),
-    state.modalidad,
-  );
-  const visit = renderAlineacionEquipo(
-    state.partido?.visit || "Equipo visitante",
-    emptyArray(alin.JugVisit),
-    emptyArray(alin.PortVisit),
-    emptyArray(alin.TecnVisit),
-    state.modalidad,
-  );
-
-  return `<div class="alineaciones-grid">${local}${visit}</div>`;
-}
-
-function renderAlineacionEquipo(nombre, jugadores, porteros, tecnicos, modalidad) {
-  return `
-    <section class="partido-detalle-section alineacion-card">
-      <div class="alineacion-team-title">${escapeHtml(nombre)}</div>
-      ${renderJugadoresCards(jugadores, modalidad)}
-      ${renderPorterosCards(porteros, modalidad)}
-      ${renderTecnicosCards(tecnicos, modalidad)}
-    </section>
-  `;
-}
-
-function renderAlineacionItem({ marker, name, tags = "", chips = "", emptyText = t("detail_no_highlights"), extraClass = "" }) {
-  return `
-    <article class="alineacion-item ${extraClass}">
-      <div class="alineacion-item-main">
-        <div class="alineacion-dorsal">${marker}</div>
-        <div class="alineacion-info">
-          <div class="alineacion-name-row">
-            <div class="alineacion-name">${escapeHtml(name ?? "")}</div>
-            ${tags ? `<div class="alineacion-tags">${tags}</div>` : ""}
-          </div>
-          ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(emptyText)}</div>`}
-        </div>
-      </div>
-    </article>
-  `;
-}
-
-function renderTagList(tags) {
-  return tags
-    .filter(Boolean)
-    .map((tag) => `<span class="alineacion-tag">${escapeHtml(tag)}</span>`)
-    .join("");
-}
-
-function renderStatChip(label, value, variant = "") {
-  if (value === undefined || value === null || value === "" || value === 0 || value === "0/0") return "";
-  return `<span class="alineacion-chip ${variant}">${escapeHtml(label)} <strong>${escapeHtml(value)}</strong></span>`;
-}
-
-function renderJugadoresCards(jugadores, modalidad) {
-  if (!jugadores.length) return `<div class="partido-detalle-empty small">${escapeHtml(t("detail_players"))}: 0</div>`;
-  const isHp = modalidad !== "hl";
-  const items = jugadores.map((j) => {
-    const tags = renderTagList([
-      j.Inicial ? t("detail_starter") : "",
-      j.Capitan ? t("detail_captain") : "",
-      j.AsistCap ? t("detail_assistant_captain") : "",
-    ]);
-    const pe = j.TirosPenalti ? `${j.GolPenalti || 0}/${j.TirosPenalti}` : "";
-    const fd = j.TirosFD ? `${j.GolFD || 0}/${j.TirosFD}` : "";
-    const chips = [
-      renderStatChip("G", j.Goles),
-      renderStatChip("As", j.Asist),
-      isHp ? renderStatChip("Pe", pe) : "",
-      isHp ? renderStatChip("FD", fd) : "",
-      renderStatChip("F+", j.FaltaReal),
-      renderStatChip("F-", j.FaltaRec),
-      isHp ? renderStatChip("Az", j.Azules) : "",
-      isHp ? renderStatChip("Rj", j.Rojas) : "",
-      renderStatChip("Min", j.Minutos),
-    ].filter(Boolean).join("");
-
-    return renderAlineacionItem({
-      marker: escapeHtml(j.Dorsal ?? "--"),
-      name: j.ApellidosNombre,
-      tags,
-      chips,
-    });
-  }).join("");
-
-  return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_players"))}</div><div class="alineacion-list">${items}</div></div>`;
-}
-
-function renderPorterosCards(porteros, modalidad) {
-  if (!porteros.length) return "";
-  const isHp = modalidad !== "hl";
-  const items = porteros.map((p) => {
-    const goles = Number(p.Goles || 0);
-    const paradasBase = Number(p.Paradas || 0);
-    const tiros = paradasBase + goles;
-    const pct = tiros ? `${((1 - goles / tiros) * 100).toFixed(2)}%` : "";
-    const tags = renderTagList([
-      p.Inicial ? t("detail_starter") : "",
-      p.Capitan ? t("detail_captain") : "",
-    ]);
-    const chips = [
-      renderStatChip("GC", goles),
-      renderStatChip("Tir", tiros),
-      renderStatChip("%", pct),
-      renderStatChip("F+", p.FaltaReal),
-      renderStatChip("F-", p.FaltaRec),
-      isHp ? renderStatChip("Az", p.Azules) : "",
-      isHp ? renderStatChip("Rj", p.Rojas) : "",
-      renderStatChip("Min", p.Minutos),
-    ].filter(Boolean).join("");
-
-    return renderAlineacionItem({
-      marker: escapeHtml(p.Dorsal ?? "--"),
-      name: p.ApellidosNombre,
-      tags,
-      chips,
-      extraClass: "alineacion-item-goalie",
-    });
-  }).join("");
-
-  return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_goalkeepers"))}</div><div class="alineacion-list">${items}</div></div>`;
-}
-
-function renderTecnicosCards(tecnicos, modalidad) {
-  if (!tecnicos.length) return "";
-  const isHp = modalidad !== "hl";
-  const items = tecnicos.map((tecnico) => {
-    const posMap = { 3: "ENT", 4: "ENT2", 5: "DEL", 6: "AUX" };
-    const pos = posMap[tecnico.IdPosicion] || tecnico.IdPosicion || "TEC";
-    const chips = [
-      isHp ? renderStatChip("Az", tecnico.Azules) : "",
-      isHp ? renderStatChip("Rj", tecnico.Rojas) : "",
-      renderStatChip("Min", tecnico.Minutos),
-    ].filter(Boolean).join("");
-    return renderAlineacionItem({
-      marker: `<span class="alineacion-dorsal-role">${escapeHtml(pos)}</span>`,
-      name: tecnico.ApellidosNombre,
-      chips,
-      emptyText: t("detail_no_incidents"),
-      extraClass: "alineacion-item-staff",
-    });
-  }).join("");
-
-  return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_staff"))}</div><div class="alineacion-list">${items}</div></div>`;
-}
 
 function renderPenaltis(state) {
   const penaltis = state.penaltis;
