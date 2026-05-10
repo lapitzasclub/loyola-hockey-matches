@@ -136,3 +136,103 @@ export function renderPartidoHeader(state) {
     </div>
   `;
 }
+
+/**
+ * Renderiza el bloque de resumen del partido a partir de las estadísticas agregadas.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @returns {string} HTML del resumen del partido.
+ */
+export function renderResumen(state) {
+  const p = state.partido;
+  if (!p) return `<div class="partido-detalle-empty">${escapeHtml(t("detail_summary_title"))}</div>`;
+
+  const resumen = buildStatsSummary(state.statsResumen);
+  const rows = [
+    { label: t("detail_goals"), local: resumen.golesLocal, visit: resumen.golesVisit },
+    { label: t("detail_fouls"), local: resumen.faltasLocal, visit: resumen.faltasVisit },
+    { label: t("detail_blue_cards"), local: resumen.azulesLocal, visit: resumen.azulesVisit },
+    { label: t("detail_red_cards"), local: resumen.rojasLocal, visit: resumen.rojasVisit },
+  ];
+
+  return `
+    <div class="partido-detalle-section">
+      <div class="partido-detalle-section-title">${escapeHtml(t("detail_summary_title"))}</div>
+      <div class="partido-detalle-summary-table-wrap">
+        <table class="partido-detalle-summary-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>${escapeHtml(p.localAbrev || "LOC")}</th>
+              <th>${escapeHtml(p.visitAbrev || "VIS")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <th scope="row">${escapeHtml(row.label)}</th>
+                <td>${escapeHtml(row.local)}</td>
+                <td>${escapeHtml(row.visit)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Renderiza el bloque de tanda de penaltis del partido.
+ *
+ * @param {object} state Estado interno del detalle de partido.
+ * @returns {string} HTML de la sección de penaltis.
+ */
+export function renderPenaltis(state) {
+  const penaltis = state.penaltis;
+  if (!Array.isArray(penaltis) || !penaltis.length) {
+    return `<div class="partido-detalle-empty">${escapeHtml(t("detail_penalty_shots_none"))}</div>`;
+  }
+
+  const localId = state.localKey != null ? String(state.localKey) : null;
+  const visitId = state.visitKey != null ? String(state.visitKey) : null;
+  const local = penaltis.filter((p) => localId && String(p.IdEquipo) === localId);
+  const visit = penaltis.filter((p) => visitId && String(p.IdEquipo) === visitId);
+  const rest = !localId && !visitId ? penaltis : [];
+
+  return `
+    <div class="penaltis-grid">
+      ${renderPenaltisColumn(state.partido?.local || t("detail_local"), local.length ? local : rest)}
+      ${visit.length ? renderPenaltisColumn(state.partido?.visit || t("detail_visitor"), visit) : ""}
+    </div>
+  `;
+}
+
+function buildStatsSummary(stats) {
+  const pick = (type, side) => stats.find((s) => s.IdTipoEvento === type && Number(s.LocalVisit) === side)?.Total ?? 0;
+  return {
+    golesLocal: pick("gol", 1),
+    golesVisit: pick("gol", 2),
+    faltasLocal: pick("falta", 1) || pick("faltahl", 1),
+    faltasVisit: pick("falta", 2) || pick("faltahl", 2),
+    azulesLocal: pick("tarjetaazul", 1),
+    azulesVisit: pick("tarjetaazul", 2),
+    rojasLocal: pick("tarjetaroja", 1),
+    rojasVisit: pick("tarjetaroja", 2),
+  };
+}
+
+function renderPenaltisColumn(title, items) {
+  return `
+    <section class="partido-detalle-section">
+      <div class="partido-detalle-section-title">${escapeHtml(title)}</div>
+      <div class="penaltis-column">
+        ${items.map((p) => {
+          const icon = p.Gol === true ? "✔" : p.Gol === false ? "✘" : "□";
+          const cls = p.Gol === true ? "ok" : p.Gol === false ? "bad" : "neutral";
+          return `<div class="penalti-row"><span class="penalti-dorsal">${escapeHtml(p.Dorsal ?? "")}</span><span class="penalti-nombre">${escapeHtml(p.NombreApellidos ?? "")}</span><span class="penalti-estado ${cls}">${icon}</span></div>`;
+        }).join("")}
+      </div>
+    </section>
+  `;
+}
