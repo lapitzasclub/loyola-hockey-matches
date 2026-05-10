@@ -533,6 +533,28 @@ body[data-theme="dark"] .evento-subtitle {
   padding: 0.7rem 0.35rem;
 }
 
+.partido-detalle-player-link {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.partido-detalle-player-link:hover {
+  color: var(--color-primary);
+}
+
+.partido-detalle-player-link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-primary) 75%, white 25%);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
 .alineacion-dorsal {
   display: inline-flex;
   align-items: center;
@@ -601,6 +623,35 @@ body[data-theme="dark"] .evento-subtitle {
 .alineacion-muted {
   font-size: 0.8rem;
   color: var(--color-fecha);
+}
+
+.partido-detalle-player-sheet {
+  margin: 1rem;
+}
+
+.partido-detalle-player-card {
+  padding: 1rem;
+  border-top: 1px solid var(--color-card-border);
+}
+
+.partido-detalle-player-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-fecha);
+}
+
+.partido-detalle-player-name {
+  margin-top: 0.35rem;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--color-text);
+}
+
+.partido-detalle-player-meta {
+  margin-top: 0.25rem;
+  color: var(--color-fecha);
+  font-weight: 700;
 }
 
 .penaltis-column {

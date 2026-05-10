@@ -18,6 +18,25 @@ function renderEventoIcon(ev, golesLocal, golesVisit, faltasLocal, faltasVisit) 
   }
 }
 
+function buildEventPlayerPayload(ev, slot = 1) {
+  const dorsal = normText(slot === 1 ? ev.Dorsal1 : ev.Dorsal2);
+  const nombre = normText(slot === 1 ? ev.Lic1 : ev.Lic2);
+  if (!dorsal && !nombre) return null;
+  return {
+    role: "evento",
+    teamType: Number(ev.LocalVisit) === 1 ? "local" : Number(ev.LocalVisit) === 2 ? "visitante" : null,
+    dorsal: dorsal || null,
+    nombre,
+    eventSlot: slot,
+    data: ev,
+  };
+}
+
+function renderPlayerRef(prefix, payload) {
+  if (!payload) return "";
+  return `${prefix}<button type="button" class="partido-detalle-player-link" data-player='${escapeHtml(JSON.stringify(payload))}'>#${escapeHtml(payload.dorsal || "")} ${escapeHtml(payload.nombre || "")}</button>`;
+}
+
 function renderEventoTexto(ev) {
   const dorsal1 = normText(ev.Dorsal1);
   const dorsal2 = normText(ev.Dorsal2);
@@ -29,20 +48,20 @@ function renderEventoTexto(ev) {
   switch (ev.IdTipoEvento) {
     case "gol":
       return `
-        <div class="evento-title evento-title-goal">GOL${dorsal1 ? `: #${escapeHtml(dorsal1)} ${escapeHtml(lic1)}` : ""}</div>
-        ${dorsal2 ? `<div class="evento-subtitle">Asiste: #${escapeHtml(dorsal2)} ${escapeHtml(lic2)}</div>` : ""}
+        <div class="evento-title evento-title-goal">GOL${dorsal1 ? `: ${renderPlayerRef("", buildEventPlayerPayload(ev, 1))}` : ""}</div>
+        ${dorsal2 ? `<div class="evento-subtitle">${renderPlayerRef("Asiste: ", buildEventPlayerPayload(ev, 2))}</div>` : ""}
       `;
     case "falta":
       return `
-        <div class="evento-title evento-title-fault">FALTA${dorsal1 ? `: #${escapeHtml(dorsal1)} ${escapeHtml(lic1)}` : ""}</div>
-        ${dorsal2 ? `<div class="evento-subtitle">Recibe: #${escapeHtml(dorsal2)} ${escapeHtml(lic2)}</div>` : ""}
+        <div class="evento-title evento-title-fault">FALTA${dorsal1 ? `: ${renderPlayerRef("", buildEventPlayerPayload(ev, 1))}` : ""}</div>
+        ${dorsal2 ? `<div class="evento-subtitle">${renderPlayerRef("Recibe: ", buildEventPlayerPayload(ev, 2))}</div>` : ""}
       `;
     case "penalti":
-      return `<div class="evento-title evento-title-fault">PENALTI${dorsal1 ? ` · #${escapeHtml(dorsal1)} ${escapeHtml(lic1)}` : ""}</div>${codigo ? `<div class="evento-subtitle">${escapeHtml(codigo)}</div>` : ""}`;
+      return `<div class="evento-title evento-title-fault">PENALTI${dorsal1 ? ` · ${renderPlayerRef("", buildEventPlayerPayload(ev, 1))}` : ""}</div>${codigo ? `<div class="evento-subtitle">${escapeHtml(codigo)}</div>` : ""}`;
     case "faltadirecta":
-      return `<div class="evento-title evento-title-fault">FALTA DIRECTA${dorsal1 ? ` · #${escapeHtml(dorsal1)} ${escapeHtml(lic1)}` : ""}</div>${codigo ? `<div class="evento-subtitle">${escapeHtml(codigo)}</div>` : ""}`;
+      return `<div class="evento-title evento-title-fault">FALTA DIRECTA${dorsal1 ? ` · ${renderPlayerRef("", buildEventPlayerPayload(ev, 1))}` : ""}</div>${codigo ? `<div class="evento-subtitle">${escapeHtml(codigo)}</div>` : ""}`;
     case "falta-hl":
-      return `<div class="evento-title evento-title-fault">FALTA${dorsal1 ? ` · #${escapeHtml(dorsal1)} ${escapeHtml(lic1)}` : ""}</div>${codigo || mins ? `<div class="evento-subtitle">${escapeHtml([codigo, mins ? `${mins} min.` : ""].filter(Boolean).join(" · "))}</div>` : ""}`;
+      return `<div class="evento-title evento-title-fault">FALTA${dorsal1 ? ` · ${renderPlayerRef("", buildEventPlayerPayload(ev, 1))}` : ""}</div>${codigo || mins ? `<div class="evento-subtitle">${escapeHtml([codigo, mins ? `${mins} min.` : ""].filter(Boolean).join(" · "))}</div>` : ""}`;
     case "tm":
       return '<div class="evento-title">TIEMPO MUERTO</div>';
     default:

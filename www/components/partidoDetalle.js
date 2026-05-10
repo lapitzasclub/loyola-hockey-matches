@@ -20,6 +20,7 @@ import {
   normalizarPartido,
   parseApiArrayResponse,
   popView,
+  pushView,
   setCurrentTab,
   setCurrentView,
 } from "./partidoDetalleUtils.js";
@@ -160,11 +161,8 @@ function renderAll(state, headerEl, bodyEl) {
     setHeaderContent(headerEl, renderPartidoHeader(state), "renderAll");
   }
   if (getCurrentView(state) !== "partido") {
-    bodyEl.innerHTML = `
-      <div class="partido-detalle-subview-placeholder">
-        <div class="partido-detalle-empty">${escapeHtml(t("detail_loading_view"))}</div>
-      </div>
-    `;
+    bodyEl.innerHTML = renderSubview(state);
+    bindPlayerLinks(bodyEl, state, headerEl);
     return;
   }
   if (!bodyEl.querySelector("#tab-resumen")) {
@@ -175,6 +173,57 @@ function renderAll(state, headerEl, bodyEl) {
   bodyEl.querySelector("#tab-eventos").innerHTML = renderEventos(state);
   bodyEl.querySelector("#tab-penaltis").innerHTML = renderPenaltis(state);
   updateTabVisibility(bodyEl, getCurrentTab(state));
+  bindPlayerLinks(bodyEl, state, headerEl);
+}
+
+function bindPlayerLinks(rootEl, state, headerEl) {
+  rootEl.querySelectorAll(".partido-detalle-player-link").forEach((btn) => {
+    btn.onclick = () => {
+      try {
+        state.selectedJugador = JSON.parse(btn.dataset.player || "null");
+      } catch {
+        state.selectedJugador = null;
+      }
+      if (!state.selectedJugador) return;
+      pushView(state, getCurrentView(state));
+      setCurrentView(state, "jugador");
+      renderAll(state, headerEl, rootEl.closest("#partido-detalle-body") || rootEl);
+    };
+  });
+}
+
+function renderSubview(state) {
+  if (getCurrentView(state) === "jugador") {
+    return renderJugadorSubview(state);
+  }
+  return `
+    <div class="partido-detalle-subview-placeholder">
+      <div class="partido-detalle-empty">${escapeHtml(t("detail_loading_view"))}</div>
+    </div>
+  `;
+}
+
+function renderJugadorSubview(state) {
+  const jugador = state.selectedJugador;
+  if (!jugador) {
+    return `
+      <div class="partido-detalle-subview-placeholder">
+        <div class="partido-detalle-empty">Jugador no disponible.</div>
+      </div>
+    `;
+  }
+
+  return `
+    <section class="partido-detalle-section partido-detalle-player-sheet">
+      <div class="partido-detalle-section-title">Detalle de jugador</div>
+      <div class="partido-detalle-player-card">
+        <div class="partido-detalle-player-eyebrow">${escapeHtml(jugador.teamType || "")}${jugador.role ? ` · ${escapeHtml(jugador.role)}` : ""}</div>
+        <div class="partido-detalle-player-name">${escapeHtml(jugador.nombre || "Sin nombre")}</div>
+        <div class="partido-detalle-player-meta">${jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : "Sin dorsal"}</div>
+      </div>
+      <div class="partido-detalle-empty">Base preparada. Siguiente paso: resolver estadísticas y eventos del jugador dentro del partido.</div>
+    </section>
+  `;
 }
 
 function mergeTruthy(prev, next) {

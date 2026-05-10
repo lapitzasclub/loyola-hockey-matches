@@ -1,14 +1,24 @@
 import { t } from "../i18n.js";
 import { emptyArray, escapeHtml } from "./partidoDetalleUtils.js";
 
-function renderAlineacionItem({ marker, name, tags = "", chips = "", emptyText = t("detail_no_highlights"), extraClass = "" }) {
+function getJugadorPayload(persona, teamType, role) {
+  return {
+    role,
+    teamType,
+    dorsal: persona?.Dorsal ?? null,
+    nombre: persona?.ApellidosNombre || persona?.NombreApellidos || "",
+    data: persona,
+  };
+}
+
+function renderAlineacionItem({ marker, name, tags = "", chips = "", emptyText = t("detail_no_highlights"), extraClass = "", playerPayload = null }) {
   return `
     <article class="alineacion-item ${extraClass}">
       <div class="alineacion-item-main">
         <div class="alineacion-dorsal">${marker}</div>
         <div class="alineacion-info">
           <div class="alineacion-name-row">
-            <div class="alineacion-name">${escapeHtml(name ?? "")}</div>
+            <div class="alineacion-name">${playerPayload ? `<button type="button" class="partido-detalle-player-link" data-player='${escapeHtml(JSON.stringify(playerPayload))}'>${escapeHtml(name ?? "")}</button>` : escapeHtml(name ?? "")}</div>
             ${tags ? `<div class="alineacion-tags">${tags}</div>` : ""}
           </div>
           ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(emptyText)}</div>`}
@@ -30,7 +40,7 @@ function renderStatChip(label, value, variant = "") {
   return `<span class="alineacion-chip ${variant}">${escapeHtml(label)} <strong>${escapeHtml(value)}</strong></span>`;
 }
 
-function renderJugadoresCards(jugadores, modalidad) {
+function renderJugadoresCards(jugadores, modalidad, teamType) {
   if (!jugadores.length) return `<div class="partido-detalle-empty small">${escapeHtml(t("detail_players"))}: 0</div>`;
   const isHp = modalidad !== "hl";
   const items = jugadores.map((j) => {
@@ -58,13 +68,14 @@ function renderJugadoresCards(jugadores, modalidad) {
       name: j.ApellidosNombre,
       tags,
       chips,
+      playerPayload: getJugadorPayload(j, teamType, "jugador"),
     });
   }).join("");
 
   return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_players"))}</div><div class="alineacion-list">${items}</div></div>`;
 }
 
-function renderPorterosCards(porteros, modalidad) {
+function renderPorterosCards(porteros, modalidad, teamType) {
   if (!porteros.length) return "";
   const isHp = modalidad !== "hl";
   const items = porteros.map((p) => {
@@ -93,13 +104,14 @@ function renderPorterosCards(porteros, modalidad) {
       tags,
       chips,
       extraClass: "alineacion-item-goalie",
+      playerPayload: getJugadorPayload(p, teamType, "portero"),
     });
   }).join("");
 
   return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_goalkeepers"))}</div><div class="alineacion-list">${items}</div></div>`;
 }
 
-function renderTecnicosCards(tecnicos, modalidad) {
+function renderTecnicosCards(tecnicos, modalidad, teamType) {
   if (!tecnicos.length) return "";
   const isHp = modalidad !== "hl";
   const items = tecnicos.map((tecnico) => {
@@ -116,19 +128,20 @@ function renderTecnicosCards(tecnicos, modalidad) {
       chips,
       emptyText: t("detail_no_incidents"),
       extraClass: "alineacion-item-staff",
+      playerPayload: getJugadorPayload(tecnico, teamType, "tecnico"),
     });
   }).join("");
 
   return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_staff"))}</div><div class="alineacion-list">${items}</div></div>`;
 }
 
-function renderAlineacionEquipo(nombre, jugadores, porteros, tecnicos, modalidad) {
+function renderAlineacionEquipo(nombre, jugadores, porteros, tecnicos, modalidad, teamType) {
   return `
     <section class="partido-detalle-section alineacion-card">
       <div class="alineacion-team-title">${escapeHtml(nombre)}</div>
-      ${renderJugadoresCards(jugadores, modalidad)}
-      ${renderPorterosCards(porteros, modalidad)}
-      ${renderTecnicosCards(tecnicos, modalidad)}
+      ${renderJugadoresCards(jugadores, modalidad, teamType)}
+      ${renderPorterosCards(porteros, modalidad, teamType)}
+      ${renderTecnicosCards(tecnicos, modalidad, teamType)}
     </section>
   `;
 }
@@ -145,6 +158,7 @@ export function renderAlineaciones(state) {
     emptyArray(alin.PortLocal),
     emptyArray(alin.TecnLocal),
     state.modalidad,
+    "local",
   );
   const visit = renderAlineacionEquipo(
     state.partido?.visit || "Equipo visitante",
@@ -152,6 +166,7 @@ export function renderAlineaciones(state) {
     emptyArray(alin.PortVisit),
     emptyArray(alin.TecnVisit),
     state.modalidad,
+    "visitante",
   );
 
   return `<div class="alineaciones-grid">${local}${visit}</div>`;

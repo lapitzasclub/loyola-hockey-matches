@@ -100,6 +100,7 @@ export function createDetalleState(idPartido) {
     statsResumen: [],
     localKey: null,
     visitKey: null,
+    selectedJugador: null,
     navigation: {
       currentView: "partido",
       currentTab: "resumen",
@@ -130,4 +131,8 @@ export function setCurrentTab(state, tab) {
 
 export function popView(state) {
   return state.navigation.viewStack.pop();
+}
+
+export function pushView(state, view) {
+  state.navigation.viewStack.push(view);
 }
