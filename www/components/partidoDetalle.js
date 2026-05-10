@@ -117,10 +117,36 @@ function createDetalleState(idPartido) {
     statsResumen: [],
     localKey: null,
     visitKey: null,
-    currentView: "partido",
-    currentTab: "resumen",
-    viewStack: [],
+    navigation: {
+      currentView: "partido",
+      currentTab: "resumen",
+      viewStack: [],
+    },
   };
+}
+
+function getCurrentView(state) {
+  return state.navigation?.currentView || "partido";
+}
+
+function getCurrentTab(state) {
+  return state.navigation?.currentTab || "resumen";
+}
+
+function getViewStack(state) {
+  return state.navigation?.viewStack || [];
+}
+
+function setCurrentView(state, view) {
+  state.navigation.currentView = view;
+}
+
+function setCurrentTab(state, tab) {
+  state.navigation.currentTab = tab;
+}
+
+function popView(state) {
+  return state.navigation.viewStack.pop();
 }
 
 export function openPartidoDetalle(idPartido) {
@@ -144,8 +170,8 @@ export function openPartidoDetalle(idPartido) {
   modal.querySelector(".partido-detalle-close").onclick = () => closePartidoDetalle();
   modal.querySelector(".partido-detalle-back").onclick = () => {
     const state = window.__partidoDetalleState;
-    if (!state?.viewStack?.length) return;
-    state.currentView = state.viewStack.pop() || "partido";
+    if (!getViewStack(state).length) return;
+    setCurrentView(state, popView(state) || "partido");
     const headerEl = document.getElementById("partido-detalle-header-content");
     const bodyEl = document.getElementById("partido-detalle-body");
     renderAll(state, headerEl, bodyEl);
@@ -217,12 +243,12 @@ function ensureBaseLayout(bodyEl, state) {
 
   bodyEl.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.onclick = () => {
-      state.currentTab = btn.dataset.tab;
-      updateTabVisibility(bodyEl, state.currentTab);
+      setCurrentTab(state, btn.dataset.tab);
+      updateTabVisibility(bodyEl, getCurrentTab(state));
     };
   });
 
-  updateTabVisibility(bodyEl, state.currentTab || "resumen");
+  updateTabVisibility(bodyEl, getCurrentTab(state));
 }
 
 function updateTabVisibility(bodyEl, activeTab) {
@@ -237,7 +263,7 @@ function updateTabVisibility(bodyEl, activeTab) {
 function updateChrome(state, modal) {
   const backBtn = modal?.querySelector(".partido-detalle-back");
   if (!backBtn) return;
-  const canGoBack = !!state.viewStack.length;
+  const canGoBack = !!getViewStack(state).length;
   backBtn.hidden = !canGoBack;
   backBtn.disabled = !canGoBack;
 }
@@ -248,7 +274,7 @@ function renderAll(state, headerEl, bodyEl) {
   if (state.partido) {
     setHeaderContent(headerEl, renderPartidoHeader(state), "renderAll");
   }
-  if (state.currentView !== "partido") {
+  if (getCurrentView(state) !== "partido") {
     bodyEl.innerHTML = `
       <div class="partido-detalle-subview-placeholder">
         <div class="partido-detalle-empty">${escapeHtml(t("detail_loading_view"))}</div>
@@ -263,7 +289,7 @@ function renderAll(state, headerEl, bodyEl) {
   bodyEl.querySelector("#tab-alineaciones").innerHTML = renderAlineaciones(state);
   bodyEl.querySelector("#tab-eventos").innerHTML = renderEventos(state);
   bodyEl.querySelector("#tab-penaltis").innerHTML = renderPenaltis(state);
-  updateTabVisibility(bodyEl, state.currentTab || "resumen");
+  updateTabVisibility(bodyEl, getCurrentTab(state));
 }
 
 function mergeTruthy(prev, next) {
@@ -638,6 +664,30 @@ function renderAlineacionEquipo(nombre, jugadores, porteros, tecnicos, modalidad
   `;
 }
 
+function renderAlineacionItem({ marker, name, tags = "", chips = "", emptyText = t("detail_no_highlights"), extraClass = "" }) {
+  return `
+    <article class="alineacion-item ${extraClass}">
+      <div class="alineacion-item-main">
+        <div class="alineacion-dorsal">${marker}</div>
+        <div class="alineacion-info">
+          <div class="alineacion-name-row">
+            <div class="alineacion-name">${escapeHtml(name ?? "")}</div>
+            ${tags ? `<div class="alineacion-tags">${tags}</div>` : ""}
+          </div>
+          ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(emptyText)}</div>`}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderTagList(tags) {
+  return tags
+    .filter(Boolean)
+    .map((tag) => `<span class="alineacion-tag">${escapeHtml(tag)}</span>`)
+    .join("");
+}
+
 function renderStatChip(label, value, variant = "") {
   if (value === undefined || value === null || value === "" || value === 0 || value === "0/0") return "";
   return `<span class="alineacion-chip ${variant}">${escapeHtml(label)} <strong>${escapeHtml(value)}</strong></span>`;
@@ -647,10 +697,11 @@ function renderJugadoresCards(jugadores, modalidad) {
   if (!jugadores.length) return `<div class="partido-detalle-empty small">${escapeHtml(t("detail_players"))}: 0</div>`;
   const isHp = modalidad !== "hl";
   const items = jugadores.map((j) => {
-    const tags = [j.Inicial ? t("detail_starter") : "", j.Capitan ? t("detail_captain") : "", j.AsistCap ? t("detail_assistant_captain") : ""]
-      .filter(Boolean)
-      .map((tag) => `<span class="alineacion-tag">${escapeHtml(tag)}</span>`)
-      .join("");
+    const tags = renderTagList([
+      j.Inicial ? t("detail_starter") : "",
+      j.Capitan ? t("detail_captain") : "",
+      j.AsistCap ? t("detail_assistant_captain") : "",
+    ]);
     const pe = j.TirosPenalti ? `${j.GolPenalti || 0}/${j.TirosPenalti}` : "";
     const fd = j.TirosFD ? `${j.GolFD || 0}/${j.TirosFD}` : "";
     const chips = [
@@ -665,20 +716,12 @@ function renderJugadoresCards(jugadores, modalidad) {
       renderStatChip("Min", j.Minutos),
     ].filter(Boolean).join("");
 
-    return `
-      <article class="alineacion-item">
-        <div class="alineacion-item-main">
-          <div class="alineacion-dorsal">${escapeHtml(j.Dorsal ?? "--")}</div>
-          <div class="alineacion-info">
-            <div class="alineacion-name-row">
-              <div class="alineacion-name">${escapeHtml(j.ApellidosNombre ?? "")}</div>
-              ${tags ? `<div class="alineacion-tags">${tags}</div>` : ""}
-            </div>
-            ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(t("detail_no_highlights"))}</div>`}
-          </div>
-        </div>
-      </article>
-    `;
+    return renderAlineacionItem({
+      marker: escapeHtml(j.Dorsal ?? "--"),
+      name: j.ApellidosNombre,
+      tags,
+      chips,
+    });
   }).join("");
 
   return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_players"))}</div><div class="alineacion-list">${items}</div></div>`;
@@ -692,10 +735,10 @@ function renderPorterosCards(porteros, modalidad) {
     const paradasBase = Number(p.Paradas || 0);
     const tiros = paradasBase + goles;
     const pct = tiros ? `${((1 - goles / tiros) * 100).toFixed(2)}%` : "";
-    const tags = [p.Inicial ? t("detail_starter") : "", p.Capitan ? t("detail_captain") : ""]
-      .filter(Boolean)
-      .map((tag) => `<span class="alineacion-tag">${escapeHtml(tag)}</span>`)
-      .join("");
+    const tags = renderTagList([
+      p.Inicial ? t("detail_starter") : "",
+      p.Capitan ? t("detail_captain") : "",
+    ]);
     const chips = [
       renderStatChip("GC", goles),
       renderStatChip("Tir", tiros),
@@ -707,20 +750,13 @@ function renderPorterosCards(porteros, modalidad) {
       renderStatChip("Min", p.Minutos),
     ].filter(Boolean).join("");
 
-    return `
-      <article class="alineacion-item alineacion-item-goalie">
-        <div class="alineacion-item-main">
-          <div class="alineacion-dorsal">${escapeHtml(p.Dorsal ?? "--")}</div>
-          <div class="alineacion-info">
-            <div class="alineacion-name-row">
-              <div class="alineacion-name">${escapeHtml(p.ApellidosNombre ?? "")}</div>
-              ${tags ? `<div class="alineacion-tags">${tags}</div>` : ""}
-            </div>
-            ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(t("detail_no_highlights"))}</div>`}
-          </div>
-        </div>
-      </article>
-    `;
+    return renderAlineacionItem({
+      marker: escapeHtml(p.Dorsal ?? "--"),
+      name: p.ApellidosNombre,
+      tags,
+      chips,
+      extraClass: "alineacion-item-goalie",
+    });
   }).join("");
 
   return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_goalkeepers"))}</div><div class="alineacion-list">${items}</div></div>`;
@@ -737,17 +773,13 @@ function renderTecnicosCards(tecnicos, modalidad) {
       isHp ? renderStatChip("Rj", tecnico.Rojas) : "",
       renderStatChip("Min", tecnico.Minutos),
     ].filter(Boolean).join("");
-    return `
-      <article class="alineacion-item alineacion-item-staff">
-        <div class="alineacion-item-main">
-          <div class="alineacion-dorsal alineacion-dorsal-role">${escapeHtml(pos)}</div>
-          <div class="alineacion-info">
-            <div class="alineacion-name">${escapeHtml(tecnico.ApellidosNombre ?? "")}</div>
-            ${chips ? `<div class="alineacion-chips">${chips}</div>` : `<div class="alineacion-muted">${escapeHtml(t("detail_no_incidents"))}</div>`}
-          </div>
-        </div>
-      </article>
-    `;
+    return renderAlineacionItem({
+      marker: `<span class="alineacion-dorsal-role">${escapeHtml(pos)}</span>`,
+      name: tecnico.ApellidosNombre,
+      chips,
+      emptyText: t("detail_no_incidents"),
+      extraClass: "alineacion-item-staff",
+    });
   }).join("");
 
   return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_staff"))}</div><div class="alineacion-list">${items}</div></div>`;
