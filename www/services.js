@@ -225,6 +225,18 @@ export async function getCalendarioLoyola(equipoId, idCompeticion) {
 }
 
 /**
+ * Obtiene los parámetros completos de una competición, incluyendo equipos y logos.
+ *
+ * @param {string|number} idCompeticion ID de la competición.
+ * @returns {Promise<any>} Respuesta de la API.
+ */
+export async function getParametrosCompeticion(idCompeticion) {
+  return callLegacyService("GetParametrosCompeticion", {
+    idcompeticion: String(idCompeticion),
+  });
+}
+
+/**
  * Obtiene todos los equipos Loyola de todas las competiciones.
  * @returns {Promise<Array>} Array de equipos Loyola.
  */

@@ -11,30 +11,34 @@
 
 #matches li {
   background: var(--color-bg-card);
-  margin-bottom: 1.1em;
-  padding: 1.1em 1em 0.9em 1em;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px var(--color-shadow);
+  margin-bottom: 1.15em;
+  padding: 0;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-shadow) 58%, transparent);
   color: var(--color-text);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-  border: 1.5px solid var(--color-card-border, #e0e0e0);
-  transition: box-shadow 0.2s, border 0.2s;
+  border: 1px solid var(--color-card-border, #e0e0e0);
+  transition: box-shadow 0.2s, border 0.2s, transform 0.18s ease;
+  overflow: hidden;
 }
 
 #matches li:hover {
-  box-shadow: 0 4px 16px var(--color-shadow);
-  border: 1.5px solid var(--color-primary);
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--color-shadow) 72%, transparent);
+  border: 1px solid var(--color-primary);
 }
 
 #matches li.proximo-partido {
   background: var(--color-proximo-partido-bg);
-  font-weight: bold;
   border-left: 5px solid var(--color-proximo-partido-border);
-  box-shadow: 0 2px 8px var(--color-proximo-partido-shadow);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-proximo-partido-shadow) 75%, transparent);
   position: relative;
   z-index: 1;
+}
+
+.partido-card-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1rem 1rem 0.9rem;
 }
 
 /* Cabecera partido */
@@ -43,31 +47,32 @@
   grid-template-columns: 1fr auto;
   grid-template-areas:
     "jornada calendario"
-    "fecha   calendario";
+    "fecha calendario";
   align-items: center;
-  gap: 0.15rem 0.75rem;
-  margin-bottom: 0.4rem;
-  background: var(--color-header-bg, #f5f7fa);
-  border-radius: 7px;
-  padding: 0.25em 0.7em;
+  gap: 0.22rem 0.75rem;
+  background: color-mix(in srgb, var(--color-header-bg, #f5f7fa) 92%, transparent);
+  border-radius: 14px;
+  padding: 0.52em 0.9em 0.58em;
 }
 
 .partido-jornada {
   grid-area: jornada;
-  font-size: 1em;
-  font-weight: 700;
-  letter-spacing: 0.2px;
+  font-size: 0.98em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   color: var(--color-primary);
   background: var(--badge-bg, #0a93964d);
-  padding: 0.25em 0.6em;
-  border-radius: 10px;
+  padding: 0.28em 0.8em;
+  border-radius: 999px;
   display: inline-block;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .partido-fecha {
   grid-area: fecha;
-  font-size: 0.95em;
-  font-weight: 400;
+  font-size: 0.94em;
+  font-weight: 500;
   color: var(--muted, #6b7280);
 }
 
@@ -76,58 +81,100 @@
   justify-self: end;
 }
 
-/* Equipos */
-.partido-equipos {
+/* Zona central del duelo */
+.partido-duelo {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-items: center;
-  font-size: 1.13em;
-  font-weight: 500;
-  margin-bottom: 0.1em;
-  text-align: center;
-  min-height: 2.5em;
+  gap: 0.65rem;
+  padding: 0.35rem 0.15rem 0.1rem;
+}
+
+.partido-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  min-width: 0;
+}
+
+.partido-team-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-bg-card) 88%, #ffffff 12%);
+  border: 1px solid var(--color-card-border, #e0e0e0);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--color-shadow) 42%, transparent);
+  padding: 3px;
 }
 
 .partido-local,
 .partido-visit {
   justify-self: center;
   text-align: center;
+  line-height: 1.05;
+  font-weight: 600;
+  max-width: 10ch;
+  text-wrap: balance;
+}
+
+.partido-centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-width: 72px;
 }
 
 .partido-vs {
-  justify-self: center;
-  align-self: center;
-  color: var(--color-vs, #aaa);
-  font-size: 0.95em;
-  font-weight: 400;
-  padding: 0 0.9em;
-  border-radius: 5px;
+  color: var(--color-vs, #8a94a3);
+  font-size: 0.84em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.92;
 }
 
 /* Resultado */
 .partido-resultado-row {
   text-align: center;
-  margin: 0.25rem 0 0.55rem;
+  margin: 0;
 }
 
 .partido-resultado {
   display: inline-block;
-  font-size: 1.45em;
-  font-weight: 800;
-  line-height: 1.1;
-  padding: 0.1em 0.45em;
-  border-radius: 8px;
-  background: var(--score-bg, #11111108);
-  box-shadow: 0 1px 2px var(--color-shadow);
+  min-width: 2.7em;
+  font-size: 1.55em;
+  font-weight: 900;
+  line-height: 1.05;
+  padding: 0.14em 0.52em;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--score-bg, #11111108) 80%, #ffffff 20%);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--color-shadow) 38%, transparent);
 }
 
-/* Instalación */
+.partido-estado-placeholder {
+  width: 2.7em;
+  height: 2.1em;
+}
+
+/* Pie */
+.partido-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 0.1rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-card-border, #e0e0e0) 68%, transparent);
+}
+
 .partido-instalacion {
-  font-size: 0.97em;
+  font-size: 0.98em;
   color: var(--color-primary);
   text-align: right;
-  margin-top: 0.1em;
   font-style: italic;
   word-break: break-word;
 }
@@ -135,7 +182,7 @@
 /* Equipo remarcado */
 .equipo-remarcado {
   color: var(--color-primary);
-  font-weight: bold;
+  font-weight: 800;
   text-shadow: 0 1px 2px #fff6, 0 0 1px #0002;
 }
 
@@ -150,7 +197,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: background 0.2s;
 }
 
@@ -165,11 +212,26 @@
 
 /* Responsive */
 @media (max-width: 360px) {
-  .partido-equipos {
-    grid-template-columns: 1fr 2.2em 1fr;
+  .partido-card-shell {
+    padding: 0.88rem 0.85rem 0.8rem;
   }
+
+  .partido-duelo {
+    gap: 0.35rem;
+  }
+
+  .partido-team-logo {
+    width: 36px;
+    height: 36px;
+  }
+
   .partido-local,
   .partido-visit {
     word-break: break-word;
+    max-width: 9ch;
+  }
+
+  .partido-centro {
+    min-width: 58px;
   }
 }
