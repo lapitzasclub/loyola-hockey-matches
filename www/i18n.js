@@ -1,12 +1,18 @@
 "use strict";
 
 /**
+ * @callback I18nFormatter
+ * @param {...string} args Argumentos de interpolación ya saneados.
+ * @returns {string}
+ */
+
+/**
  * Diccionario de internacionalización para la app.
  * Contener los textos en español (es) y euskera (eu).
  * Las claves cuyo valor es función admiten argumentos (e.g. mensajes con variables).
  * @type {{
- *  es: Record<string, string|((...a:any[])=>string)>;
- *  eu: Record<string, string|((...a:any[])=>string)>;
+ *  es: Record<string, string|I18nFormatter>;
+ *  eu: Record<string, string|I18nFormatter>;
  * }}
  */
 export const i18n = {
@@ -281,10 +287,9 @@ export function t(key, ...args) {
   const val = pack[key];
 
   if (typeof val === "function") {
-    // Pasar argumentos formateados de forma segura
+    const formatter = /** @type {I18nFormatter} */ (val);
     const safeArgs = args.map(stringifyForI18n);
-    // @ts-ignore - val es función en este branch
-    return val(...safeArgs);
+    return formatter(...safeArgs);
   }
 
   if (typeof val === "string") return val;

@@ -1,20 +1,24 @@
 import { setupNavigation } from "./navigation.js";
 import { setupPullToRefresh } from "./pullToRefresh.js";
 import { cargarSelectorEquiposLoyola, getEquiposLoyola, getEquipoSeleccionado, hasEquipoFavorito } from "../state/equipos.js";
-import { renderEquipoSelector, renderEquipoSelectorSkeleton } from "../components/equipoSelector.js";
-import { renderEquipoSelectorLauncher } from "../components/equipoSelectorLauncher.js";
-import { closeEquipoSelectorOverlay, openEquipoSelectorOverlay } from "../components/equipoSelectorOverlay.js";
+import { closeEquipoSelectorOverlay } from "../components/equipoSelectorOverlay.js";
 import { setCompeticionHeader } from "./header.js";
 import { mostrarPantallaErrorGlobal } from "../state/errorOverlay.js";
-import { renderPartidos, renderClasificacion } from "../components/ui.js";
-import { renderInitialTeamLoadingState, renderPartidosLoadingState } from "../components/loadingStates.js";
+import { renderPartidos } from "../components/ui.js";
+import { renderPartidosLoadingState } from "../components/loadingStates.js";
 import { preloadPartidoDetalleModule } from "../components/partidos.js";
-import { getLang, setLang, t, updateTexts } from "../i18n.js";
+import { getLang, t, updateTexts } from "../i18n.js";
 import { applyTheme, getSystemTheme, getTheme, listenSystemScheme, setTheme } from "../theme.js";
 import { observeThemeAttribute, scheduleApplySystemBars } from "../systemBars.js";
-import { getClasificacionLiga, getCalendarioLoyola } from "../services.js";
+import { getCalendarioLoyola } from "../services.js";
 import { isNative } from "../utils/env.js";
-import { isOnboardingActive, isTeamSelectorOverlayOpen, setInitialTeamLoadActive, setOnboardingActive } from "./layoutState.js";
+import { isTeamSelectorOverlayOpen, setInitialTeamLoadActive, setOnboardingActive } from "./layoutState.js";
+import {
+  ensureMatchesList,
+  handleLanguageChange,
+  mostrarSelectorInicial,
+  renderMenuTeamLauncher,
+} from "./teamSelectorFlow.js";
 
 /**
  * Programa la precarga diferida del módulo pesado del detalle de partido.
@@ -155,97 +159,6 @@ function createMobileBackCoordinator() {
   return { install, syncHistory, closeSideMenu };
 }
 
-/**
- * Renderiza el lanzador compacto para cambiar de equipo desde el side menu.
- *
- * @param {{ closeSideMenu: () => void, syncHistory: () => void }} mobileBackCoordinator Coordinador de back.
- * @returns {void}
- */
-function renderMenuTeamLauncher(mobileBackCoordinator) {
-  const selectorMenuContainer = document.getElementById("teamSelectorMenuContainer");
-  if (!selectorMenuContainer) return;
-
-  renderEquipoSelectorLauncher(selectorMenuContainer, {
-    onOpen: () => {
-      mobileBackCoordinator.closeSideMenu();
-      mobileBackCoordinator.syncHistory();
-      openEquipoSelectorOverlay({
-        onSelect: async () => {
-          const navPartidos = document.getElementById("navPartidos");
-          const navClas = document.getElementById("navClas");
-          if (navPartidos && navClas) {
-            navPartidos.classList.add("active");
-            navClas.classList.remove("active");
-          }
-          renderMenuTeamLauncher(mobileBackCoordinator);
-          const selectorMenuContainer = document.getElementById("teamSelectorMenuContainer");
-          if (selectorMenuContainer) {
-            selectorMenuContainer.offsetHeight;
-          }
-          await mostrarPartidosYClasificacion();
-        },
-      });
-    },
-  });
-}
-
-/**
- * Muestra la pantalla inicial de selección cuando todavía no existe equipo favorito.
- *
- * @returns {Promise<void>} Promesa resuelta al completar la primera selección.
- */
-/**
- * Restaura el contenedor principal estándar de la app cuando una pantalla temporal
- * ha sustituido el contenido de `screenContent`.
- *
- * @returns {HTMLUListElement|null} Lista de partidos restaurada o existente.
- */
-function ensureMatchesList() {
-  const screenContent = document.getElementById("screenContent");
-  let matchesList = document.getElementById("matches");
-  if (!screenContent) return matchesList;
-  const loadingScreen = screenContent.querySelector(".initial-team-loading");
-  if (!matchesList || loadingScreen) {
-    screenContent.innerHTML = '<ul id="matches"></ul>';
-    matchesList = document.getElementById("matches");
-  }
-  return matchesList;
-}
-
-async function mostrarSelectorInicial(mobileBackCoordinator) {
-  const screenContent = document.getElementById("screenContent");
-  const headerTitle = document.getElementById("headerTitle");
-  if (!screenContent) return;
-
-  setOnboardingActive(true);
-  if (headerTitle) headerTitle.textContent = "";
-  setCompeticionHeader("");
-  renderEquipoSelectorSkeleton(screenContent, "onboarding");
-  await new Promise((resolve) => window.setTimeout(resolve, 180));
-  renderEquipoSelector(screenContent, {
-    mode: "onboarding",
-    onSelect: async () => {
-      document.body.classList.add("app-ready");
-      setInitialTeamLoadActive(true);
-      renderInitialTeamLoadingState(screenContent);
-      setOnboardingActive(false);
-      const navPartidos = document.getElementById("navPartidos");
-      const navClas = document.getElementById("navClas");
-      if (navPartidos && navClas) {
-        navPartidos.classList.add("active");
-        navClas.classList.remove("active");
-      }
-      renderMenuTeamLauncher(mobileBackCoordinator);
-      await mostrarPartidosYClasificacion();
-    },
-  });
-}
-
-/**
- * Inicializa la aplicación: tema, idioma, navegación, selector y primera carga.
- *
- * @returns {Promise<void>} Promesa resuelta cuando termina el arranque principal.
- */
 export async function initApp() {
   const shouldShowOnboarding = !hasEquipoFavorito();
   if (shouldShowOnboarding) {
@@ -273,45 +186,7 @@ export async function initApp() {
     if (langSelect) {
       langSelect.value = getLang();
       langSelect.addEventListener("change", async (e) => {
-        setLang(e.target.value);
-        updateTexts();
-        renderMenuTeamLauncher(mobileBackCoordinator);
-        if (isOnboardingActive()) {
-          await mostrarSelectorInicial(mobileBackCoordinator);
-          return;
-        }
-        if (document.getElementById("teamSelectorOverlay") && !document.getElementById("teamSelectorOverlay").hidden) {
-          openEquipoSelectorOverlay({
-            onSelect: async () => {
-              renderMenuTeamLauncher(mobileBackCoordinator);
-              await mostrarPartidosYClasificacion();
-            },
-          });
-          return;
-        }
-        const navClas = document.getElementById("navClas");
-        if (navClas && navClas.classList.contains("active")) {
-          const matchesList = ensureMatchesList();
-          if (!matchesList) return;
-          matchesList.innerHTML = `<li>${t("loading")}</li>`;
-          if (!getEquipoSeleccionado()) {
-            matchesList.innerHTML = `<li>${t("team_selector_prompt_inline")}</li>`;
-            setCompeticionHeader("");
-            return;
-          }
-          const [idComp] = getEquipoSeleccionado().split("|");
-          const eq = getEquiposLoyola().find((item) => item.idCompeticion == idComp);
-          setCompeticionHeader(eq?.nombreCompeticion || "");
-          try {
-            const raw = await getClasificacionLiga(idComp);
-            matchesList.innerHTML = "";
-            renderClasificacion(matchesList, raw);
-          } catch (error) {
-            matchesList.innerHTML = `<li>${t("error", error?.message || String(error))}</li>`;
-          }
-        } else {
-          await mostrarPartidosYClasificacion();
-        }
+        await handleLanguageChange(mobileBackCoordinator, e.target.value, mostrarPartidosYClasificacion);
       });
     }
     setupNavigation(mostrarPartidosYClasificacion);
@@ -343,10 +218,10 @@ export async function initApp() {
     }
 
     await cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion, mostrarPantallaErrorGlobal);
-    renderMenuTeamLauncher(mobileBackCoordinator);
+    renderMenuTeamLauncher(mobileBackCoordinator, mostrarPartidosYClasificacion);
 
     if (shouldShowOnboarding) {
-      await mostrarSelectorInicial(mobileBackCoordinator);
+      await mostrarSelectorInicial(mobileBackCoordinator, mostrarPartidosYClasificacion);
       return;
     }
 
