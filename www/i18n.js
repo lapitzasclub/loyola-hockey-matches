@@ -86,6 +86,8 @@ export const i18n = {
     team_selector_current_team: "Equipo seguido",
     team_selector_prompt_inline: "Selecciona un equipo Loyola",
     team_selector_competition_badge: "Competición",
+    team_selector_group_leagues: "Ligas",
+    team_selector_group_tournaments: "Torneos",
     team_selector_choose_action: "Elegir este equipo",
   },
   eu: {
@@ -164,6 +166,8 @@ export const i18n = {
     team_selector_current_team: "Jarraitzen duzun taldea",
     team_selector_prompt_inline: "Aukeratu Loyola talde bat",
     team_selector_competition_badge: "Txapelketa",
+    team_selector_group_leagues: "Ligak",
+    team_selector_group_tournaments: "Txapelketak",
     team_selector_choose_action: "Aukeratu talde hau",
   },
 };
