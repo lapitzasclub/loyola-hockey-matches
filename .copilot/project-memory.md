@@ -21,7 +21,9 @@ Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de 
 - `dist/` contiene la build generada y ya debe tratarse como salida no versionada.
 - `android/` contiene el proyecto Android de Capacitor.
 - `www/core/` contiene arranque, navegación e inicialización.
+- `www/core/teamSelectorFlow.js` concentra ahora el flujo de onboarding, cambio de idioma y refresco del selector de equipo.
 - `www/components/` contiene renderizado de partidos, clasificación y detalle.
+- `www/components/equipoSelector.js` queda centrado en render del selector, mientras `www/components/equipoSelectorAccordion.js` encapsula el comportamiento del acordeón animado.
 - `www/services.js` concentra acceso a datos remotos y el bus local de eventos de partido.
 - `www/styles/components-partido-detalle.css` contiene el estilo del modal de detalle de partido.
 
@@ -103,6 +105,25 @@ La base está claramente más sana que al inicio de esta fase:
 - lint limpio
 - README y memoria técnica actualizados
 - módulos del detalle ya mucho mejor separados
+- onboarding real para primera selección de equipo
+- selector Loyola reutilizable desde side menu en overlay independiente
+- agrupación de competiciones en ligas y torneos con acordeón exclusivo animado
+- `init.js` y `equipoSelector.js` reducidos mediante extracción de flujo y helpers
+
+## Cambios recientes del selector Loyola
+
+- Se añadió un selector reutilizable de equipo con dos modos:
+  - onboarding de primera entrada
+  - overlay lanzado desde side menu
+- El side menu ya no incrusta el selector completo: muestra resumen del equipo seguido y CTA para cambiar.
+- El overlay del selector tiene cabecera sticky con cierre siempre visible.
+- Las competiciones se agrupan en `Ligas` y `Torneos` usando heurística por nombre (`liga`).
+- El acordeón del selector se rehízo con animación real de altura/opacidad, caret sincronizado, scroll guiado y exclusividad entre secciones.
+- Se corrigieron bugs de primera selección, incluyendo:
+  - ocultación total de footer/header/pull-to-refresh en onboarding
+  - spinner limpio durante la transición inicial
+  - actualización inmediata del resumen del side menu tras la primera selección
+- Se eliminó un `@ts-ignore` en `www/i18n.js` mediante tipado JSDoc más preciso.
 
 ## Recomendación de trabajo siguiente
 

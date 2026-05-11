@@ -44,3 +44,23 @@
 - Se empezó a internacionalizar de forma explícita `www/components/partidoDetalle.js`, añadiendo claves propias al diccionario de `www/i18n.js` para tabs, resumen, alineaciones, eventos, penaltis, árbitros y estados vacíos.
 - Se eliminaron heurísticas frágiles basadas en comparar cadenas ya traducidas y se sustituyeron por claves de i18n dedicadas del detalle.
 - La build se volvió a verificar tras la pasada de contraste e i18n del detalle.
+
+## 2026-05-11
+
+- Se retomó el proyecto con foco en refactor seguro, Sonar/JSDoc, clasificación, tarjetas de partido y nuevo selector Loyola reutilizable.
+- Se extrajeron `www/components/partidoDetalleNavigation.js` y `www/components/partidoDetalleTabs.js`, reduciendo presión sobre `www/components/partidoDetalle.js`.
+- Se hizo una pasada de JSDoc/limpieza en módulos como `www/core/main.js`, `www/core/init.js`, `www/services.js`, `www/components/partidoDetalleAlineaciones.js`, `www/components/partidoDetalleEventos.js` y `www/components/partidoDetalleUtils.js`.
+- Se corrigió el cálculo de posiciones previas de clasificación comparando contra la tabla anterior a la última jornada completamente finalizada.
+- Se mejoró visualmente la clasificación y se eliminó un scroll horizontal introducido por el banner de competición.
+- Se añadieron escudos reales a tarjetas de partidos usando `GetParametrosCompeticion`, mapeo `IdEquipoComp -> IdEntidadEquipo/TieneLogo` y la URL pública S3 de DigitalSport.
+- Se rediseñaron las tarjetas de partidos y se mejoró el estado visual de partidos pendientes.
+- Se implementó un nuevo selector reutilizable de equipo Loyola con onboarding real, `#screenContent`, launcher en side menu y overlay/sheet dedicado.
+- Se ajustó la UX del onboarding para que no muestre `bottom-nav`, `competicionHeader` ni `pullToRefresh`, y para que tras la primera selección se vea solo un spinner antes de cargar datos.
+- Se corrigieron bugs del flujo inicial: `ensureMatchesList()` para restaurar `#matches`, eliminación del “equipo fantasma” por el `<select>` oculto y supresión del flash inicial del footer.
+- Se separaron competiciones en `Ligas` y `Torneos` con heurística por nombre y se construyó un acordeón exclusivo con animación real, caret sincronizado, scroll guiado y cabecera sticky en overlay.
+- Se corrigió la actualización del resumen del side menu tras la primera selección y tras cambios de equipo desde el overlay.
+- Se eliminó el hero duplicado dentro del selector mostrado en overlay desde side menu.
+- Se extrajo `www/core/teamSelectorFlow.js` para sacar de `init.js` el flujo de onboarding, refresco del launcher y cambio de idioma.
+- Se extrajo `www/components/equipoSelectorAccordion.js` para encapsular el comportamiento del acordeón del selector.
+- Se eliminó un `@ts-ignore` de `www/i18n.js` mediante un `@callback I18nFormatter`.
+- Se subió la versión del proyecto a `1.3.0` en `package.json`.

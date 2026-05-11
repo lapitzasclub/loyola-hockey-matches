@@ -2,6 +2,8 @@
 
 Aplicación web y móvil, basada en Capacitor, para consultar calendario, clasificación y detalle en vivo de los equipos de hockey patines del Loyola.
 
+Versión actual: **1.3.0**
+
 ## Estado actual
 
 El proyecto está funcional y en uso, con una base ya bastante más ordenada que la original.
@@ -11,6 +13,8 @@ En las últimas iteraciones se ha trabajado sobre todo en:
 - integración real con SignalR y endpoints legacy de la FVP
 - subvista de jugador dentro del modal de partido
 - refactor progresivo de `partidoDetalle.js` a módulos más pequeños
+- nuevo selector Loyola reutilizable con onboarding y overlay desde side menu
+- separación de competiciones en ligas y torneos con acordeón animado
 - limpieza técnica, JSDoc y lint
 
 ## Stack
@@ -27,8 +31,12 @@ En las últimas iteraciones se ha trabajado sobre todo en:
 
 - `www/core/`
   - arranque, navegación, pull-to-refresh e integración móvil
+- `www/core/teamSelectorFlow.js`
+  - flujo del selector Loyola, onboarding y refresco del launcher del side menu
 - `www/components/`
-  - renderizado de clasificación, partidos y detalle de partido
+  - renderizado de clasificación, partidos, selector de equipo y detalle de partido
+- `www/components/equipoSelectorAccordion.js`
+  - comportamiento del acordeón exclusivo del selector Loyola
 - `www/services.js`
   - acceso a endpoints legacy y bus local de eventos de partido
 - `www/i18n.js`
@@ -112,7 +120,8 @@ npm run cap:sync
 
 ## Próximos focos razonables
 
-- seguir reduciendo el peso de `www/components/partidoDetalle.js`
+- seguir reduciendo el peso de `www/components/partidoDetalle.js` si aparece otra frontera segura
+- revisar `www/services.js` para separar mejor helpers y dominios legacy
 - continuar la documentación JSDoc en módulos antiguos
 - endurecer más la integración con servicios legacy sin romper la UX actual
 
