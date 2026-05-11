@@ -137,26 +137,32 @@
 
 /* Cabecera de competición */
 .competicion-header {
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
+  overflow: hidden;
   text-align: center;
-  font-size: 1.25em;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 0.7em 0 0.3em 0;
-  margin-bottom: 0.2em;
-  border-radius: 10px;
-  background: var(--color-header-bg, #f5f7fa);
-  color: var(--color-primary);
-  box-shadow: 0 1px 6px var(--color-shadow);
-  border: 1.5px solid var(--color-card-border, #e0e0e0);
-  transition: background 0.2s, color 0.2s;
+  font-size: 1.08em;
+  font-weight: 800;
+  letter-spacing: 0.012em;
+  line-height: 1.2;
+  padding: 0.82em 0.9em;
+  margin: 0 0 0.8em;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-bg-card) 94%, #dfe8f3 6%);
+  color: color-mix(in srgb, var(--color-primary) 68%, var(--color-text) 32%);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--color-shadow) 35%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-card-border, #e0e0e0) 88%, transparent);
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 [data-theme="dark"] .competicion-header {
-  background: var(--color-header-bg-dark, #23272e);
-  color: var(--color-primary-dark, #e0e0e0);
-  border-color: var(--color-card-border-dark, #444);
-  box-shadow: 0 1px 8px var(--color-shadow-dark, #0006);
+  background: #2c333c;
+  color: #69d5e3;
+  border-color: #44515e;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
 }
 
 /* Controles generales */

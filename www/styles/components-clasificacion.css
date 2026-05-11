@@ -1,20 +1,27 @@
 /* Caret space for position change indicator */
 .caret-space {
-  display: inline-block;
-  width: 1.1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15em;
   text-align: center;
   vertical-align: middle;
   font-size: 1em;
-  margin-right: 0.1em;
+  margin-right: 0.08em;
 }
+
 .caret-up {
-  color: #1aaf5d;
-  font-size: 1em;
+  color: #22c06f;
+  font-size: 0.95em;
+  text-shadow: 0 0 10px color-mix(in srgb, #22c06f 35%, transparent);
 }
+
 .caret-down {
-  color: #e74c3c;
-  font-size: 1em;
+  color: #ff6b57;
+  font-size: 0.95em;
+  text-shadow: 0 0 10px color-mix(in srgb, #ff6b57 30%, transparent);
 }
+
 /* Column widths for standings table */
 .col-pos-width { width: 5ch; }
 .col-team-width { width: auto; }
@@ -26,6 +33,7 @@
 .col-f-width { width: 3.2ch; }
 .col-c-width { width: 3.2ch; }
 .col-dif-width { width: 3.6ch; }
+
 /* =======================
    components-clasificacion.css
    Estilos de Clasificación
@@ -33,41 +41,74 @@
 
 /* ---- Variables locales del componente ---- */
 :root {
-  /* Anchos */
-  --col-pos-w: 2.1rem; /* columna # */
-  --col-pts-w: 3.2ch; /* PTS */
-  --col-num-w: 3ch; /* PJ, PG, PE, PP, GF, GC, DG */
+  --col-pos-w: 2.1rem;
+  --col-pts-w: 3.2ch;
+  --col-num-w: 3ch;
 
-  /* Stripes (modo oscuro por defecto) */
-  --col-stripe-1: color-mix(in srgb, var(--color-bg-card) 90%, #000);
-  --col-stripe-2: color-mix(in srgb, var(--color-bg-card) 96%, #000);
+  --clas-surface: var(--color-bg-card);
+  --clas-surface-soft: color-mix(in srgb, var(--color-bg-card) 94%, #000);
+  --clas-surface-alt: color-mix(in srgb, var(--color-bg-card) 97%, #000);
+  --clas-header-bg: color-mix(in srgb, var(--color-primary, #2a5cff) 74%, #ffffff 26%);
+  --clas-header-text: #ffffff;
+  --clas-border: color-mix(in srgb, var(--color-card-border, #e0e0e0) 78%, transparent);
+  --clas-shadow: 0 10px 24px color-mix(in srgb, #000 22%, transparent);
+  --clas-fav-bg: color-mix(in srgb, #d9b24c 26%, var(--clas-surface));
+  --clas-fav-sticky-bg: color-mix(in srgb, #d9b24c 32%, var(--clas-surface));
+  --clas-accordion-bg: color-mix(in srgb, var(--color-bg-card) 92%, #000);
+  --clas-accordion-open-bg: color-mix(in srgb, var(--color-primary, #2a5cff) 74%, #ffffff 10%);
 }
 
-/* Ajustes para tema claro */
 [data-theme="light"] {
-  --col-stripe-1: color-mix(in srgb, var(--color-bg-card) 92%, #000);
-  --col-stripe-2: color-mix(in srgb, var(--color-bg-card) 97%, #000);
+  --clas-surface: #ffffff;
+  --clas-surface-soft: #f7f9fc;
+  --clas-surface-alt: #eef3f9;
+  --clas-header-bg: linear-gradient(180deg, #3d6fc2 0%, #2f5ead 100%);
+  --clas-header-text: #ffffff;
+  --clas-border: #d6deea;
+  --clas-shadow: 0 8px 18px rgba(30, 51, 84, 0.14);
+  --clas-fav-bg: #fff0c9;
+  --clas-fav-sticky-bg: #fde8b2;
+  --clas-accordion-bg: #ffffff;
+  --clas-accordion-open-bg: linear-gradient(180deg, #2b8e9f 0%, #227b8b 100%);
+}
+
+[data-theme="dark"] {
+  --clas-surface: #232a33;
+  --clas-surface-soft: #1d232b;
+  --clas-surface-alt: #28303a;
+  --clas-header-bg: linear-gradient(180deg, #3d6fc2 0%, #2f5ead 100%);
+  --clas-header-text: #f7fbff;
+  --clas-border: #42505f;
+  --clas-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  --clas-fav-bg: #4a4023;
+  --clas-fav-sticky-bg: #5b4d28;
+  --clas-accordion-bg: #2a313a;
+  --clas-accordion-open-bg: linear-gradient(180deg, #31718f 0%, #255d76 100%);
 }
 
 /* ---- Contenedor tarjeta ---- */
 #matches li.clas-card {
   padding: 0;
   overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--clas-border);
+  background: var(--clas-surface);
+  box-shadow: var(--clas-shadow);
 }
 
 .clas-table-wrap {
   width: 100%;
   overflow: hidden;
-  border-radius: 10px;
-  border: 1.5px solid var(--color-card-border, #e0e0e0);
-  background: var(--color-bg-card);
-  box-shadow: 0 2px 8px var(--color-shadow);
+  border-radius: 12px;
+  border: 1px solid var(--clas-border);
+  background: var(--clas-surface);
+  box-shadow: var(--clas-shadow);
 }
 
 /* ---- Tabla ---- */
 .clas-table {
   width: 100%;
-  table-layout: fixed; /* respeta widths por columna */
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
   font-variant-numeric: tabular-nums;
@@ -77,27 +118,27 @@
 .clas-table thead th {
   position: sticky;
   top: 0;
-  background: var(--color-header-bg, #f5f7fa);
+  background: var(--clas-surface-soft);
   color: var(--color-text);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  font-size: 0.72rem;
-  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+  font-weight: 800;
   text-align: center;
-  padding: 0.42em 0.36em;
-  border-bottom: 1px solid var(--color-card-border, #e0e0e0);
+  padding: 0.5em 0.36em;
+  border-bottom: 1px solid var(--clas-border);
 }
 
 /* Celdas */
 .clas-table td {
-  padding: 0.46em 0.36em;
+  padding: 0.5em 0.36em;
   font-size: 0.84rem;
-  border-bottom: 1px solid var(--color-card-border, #e0e0e0);
-  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--clas-border);
+  background: var(--clas-surface);
 }
 
 .clas-table tbody tr:nth-child(even) td {
-  background: color-mix(in srgb, var(--color-bg-card), #000 2%);
+  background: var(--clas-surface-soft);
 }
 
 /* ---- Anchos por columna (sin <colgroup>) ---- */
@@ -128,17 +169,17 @@
   width: var(--col-num-w);
 }
 
-/* ---- Columnas pegajosas (sin solapes) ---- */
+/* ---- Columnas pegajosas ---- */
 .clas-table th.col-pos,
 .clas-table td.col-pos {
   position: sticky;
   left: 0;
-  z-index: 5; /* por encima del team */
+  z-index: 5;
   width: var(--col-pos-w);
   text-align: center;
   font-weight: 800;
-  background: var(--color-bg-card); /* tapa stripes detrás */
-  border-right: 1px solid var(--color-card-border);
+  background: var(--clas-surface);
+  border-right: 1px solid var(--clas-border);
   padding-left: 0.2rem;
   padding-right: 0.2rem;
   background-clip: padding-box;
@@ -147,16 +188,16 @@
 .clas-table th.col-team,
 .clas-table td.col-team {
   position: sticky;
-  left: var(--col-pos-w); /* a continuación de # */
+  left: var(--col-pos-w);
   z-index: 4;
-  min-width: 7.2rem; /* ancho mínimo móvil */
-  background: var(--color-bg-card); /* tapa stripes detrás */
-  border-right: 1px solid var(--color-card-border);
-  overflow: hidden; /* necesario para ellipsis */
+  min-width: 7.2rem;
+  background: var(--clas-surface);
+  border-right: 1px solid var(--clas-border);
+  overflow: hidden;
   background-clip: padding-box;
 }
 
-/* Nombre del equipo (ellipsis) */
+/* Nombre del equipo */
 .clas-table .team-name {
   display: block;
   overflow: hidden;
@@ -167,6 +208,11 @@
   line-height: 1.1;
   color: var(--color-text);
   width: 100%;
+}
+
+.clas-table tbody td.col-pos,
+.clas-table tbody td.col-pts {
+  font-weight: 800;
 }
 
 /* Numéricas */
@@ -186,7 +232,7 @@
   font-size: 0.92rem;
 }
 
-/* ---- Stripes verticales (alternos) ---- */
+/* ---- Stripes verticales ---- */
 .clas-table thead th:nth-child(3),
 .clas-table tbody td:nth-child(3),
 .clas-table thead th:nth-child(5),
@@ -195,7 +241,7 @@
 .clas-table tbody td:nth-child(7),
 .clas-table thead th:nth-child(9),
 .clas-table tbody td:nth-child(9) {
-  background: var(--col-stripe-1) !important;
+  background: var(--clas-surface-alt) !important;
 }
 
 .clas-table thead th:nth-child(4),
@@ -206,42 +252,38 @@
 .clas-table tbody td:nth-child(8),
 .clas-table thead th:nth-child(10),
 .clas-table tbody td:nth-child(10) {
-  background: var(--col-stripe-2);
+  background: var(--clas-surface-soft);
 }
 
 /* Hover y fila destacada */
 .clas-table tbody tr:hover td {
-  filter: brightness(1.02);
+  filter: brightness(1.04);
 }
 
 .clas-table tbody tr.fav td {
-  background: var(--color-proximo-partido-bg, #fff3c4);
-  color: var(--color-text, #2a2f33);
-  font-weight: bold;
+  background: var(--clas-fav-bg) !important;
+  color: var(--color-text);
+  font-weight: 700;
 }
 
-@media (prefers-color-scheme: dark) {
-  .clas-table tbody tr.fav td {
-    background: var(--color-proximo-partido-bg, #3a2d12);
-    color: var(--color-text, #e0e0e0);
-  }
-}
-
-[data-theme="dark"] .clas-table tbody tr.fav td {
-  background: var(--color-proximo-partido-bg, #3a2d12);
-  color: var(--color-text, #e0e0e0);
+.clas-table tbody tr.fav td.col-pos,
+.clas-table tbody tr.fav td.col-team {
+  background: var(--clas-fav-sticky-bg) !important;
 }
 
 /* Bordes redondeados */
 .clas-table thead th:first-child {
   border-top-left-radius: 10px;
 }
+
 .clas-table thead th:last-child {
   border-top-right-radius: 10px;
 }
+
 .clas-table tbody tr:last-child td:first-child {
   border-bottom-left-radius: 10px;
 }
+
 .clas-table tbody tr:last-child td:last-child {
   border-bottom-right-radius: 10px;
 }
@@ -250,15 +292,18 @@
 @media (max-width: 360px) {
   :root {
     --col-pos-w: 1.9rem;
-  } /* # más estrecho */
+  }
+
   .clas-table th.col-team,
   .clas-table td.col-team {
     min-width: 6.2rem;
   }
+
   .clas-table thead th {
     font-size: 0.66rem;
     padding: 0.38em 0.32em;
   }
+
   .clas-table td {
     padding: 0.42em 0.32em;
     font-size: 0.8rem;
@@ -267,56 +312,56 @@
 
 /* ---- Acordeón de clasificación ---- */
 .clas-accordion {
-  border-radius: 1em;
-  margin-bottom: 1em;
-  box-shadow: 0 2px 8px #0001;
-  border: none;
+  border-radius: 14px;
+  margin-bottom: 0.9em;
+  box-shadow: var(--clas-shadow);
+  border: 1px solid var(--clas-border);
   overflow: hidden;
+  background: var(--clas-accordion-bg);
 }
+
 .clas-acc-btn {
   width: 100%;
-  background: var(--color-header-bg, #f7fafd);
-  color: var(--color-text, #1a1a1a);
+  background: var(--clas-accordion-bg);
+  color: var(--color-text);
   border: none;
   outline: none;
-  font-size: 1.1em;
-  font-weight: 600;
-  padding: 1em;
+  font-size: 1.02rem;
+  font-weight: 800;
+  padding: 0.95em 1em;
   margin: 0;
   text-align: left;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  border-bottom: 1px solid #e0e0e0;
+  transition: background 0.2s, color 0.2s, transform 0.18s ease;
+  border-bottom: 1px solid var(--clas-border);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
+
 .clas-acc-btn[aria-expanded="true"] {
-  background: var(--color-primary, #2a5cff);
+  background: var(--clas-accordion-open-bg);
   color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
 }
+
 .clas-acc-btn:focus {
   outline: 2px solid var(--color-primary, #2a5cff);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
+
 .clas-acc-content {
   max-height: 0;
   overflow: hidden;
+  background: var(--clas-surface);
   transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
 }
+
 .clas-acc-content.open {
   max-height: 1000px;
   transition: max-height 0.5s cubic-bezier(.4,0,.2,1);
 }
+
 @media (max-width: 600px) {
   .clas-accordion { margin-bottom: 0.7em; }
-  .clas-acc-btn { font-size: 1em; padding: 0.8em; }
-}
-
-@media (prefers-color-scheme: dark) {
-  .clas-acc-btn {
-    background: #23272e;
-    color: #f7fafd;
-  }
-  .clas-acc-btn[aria-expanded="true"] {
-    background: #2c63bb;
-    color: #fff;
-  }
+  .clas-acc-btn { font-size: 0.98rem; padding: 0.85em 0.9em; }
 }
