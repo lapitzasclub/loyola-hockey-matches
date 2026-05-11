@@ -143,11 +143,20 @@ export async function renderPartidos(matchesList, raw) {
  * @param {Object} p - Objeto partido.
  * @returns {string} HTML del resultado o vacío.
  */
+/**
+ * Renderiza la pieza central del duelo: marcador final si existe, o estado compacto si aún no se ha jugado.
+ *
+ * @param {object} p Objeto partido.
+ * @returns {string} HTML del bloque central.
+ */
 function renderResultado(p) {
   if (p.EstadoPartido == 2 && p.GolesLocal != null && p.GolesVisit != null) {
     return `<div class='partido-resultado-row'><span class="partido-resultado">${p.GolesLocal} - ${p.GolesVisit}</span></div>`;
   }
-  return "";
+
+  const hora = p?.Hora ? String(p.Hora).slice(0, 5) : "";
+  const estado = hora || t("detail_match").replace(/\s+/g, " ") || "Próximo";
+  return `<div class='partido-resultado-row'><span class="partido-resultado partido-resultado-pendiente">${safeStr(estado)}</span></div>`;
 }
 
 /**
@@ -185,7 +194,7 @@ function renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap) {
         </div>
         <div class="partido-centro">
           <span class="partido-vs">vs</span>
-          ${resultadoHtml || "<div class='partido-estado-placeholder'></div>"}
+          ${resultadoHtml}
         </div>
         <div class="partido-team partido-team-visit">
           ${visitLogo}
