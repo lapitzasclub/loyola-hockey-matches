@@ -317,13 +317,19 @@ export function renderEquipoSelector(container, options = {}) {
 
   const groups = groupCompetitions(catalog);
 
-  container.innerHTML = `
-    <section class="team-selector team-selector-${mode} ${compact ? "team-selector-compact" : ""}">
+  const heroHtml = mode === "onboarding"
+    ? `
       <div class="team-selector-hero">
-        <span class="team-selector-kicker">${mode === "onboarding" ? t("team_selector_first_time") : t("team_selector_change")}</span>
+        <span class="team-selector-kicker">${t("team_selector_first_time")}</span>
         <h2 class="team-selector-title">${t("team_selector_title")}</h2>
         <p class="team-selector-subtitle">${t("team_selector_subtitle")}</p>
       </div>
+    `
+    : "";
+
+  container.innerHTML = `
+    <section class="team-selector team-selector-${mode} ${compact ? "team-selector-compact" : ""}">
+      ${heroHtml}
       <div class="team-selector-groups">
         ${renderCompetitionGroup(t("team_selector_group_leagues"), groups.leagues, selectedValue, true)}
         ${renderCompetitionGroup(t("team_selector_group_tournaments"), groups.tournaments, selectedValue, groups.leagues.length === 0)}

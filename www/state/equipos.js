@@ -32,13 +32,18 @@ export function hasEquipoFavorito() {
   return !!localStorage.getItem("equipoLoyolaSel");
 }
 export function persistEquipoSeleccionado(value) {
+  const selector = document.getElementById("equipoLoyolaSelect");
+
   if (!value) {
     localStorage.removeItem("equipoLoyolaSel");
     setEquipoSeleccionado(null);
+    if (selector) selector.value = "";
     return;
   }
+
   localStorage.setItem("equipoLoyolaSel", value);
   setEquipoSeleccionado(value);
+  if (selector) selector.value = value;
 }
 
 export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion, mostrarPantallaErrorGlobal) {

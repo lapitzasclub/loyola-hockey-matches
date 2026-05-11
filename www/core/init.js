@@ -178,6 +178,10 @@ function renderMenuTeamLauncher(mobileBackCoordinator) {
             navClas.classList.remove("active");
           }
           renderMenuTeamLauncher(mobileBackCoordinator);
+          const selectorMenuContainer = document.getElementById("teamSelectorMenuContainer");
+          if (selectorMenuContainer) {
+            selectorMenuContainer.offsetHeight;
+          }
           await mostrarPartidosYClasificacion();
         },
       });
@@ -208,7 +212,7 @@ function ensureMatchesList() {
   return matchesList;
 }
 
-async function mostrarSelectorInicial() {
+async function mostrarSelectorInicial(mobileBackCoordinator) {
   const screenContent = document.getElementById("screenContent");
   const headerTitle = document.getElementById("headerTitle");
   if (!screenContent) return;
@@ -231,6 +235,7 @@ async function mostrarSelectorInicial() {
         navPartidos.classList.add("active");
         navClas.classList.remove("active");
       }
+      renderMenuTeamLauncher(mobileBackCoordinator);
       await mostrarPartidosYClasificacion();
     },
   });
@@ -272,7 +277,7 @@ export async function initApp() {
         updateTexts();
         renderMenuTeamLauncher(mobileBackCoordinator);
         if (isOnboardingActive()) {
-          await mostrarSelectorInicial();
+          await mostrarSelectorInicial(mobileBackCoordinator);
           return;
         }
         if (document.getElementById("teamSelectorOverlay") && !document.getElementById("teamSelectorOverlay").hidden) {
@@ -341,7 +346,7 @@ export async function initApp() {
     renderMenuTeamLauncher(mobileBackCoordinator);
 
     if (shouldShowOnboarding) {
-      await mostrarSelectorInicial();
+      await mostrarSelectorInicial(mobileBackCoordinator);
       return;
     }
 

@@ -1,5 +1,5 @@
 import { t } from "../i18n.js";
-import { getCompetitionCatalog, getEquipoSeleccionado } from "../state/equipos.js";
+import { getCompetitionCatalog, getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 
 /**
  * Obtiene los datos del equipo actualmente seleccionado dentro del catálogo.
@@ -9,6 +9,7 @@ import { getCompetitionCatalog, getEquipoSeleccionado } from "../state/equipos.j
 function getSelectedTeamData() {
   const selectedValue = getEquipoSeleccionado();
   if (!selectedValue) return null;
+
   const [idCompeticion, idEquipoComp] = selectedValue.split("|");
   const catalog = getCompetitionCatalog();
   for (const competition of catalog) {
@@ -22,7 +23,18 @@ function getSelectedTeamData() {
       };
     }
   }
-  return null;
+
+  const fallbackTeam = getEquiposLoyola().find(
+    (team) => String(team.idCompeticion) === String(idCompeticion)
+      && String(team.idEquipoComp) === String(idEquipoComp),
+  );
+
+  if (!fallbackTeam) return null;
+
+  return {
+    ...fallbackTeam,
+    logoEquipoUrl: fallbackTeam.logoEquipoUrl || "https://www.fvpatinaje.eus/media/upload/fvpatinaje/escudos/sinescudo.png",
+  };
 }
 
 /**
