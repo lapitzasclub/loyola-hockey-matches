@@ -1,8 +1,9 @@
 // equipos.js
 // Carga y gestión del selector de equipos
-import { getEquiposLoyolaTodasCompeticiones } from "../services.js";
+import { getEquiposLoyolaTodasCompeticiones, getLoyolaCompetitionCatalog } from "../services.js";
 
 let _equiposLoyola = [];
+let _competitionCatalog = [];
 let _equipoSeleccionado = null;
 
 export function getEquiposLoyola() {
@@ -15,11 +16,29 @@ export function setEquiposLoyola(val) {
     globalThis.window._equiposLoyola = val;
   }
 }
+export function getCompetitionCatalog() {
+  return _competitionCatalog;
+}
+export function setCompetitionCatalog(val) {
+  _competitionCatalog = Array.isArray(val) ? val : [];
+}
 export function getEquipoSeleccionado() {
   return _equipoSeleccionado;
 }
 export function setEquipoSeleccionado(val) {
   _equipoSeleccionado = val;
+}
+export function hasEquipoFavorito() {
+  return !!localStorage.getItem("equipoLoyolaSel");
+}
+export function persistEquipoSeleccionado(value) {
+  if (!value) {
+    localStorage.removeItem("equipoLoyolaSel");
+    setEquipoSeleccionado(null);
+    return;
+  }
+  localStorage.setItem("equipoLoyolaSel", value);
+  setEquipoSeleccionado(value);
 }
 
 export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion, mostrarPantallaErrorGlobal) {
@@ -27,8 +46,12 @@ export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion,
   if (!selector) return;
   selector.innerHTML = `<option value="">Cargando equipos...</option>`;
   try {
-    const equipos = await getEquiposLoyolaTodasCompeticiones();
+    const [equipos, catalog] = await Promise.all([
+      getEquiposLoyolaTodasCompeticiones(),
+      getLoyolaCompetitionCatalog(),
+    ]);
     setEquiposLoyola(equipos);
+    setCompetitionCatalog(catalog);
     selector.innerHTML = "";
     for (const eq of equipos) {
       const opt = document.createElement("option");
@@ -37,10 +60,13 @@ export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion,
       selector.appendChild(opt);
     }
     const saved = localStorage.getItem("equipoLoyolaSel");
-    if (saved) selector.value = saved;
+    if (saved) {
+      selector.value = saved;
+    } else {
+      selector.value = "";
+    }
     selector.addEventListener("change", async () => {
-      localStorage.setItem("equipoLoyolaSel", selector.value);
-      setEquipoSeleccionado(selector.value || null);
+      persistEquipoSeleccionado(selector.value || null);
       // Cerrar el side-menu si está abierto
       const sideMenu = document.getElementById("sideMenu");
       const sideMenuOverlay = document.getElementById("sideMenuOverlay");
@@ -57,7 +83,7 @@ export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion,
       }
       await mostrarPartidosYClasificacion();
     });
-    setEquipoSeleccionado(selector.value || null);
+    setEquipoSeleccionado(saved || null);
   } catch (err) {
     mostrarPantallaErrorGlobal(err);
   }

@@ -9,6 +9,17 @@
   padding: 0;
 }
 
+.initial-team-loading {
+  min-height: calc(100vh - 180px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.initial-team-loading-spinner-wrap {
+  min-height: auto;
+}
+
 #matches li {
   background: var(--color-bg-card);
   margin-bottom: 1.15em;
@@ -24,6 +35,19 @@
 #matches li:hover {
   box-shadow: 0 14px 30px color-mix(in srgb, var(--color-shadow) 72%, transparent);
   border: 1px solid var(--color-primary);
+}
+
+#matches li.match-skeleton-card,
+#matches li.match-skeleton-status {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+#matches li.match-skeleton-card:hover,
+#matches li.match-skeleton-status:hover {
+  border: none;
+  box-shadow: none;
 }
 
 #matches li.proximo-partido {
@@ -216,8 +240,102 @@
   margin-top: -10px;
 }
 
+.match-skeleton-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid var(--color-card-border, #e0e0e0);
+  background: color-mix(in srgb, var(--color-bg-card) 94%, #dfe8f3 6%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-shadow) 38%, transparent);
+}
+
+.match-skeleton-header,
+.match-skeleton-duelo,
+.match-skeleton-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.match-skeleton-duelo {
+  padding: 0.25rem 0;
+}
+
+.match-skeleton-team,
+.match-skeleton-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.match-skeleton-block {
+  display: inline-block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-bg-card) 72%, #d7e1ec 28%) 0%, color-mix(in srgb, var(--color-bg-card) 88%, #ffffff 12%) 50%, color-mix(in srgb, var(--color-bg-card) 72%, #d7e1ec 28%) 100%);
+  background-size: 200% 100%;
+  animation: match-skeleton-shimmer 1.2s linear infinite;
+}
+
+.match-skeleton-pill {
+  width: 7rem;
+  height: 1.35rem;
+}
+
+.match-skeleton-text-sm {
+  width: 5.5rem;
+  height: 0.95rem;
+}
+
+.match-skeleton-text-md {
+  width: 7.2rem;
+  height: 1rem;
+}
+
+.match-skeleton-text-lg {
+  width: 10rem;
+  height: 0.95rem;
+  margin-left: auto;
+}
+
+.match-skeleton-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+}
+
+.match-skeleton-vs {
+  width: 2.2rem;
+  height: 0.85rem;
+}
+
+.match-skeleton-score {
+  width: 4rem;
+  height: 2rem;
+  border-radius: 12px;
+}
+
+.match-skeleton-status {
+  text-align: center;
+  color: var(--color-fecha, var(--color-text));
+  font-size: 0.94rem;
+  padding-top: 0.1rem;
+}
+
+@keyframes match-skeleton-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
 /* Responsive */
 @media (max-width: 360px) {
+  .initial-team-loading {
+    min-height: calc(100vh - 210px);
+  }
   .partido-card-shell {
     padding: 0.88rem 0.85rem 0.8rem;
   }

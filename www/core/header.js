@@ -13,7 +13,15 @@ export function setCompeticionHeader(nombreCompeticion) {
     header.id = "competicionHeader";
     header.className = "competicion-header";
     const main = document.querySelector("main");
-    if (main) main.insertBefore(header, main.firstChild);
+    const pullToRefresh = document.getElementById("pullToRefresh");
+    if (main) {
+      if (pullToRefresh) {
+        main.insertBefore(header, pullToRefresh.nextSibling);
+      } else {
+        main.insertBefore(header, main.firstChild);
+      }
+    }
   }
   header.textContent = nombreCompeticion || "";
+  header.hidden = !nombreCompeticion;
 }

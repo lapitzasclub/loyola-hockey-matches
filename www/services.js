@@ -3,6 +3,8 @@ import { isNative, getHttp } from "./utils/env.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";
 const FVP_BASE_URL = "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx";
+const ENTITY_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/entidad/200x200";
+const competitionCatalogCache = new Map();
 
 /**
  * Emite un evento del hub de partido sobre el bus interno del cliente.
@@ -240,70 +242,122 @@ export async function getParametrosCompeticion(idCompeticion) {
  * Obtiene todos los equipos Loyola de todas las competiciones.
  * @returns {Promise<Array>} Array de equipos Loyola.
  */
-export async function getEquiposLoyolaTodasCompeticiones() {
-  const compUrl = getServiceUrl("GetCompeticiones");
-  const paramUrl = getServiceUrl("GetParametrosCompeticion");
+/**
+ * Construye la URL pública de un logo de entidad o un fallback sin escudo.
+ *
+ * @param {string|number|null|undefined} entityId Identificador de entidad.
+ * @returns {string} URL del recurso visual.
+ */
+function getEntityLogoUrl(entityId) {
+  return `${ENTITY_LOGO_BASE_URL}/${entityId || "sinescudo"}.png`;
+}
 
+/**
+ * Devuelve true si un equipo pertenece al universo Loyola mostrado por la app.
+ *
+ * @param {object} equipo Equipo de competición.
+ * @returns {boolean} True si debe incluirse en el selector propio.
+ */
+function isLoyolaTeam(equipo) {
+  return (
+    equipo?.NombreEquipo?.toUpperCase().includes("LOYOLA") ||
+    equipo?.NombreEquipoAbrev?.toUpperCase().includes("LOY")
+  );
+}
+
+/**
+ * Obtiene y cachea el catálogo de competiciones con sus equipos Loyola y logos.
+ *
+ * @returns {Promise<Array>} Catálogo visual agrupado por competición.
+ */
+export async function getLoyolaCompetitionCatalog() {
+  const cacheKey = "hp:21";
+  if (competitionCatalogCache.has(cacheKey)) {
+    return competitionCatalogCache.get(cacheKey);
+  }
+
+  const compUrl = getServiceUrl("GetCompeticiones");
   const compRes = await fetch(compUrl, {
     method: "POST",
     headers: HEADERS,
-    body: JSON.stringify({ modalidad: "hp", temporada: "21" }), // O ajusta temporada si es necesario
+    body: JSON.stringify({ modalidad: "hp", temporada: "21" }),
   });
+
   let compJson;
   try {
     compJson = await compRes.json();
-  } catch (e) {
-    console.error("Error parseando JSON de competiciones:", e);
+  } catch (error) {
+    console.error("Error parseando JSON de competiciones:", error);
     return [];
   }
+
   let competiciones;
   try {
     competiciones = compJson.d ? JSON.parse(compJson.d) : [];
-  } catch (e) {
-    console.error("Error parseando compJson.d:", compJson.d, e);
+  } catch (error) {
+    console.error("Error parseando compJson.d:", compJson.d, error);
     return [];
   }
 
-  const equiposLoyola = [];
-
-  // 2. Para cada competición, pedir los equipos
+  const catalog = [];
   for (const comp of competiciones) {
-    const paramRes = await fetch(paramUrl, {
-      method: "POST",
-      headers: HEADERS,
-      body: JSON.stringify({ idcompeticion: String(comp.IdCompeticion) }),
-    });
-    let paramJson;
-    try {
-      paramJson = await paramRes.json();
-    } catch (e) {
-      console.error("Error parseando JSON de parametros:", e);
-      continue;
-    }
+    const rawParams = await getParametrosCompeticion(comp.IdCompeticion);
     let params;
     try {
-      params = paramJson.d ? JSON.parse(paramJson.d) : [];
-    } catch (e) {
-      console.error("Error parseando paramJson.d:", paramJson.d, e);
+      params = typeof rawParams === "string"
+        ? JSON.parse(JSON.parse(rawParams).d)
+        : rawParams?.d
+          ? JSON.parse(rawParams.d)
+          : rawParams;
+    } catch (error) {
+      console.error("Error parseando parametros de competición:", comp.IdCompeticion, error);
       continue;
     }
-    if (!params[0]?.Equipos) continue;
-    for (const eq of params[0].Equipos) {
-      if (
-        eq.NombreEquipo?.toUpperCase().includes("LOYOLA") ||
-        eq.NombreEquipoAbrev?.toUpperCase().includes("LOY")
-      ) {
-        equiposLoyola.push({
-          idCompeticion: comp.IdCompeticion,
-          nombreCompeticion: comp.DenoComp,
-          idEquipoComp: eq.IdEquipoComp,
-          nombreEquipo: eq.NombreEquipo,
-          nombreEquipoAbrev: eq.NombreEquipoAbrev,
-        });
-      }
-    }
+
+    const competitionData = Array.isArray(params) ? params[0] : null;
+    const equipos = Array.isArray(competitionData?.Equipos) ? competitionData.Equipos : [];
+    const equiposLoyola = equipos
+      .filter(isLoyolaTeam)
+      .map((equipo) => ({
+        idCompeticion: comp.IdCompeticion,
+        nombreCompeticion: comp.DenoComp,
+        temporada: comp.Temporada || competitionData?.Temporada || "",
+        modalidad: comp.IdModalidadComp || competitionData?.IdModalidadComp || "hp",
+        idEquipoComp: equipo.IdEquipoComp,
+        idEntidadEquipo: equipo.IdEntidadEquipo,
+        nombreEquipo: equipo.NombreEquipo,
+        nombreEquipoAbrev: equipo.NombreEquipoAbrev,
+        tieneLogo: !!equipo.TieneLogo,
+        logoEquipoUrl: equipo.TieneLogo ? getEntityLogoUrl(equipo.IdEntidadEquipo) : getEntityLogoUrl("sinescudo"),
+      }));
+
+    if (!equiposLoyola.length) continue;
+
+    catalog.push({
+      idCompeticion: comp.IdCompeticion,
+      nombreCompeticion: comp.DenoComp,
+      nombreCompeticionAbrev: comp.DenoAbrevComp || comp.DenoComp,
+      temporada: comp.Temporada || competitionData?.Temporada || "",
+      modalidad: comp.IdModalidadComp || competitionData?.IdModalidadComp || "hp",
+      tieneLogoComp: !!competitionData?.LogoComp,
+      logoCompeticionUrl: competitionData?.LogoComp && competitionData?.IdEntidad
+        ? getEntityLogoUrl(competitionData.IdEntidad)
+        : getEntityLogoUrl("sinescudo"),
+      equipos: equiposLoyola,
+    });
   }
-  return equiposLoyola;
+
+  competitionCatalogCache.set(cacheKey, catalog);
+  return catalog;
+}
+
+/**
+ * Obtiene todos los equipos Loyola de todas las competiciones.
+ * @returns {Promise<Array>} Array de equipos Loyola.
+ */
+export async function getEquiposLoyolaTodasCompeticiones() {
+  const catalog = await getLoyolaCompetitionCatalog();
+  return catalog.flatMap((competition) => competition.equipos);
 }
 
 /**

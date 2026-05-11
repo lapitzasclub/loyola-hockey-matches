@@ -23,11 +23,17 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
     navClas.addEventListener("click", async () => {
       navClas.classList.add("active");
       navPartidos.classList.remove("active");
-      const matchesList = document.getElementById("matches");
+      const screenContent = document.getElementById("screenContent");
+      let matchesList = document.getElementById("matches");
+      if (!matchesList && screenContent) {
+        screenContent.innerHTML = '<ul id="matches"></ul>';
+        matchesList = document.getElementById("matches");
+      }
+      if (!matchesList) return;
       matchesList.innerHTML = "";
       matchesList.innerHTML = `<li><div class='spinner-container'><div class='spinner' aria-label='Cargando'></div></div></li>`;
       if (!getEquipoSeleccionado()) {
-        matchesList.innerHTML = `<li>Selecciona un equipo Loyola</li>`;
+        matchesList.innerHTML = `<li>${t("team_selector_prompt_inline")}</li>`;
         setCompeticionHeader("");
         return;
       }

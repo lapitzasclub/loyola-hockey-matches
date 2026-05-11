@@ -1,0 +1,429 @@
+/* =======================
+   components-equipo-selector.css
+   Selector reutilizable de equipo
+   ======================= */
+
+.team-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#screenContent > .team-selector {
+  padding-top: 0.4rem;
+}
+
+.team-selector-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 0.8rem 0.2rem 0.25rem;
+  animation: team-selector-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.team-selector-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3em 0.8em;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+
+.team-selector-title {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.5vw, 2.15rem);
+  line-height: 1.05;
+  color: var(--color-text);
+}
+
+.team-selector-subtitle {
+  margin: 0;
+  max-width: 32rem;
+  color: var(--color-fecha, var(--color-text));
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.team-selector-grid {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.team-selector-competition-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--color-card-border) 80%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-card) 96%, #ffffff 4%) 0%, color-mix(in srgb, var(--color-bg-card) 92%, #dfe8f3 8%) 100%);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-shadow) 48%, transparent);
+  animation: team-selector-fade-up 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.team-selector-competition-card:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.team-selector-competition-card:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.team-selector-competition-card:nth-child(4) {
+  animation-delay: 210ms;
+}
+
+.team-selector-competition-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.team-selector-competition-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--color-bg-card) 88%, #ffffff 12%);
+  border: 1px solid color-mix(in srgb, var(--color-card-border) 70%, transparent);
+  padding: 0.35rem;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--color-shadow) 35%, transparent);
+}
+
+.team-selector-competition-copy {
+  min-width: 0;
+}
+
+.team-selector-competition-badge {
+  display: inline-block;
+  margin-bottom: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+}
+
+.team-selector-competition-title {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.15;
+  color: var(--color-text);
+}
+
+.team-selector-competition-meta {
+  margin: 0.22rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-fecha, var(--color-text));
+}
+
+.team-selector-team-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.team-selector-team-button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.8rem 0.85rem;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--color-card-border) 72%, transparent);
+  background: color-mix(in srgb, var(--color-bg-card) 98%, transparent);
+  color: var(--color-text);
+  text-align: left;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-shadow) 22%, transparent);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.team-selector-team-button:hover,
+.team-selector-team-button:focus-visible {
+  transform: translateY(-1px) scale(1.01);
+  border-color: color-mix(in srgb, var(--color-primary) 48%, var(--color-card-border));
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--color-shadow) 28%, transparent);
+}
+
+.team-selector-team-button.is-selected {
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-bg-card));
+  border-color: color-mix(in srgb, var(--color-primary) 54%, transparent);
+}
+
+.team-selector-team-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--color-bg-card) 88%, #ffffff 12%);
+  border: 1px solid color-mix(in srgb, var(--color-card-border) 72%, transparent);
+  padding: 0.22rem;
+}
+
+.team-selector-team-texts {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.14rem;
+}
+
+.team-selector-team-name {
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.team-selector-team-meta {
+  font-size: 0.84rem;
+  color: var(--color-fecha, var(--color-text));
+}
+
+.team-selector-skeleton {
+  display: inline-block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-bg-card) 78%, #d7e1ec 22%) 0%, color-mix(in srgb, var(--color-bg-card) 88%, #ffffff 12%) 50%, color-mix(in srgb, var(--color-bg-card) 78%, #d7e1ec 22%) 100%);
+  background-size: 200% 100%;
+  animation: team-selector-shimmer 1.25s linear infinite;
+}
+
+.team-selector-skeleton-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+}
+
+.team-selector-skeleton-line {
+  height: 0.9rem;
+}
+
+.team-selector-skeleton-line-lg {
+  width: 11rem;
+}
+
+.team-selector-skeleton-line-sm {
+  width: 6rem;
+  margin-top: 0.45rem;
+}
+
+.team-selector-skeleton-pill {
+  width: 100%;
+  height: 4rem;
+  border-radius: 16px;
+}
+
+.team-selector-launcher {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.team-selector-launcher-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-header) 82%, var(--color-primary) 18%);
+}
+
+.team-selector-launcher-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem 0.9rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--color-bg-card) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-header) 16%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent);
+}
+
+.team-selector-launcher-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+  padding: 0.18rem;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-shadow) 35%, transparent);
+}
+
+.team-selector-launcher-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.16rem;
+}
+
+.team-selector-launcher-team,
+.team-selector-launcher-comp,
+.team-selector-launcher-empty {
+  color: var(--color-text-header);
+}
+
+.team-selector-launcher-team {
+  display: block;
+  line-height: 1.12;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.team-selector-launcher-comp,
+.team-selector-launcher-empty {
+  font-size: 0.92rem;
+  opacity: 0.92;
+}
+
+.team-selector-launcher-button {
+  width: 100%;
+  margin: 0;
+  padding: 0.92rem 1rem;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  color: var(--color-text-header);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 82%, #8ee7f1 18%) 0%, color-mix(in srgb, var(--color-primary) 92%, #000000 8%) 100%);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--color-shadow) 34%, transparent);
+}
+
+.team-selector-launcher-button:hover,
+.team-selector-launcher-button:focus-visible {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 88%, #a6f2fb 12%) 0%, color-mix(in srgb, var(--color-primary) 96%, #000000 4%) 100%);
+}
+
+body[data-theme="dark"] .team-selector-launcher-button {
+  color: #06232a;
+  background: linear-gradient(180deg, #7be3ef 0%, #55cadb 100%);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.32);
+}
+
+body[data-theme="dark"] .team-selector-launcher-card {
+  background: color-mix(in srgb, var(--color-bg-card) 38%, #ffffff 2%);
+  border-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-card-border));
+}
+
+.team-selector-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10030;
+}
+
+.team-selector-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, #031522 78%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.team-selector-overlay-sheet {
+  position: absolute;
+  inset: auto 0 0 0;
+  max-height: min(86vh, 780px);
+  overflow: auto;
+  border-radius: 24px 24px 0 0;
+  background: var(--color-bg);
+  box-shadow: 0 -16px 40px color-mix(in srgb, var(--color-shadow) 50%, transparent);
+  padding: 1rem 1rem calc(1.2rem + env(safe-area-inset-bottom, 0px));
+  animation: team-selector-sheet-up 240ms ease;
+}
+
+.team-selector-overlay-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.team-selector-overlay-kicker {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.team-selector-overlay-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.team-selector-overlay-close {
+  min-width: 42px;
+  min-height: 42px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+body.is-onboarding-active .bottom-nav,
+body.is-onboarding-active #competicionHeader,
+body.is-onboarding-active #pullToRefresh,
+body.is-initial-team-load-active .bottom-nav,
+body.is-initial-team-load-active #competicionHeader,
+body.is-initial-team-load-active #pullToRefresh,
+body.is-initial-team-load-active #headerTitle {
+  display: none !important;
+}
+
+#equipoLoyolaSelect[hidden] {
+  display: none !important;
+}
+
+body.is-team-selector-overlay-open {
+  overflow: hidden;
+}
+
+@keyframes team-selector-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@keyframes team-selector-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes team-selector-sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-selector-hero,
+  .team-selector-competition-card,
+  .team-selector-skeleton,
+  .team-selector-overlay-sheet {
+    animation: none;
+  }
+
+  .team-selector-team-button {
+    transition: none;
+  }
+}

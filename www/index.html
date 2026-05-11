@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/styles/components-clasificacion.css" />
     <link rel="stylesheet" href="/styles/components-comunes.css" />
     <link rel="stylesheet" href="/styles/components-partido-detalle.css" />
+    <link rel="stylesheet" href="/styles/components-equipo-selector.css" />
 
     <link rel="stylesheet" href="/styles/responsive.css" />
     <link rel="stylesheet" href="/styles/spinner.css" />
@@ -30,10 +31,11 @@
       data-i18n-aria="side_menu_aria"
     >
       <div class="side-menu-content">
-        <h3 data-i18n="select_team">Selecciona equipo</h3>
+        <div id="teamSelectorMenuContainer"></div>
         <select
           id="equipoLoyolaSelect"
           class="equipo-loyola-select"
+          hidden
         ></select>
         <hr />
         <label for="langSelect" data-i18n="select_lang">Idioma</label>
@@ -72,10 +74,13 @@
         </span>
         <span id="ptrText" class="ptr-text">Desliza para refrescar...</span>
       </div>
-      <ul id="matches"></ul>
+      <div id="screenContent">
+        <ul id="matches"></ul>
+      </div>
+      <div id="teamSelectorOverlay" class="team-selector-overlay" hidden></div>
     </main>
     <nav
-      class="bottom-nav"
+      class="bottom-nav app-hidden-initially"
       aria-label="Navegación principal"
       data-i18n-aria="bottom_nav_aria"
     >

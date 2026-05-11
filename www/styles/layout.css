@@ -159,6 +159,14 @@ body {
   height: 100vh;
   overflow: hidden;
 }
+
+.app-hidden-initially {
+  display: none !important;
+}
+
+body.app-ready .app-hidden-initially {
+  display: flex !important;
+}
 .header {
   display: flex;
   align-items: center;
