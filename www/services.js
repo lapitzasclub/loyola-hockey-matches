@@ -2,6 +2,7 @@ import { getCachedApi, setCachedApi } from "./utils/apiCache.js";
 import { isNative, getHttp } from "./utils/env.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";
+const FVP_BASE_URL = "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx";
 
 /**
  * Emite un evento del hub de partido sobre el bus interno del cliente.
@@ -30,12 +31,11 @@ export function subscribePartidoHubEvents(handler) {
   window.addEventListener(PARTIDO_HUB_BUS_EVENT, listener);
   return () => window.removeEventListener(PARTIDO_HUB_BUS_EVENT, listener);
 }
-// --- SignalR clásico: usar instancia global creada por hubs script ---
-// signalR.enDirecto ya está disponible globalmente
-
 /**
- * Registra handlers para los eventos del hub enDirecto
- * @param {Object} handlers - { marcadorPartido, eventosPartido, penaltisPartido, alineacionPartido }
+ * Registra handlers legacy directamente sobre el cliente del hub enDirecto.
+ *
+ * @param {object} [handlers={}] Mapa parcial de callbacks por nombre de evento.
+ * @returns {void}
  */
 export function registerPartidoHubHandlers(handlers = {}) {
   if (!window.signalR?.enDirecto?.client) {
@@ -49,9 +49,11 @@ export function registerPartidoHubHandlers(handlers = {}) {
 }
 
 /**
- * Llama a un método del servidor del hub enDirecto
- * @param {string} method - Nombre del método (ej: 'unirseAPartido')
- * @param {...any} args - Argumentos del método
+ * Llama a un método del servidor del hub enDirecto.
+ *
+ * @param {string} method Nombre del método remoto, por ejemplo `unirseAPartido`.
+ * @param {...any} args Argumentos del método remoto.
+ * @returns {any} Resultado devuelto por el proxy o undefined si no existe el método.
  */
 export function callPartidoHubServerMethod(method, ...args) {
   if (!window.signalR?.enDirecto?.server?.[method]) {
@@ -84,29 +86,47 @@ export async function getCalendarioTodosEquipos(idCompeticion, idsEquiposComp) {
   }
   return Array.from(partidosMap.values());
 }
-/**
- * Obtiene el calendario completo de una competición (todos los partidos).
- * @param {string|number} idCompeticion - ID de la competición.
- * @returns {Promise<any>} Respuesta de la API.
- */
-export async function getCalendarioCompeticionCompleto(idCompeticion) {
-  const REAL =
-    "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx/GetCalendarioCompeticion";
-  const PROXY = "/api/GetCalendarioCompeticion";
-  const body = JSON.stringify({
-    idcompeticion: String(idCompeticion)
-    // No se pasa idequipocomp
-  });
 
-  const url = isNative() ? REAL : PROXY;
+/**
+ * Construye la URL efectiva de un endpoint legacy según si se ejecuta en nativo o web.
+ *
+ * @param {string} endpoint Nombre del método ASMX, sin la barra inicial.
+ * @returns {string} URL absoluta o ruta proxy equivalente.
+ */
+function getServiceUrl(endpoint) {
+  return isNative() ? `${FVP_BASE_URL}/${endpoint}` : `/api/${endpoint}`;
+}
+
+/**
+ * Ejecuta una llamada estándar a un endpoint legacy ASMX capturando errores en formato uniforme.
+ *
+ * @param {string} endpoint Nombre del método remoto.
+ * @param {object} payload Cuerpo JSON del POST.
+ * @returns {Promise<any>} Respuesta válida o un objeto `{ error, message }`.
+ */
+async function callLegacyService(endpoint, payload) {
+  const url = getServiceUrl(endpoint);
+  const body = JSON.stringify(payload);
+
   try {
     const raw = await post({ url, body, preferNative: true });
     return ensureJsonOrThrow(raw);
-  } catch (e) {
-    return { error: true, message: e.message };
+  } catch (error) {
+    return { error: true, message: error.message };
   }
 }
-// api.js
+
+/**
+ * Obtiene el calendario completo de una competición (todos los partidos).
+ *
+ * @param {string|number} idCompeticion ID de la competición.
+ * @returns {Promise<any>} Respuesta de la API.
+ */
+export async function getCalendarioCompeticionCompleto(idCompeticion) {
+  return callLegacyService("GetCalendarioCompeticion", {
+    idcompeticion: String(idCompeticion),
+  });
+}
 
 const HEADERS = {
   accept: "application/json, text/javascript, */*; q=0.01",
@@ -178,44 +198,30 @@ function ensureJsonOrThrow(raw) {
   return raw;
 }
 
-/** Clasificación */
+/**
+ * Obtiene la clasificación de una competición.
+ *
+ * @param {string|number} idCompeticion ID de la competición.
+ * @returns {Promise<any>} Respuesta de la API.
+ */
 export async function getClasificacionLiga(idCompeticion) {
-  const REAL =
-    "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx/GetClasificacionCompeticion";
-  const PROXY = "/api/GetClasificacionCompeticion";
-  const body = JSON.stringify({ idcompeticion: String(idCompeticion) });
-
-  const url = isNative() ? REAL : PROXY;
-  try {
-    const raw = await post({ url, body, preferNative: true });
-    return ensureJsonOrThrow(raw);
-  } catch (e) {
-    return { error: true, message: e.message };
-  }
+  return callLegacyService("GetClasificacionCompeticion", {
+    idcompeticion: String(idCompeticion),
+  });
 }
 
 /**
  * Obtiene el calendario de un equipo concreto en una competición.
- * @param {string|number} equipoId - ID del equipo.
- * @param {string|number} idCompeticion - ID de la competición.
+ *
+ * @param {string|number} equipoId ID del equipo dentro de la competición.
+ * @param {string|number} idCompeticion ID de la competición.
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getCalendarioLoyola(equipoId, idCompeticion) {
-  const REAL =
-    "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx/GetCalendarioCompeticion";
-  const PROXY = "/api/GetCalendarioCompeticion";
-  const body = JSON.stringify({
+  return callLegacyService("GetCalendarioCompeticion", {
     idcompeticion: String(idCompeticion),
     idequipocomp: String(equipoId),
   });
-
-  const url = isNative() ? REAL : PROXY;
-  try {
-    const raw = await post({ url, body, preferNative: true });
-    return ensureJsonOrThrow(raw);
-  } catch (e) {
-    return { error: true, message: e.message };
-  }
 }
 
 /**
@@ -223,17 +229,10 @@ export async function getCalendarioLoyola(equipoId, idCompeticion) {
  * @returns {Promise<Array>} Array de equipos Loyola.
  */
 export async function getEquiposLoyolaTodasCompeticiones() {
-  // Usar proxy en web, URL real en nativo
-  const isNativo = isNative();
-  const COMP_URL = isNativo
-    ? "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx/GetCompeticiones"
-    : "/api/GetCompeticiones";
-  const PARAM_URL = isNativo
-    ? "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx/GetParametrosCompeticion"
-    : "/api/GetParametrosCompeticion";
+  const compUrl = getServiceUrl("GetCompeticiones");
+  const paramUrl = getServiceUrl("GetParametrosCompeticion");
 
-  // 1. Pedir todas las competiciones de hockey patines y temporada actual
-  const compRes = await fetch(COMP_URL, {
+  const compRes = await fetch(compUrl, {
     method: "POST",
     headers: HEADERS,
     body: JSON.stringify({ modalidad: "hp", temporada: "21" }), // O ajusta temporada si es necesario
@@ -257,7 +256,7 @@ export async function getEquiposLoyolaTodasCompeticiones() {
 
   // 2. Para cada competición, pedir los equipos
   for (const comp of competiciones) {
-    const paramRes = await fetch(PARAM_URL, {
+    const paramRes = await fetch(paramUrl, {
       method: "POST",
       headers: HEADERS,
       body: JSON.stringify({ idcompeticion: String(comp.IdCompeticion) }),
@@ -297,57 +296,37 @@ export async function getEquiposLoyolaTodasCompeticiones() {
 
 /**
  * Obtiene el detalle completo de un partido (cabecera, equipos, árbitros, marcador, etc.).
- * @param {string|number} idPartido - ID del partido.
+ *
+ * @param {string|number} idPartido ID del partido.
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getPartido(idPartido) {
-  const REAL = "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx/GetParametrosPartido";
-  const PROXY = "/api/GetParametrosPartido";
-  const body = JSON.stringify({ idpartido: String(idPartido) });
-  const url = isNative() ? REAL : PROXY;
-  try {
-    const raw = await post({ url, body, preferNative: true });
-    return ensureJsonOrThrow(raw);
-  } catch (e) {
-    return { error: true, message: e.message };
-  }
+  return callLegacyService("GetParametrosPartido", {
+    idpartido: String(idPartido),
+  });
 }
 
 /**
  * Obtiene las estadísticas completas de un partido (goles, faltas, penaltis, tarjetas, etc.).
- * @param {string|number} idPartido - ID del partido.
+ *
+ * @param {string|number} idPartido ID del partido.
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getEstadisticaPartido(idPartido) {
-  const REAL = "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx/GetEstadisticaPartido";
-  const PROXY = "/api/GetEstadisticaPartido";
-  const body = JSON.stringify({ idpartido: String(idPartido) });
-  const url = isNative() ? REAL : PROXY;
-  try {
-    const raw = await post({ url, body, preferNative: true });
-    return ensureJsonOrThrow(raw);
-  } catch (e) {
-    return { error: true, message: e.message };
-  }
+  return callLegacyService("GetEstadisticaPartido", {
+    idpartido: String(idPartido),
+  });
 }
 
 /**
  * Obtiene las estadísticas agregadas e histórico de un jugador.
- * @param {string|number} idLicencia - ID de licencia del jugador.
- * @param {string} tipo - Tipo de licencia, normalmente "j" o "p".
- * @param {string} modalidad - Modalidad, normalmente "hp" o "hl".
+ *
+ * @param {string|number} idLicencia ID de licencia del jugador.
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getEstadisticaJugador(idLicencia) {
-  const REAL = "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx/GetEstadisticasJugador";
-  const PROXY = "/api/GetEstadisticasJugador";
-  const body = JSON.stringify({ idlicencia: String(idLicencia) });
-  const url = isNative() ? REAL : PROXY;
-  try {
-    const raw = await post({ url, body, preferNative: true });
-    return ensureJsonOrThrow(raw);
-  } catch (e) {
-    return { error: true, message: e.message };
-  }
+  return callLegacyService("GetEstadisticasJugador", {
+    idlicencia: String(idLicencia),
+  });
 }
 

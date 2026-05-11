@@ -1,5 +1,3 @@
-// init.js
-// Inicialización principal y configuración de tema/idioma
 import { setupNavigation } from "./navigation.js";
 import { setupPullToRefresh } from "./pullToRefresh.js";
 import { cargarSelectorEquiposLoyola, getEquiposLoyola, getEquipoSeleccionado } from "../state/equipos.js";
@@ -42,23 +40,48 @@ function createMobileBackCoordinator() {
   let handlingBack = false;
   let hasOverlayState = false;
 
+  /**
+   * Indica si el menú lateral está visible.
+   *
+   * @returns {boolean} True cuando el side menu está abierto.
+   */
   function isSideMenuOpen() {
     return !!document.getElementById("sideMenu")?.classList.contains("open");
   }
 
+  /**
+   * Indica si el modal de detalle de partido está abierto.
+   *
+   * @returns {boolean} True cuando existe el modal en DOM.
+   */
   function isPartidoDetalleOpen() {
     return !!document.querySelector(".partido-detalle-modal");
   }
 
+  /**
+   * Indica si la subvista de jugador está activa dentro del detalle.
+   *
+   * @returns {boolean} True cuando la navegación interna apunta a jugador.
+   */
   function isJugadorDetalleOpen() {
     return window.__partidoDetalleState && window.__partidoDetalleState.navigation?.currentView === "jugador";
   }
 
+  /**
+   * Cierra el menú lateral y su overlay asociado.
+   *
+   * @returns {void}
+   */
   function closeSideMenu() {
     document.getElementById("sideMenu")?.classList.remove("open");
     document.getElementById("sideMenuOverlay")?.classList.remove("open");
   }
 
+  /**
+   * Ejecuta la acción de retroceso priorizando overlays antes que navegación global.
+   *
+   * @returns {Promise<boolean>} True si la pulsación quedó consumida.
+   */
   async function handleBackAction() {
     if (isSideMenuOpen()) {
       closeSideMenu();
@@ -78,10 +101,20 @@ function createMobileBackCoordinator() {
     return false;
   }
 
+  /**
+   * Calcula si el estado actual necesita interceptar el botón atrás.
+   *
+   * @returns {boolean} True cuando hay overlays activos.
+   */
   function computeNeedsOverlayState() {
     return isSideMenuOpen() || isPartidoDetalleOpen();
   }
 
+  /**
+   * Sincroniza una entrada de historial sintética para cerrar overlays con back web.
+   *
+   * @returns {void}
+   */
   function syncHistory() {
     if (isNative()) return;
     const needsOverlayState = computeNeedsOverlayState();
@@ -95,6 +128,11 @@ function createMobileBackCoordinator() {
     }
   }
 
+  /**
+   * Consume una acción de retroceso si hay UI superpuesta que deba cerrarse primero.
+   *
+   * @returns {Promise<boolean>} True si la acción fue absorbida por la app.
+   */
   async function consumeBack() {
     if (handlingBack) return true;
     if (!computeNeedsOverlayState()) return false;
@@ -108,6 +146,11 @@ function createMobileBackCoordinator() {
     }
   }
 
+  /**
+   * Conecta el botón atrás nativo de Capacitor con la lógica de overlays.
+   *
+   * @returns {void}
+   */
   function installCapacitorBackButton() {
     const App = window.Capacitor?.Plugins?.App;
     if (!App?.addListener) return;
@@ -122,12 +165,22 @@ function createMobileBackCoordinator() {
     });
   }
 
+  /**
+   * Conecta el evento `popstate` del navegador con la lógica de overlays.
+   *
+   * @returns {void}
+   */
   function installWebBackHandler() {
     window.addEventListener("popstate", async () => {
       await consumeBack();
     });
   }
 
+  /**
+   * Instala una única vez los listeners globales necesarios para el back coordinator.
+   *
+   * @returns {void}
+   */
   function install() {
     if (installed) return;
     installed = true;
@@ -148,12 +201,15 @@ function createMobileBackCoordinator() {
 }
 
 /**
- * Inicializa la app: tema, idioma, listeners y render inicial.
+ * Inicializa la aplicación: tema, idioma, navegación, selector y primera carga.
+ *
+ * @returns {Promise<void>} Promesa resuelta cuando termina el arranque principal.
  */
 export async function initApp() {
   try {
     const mobileBackCoordinator = createMobileBackCoordinator();
     mobileBackCoordinator.install();
+
     const themeSelect = document.getElementById("themeSelect");
     const savedTheme = getTheme();
     if (themeSelect) {
@@ -173,13 +229,10 @@ export async function initApp() {
       langSelect.addEventListener("change", async (e) => {
         setLang(e.target.value);
         updateTexts();
-        // Detectar pestaña activa y recargar solo esa vista
         const navClas = document.getElementById("navClas");
         if (navClas && navClas.classList.contains("active")) {
-          // Si está activa la pestaña de clasificación, recargar clasificación
           const matchesList = document.getElementById("matches");
           matchesList.innerHTML = `<li>${t("loading")}</li>`;
-          // Ya importados arriba
           if (!getEquipoSeleccionado()) {
             matchesList.innerHTML = `<li>Selecciona un equipo Loyola</li>`;
             setCompeticionHeader("");
@@ -196,7 +249,6 @@ export async function initApp() {
             matchesList.innerHTML = `<li>${t("error", e?.message || String(e))}</li>`;
           }
         } else {
-          // Por defecto, recargar partidos
           await mostrarPartidosYClasificacion();
         }
       });
@@ -204,7 +256,6 @@ export async function initApp() {
     setupNavigation(mostrarPartidosYClasificacion);
     setupPullToRefresh(mostrarPartidosYClasificacion);
 
-    // Restaurar lógica del menú lateral
     const menuBtn = document.getElementById("menuBtn");
     const sideMenu = document.getElementById("sideMenu");
     const sideMenuOverlay = document.getElementById("sideMenuOverlay");
@@ -236,10 +287,9 @@ export async function initApp() {
 }
 
 /**
- * Muestra la pantalla de partidos y clasificación para el equipo seleccionado.
- */
-/**
  * Carga y renderiza la lista de partidos del equipo actualmente seleccionado.
+ *
+ * Actualiza también el contexto visual superior de la competición y del equipo.
  *
  * @returns {Promise<void>} Promesa resuelta al terminar la carga principal.
  */

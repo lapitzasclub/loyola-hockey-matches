@@ -16,6 +16,7 @@ import {
   renderResumen,
   updateTabVisibility,
 } from "./partidoDetalleRender.js";
+import { ensureBaseLayout } from "./partidoDetalleTabs.js";
 import {
   createDetalleState,
   emptyArray,
@@ -26,7 +27,6 @@ import {
   parseApiArrayResponse,
   popView,
   pushView,
-  setCurrentTab,
   setCurrentView,
 } from "./partidoDetalleUtils.js";
 import {
@@ -178,31 +178,6 @@ async function waitForSignalRConnected(timeout = 4000) {
     await new Promise((res) => setTimeout(res, 50));
   }
 }
-
-function ensureBaseLayout(bodyEl, state) {
-  bodyEl.innerHTML = `
-    <div class="partido-detalle-tabs" role="tablist" aria-label="Secciones del partido">
-      <button class="tab-btn" data-tab="resumen">${escapeHtml(t("detail_summary"))}</button>
-      <button class="tab-btn" data-tab="alineaciones">${escapeHtml(t("detail_lineups"))}</button>
-      <button class="tab-btn" data-tab="eventos">${escapeHtml(t("detail_events"))}</button>
-      <button class="tab-btn" data-tab="penaltis">${escapeHtml(t("detail_penalties"))}</button>
-    </div>
-    <section class="tab-content" id="tab-resumen"></section>
-    <section class="tab-content" id="tab-alineaciones" hidden></section>
-    <section class="tab-content" id="tab-eventos" hidden></section>
-    <section class="tab-content" id="tab-penaltis" hidden></section>
-  `;
-
-  bodyEl.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.onclick = () => {
-      setCurrentTab(state, btn.dataset.tab);
-      updateTabVisibility(bodyEl, getCurrentTab(state));
-    };
-  });
-
-  updateTabVisibility(bodyEl, getCurrentTab(state));
-}
-
 
 /**
  * Re-renderiza el estado completo del modal, cabecera incluida.
