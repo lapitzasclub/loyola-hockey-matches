@@ -425,6 +425,8 @@ body[data-theme="dark"] .team-selector-group {
 }
 
 .team-selector-overlay-sheet {
+  --team-selector-sheet-padding-x: 1rem;
+  --team-selector-sheet-padding-top: 1rem;
   position: absolute;
   inset: auto 0 0 0;
   max-height: min(86vh, 780px);
@@ -432,16 +434,22 @@ body[data-theme="dark"] .team-selector-group {
   border-radius: 24px 24px 0 0;
   background: var(--color-bg);
   box-shadow: 0 -16px 40px color-mix(in srgb, var(--color-shadow) 50%, transparent);
-  padding: 1rem 1rem calc(1.2rem + env(safe-area-inset-bottom, 0px));
+  padding: var(--team-selector-sheet-padding-top) var(--team-selector-sheet-padding-x) calc(1.2rem + env(safe-area-inset-bottom, 0px));
   animation: team-selector-sheet-up 240ms ease;
 }
 
 .team-selector-overlay-header {
+  position: sticky;
+  top: calc(-1 * var(--team-selector-sheet-padding-top));
+  z-index: 2;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 0.8rem;
+  margin: calc(-1 * var(--team-selector-sheet-padding-top)) calc(-1 * var(--team-selector-sheet-padding-x)) 0.8rem;
+  padding: var(--team-selector-sheet-padding-top) var(--team-selector-sheet-padding-x) 0.9rem;
+  background: var(--color-bg);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--color-shadow) 12%, transparent);
 }
 
 .team-selector-overlay-kicker {
