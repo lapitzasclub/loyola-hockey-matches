@@ -1,6 +1,14 @@
 import { t } from "../i18n.js";
 import { emptyArray, escapeHtml } from "./partidoDetalleUtils.js";
 
+/**
+ * Construye el payload mínimo necesario para abrir la subvista de jugador.
+ *
+ * @param {object} persona Datos crudos del jugador, portero o técnico.
+ * @param {string} teamType Lado del partido al que pertenece.
+ * @param {string} role Rol lógico dentro del detalle.
+ * @returns {object} Payload serializable para `data-player`.
+ */
 function getJugadorPayload(persona, teamType, role) {
   return {
     role,
@@ -13,6 +21,19 @@ function getJugadorPayload(persona, teamType, role) {
   };
 }
 
+/**
+ * Renderiza una tarjeta individual de alineación.
+ *
+ * @param {object} options Opciones de render.
+ * @param {string} options.marker Dorsal o marcador visual principal.
+ * @param {string} options.name Nombre visible de la persona.
+ * @param {string} [options.tags=""] Etiquetas auxiliares ya renderizadas.
+ * @param {string} [options.chips=""] Chips de estadísticas ya renderizados.
+ * @param {string} [options.emptyText=t("detail_no_highlights")] Texto fallback si no hay chips.
+ * @param {string} [options.extraClass=""] Clase CSS adicional para el artículo.
+ * @param {object|null} [options.playerPayload=null] Payload clicable del jugador.
+ * @returns {string} HTML de la tarjeta.
+ */
 function renderAlineacionItem({ marker, name, tags = "", chips = "", emptyText = t("detail_no_highlights"), extraClass = "", playerPayload = null }) {
   const content = `
     <div class="alineacion-item-main">
@@ -34,6 +55,12 @@ function renderAlineacionItem({ marker, name, tags = "", chips = "", emptyText =
   `;
 }
 
+/**
+ * Convierte una lista de etiquetas en chips HTML, ignorando entradas vacías.
+ *
+ * @param {string[]} tags Etiquetas potenciales.
+ * @returns {string} HTML concatenado de etiquetas.
+ */
 function renderTagList(tags) {
   return tags
     .filter(Boolean)
@@ -41,11 +68,27 @@ function renderTagList(tags) {
     .join("");
 }
 
+/**
+ * Renderiza un chip estadístico cuando el valor tiene contenido útil.
+ *
+ * @param {string} label Etiqueta corta del chip.
+ * @param {string|number|null|undefined} value Valor de la estadística.
+ * @param {string} [variant=""] Variante CSS opcional.
+ * @returns {string} HTML del chip o cadena vacía.
+ */
 function renderStatChip(label, value, variant = "") {
   if (value === undefined || value === null || value === "" || value === 0 || value === "0/0") return "";
   return `<span class="alineacion-chip ${variant}">${escapeHtml(label)} <strong>${escapeHtml(value)}</strong></span>`;
 }
 
+/**
+ * Renderiza el bloque de jugadores de pista de un equipo.
+ *
+ * @param {object[]} jugadores Jugadores a mostrar.
+ * @param {string} modalidad Modalidad activa del partido.
+ * @param {string} teamType Lado del partido.
+ * @returns {string} HTML del bloque.
+ */
 function renderJugadoresCards(jugadores, modalidad, teamType) {
   if (!jugadores.length) return `<div class="partido-detalle-empty small">${escapeHtml(t("detail_players"))}: 0</div>`;
   const isHp = modalidad !== "hl";
@@ -81,6 +124,14 @@ function renderJugadoresCards(jugadores, modalidad, teamType) {
   return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_players"))}</div><div class="alineacion-list">${items}</div></div>`;
 }
 
+/**
+ * Renderiza el bloque de porteros de un equipo.
+ *
+ * @param {object[]} porteros Porteros a mostrar.
+ * @param {string} modalidad Modalidad activa del partido.
+ * @param {string} teamType Lado del partido.
+ * @returns {string} HTML del bloque.
+ */
 function renderPorterosCards(porteros, modalidad, teamType) {
   if (!porteros.length) return "";
   const isHp = modalidad !== "hl";
@@ -117,6 +168,14 @@ function renderPorterosCards(porteros, modalidad, teamType) {
   return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_goalkeepers"))}</div><div class="alineacion-list">${items}</div></div>`;
 }
 
+/**
+ * Renderiza el bloque de cuerpo técnico de un equipo.
+ *
+ * @param {object[]} tecnicos Técnicos a mostrar.
+ * @param {string} modalidad Modalidad activa del partido.
+ * @param {string} teamType Lado del partido.
+ * @returns {string} HTML del bloque.
+ */
 function renderTecnicosCards(tecnicos, modalidad, teamType) {
   if (!tecnicos.length) return "";
   const isHp = modalidad !== "hl";
@@ -141,6 +200,17 @@ function renderTecnicosCards(tecnicos, modalidad, teamType) {
   return `<div class="alineacion-block"><div class="alineacion-block-title">${escapeHtml(t("detail_staff"))}</div><div class="alineacion-list">${items}</div></div>`;
 }
 
+/**
+ * Renderiza la tarjeta completa de alineación de un equipo.
+ *
+ * @param {string} nombre Nombre visible del equipo.
+ * @param {object[]} jugadores Jugadores de pista.
+ * @param {object[]} porteros Porteros.
+ * @param {object[]} tecnicos Cuerpo técnico.
+ * @param {string} modalidad Modalidad activa.
+ * @param {string} teamType Lado del partido.
+ * @returns {string} HTML de la tarjeta del equipo.
+ */
 function renderAlineacionEquipo(nombre, jugadores, porteros, tecnicos, modalidad, teamType) {
   return `
     <section class="partido-detalle-section alineacion-card">
@@ -152,6 +222,12 @@ function renderAlineacionEquipo(nombre, jugadores, porteros, tecnicos, modalidad
   `;
 }
 
+/**
+ * Renderiza la pestaña de alineaciones del detalle de partido.
+ *
+ * @param {object} state Estado interno del detalle.
+ * @returns {string} HTML de la pestaña.
+ */
 export function renderAlineaciones(state) {
   const alin = state.alineaciones;
   if (!alin) {

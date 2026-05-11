@@ -1,6 +1,16 @@
 import { t } from "../i18n.js";
 import { escapeHtml, logoUrl, normText } from "./partidoDetalleUtils.js";
 
+/**
+ * Renderiza el icono o marcador contextual de un evento.
+ *
+ * @param {object} ev Evento normalizado o legado.
+ * @param {number} golesLocal Goles acumulados del equipo local hasta este evento.
+ * @param {number} golesVisit Goles acumulados del equipo visitante hasta este evento.
+ * @param {number} faltasLocal Faltas acumuladas del equipo local.
+ * @param {number} faltasVisit Faltas acumuladas del equipo visitante.
+ * @returns {string} HTML del icono del evento.
+ */
 function renderEventoIcon(ev, golesLocal, golesVisit, faltasLocal, faltasVisit) {
   switch (ev.IdTipoEvento) {
     case "gol":
@@ -18,6 +28,13 @@ function renderEventoIcon(ev, golesLocal, golesVisit, faltasLocal, faltasVisit) 
   }
 }
 
+/**
+ * Construye el payload clicable de un jugador referenciado desde un evento.
+ *
+ * @param {object} ev Evento fuente.
+ * @param {number} [slot=1] Slot del jugador dentro del evento.
+ * @returns {object|null} Payload serializable o null si no hay datos.
+ */
 function buildEventPlayerPayload(ev, slot = 1) {
   const dorsal = normText(slot === 1 ? ev.Dorsal1 : ev.Dorsal2);
   const nombre = normText(slot === 1 ? ev.Lic1 : ev.Lic2);
@@ -34,11 +51,24 @@ function buildEventPlayerPayload(ev, slot = 1) {
   };
 }
 
+/**
+ * Renderiza una referencia de jugador enlazable dentro del texto del evento.
+ *
+ * @param {string} prefix Prefijo textual previo al nombre.
+ * @param {object|null} payload Payload del jugador.
+ * @returns {string} HTML del enlace o cadena vacía.
+ */
 function renderPlayerRef(prefix, payload) {
   if (!payload) return "";
   return `${prefix}<button type="button" class="partido-detalle-player-link" data-player='${escapeHtml(JSON.stringify(payload))}'>#${escapeHtml(payload.dorsal || "")} ${escapeHtml(payload.nombre || "")}</button>`;
 }
 
+/**
+ * Genera el bloque textual principal de un evento.
+ *
+ * @param {object} ev Evento a describir.
+ * @returns {string} HTML del texto del evento.
+ */
 function renderEventoTexto(ev) {
   const dorsal1 = normText(ev.Dorsal1);
   const dorsal2 = normText(ev.Dorsal2);
@@ -69,6 +99,12 @@ function renderEventoTexto(ev) {
   }
 }
 
+/**
+ * Renderiza la pestaña cronológica de eventos del partido.
+ *
+ * @param {object} state Estado interno del detalle.
+ * @returns {string} HTML de la pestaña de eventos.
+ */
 export function renderEventos(state) {
   if (!Array.isArray(state.eventos) || !state.eventos.length) {
     return `<div class="partido-detalle-empty">${escapeHtml(t("detail_no_events"))}</div>`;
