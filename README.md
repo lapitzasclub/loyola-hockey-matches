@@ -137,7 +137,7 @@ npm run cf:deploy
 - Se ha formalizado una arquitectura dual mantenible: Android nativo + web pública compartiendo frontend.
 - El frontend web consume endpoints relativos `/api/*` para los servicios legacy de FVP.
 - Se han añadido **Cloudflare Pages Functions** en `functions/api/*` para actuar como proxy seguro.
-- Se ha añadido un proxy para `GET /signalr/hubs` en `functions/signalr/hubs.js`.
+- Se ha añadido un proxy para rutas SignalR web bajo `/signalr/*` en `functions/signalr/[[route]].js`.
 - Se ha añadido `manifest.webmanifest` y metadatos básicos PWA para iPhone, Android y escritorio.
 - Se ha evitado exponer hosts arbitrarios: el proxy solo permite endpoints FVP conocidos y un host SignalR cerrado.
 - Se ha añadido rate limiting básico mediante KV en Pages Functions.
@@ -151,7 +151,7 @@ El frontend solo debe hablar con:
 - `/api/GetParametrosCompeticion`
 - `/api/GetCalendarioCompeticion`
 - `/api/GetClasificacionCompeticion`
-- `/signalr/hubs`
+- `/signalr/*`
 
 ### Variables / configuración en Cloudflare
 

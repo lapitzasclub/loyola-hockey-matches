@@ -56,7 +56,7 @@ npx wrangler pages deploy dist
    - `/api/GetParametrosCompeticion`
    - `/api/GetCalendarioCompeticion`
    - `/api/GetClasificacionCompeticion`
-4. Verificar que `GET /signalr/hubs` responde.
+4. Verificar que `/signalr/hubs` responde y que `negotiate` deja continuar la conexión.
 5. Probar en Safari iPhone y Android Chrome.
 
 ## Nota importante sobre realtime
