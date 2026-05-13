@@ -7,8 +7,13 @@
     "build": "vite build",
     "serve": "vite preview",
     "lint": "eslint \"www/**/*.js\"",
+    "cap:copy": "npx cap copy",
     "cap:sync": "npx cap sync",
-    "cap:copy": "npx cap copy"
+    "android:sync": "npm run build && npx cap sync android",
+    "android:run": "npm run android:sync && npx cap run android",
+    "android:open": "npx cap open android",
+    "cf:dev": "npm run build && npx wrangler pages dev dist",
+    "cf:deploy": "npm run build && npx wrangler pages deploy dist"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",

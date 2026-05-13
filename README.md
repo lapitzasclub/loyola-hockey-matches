@@ -98,12 +98,17 @@ Y la documentación específica está en:
 ## Scripts
 
 ```bash
-npm start      # desarrollo con Vite
-npm run build  # build web
-npm run serve  # preview local de build
-npm run lint   # lint de www/**/*.js
+npm start          # desarrollo con Vite
+npm run build      # build web
+npm run serve      # preview local de build
+npm run lint       # lint de www/**/*.js
 npm run cap:copy
 npm run cap:sync
+npm run android:sync
+npm run android:run
+npm run android:open
+npm run cf:dev
+npm run cf:deploy
 ```
 
 ## Desarrollo
@@ -226,3 +231,11 @@ npm start
 ## Notas
 
 La carpeta `.copilot/` mantiene memoria de trabajo del proyecto para poder retomarlo rápido entre sesiones.
+
+## Guías operativas añadidas
+
+- `ARCHITECTURE.md`
+- `DEVELOPMENT_WORKFLOW.md`
+- `ANDROID_RELEASE.md`
+- `CLOUDFLARE_DEPLOY.md`
+- `WEB_RELEASE_CHECKLIST.md`
