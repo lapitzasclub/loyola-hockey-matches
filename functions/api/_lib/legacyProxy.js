@@ -34,10 +34,10 @@ export async function proxyLegacyRequest(request, endpoint, cacheSeconds = 120) 
   }
 
   const upstreamUrl = `${FVP_BASE_URL}/${endpoint}`;
-  const cacheKey = new Request(upstreamUrl, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json; charset=UTF-8' },
-    body: JSON.stringify(parsedBody),
+  const cacheUrl = new URL(upstreamUrl);
+  cacheUrl.searchParams.set('__body', JSON.stringify(parsedBody));
+  const cacheKey = new Request(cacheUrl.toString(), {
+    method: 'GET',
   });
 
   const cache = caches.default;
