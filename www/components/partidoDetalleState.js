@@ -37,6 +37,7 @@ export function updatePartido(state, payload) {
   state.modalidad = normalizado.modalidad || state.modalidad;
   state.localKey = normalizado.idEquipoLocal || state.localKey;
   state.visitKey = normalizado.idEquipoVisit || state.visitKey;
+  state.loadingMatch = false;
 }
 
 /**

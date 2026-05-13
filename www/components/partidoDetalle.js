@@ -428,21 +428,29 @@ async function cargarDetallePartido(idPartido) {
   const partidoRes = await getPartido(idPartido);
   console.log("[API] getPartido", partidoRes);
   const partidoData = parseApiArrayResponse(partidoRes);
+  console.log("[API] getPartido parsed", partidoData);
   if (Array.isArray(partidoData) && partidoData.length > 0) {
     updatePartido(state, partidoData[0]);
     state.loadingMatch = false;
     setHeaderContent(headerEl, renderPartidoHeader(state), "getPartido");
   } else if (partidoRes?.error) {
+    state.loadingMatch = false;
     setHeaderContent(headerEl, `<div>${escapeHtml(t("error", partidoRes.message || t("detail_match_load_error")))}</div>`, "getPartido-error");
   } else {
-    state.loadingMatch = false;
-    setHeaderContent(headerEl, `<div>${escapeHtml(t("detail_match_no_data"))}</div>`, "getPartido-empty");
+    console.warn("[Detalle] getPartido sin datos iniciales, se mantiene skeleton a la espera de estadística o realtime.", {
+      idPartido,
+      raw: partidoRes,
+      parsed: partidoData,
+    });
   }
 
   const estadistica = await getEstadisticaPartido(idPartido);
   console.log("[API] getEstadisticaPartido", estadistica);
   updateEstadisticaPayload(state, estadistica);
   state.loadingStats = false;
+  if (state.partido) {
+    state.loadingMatch = false;
+  }
   renderAll(state, headerEl, bodyEl);
 
   console.log("[SignalR] Suscribiendo modal al bus global del hub...");
