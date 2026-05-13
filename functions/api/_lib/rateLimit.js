@@ -1,7 +1,10 @@
 const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 60;
+const MAX_REQUESTS = 240;
 
 export async function applyRateLimit(request, env, keySuffix = 'default') {
+  if ((env.CF_PAGES || '').toLowerCase() !== '1' && request.headers.get('host')?.startsWith('127.0.0.1:')) {
+    return null;
+  }
   const ip = request.headers.get('cf-connecting-ip') || 'unknown';
   const key = `rate:${keySuffix}:${ip}`;
   const now = Date.now();

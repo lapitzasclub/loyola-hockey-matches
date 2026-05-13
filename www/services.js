@@ -8,6 +8,33 @@ const ENTITY_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-pu
 const competitionCatalogCache = new Map();
 
 /**
+ * Normaliza respuestas legacy ASMX que pueden venir como string JSON, como objeto con `d`
+ * o ya directamente como payload final.
+ *
+ * @param {any} raw Respuesta cruda.
+ * @returns {any} Payload normalizado.
+ */
+function unwrapLegacyPayload(raw) {
+  if (raw == null) return raw;
+
+  if (typeof raw === "string") {
+    const first = JSON.parse(raw);
+    return typeof first?.d === "string" ? JSON.parse(first.d) : (first?.d ?? first);
+  }
+
+  if (typeof raw === "object") {
+    if (typeof raw.d === "string") {
+      return JSON.parse(raw.d);
+    }
+    if (raw.d !== undefined) {
+      return raw.d;
+    }
+  }
+
+  return raw;
+}
+
+/**
  * Emite un evento del hub de partido sobre el bus interno del cliente.
  *
  * @param {string} type Tipo lógico del evento.
@@ -77,7 +104,7 @@ export async function getCalendarioTodosEquipos(idCompeticion, idsEquiposComp) {
   for (const idEquipo of idsEquiposComp) {
     try {
       const raw = await getCalendarioLoyola(idEquipo, idCompeticion);
-      const parsed = typeof raw === "string" ? JSON.parse(JSON.parse(raw).d) : raw;
+      const parsed = unwrapLegacyPayload(raw);
       if (Array.isArray(parsed) && parsed[0]?.Partidos) {
         for (const p of parsed[0].Partidos) {
           if (!partidosMap.has(p.IdPartido)) {
@@ -316,11 +343,7 @@ export async function getLoyolaCompetitionCatalog() {
     const rawParams = await getParametrosCompeticion(comp.IdCompeticion);
     let params;
     try {
-      params = typeof rawParams === "string"
-        ? JSON.parse(JSON.parse(rawParams).d)
-        : rawParams?.d
-          ? JSON.parse(rawParams.d)
-          : rawParams;
+      params = unwrapLegacyPayload(rawParams);
     } catch (error) {
       console.error("Error parseando parametros de competición:", comp.IdCompeticion, error);
       continue;
