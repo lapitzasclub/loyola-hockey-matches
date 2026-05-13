@@ -24,6 +24,7 @@ En las últimas iteraciones se ha trabajado sobre todo en:
 - Capacitor Android
 - HTML y CSS
 - jQuery + SignalR clásico para tiempo real
+- Cloudflare Pages Functions para proxy `/api/*` y `/signalr/hubs`
 
 ## Estructura relevante
 
@@ -103,6 +104,81 @@ npm run cap:sync
    ```bash
    npm run cap:sync
    ```
+
+## Migración web pública a Cloudflare
+
+### Qué se ha preparado
+
+- El frontend web ya consume endpoints relativos `/api/*` para los servicios legacy de FVP.
+- Se han añadido **Cloudflare Pages Functions** en `functions/api/*` para actuar como proxy seguro.
+- Se ha añadido un proxy para `GET /signalr/hubs` en `functions/signalr/hubs.js`.
+- Se ha añadido `manifest.webmanifest` y metadatos básicos PWA para iPhone, Android y escritorio.
+- Se ha evitado exponer hosts arbitrarios: el proxy solo permite endpoints FVP conocidos y un host SignalR cerrado.
+- Se ha añadido rate limiting básico mediante KV en Pages Functions.
+
+### Endpoints web internos del frontend
+
+El frontend solo debe hablar con:
+
+- `/api/GetCompeticiones`
+- `/api/GetParametrosCompeticion`
+- `/api/GetCalendarioCompeticion`
+- `/api/GetClasificacionCompeticion`
+- `/signalr/hubs`
+
+### Variables / configuración en Cloudflare
+
+Configura en Pages o `wrangler.toml`:
+
+- `PUBLIC_APP_ORIGIN`
+  - ejemplo: `https://loyola-hockey-matches.pages.dev`
+  - se usa para devolver CORS restringido cuando aplique
+- `SIGNALR_UPSTREAM_BASE`
+  - ejemplo: `https://digitalsport.online/signalr`
+- `API_RATE_LIMIT`
+  - binding a un KV namespace para rate limiting básico
+
+### Despliegue en Cloudflare Pages
+
+Build command:
+
+```bash
+npm run build
+```
+
+Build output directory:
+
+```bash
+dist
+```
+
+### Desarrollo local con Pages Functions
+
+Si quieres probar el mismo runtime de Cloudflare en local:
+
+```bash
+npx wrangler pages dev dist
+```
+
+O bien puedes seguir con Vite para UI local:
+
+```bash
+npm start
+```
+
+### Compatibilidad iPhone / Safari iOS
+
+- La app puede abrirse directamente desde navegador sin instalar nada.
+- Se ha añadido manifest y meta tags básicos para comportamiento PWA.
+- No depende de APIs exclusivas de Android para funcionar en web.
+- Las integraciones nativas de barras del sistema y botón atrás siguen encapsuladas y se degradan en web.
+
+### Limitaciones y riesgos
+
+- El canal SignalR legacy sigue dependiendo del servicio externo `digitalsport.online`.
+- El script `/signalr/hubs` se proxifica, pero la negociación y tráfico en tiempo real continúan sujetos al comportamiento del backend legacy.
+- Si ese backend exige restricciones de origen más duras para WebSocket/long-polling, podría hacer falta un Worker dedicado más avanzado o mantener conexión directa para el canal realtime.
+- La parte de red nativa de Capacitor sigue existiendo para Android, pero la web pública ya no depende de ella para consumir FVP en navegador.
 
 ## Convenciones actuales
 

@@ -1,0 +1,19 @@
+{
+  "name": "Loyola Hockey Matches",
+  "short_name": "Loyola Hockey",
+  "description": "Calendario, clasificación y detalle en vivo de los equipos de hockey patines del Loyola.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0e3a43",
+  "theme_color": "#0e3a43",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/loyola_hockey.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

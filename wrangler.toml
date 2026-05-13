@@ -1,0 +1,12 @@
+name = "loyola-hockey-matches"
+compatibility_date = "2026-05-13"
+pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "API_RATE_LIMIT"
+id = "REPLACE_WITH_PRODUCTION_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_PREVIEW_KV_NAMESPACE_ID"
+
+[vars]
+PUBLIC_APP_ORIGIN = "https://loyola-hockey-matches.pages.dev"
+SIGNALR_UPSTREAM_BASE = "https://digitalsport.online/signalr"

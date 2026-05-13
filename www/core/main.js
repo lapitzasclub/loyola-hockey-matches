@@ -38,9 +38,7 @@ function getSignalRBaseUrl() {
   if (isLocalDev()) {
     return "/signalr";
   }
-  return window.location.href.includes("digitalsport.online")
-    ? "https://ns.digitalsport.online/signalr"
-    : "https://digitalsport.online/signalr";
+  return "/signalr";
 }
 
 /**

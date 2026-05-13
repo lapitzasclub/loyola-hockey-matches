@@ -100,6 +100,16 @@ function getServiceUrl(endpoint) {
 }
 
 /**
+ * Normaliza un path API para web pública y desarrollo, evitando URLs absolutas externas en frontend.
+ *
+ * @param {string} path Ruta relativa de API que empieza por '/'.
+ * @returns {string} Ruta final consumible por el cliente.
+ */
+function getAppApiUrl(path) {
+  return path;
+}
+
+/**
  * Ejecuta una llamada estándar a un endpoint legacy ASMX capturando errores en formato uniforme.
  *
  * @param {string} endpoint Nombre del método remoto.
@@ -276,7 +286,7 @@ export async function getLoyolaCompetitionCatalog() {
     return competitionCatalogCache.get(cacheKey);
   }
 
-  const compUrl = getServiceUrl("GetCompeticiones");
+  const compUrl = getAppApiUrl('/api/GetCompeticiones');
   const compRes = await fetch(compUrl, {
     method: "POST",
     headers: HEADERS,
