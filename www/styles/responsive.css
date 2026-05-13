@@ -9,7 +9,7 @@
   main {
     max-width: 100vw;
     border-radius: 0;
-    padding: 1em 0.3em 4em 0.3em;
+    padding: 1em 0.3em calc(var(--bottom-nav-height, 56px) + 1.5rem + env(safe-area-inset-bottom, 0px)) 0.3em;
   }
   .header {
     padding: 0.5em 0.7em 0.5em 0.5em;

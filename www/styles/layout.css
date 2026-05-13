@@ -274,5 +274,5 @@ main {
   flex: 1 1 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: calc(2em + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--bottom-nav-height, 56px) + 1.5rem + env(safe-area-inset-bottom, 0px));
 }
