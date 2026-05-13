@@ -2,7 +2,7 @@
 import { initApp } from "./init.js";
 import { emitPartidoHubEvent } from "../services.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
-import { isNative } from "../utils/env.js";
+import { getSignalRMode } from "../config/runtime.js";
 
 const SIGNALR_EVENT_NAMES = [
   "marcadorPartido",
@@ -32,7 +32,7 @@ function isLocalDev() {
  * @returns {string} URL base del hub SignalR.
  */
 function getSignalRBaseUrl() {
-  if (isNative()) {
+  if (getSignalRMode() === "direct") {
     return "https://digitalsport.online/signalr";
   }
   if (isLocalDev()) {

@@ -1,5 +1,6 @@
 import { getCachedApi, setCachedApi } from "./utils/apiCache.js";
-import { isNative, getHttp } from "./utils/env.js";
+import { getHttp } from "./utils/env.js";
+import { getLegacyApiMode, shouldPreferNativeHttp } from "./config/runtime.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";
 const FVP_BASE_URL = "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx";
@@ -96,7 +97,9 @@ export async function getCalendarioTodosEquipos(idCompeticion, idsEquiposComp) {
  * @returns {string} URL absoluta o ruta proxy equivalente.
  */
 function getServiceUrl(endpoint) {
-  return isNative() ? `${FVP_BASE_URL}/${endpoint}` : `/api/${endpoint}`;
+  return getLegacyApiMode() === "direct"
+    ? `${FVP_BASE_URL}/${endpoint}`
+    : `/api/${endpoint}`;
 }
 
 /**
@@ -160,10 +163,9 @@ async function post({ url, body, preferNative }) {
   const cached = getCachedApi(url, body);
   if (cached !== null) return cached;
 
-  const nativo = isNative();
   const http = getHttp();
   let result;
-  if (preferNative && nativo && http) {
+  if (preferNative && shouldPreferNativeHttp() && http) {
     try {
       const res = await http.request({
         method: "POST",
