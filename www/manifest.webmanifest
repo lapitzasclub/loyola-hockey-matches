@@ -5,10 +5,18 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait",
   "background_color": "#0e3a43",
   "theme_color": "#0e3a43",
   "lang": "es",
   "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/loyola_hockey.png",
       "sizes": "512x512",
