@@ -239,3 +239,11 @@ La carpeta `.copilot/` mantiene memoria de trabajo del proyecto para poder retom
 - `ANDROID_RELEASE.md`
 - `CLOUDFLARE_DEPLOY.md`
 - `WEB_RELEASE_CHECKLIST.md`
+
+## Siguiente paso para producción web
+
+Para desplegar la SPA + API en Cloudflare Pages, seguir `CLOUDFLARE_DEPLOY.md` y rellenar en `wrangler.toml`:
+
+- `PUBLIC_APP_ORIGIN`
+- `SIGNALR_UPSTREAM_BASE`
+- ids reales de `API_RATE_LIMIT`
