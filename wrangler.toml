@@ -4,8 +4,8 @@ pages_build_output_dir = "dist"
 
 [[kv_namespaces]]
 binding = "API_RATE_LIMIT"
-id = "REPLACE_WITH_PRODUCTION_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_PREVIEW_KV_NAMESPACE_ID"
+id = "8cbdf962888745728ea7886408449e2c"
+preview_id = "8cbdf962888745728ea7886408449e2c"
 
 [vars]
 PUBLIC_APP_ORIGIN = "https://loyola-hockey-matches.pages.dev"
