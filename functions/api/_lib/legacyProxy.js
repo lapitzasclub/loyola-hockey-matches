@@ -6,6 +6,9 @@ const ALLOWED_ENDPOINTS = new Set([
   'GetParametrosCompeticion',
   'GetCalendarioCompeticion',
   'GetClasificacionCompeticion',
+  'GetParametrosPartido',
+  'GetEstadisticaPartido',
+  'GetEstadisticasJugador',
 ]);
 
 function sanitizeBody(body) {
