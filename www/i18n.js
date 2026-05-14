@@ -382,6 +382,8 @@ export function updateTexts() {
   setText('[data-i18n="select_theme"]', t("select_theme"));
   setText('[data-i18n="nav_matches"]', t("nav_matches"));
   setText('[data-i18n="nav_clas"]', t("nav_clas"));
+  setText('[data-i18n="app_short_name"]', t("app_short_name"));
+  setText('[data-i18n="side_menu_title"]', t("side_menu_title"));
 
   // 4) Selectores de idioma/tema (valor actual)
   setValue("#langSelect", getLang());
@@ -390,5 +392,6 @@ export function updateTexts() {
 
   // 5) Atributos aria dinámicos
   setAria('[data-i18n-aria="side_menu_aria"]', t("side_menu_aria"));
+  setAria('[data-i18n-aria="side_menu_close"]', t("side_menu_close"));
   setAria('[data-i18n-aria="bottom_nav_aria"]', t("bottom_nav_aria"));
 }
