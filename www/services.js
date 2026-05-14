@@ -1,9 +1,10 @@
 import { getCachedApi, setCachedApi } from "./utils/apiCache.js";
-import { getHttp } from "./utils/env.js";
+import { getHttp, isNative } from "./utils/env.js";
 import { getLegacyApiMode, shouldPreferNativeHttp } from "./config/runtime.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";
 const FVP_BASE_URL = "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx";
+const APP_PROXY_BASE_URL = "https://loyola-hockey-matches.pages.dev";
 const ENTITY_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/entidad/200x200";
 const competitionCatalogCache = new Map();
 
@@ -136,6 +137,9 @@ function getServiceUrl(endpoint) {
  * @returns {string} Ruta final consumible por el cliente.
  */
 function getAppApiUrl(path) {
+  if (isNative()) {
+    return `${APP_PROXY_BASE_URL}${path}`;
+  }
   return path;
 }
 
