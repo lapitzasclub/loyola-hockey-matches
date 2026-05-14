@@ -40,18 +40,18 @@ body[data-theme="dark"] .side-menu .equipoOpt.active {
 }
 .side-menu-content label {
   display: block;
-  margin-top: 1.2em;
-  margin-bottom: 0.3em;
-  font-size: 1em;
-  font-weight: 500;
+  margin-top: 1rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.98em;
+  font-weight: 700;
   color: var(--color-text-header);
 }
 .side-menu-content select {
   width: 100%;
-  padding: 0.55em 2.2em 0.55em 0.9em;
-  border-radius: 6px;
-  border: 1.5px solid var(--color-primary);
-  background: var(--color-bg-card);
+  padding: 0.7em 2.5em 0.7em 0.9em;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 72%, transparent);
+  background: color-mix(in srgb, var(--color-bg-card) 94%, var(--color-bg-header));
   color: var(--color-text);
   font-size: 1em;
   appearance: none;
@@ -59,15 +59,15 @@ body[data-theme="dark"] .side-menu .equipoOpt.active {
   -moz-appearance: none;
   background-image: url('data:image/svg+xml;utf8,<svg fill="%233ad1c6" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
   background-repeat: no-repeat;
-  background-position: right 0.7em center;
-  background-size: 1.2em;
-  box-shadow: 0 1px 4px var(--color-shadow);
-  transition: border-color 0.2s;
+  background-position: right 0.85em center;
+  background-size: 1.1em;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-shadow) 22%, transparent);
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 .side-menu-content select:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px #3ad1c633;
+  border-color: color-mix(in srgb, var(--color-primary) 88%, white 12%);
+  box-shadow: 0 0 0 2px #3ad1c633, 0 8px 18px color-mix(in srgb, var(--color-shadow) 26%, transparent);
 }
 
 /* NAV INFERIOR ACCESIBLE Y FLUIDO */
@@ -227,33 +227,43 @@ body.app-ready .app-hidden-initially {
   left: calc(-1 * var(--side-menu-width) - var(--side-menu-shadow-width));
   width: var(--side-menu-width);
   height: 100vh;
-  background: var(--color-bg-header);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 94%, #0a2430 6%) 0%, color-mix(in srgb, var(--color-bg-header) 88%, #031522 12%) 100%);
   color: var(--color-text-header);
   margin-left: 0;
   z-index: 10010;
-  transition: left 0.3s, margin-left 0.3s;
+  border-right: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+  box-shadow: 14px 0 36px color-mix(in srgb, var(--color-shadow) 58%, transparent);
+  transition: left 0.3s, margin-left 0.3s, box-shadow 0.3s ease;
+  overflow: hidden;
 }
 .side-menu-content {
-  padding: calc(2.5em + env(safe-area-inset-top, 0px)) 1em 1.2em 1em;
+  height: 100%;
+  padding: calc(2.6em + env(safe-area-inset-top, 0px)) 1rem 1.3rem 1rem;
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
 }
 /* Mostrar el menú lateral cuando está abierto */
 .side-menu.open {
   left: 0 !important;
   margin-left: 0;
   z-index: 10010;
-  box-shadow: 2px 0 8px var(--color-shadow);
+  box-shadow: 18px 0 44px color-mix(in srgb, var(--color-shadow) 70%, transparent);
 }
 .side-menu-content h3 {
   margin-top: 0;
 }
+.side-menu-content hr {
+  margin: 1.05rem 0 0.95rem;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-text-header) 18%, transparent);
+}
 .side-menu-overlay {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: var(--color-overlay);
+  inset: 0;
+  background: color-mix(in srgb, #031522 78%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 10009;
 }
 .side-menu.open ~ .side-menu-overlay,
