@@ -89,7 +89,7 @@ export function openPartidoDetalle(idPartido) {
       <div class="partido-detalle-header">
         <button class="partido-detalle-back" aria-label="Volver" hidden disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M14.75 5.75 8.5 12l6.25 6.25" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14.75 5.75 8.5 12l6.25 6.25" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
         <div class="partido-detalle-header-content" id="partido-detalle-header-content"></div>
