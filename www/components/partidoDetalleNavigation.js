@@ -145,9 +145,9 @@ export function bindPlayerAccordions(rootEl) {
   function animateClose(detailsEl, contentEl, reduceMotion) {
     detailsEl.dataset.animating = "true";
     setExpandedState(detailsEl, false);
+    detailsEl.open = false;
 
     if (reduceMotion) {
-      detailsEl.open = false;
       contentEl.style.height = "0px";
       contentEl.style.opacity = "0";
       contentEl.style.overflow = "hidden";
@@ -174,7 +174,6 @@ export function bindPlayerAccordions(rootEl) {
     );
 
     animation.onfinish = () => {
-      detailsEl.open = false;
       contentEl.style.height = "0px";
       contentEl.style.opacity = "0";
       contentEl.style.overflow = "hidden";
