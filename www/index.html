@@ -43,26 +43,40 @@
       data-i18n-aria="side_menu_aria"
     >
       <div class="side-menu-content">
-        <button id="sideMenuCloseBtn" class="side-menu-close" aria-label="Cerrar menú">×</button>
-        <div id="teamSelectorMenuContainer"></div>
-        <select
-          id="equipoLoyolaSelect"
-          class="equipo-loyola-select"
-          hidden
-        ></select>
-        <hr />
-        <label for="langSelect" data-i18n="select_lang">Idioma</label>
-        <select id="langSelect">
-          <option value="es">Español</option>
-          <option value="eu">Euskera</option>
-        </select>
-        <hr />
-        <label for="themeSelect" data-i18n="select_theme">Tema</label>
-        <select id="themeSelect">
-          <option value="auto" data-i18n="theme_auto">Automático</option>
-          <option value="light" data-i18n="theme_light">Claro</option>
-          <option value="dark" data-i18n="theme_dark">Oscuro</option>
-        </select>
+        <div class="side-menu-header">
+          <div class="side-menu-header-copy">
+            <span class="side-menu-kicker">Loyola Hockey</span>
+            <strong class="side-menu-title">Menú</strong>
+          </div>
+          <button id="sideMenuCloseBtn" class="side-menu-close" aria-label="Cerrar menú">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="side-menu-sections">
+          <section class="side-menu-section side-menu-section-team">
+            <div id="teamSelectorMenuContainer"></div>
+            <select
+              id="equipoLoyolaSelect"
+              class="equipo-loyola-select"
+              hidden
+            ></select>
+          </section>
+          <section class="side-menu-section">
+            <label for="langSelect" data-i18n="select_lang">Idioma</label>
+            <select id="langSelect">
+              <option value="es">Español</option>
+              <option value="eu">Euskera</option>
+            </select>
+          </section>
+          <section class="side-menu-section">
+            <label for="themeSelect" data-i18n="select_theme">Tema</label>
+            <select id="themeSelect">
+              <option value="auto" data-i18n="theme_auto">Automático</option>
+              <option value="light" data-i18n="theme_light">Claro</option>
+              <option value="dark" data-i18n="theme_dark">Oscuro</option>
+            </select>
+          </section>
+        </div>
       </div>
     </nav>
     <div id="sideMenuOverlay" class="side-menu-overlay"></div>
