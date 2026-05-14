@@ -237,10 +237,35 @@ body.app-ready .app-hidden-initially {
   overflow: hidden;
 }
 .side-menu-content {
+  position: relative;
   height: 100%;
   padding: calc(2.6em + env(safe-area-inset-top, 0px)) 1rem 1.3rem 1rem;
   overflow-y: auto;
   backdrop-filter: blur(10px);
+}
+
+.side-menu-close {
+  position: absolute;
+  top: calc(0.95rem + env(safe-area-inset-top, 0px));
+  right: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 26%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-bg-card) 16%, transparent);
+  color: var(--color-text-header);
+  font-size: 1.45rem;
+  line-height: 1;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-shadow) 22%, transparent);
+}
+
+.side-menu-close:hover,
+.side-menu-close:focus-visible {
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-bg-card));
 }
 /* Mostrar el menú lateral cuando está abierto */
 .side-menu.open {

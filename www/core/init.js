@@ -195,6 +195,7 @@ export async function initApp() {
     const menuBtn = document.getElementById("menuBtn");
     const sideMenu = document.getElementById("sideMenu");
     const sideMenuOverlay = document.getElementById("sideMenuOverlay");
+    const sideMenuCloseBtn = document.getElementById("sideMenuCloseBtn");
     if (menuBtn && sideMenu && sideMenuOverlay) {
       menuBtn.addEventListener("click", () => {
         sideMenu.classList.add("open");
@@ -202,6 +203,10 @@ export async function initApp() {
         mobileBackCoordinator.syncHistory();
       });
       sideMenuOverlay.addEventListener("click", () => {
+        mobileBackCoordinator.closeSideMenu();
+        mobileBackCoordinator.syncHistory();
+      });
+      sideMenuCloseBtn?.addEventListener("click", () => {
         mobileBackCoordinator.closeSideMenu();
         mobileBackCoordinator.syncHistory();
       });
