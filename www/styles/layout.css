@@ -72,30 +72,31 @@ body[data-theme="dark"] .side-menu .equipoOpt.active {
 
 /* NAV INFERIOR ACCESIBLE Y FLUIDO */
 .bottom-nav {
-  --bottom-nav-shell-pad: 0.42rem;
-  --bottom-nav-inner-pad: 0.24rem;
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   background: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 96%, #0f2536 4%) 0%, color-mix(in srgb, var(--color-bg-header) 92%, #081824 8%) 100%) !important;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  justify-content: stretch;
-  align-items: stretch;
   box-shadow: 0 -8px 24px color-mix(in srgb, var(--color-shadow) 38%, transparent);
   z-index: 100;
-  padding: var(--bottom-nav-shell-pad) var(--bottom-nav-shell-pad) calc(var(--bottom-nav-shell-pad) + env(safe-area-inset-bottom, 0px));
+  padding: 0.42rem 0.42rem calc(0.42rem + env(safe-area-inset-bottom, 0px));
   min-height: calc(var(--bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px));
   width: 100vw;
   max-width: 100vw;
   overflow: hidden;
-  gap: 0;
+}
+
+.bottom-nav-shell {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  min-height: 3.5rem;
 }
 
 .bottom-nav-track {
   position: absolute;
-  inset: var(--bottom-nav-shell-pad) var(--bottom-nav-shell-pad) calc(var(--bottom-nav-shell-pad) + env(safe-area-inset-bottom, 0px));
+  inset: 0;
   border-radius: 20px;
   background: color-mix(in srgb, var(--color-bg-card) 22%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
@@ -105,10 +106,10 @@ body[data-theme="dark"] .side-menu .equipoOpt.active {
 
 .bottom-nav-indicator {
   position: absolute;
-  top: var(--bottom-nav-inner-pad);
-  left: var(--bottom-nav-inner-pad);
-  width: calc(50% - (var(--bottom-nav-inner-pad) * 1.5));
-  height: calc(100% - (var(--bottom-nav-inner-pad) * 2));
+  top: 0.24rem;
+  bottom: 0.24rem;
+  left: 0.24rem;
+  width: calc(50% - 0.36rem);
   border-radius: 16px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 90%, white 10%) 0%, color-mix(in srgb, var(--color-primary) 82%, #1eb8cc 18%) 100%);
   box-shadow: 0 10px 22px color-mix(in srgb, var(--color-shadow) 24%, transparent), inset 0 1px 0 color-mix(in srgb, #ffffff 28%, transparent);
@@ -116,7 +117,7 @@ body[data-theme="dark"] .side-menu .equipoOpt.active {
 }
 
 .bottom-nav[data-active-tab="1"] .bottom-nav-indicator {
-  transform: translateX(calc(100% + (var(--bottom-nav-inner-pad) * 1))); 
+  transform: translateX(calc(100% + 0.24rem));
 }
 
 .nav-btn {
@@ -124,7 +125,7 @@ body[data-theme="dark"] .side-menu .equipoOpt.active {
   z-index: 1;
   width: 100%;
   min-width: 0;
-  min-height: 3.4rem;
+  min-height: 3.5rem;
   border: none;
   border-radius: 18px;
   background: none;
