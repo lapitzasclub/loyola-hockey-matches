@@ -131,3 +131,21 @@ export function renderClasificacionLoadingState(matchesList) {
     <li class="match-skeleton-status">${t("loading")}</li>
   `;
 }
+
+/**
+ * Renderiza un placeholder elegante cuando aún no hay equipo seleccionado.
+ *
+ * @param {HTMLElement} matchesList Lista o contenedor donde pintar el estado.
+ * @returns {void}
+ */
+export function renderTeamSelectionPromptState(matchesList) {
+  matchesList.innerHTML = `
+    <li class="match-empty-card">
+      <div class="match-empty-shell">
+        <div class="match-empty-kicker">Loyola Hockey</div>
+        <div class="match-empty-title">${t("team_selector_prompt_inline")}</div>
+        <div class="match-empty-copy">Abre el selector y elige un equipo para ver partidos, clasificación y detalle.</div>
+      </div>
+    </li>
+  `;
+}

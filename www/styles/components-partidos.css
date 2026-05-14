@@ -38,16 +38,52 @@
 }
 
 #matches li.match-skeleton-card,
-#matches li.match-skeleton-status {
+#matches li.match-skeleton-status,
+#matches li.match-empty-card {
   border: none;
   box-shadow: none;
   background: transparent;
 }
 
 #matches li.match-skeleton-card:hover,
-#matches li.match-skeleton-status:hover {
+#matches li.match-skeleton-status:hover,
+#matches li.match-empty-card:hover {
   border: none;
   box-shadow: none;
+}
+
+.match-empty-shell {
+  padding: 1.1rem 1rem;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-card-border));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 8%, var(--color-bg-card)) 0%, var(--color-bg-card) 100%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-shadow) 32%, transparent);
+}
+
+body[data-theme="dark"] .match-empty-shell {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 14%, var(--color-bg-card)) 0%, color-mix(in srgb, var(--color-primary) 4%, var(--color-bg-card)) 100%);
+}
+
+.match-empty-kicker {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.match-empty-title {
+  margin-top: 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--color-text);
+}
+
+.match-empty-copy {
+  margin-top: 0.45rem;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--color-fecha);
 }
 
 #matches li.proximo-partido {

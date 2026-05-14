@@ -5,7 +5,7 @@ import { closeEquipoSelectorOverlay } from "../components/equipoSelectorOverlay.
 import { setCompeticionHeader } from "./header.js";
 import { mostrarPantallaErrorGlobal } from "../state/errorOverlay.js";
 import { renderPartidos } from "../components/ui.js";
-import { renderPartidosLoadingState } from "../components/loadingStates.js";
+import { renderPartidosLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
 import { preloadPartidoDetalleModule } from "../components/partidos.js";
 import { getLang, t, updateTexts } from "../i18n.js";
 import { applyTheme, getSystemTheme, getTheme, listenSystemScheme, setTheme } from "../theme.js";
@@ -245,7 +245,7 @@ export async function mostrarPartidosYClasificacion() {
   const headerTitle = document.getElementById("headerTitle");
   if (!matchesList) return;
   if (!getEquipoSeleccionado()) {
-    matchesList.innerHTML = `<li>${t("team_selector_prompt_inline")}</li>`;
+    renderTeamSelectionPromptState(matchesList);
     if (headerTitle) headerTitle.textContent = "";
     setCompeticionHeader("");
     return;

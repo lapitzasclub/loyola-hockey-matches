@@ -4,7 +4,7 @@ import { renderEquipoSelectorLauncher } from "../components/equipoSelectorLaunch
 import { openEquipoSelectorOverlay } from "../components/equipoSelectorOverlay.js";
 import { setCompeticionHeader } from "./header.js";
 import { renderClasificacion } from "../components/ui.js";
-import { renderInitialTeamLoadingState } from "../components/loadingStates.js";
+import { renderClasificacionLoadingState, renderInitialTeamLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
 import { getClasificacionLiga } from "../services.js";
 import { t, updateTexts } from "../i18n.js";
 import { isOnboardingActive, setInitialTeamLoadActive, setOnboardingActive } from "./layoutState.js";
@@ -146,9 +146,9 @@ export async function handleLanguageChange(mobileBackCoordinator, nextLang, most
   if (navClas && navClas.classList.contains("active")) {
     const matchesList = ensureMatchesList();
     if (!matchesList) return;
-    matchesList.innerHTML = `<li>${t("loading")}</li>`;
+    renderClasificacionLoadingState(matchesList);
     if (!getEquipoSeleccionado()) {
-      matchesList.innerHTML = `<li>${t("team_selector_prompt_inline")}</li>`;
+      renderTeamSelectionPromptState(matchesList);
       setCompeticionHeader("");
       return;
     }
