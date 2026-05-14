@@ -100,6 +100,11 @@
   flex: 0 0 auto;
 }
 
+.partido-detalle-back svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
 .partido-detalle-back:hover,
 .partido-detalle-back:focus-visible,
 .partido-detalle-close:hover,
