@@ -304,16 +304,21 @@ function renderJugadorSubview(state) {
     <div class="partido-detalle-player-sheet subview-enter">
       <section class="partido-detalle-section partido-detalle-player-card partido-detalle-player-card-hero">
         <div class="partido-detalle-player-block ${hasGlobales ? "is-ready" : "is-loading"}">
-          <div class="partido-detalle-player-block-loading partido-detalle-player-hero partido-detalle-player-hero-lg">
+          <div class="partido-detalle-player-block-loading partido-detalle-player-hero partido-detalle-player-hero-lg partido-detalle-player-hero-card">
             <span class="partido-detalle-skeleton skeleton-photo"></span>
             <div class="partido-detalle-player-skeleton-meta">
-              <span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span>
               <span class="partido-detalle-skeleton skeleton-line skeleton-line-sm"></span>
+              <span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span>
+              <span class="partido-detalle-skeleton skeleton-line skeleton-line-xs"></span>
+              <span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span>
             </div>
           </div>
-          <div class="partido-detalle-player-block-content partido-detalle-player-hero partido-detalle-player-hero-lg">
+          <div class="partido-detalle-player-block-content partido-detalle-player-hero partido-detalle-player-hero-lg partido-detalle-player-hero-card">
             <img class="partido-detalle-player-photo" src="${foto}" alt="${escapeHtml(jugador.nombre || "Jugador")}" loading="eager" decoding="async" onload="this.classList.add('is-loaded')">
-            <div>
+            <div class="partido-detalle-player-identity">
+              <div class="partido-detalle-player-eyebrow">${escapeHtml(jugador.equipo || state.partido?.equipoLoyola || "")}</div>
+              <div class="partido-detalle-player-name">${escapeHtml(jugador.nombre || "Jugador")}</div>
+              ${jugador.dorsal ? `<div class="partido-detalle-player-number">#${escapeHtml(jugador.dorsal)}</div>` : ""}
               <div class="partido-detalle-player-meta partido-detalle-player-meta-compact">${[globales?.nacionalidad ? `${escapeHtml(t("detail_player_nationality"))}: ${escapeHtml(globales.nacionalidad)}` : "", globales?.nacimiento ? `${escapeHtml(t("detail_player_birth"))}: ${escapeHtml(globales.nacimiento)}` : ""].filter(Boolean).join(" · ")}</div>
             </div>
           </div>
