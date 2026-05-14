@@ -111,11 +111,14 @@
       aria-label="Navegación principal"
       data-i18n-aria="bottom_nav_aria"
     >
-      <button id="navPartidos" class="nav-btn active" data-i18n="nav_matches">
-        Partidos
+      <div class="bottom-nav-track" aria-hidden="true">
+        <span class="bottom-nav-indicator"></span>
+      </div>
+      <button id="navPartidos" class="nav-btn active" data-i18n="nav_matches" data-nav-index="0">
+        <span class="nav-btn-label">Partidos</span>
       </button>
-      <button id="navClas" class="nav-btn" data-i18n="nav_clas">
-        Clasificación
+      <button id="navClas" class="nav-btn" data-i18n="nav_clas" data-nav-index="1">
+        <span class="nav-btn-label">Clasificación</span>
       </button>
     </nav>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

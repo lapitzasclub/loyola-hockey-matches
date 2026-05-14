@@ -15,15 +15,26 @@ import { renderClasificacionLoadingState, renderTeamSelectionPromptState } from 
 export function setupNavigation(mostrarPartidosYClasificacion) {
   const navPartidos = document.getElementById("navPartidos");
   const navClas = document.getElementById("navClas");
+  const bottomNav = document.querySelector(".bottom-nav");
+
+  const setActiveTab = (tab) => {
+    if (!navPartidos || !navClas || !bottomNav) return;
+    const isPartidos = tab === "partidos";
+    navPartidos.classList.toggle("active", isPartidos);
+    navClas.classList.toggle("active", !isPartidos);
+    bottomNav.setAttribute("data-active-tab", isPartidos ? "0" : "1");
+  };
+
   if (navPartidos && navClas) {
+    setActiveTab("partidos");
+
     navPartidos.addEventListener("click", async () => {
-      navPartidos.classList.add("active");
-      navClas.classList.remove("active");
+      setActiveTab("partidos");
       await mostrarPartidosYClasificacion();
     });
+
     navClas.addEventListener("click", async () => {
-      navClas.classList.add("active");
-      navPartidos.classList.remove("active");
+      setActiveTab("clasificacion");
       const screenContent = document.getElementById("screenContent");
       let matchesList = document.getElementById("matches");
       if (!matchesList && screenContent) {
