@@ -220,7 +220,7 @@ body.app-ready .app-hidden-initially {
 }
 .side-menu {
   --side-menu-width: 240px;
-  --side-menu-shadow-width: 8px;
+  --side-menu-shadow-width: 44px;
   position: fixed;
   top: 0;
   bottom: 0;
