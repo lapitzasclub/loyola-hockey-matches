@@ -93,6 +93,13 @@
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
+.partido-detalle-back svg,
+.partido-detalle-close svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: 0 0 auto;
+}
+
 .partido-detalle-back:hover,
 .partido-detalle-back:focus-visible,
 .partido-detalle-close:hover,
@@ -940,14 +947,21 @@ body[data-theme="dark"] .partido-detalle-player-card-hero {
 .partido-detalle-player-competitions {
   display: flex;
   flex-direction: column;
-}
-
-.partido-detalle-player-competition + .partido-detalle-player-competition {
-  border-top: 1px solid var(--color-card-border);
+  gap: 0.7rem;
+  padding: 0.9rem;
 }
 
 .partido-detalle-player-competition {
   display: block;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-card-border));
+  border-radius: 1rem;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-bg-card) 92%, var(--color-bg));
+}
+
+body[data-theme="dark"] .partido-detalle-player-competition {
+  border-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-card-border));
+  background: color-mix(in srgb, var(--color-bg-card) 96%, var(--color-bg));
 }
 
 .partido-detalle-player-competition-bar {
@@ -955,32 +969,30 @@ body[data-theme="dark"] .partido-detalle-player-card-hero {
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.8rem;
-  padding: 0.9rem;
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-bg-card));
-  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-card-border));
+  padding: 1rem;
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-bg-card));
   cursor: pointer;
   list-style: none;
-  transition: background-color 220ms ease, border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+  transition: background-color 300ms ease, transform 300ms ease, box-shadow 300ms ease;
 }
 
 .partido-detalle-player-competition-bar:active {
   transform: scale(0.992);
 }
 
-.partido-detalle-player-competition[open] .partido-detalle-player-competition-bar {
+.partido-detalle-player-competition[open] .partido-detalle-player-competition-bar,
+.partido-detalle-player-competition[data-expanded="true"] .partido-detalle-player-competition-bar {
   background: color-mix(in srgb, var(--color-primary) 16%, var(--color-bg-card));
-  border-color: color-mix(in srgb, var(--color-primary) 34%, var(--color-card-border));
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-shadow) 12%, transparent);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
 body[data-theme="dark"] .partido-detalle-player-competition-bar {
-  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg-card));
-  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-card-border));
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card));
 }
 
-body[data-theme="dark"] .partido-detalle-player-competition[open] .partido-detalle-player-competition-bar {
-  background: color-mix(in srgb, var(--color-active-surface, var(--color-primary)) 22%, var(--color-bg-card));
-  border-color: color-mix(in srgb, var(--color-active-surface, var(--color-primary)) 38%, var(--color-card-border));
+body[data-theme="dark"] .partido-detalle-player-competition[open] .partido-detalle-player-competition-bar,
+body[data-theme="dark"] .partido-detalle-player-competition[data-expanded="true"] .partido-detalle-player-competition-bar {
+  background: color-mix(in srgb, var(--color-active-surface, var(--color-primary)) 20%, var(--color-bg-card));
 }
 
 .partido-detalle-player-competition-bar::-webkit-details-marker {
@@ -1005,22 +1017,24 @@ body[data-theme="dark"] .partido-detalle-player-competition[open] .partido-detal
 }
 
 .partido-detalle-player-competition-chevron {
-  width: 0.7rem;
-  height: 0.7rem;
+  width: 0.8rem;
+  height: 0.8rem;
   border-right: 2px solid var(--color-primary);
   border-bottom: 2px solid var(--color-primary);
   transform: rotate(45deg);
-  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), border-color 300ms ease;
   flex: 0 0 auto;
   margin-top: 0.15rem;
 }
 
-body[data-theme="dark"] .partido-detalle-player-competition[open] .partido-detalle-player-competition-chevron {
+body[data-theme="dark"] .partido-detalle-player-competition[open] .partido-detalle-player-competition-chevron,
+body[data-theme="dark"] .partido-detalle-player-competition[data-expanded="true"] .partido-detalle-player-competition-chevron {
   border-right-color: var(--color-on-active-surface, #082028);
   border-bottom-color: var(--color-on-active-surface, #082028);
 }
 
-.partido-detalle-player-competition[open] .partido-detalle-player-competition-chevron {
+.partido-detalle-player-competition[open] .partido-detalle-player-competition-chevron,
+.partido-detalle-player-competition[data-expanded="true"] .partido-detalle-player-competition-chevron {
   transform: rotate(225deg);
 }
 
@@ -1037,17 +1051,18 @@ body[data-theme="dark"] .partido-detalle-player-competition[open] .partido-detal
   height: 0;
   opacity: 0;
   overflow: hidden;
+  background: color-mix(in srgb, var(--color-bg-card) 98%, var(--color-bg));
 }
 
 .partido-detalle-player-history-row {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
-  padding: 0.85rem 0.9rem;
+  padding: 0.9rem 1rem;
   border-top: 1px solid var(--color-card-border);
   transform: translateY(-6px);
   opacity: 0;
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease;
 }
 
 .partido-detalle-player-competition[open] .partido-detalle-player-history-row {
