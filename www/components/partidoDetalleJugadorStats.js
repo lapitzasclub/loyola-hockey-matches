@@ -1,4 +1,5 @@
 import { t } from "../i18n.js";
+import { formatFechaByLang } from "../utils/helpers.js";
 import { emptyArray, escapeHtml, parseApiArrayResponse } from "./partidoDetalleUtils.js";
 
 /**
@@ -214,7 +215,7 @@ export function renderJugadorCompeticion(competicion, tipo, modalidad, options =
     return `
       <article class="partido-detalle-player-history-row partido-detalle-player-history-row-compact">
         <div class="partido-detalle-player-history-main">
-          <div class="partido-detalle-player-history-date">${escapeHtml(fila.Fecha || "")}</div>
+          <div class="partido-detalle-player-history-date">${escapeHtml(formatFechaByLang(fila.Fecha || ""))}</div>
           <div class="partido-detalle-player-matchup">
             <span class="partido-detalle-player-teamside">${escapeHtml(fila.loc || "")}</span>
             <strong>${escapeHtml(fila.marcador || "-")}</strong>

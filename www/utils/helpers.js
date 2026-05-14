@@ -1,6 +1,8 @@
 // helpers.js
 // Utilidades generales extraídas de ui.js
 
+import { getLang } from "../i18n.js";
+
 /**
  * Devuelve una representación segura en string de cualquier valor.
  * @param {any} v - Valor a convertir.
@@ -39,15 +41,43 @@ export function safeStr(v) {
  */
 export function parseFecha(fechaStr) {
   if (!fechaStr) return null;
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(fechaStr)) {
-    const [d, m, y] = fechaStr.split("/");
+  const text = String(fechaStr).trim();
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(text)) {
+    const [d, m, y] = text.split("/");
     return new Date(Number(y), Number(m) - 1, Number(d));
   }
-  if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
-    const [y, m, d] = fechaStr.split("-");
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(text)) {
+    const [y, m, d] = text.split("/");
+    return new Date(Number(y), Number(m) - 1, Number(d));
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+    const [y, m, d] = text.slice(0, 10).split("-");
     return new Date(Number(y), Number(m) - 1, Number(d));
   }
   return null;
+}
+
+/**
+ * Formatea una fecha numérica según el idioma actual o el indicado.
+ * - es: DD/MM/YYYY
+ * - eu: YYYY/MM/DD
+ *
+ * @param {string|number|null|undefined} fechaStr Fecha de entrada.
+ * @param {string} [lang=getLang()] Idioma destino.
+ * @returns {string} Fecha formateada o el valor original si no se pudo parsear.
+ */
+export function formatFechaByLang(fechaStr, lang = getLang()) {
+  if (!fechaStr) return "";
+  const dateObj = parseFecha(String(fechaStr));
+  if (!dateObj || Number.isNaN(dateObj.getTime())) return String(fechaStr);
+
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const year = dateObj.getFullYear();
+
+  return lang === "eu"
+    ? `${year}/${month}/${day}`
+    : `${day}/${month}/${year}`;
 }
 
 /**

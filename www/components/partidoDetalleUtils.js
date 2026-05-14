@@ -1,3 +1,5 @@
+import { formatFechaByLang } from "../utils/helpers.js";
+
 /**
  * Normaliza respuestas legacy que pueden venir como objeto, JSON embebido o `response.d`.
  *
@@ -79,18 +81,13 @@ export function logoUrl(id, size = 200) {
 }
 
 /**
- * Reduce una fecha a formato `YYYY-MM-DD` cuando viene en formato ISO largo.
+ * Formatea una fecha de partido según el idioma activo.
  *
  * @param {string|number|null|undefined} fecha Valor original de fecha.
  * @returns {string} Fecha formateada o cadena vacía.
  */
 export function formatFecha(fecha) {
-  if (!fecha) return "";
-  const text = String(fecha);
-  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
-    return text.slice(0, 10);
-  }
-  return text;
+  return formatFechaByLang(fecha);
 }
 
 /**
