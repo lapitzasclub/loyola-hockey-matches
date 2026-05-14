@@ -33,13 +33,14 @@ export function isWebRuntime() {
 /**
  * Política de acceso a servicios legacy.
  *
- * Android nativo puede seguir llamando directo para mantener compatibilidad.
- * Web debe ir siempre por backend propio `/api/*`.
+ * Se fuerza siempre el backend propio `/api/*` para evitar diferencias entre
+ * navegador y APK nativa frente al ASMX legacy (TLS, WAF, CORS implícito,
+ * cabeceras o respuestas inconsistentes desde WebView/HTTP nativo).
  *
  * @returns {'direct'|'proxy'} Estrategia de transporte.
  */
 export function getLegacyApiMode() {
-  return isAndroidNativeApp() ? 'direct' : 'proxy';
+  return 'proxy';
 }
 
 /**
