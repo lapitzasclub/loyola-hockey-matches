@@ -20,11 +20,14 @@ export function getPlayerStatsData(raw) {
  * @returns {string} URL absoluta de la imagen del jugador.
  */
 export function getJugadorFotoUrl(foto) {
-  const key = String(foto || "sinfoto").trim();
-  if (!key || key === "sinfoto") {
+  const rawKey = String(foto || "sinfoto").trim();
+  if (!rawKey || rawKey === "sinfoto") {
     return "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/licencias/foto/no_foto.png";
   }
-  return `https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/licencias/foto/${encodeURIComponent(key)}.jpg`;
+
+  const hasKnownExtension = /\.(jpe?g|png|webp|gif)$/i.test(rawKey);
+  const normalizedKey = hasKnownExtension ? rawKey : `${rawKey}.jpg`;
+  return `https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/licencias/foto/${encodeURIComponent(normalizedKey)}`;
 }
 
 /**
