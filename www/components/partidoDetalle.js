@@ -327,7 +327,7 @@ function renderJugadorSubview(state) {
             </div>
           </div>
         </div>
-        ${jugador.error ? `<div class="partido-detalle-empty small">${escapeHtml(jugador.error)}</div>` : ""}
+        ${jugador.error ? `<div class="partido-detalle-empty small cardish">${escapeHtml(jugador.error)}</div>` : ""}
       </section>
       <section class="partido-detalle-section partido-detalle-player-events-card">
         <div class="partido-detalle-section-title">${escapeHtml(t("detail_match"))}</div>
@@ -357,7 +357,7 @@ function renderJugadorSubview(state) {
             </div>
           </div>
           <div class="partido-detalle-player-block-content">
-            ${competicionesHtml ? `<div class="partido-detalle-player-competitions">${competicionesHtml}</div>` : `<div class="partido-detalle-empty small">${escapeHtml(t("detail_no_matches_available"))}</div>`}
+            ${competicionesHtml ? `<div class="partido-detalle-player-competitions">${competicionesHtml}</div>` : `<div class="partido-detalle-empty small cardish">${escapeHtml(t("detail_no_matches_available"))}</div>`}
           </div>
         </div>
       </section>

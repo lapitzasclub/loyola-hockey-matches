@@ -90,7 +90,7 @@ function renderStatChip(label, value, variant = "") {
  * @returns {string} HTML del bloque.
  */
 function renderJugadoresCards(jugadores, modalidad, teamType) {
-  if (!jugadores.length) return `<div class="partido-detalle-empty small">${escapeHtml(t("detail_players"))}: 0</div>`;
+  if (!jugadores.length) return `<div class="partido-detalle-empty small cardish">${escapeHtml(t("detail_players"))}: 0</div>`;
   const isHp = modalidad !== "hl";
   const items = jugadores.map((j) => {
     const tags = renderTagList([

@@ -107,7 +107,7 @@ function renderEventoTexto(ev) {
  */
 export function renderEventos(state) {
   if (!Array.isArray(state.eventos) || !state.eventos.length) {
-    return `<div class="partido-detalle-empty">${escapeHtml(t("detail_no_events"))}</div>`;
+    return `<div class="partido-detalle-empty cardish">${escapeHtml(t("detail_no_events"))}</div>`;
   }
 
   let golesLocal = 0;

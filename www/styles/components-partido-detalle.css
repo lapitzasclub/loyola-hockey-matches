@@ -490,6 +490,19 @@ body[data-theme="dark"] .tab-btn.active {
   font-size: 0.88rem;
 }
 
+.partido-detalle-empty.cardish {
+  margin: 0.9rem;
+  padding: 1rem 1rem 1.05rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-card-border));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 7%, var(--color-bg-card)) 0%, var(--color-bg-card) 100%);
+  color: var(--color-fecha);
+}
+
+body[data-theme="dark"] .partido-detalle-empty.cardish {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card)) 0%, color-mix(in srgb, var(--color-primary) 4%, var(--color-bg-card)) 100%);
+}
+
 .eventos-board {
   display: flex;
   flex-direction: column;

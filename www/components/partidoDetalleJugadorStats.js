@@ -168,7 +168,7 @@ export function renderJugadorTimeline(eventos) {
     const crono = escapeHtml(ev.Crono || "");
     const tipo = escapeHtml(ev.IdTipoEvento || ev.Descripcion || "Evento");
     return `<div class="partido-detalle-player-event"><span>${period} ${crono}</span><strong>${tipo}</strong></div>`;
-  }).join("") || `<div class="partido-detalle-empty small">${escapeHtml(t("detail_player_no_events"))}</div>`;
+  }).join("") || `<div class="partido-detalle-empty small cardish">${escapeHtml(t("detail_player_no_events"))}</div>`;
 }
 
 /**
@@ -246,7 +246,7 @@ export function renderJugadorCompeticion(competicion, tipo, modalidad, options =
         </div>
       </summary>
       <div class="partido-detalle-player-history-list">
-        ${rowHtml || `<div class="partido-detalle-empty small">${escapeHtml(t("detail_no_matches_available"))}</div>`}
+        ${rowHtml || `<div class="partido-detalle-empty small cardish">${escapeHtml(t("detail_no_matches_available"))}</div>`}
       </div>
     </details>
   `;
