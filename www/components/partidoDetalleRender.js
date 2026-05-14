@@ -97,7 +97,7 @@ export function updateTabVisibility(bodyEl, activeTab) {
  */
 export function renderPartidoHeader(state) {
   const p = state.partido;
-  if (!p) return "<div>Error cargando datos de partido</div>";
+  if (!p) return `<div class="partido-detalle-empty">${escapeHtml(t("detail_loading_view"))}</div>`;
 
   const bonusLocal = String(p.puntoBonus || "") === String(p.idEquipoLocal || "") ? "*" : "";
   const bonusVisit = String(p.puntoBonus || "") === String(p.idEquipoVisit || "") ? "*" : "";

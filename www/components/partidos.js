@@ -7,6 +7,7 @@ import { getParametrosCompeticion } from "../services.js";
 import { createCalendarButton } from "../utils/calendar.js";
 import { extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
 import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml, scrollToProximo } from "../utils/partidosHelpers.js";
+import { renderEmptyState, renderErrorState } from "./loadingStates.js";
 
 const ENTITY_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/entidad/200x200";
 const competitionLogoCache = new Map();
@@ -99,11 +100,11 @@ export async function renderPartidos(matchesList, raw) {
     window._partidosLoyola = partidos;
   }
   if (error) {
-    matchesList.innerHTML = `<li>${t("error", error)}</li>`;
+    renderErrorState(matchesList, t("error", error));
     return;
   }
   if (!partidos.length) {
-    matchesList.innerHTML = `<li>${t("no_matches", getEquipoLabel())}</li>`;
+    renderEmptyState(matchesList, t("no_matches", getEquipoLabel()));
     return;
   }
   matchesList.innerHTML = "";

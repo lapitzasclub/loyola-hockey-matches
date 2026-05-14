@@ -149,3 +149,43 @@ export function renderTeamSelectionPromptState(matchesList) {
     </li>
   `;
 }
+
+/**
+ * Renderiza un estado vacío reutilizable en listas principales.
+ *
+ * @param {HTMLElement} matchesList Lista o contenedor donde pintar el estado.
+ * @param {string} title Mensaje principal.
+ * @param {string} [copy=""] Texto secundario opcional.
+ * @returns {void}
+ */
+export function renderEmptyState(matchesList, title, copy = "") {
+  matchesList.innerHTML = `
+    <li class="match-empty-card">
+      <div class="match-empty-shell">
+        <div class="match-empty-kicker">Loyola Hockey</div>
+        <div class="match-empty-title">${title}</div>
+        ${copy ? `<div class="match-empty-copy">${copy}</div>` : ""}
+      </div>
+    </li>
+  `;
+}
+
+/**
+ * Renderiza un estado de error reutilizable en listas principales.
+ *
+ * @param {HTMLElement} matchesList Lista o contenedor donde pintar el estado.
+ * @param {string} title Mensaje principal de error.
+ * @param {string} [copy=""] Texto secundario opcional.
+ * @returns {void}
+ */
+export function renderErrorState(matchesList, title, copy = "") {
+  matchesList.innerHTML = `
+    <li class="match-empty-card match-error-card">
+      <div class="match-empty-shell match-error-shell">
+        <div class="match-empty-kicker">Loyola Hockey</div>
+        <div class="match-empty-title">${title}</div>
+        ${copy ? `<div class="match-empty-copy">${copy}</div>` : ""}
+      </div>
+    </li>
+  `;
+}

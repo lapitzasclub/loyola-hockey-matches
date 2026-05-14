@@ -5,7 +5,7 @@ import { getEquipoLabel } from "../equipo.js";
 import { t } from "../i18n.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
 import { decodeApiRaw, safeStr } from "../utils/helpers.js";
-import { renderClasificacionLoadingState } from "./loadingStates.js";
+import { renderClasificacionLoadingState, renderEmptyState, renderErrorState } from "./loadingStates.js";
 
 /**
  * Genera la clave de almacenamiento local para una clasificación concreta.
@@ -36,16 +36,16 @@ async function renderClasificacionContent(matchesList, raw) {
   renderClasificacionLoadingState(matchesList);
   const data = decodeApiRaw(raw);
   if (data?.__error) {
-    matchesList.innerHTML = `<li>${t("error", data.__error)}</li>`;
+    renderErrorState(matchesList, t("error", data.__error));
     return;
   }
   // Si la API retorna {d: ""} o similar, decodeApiRaw devuelve null o string vacío
   if (!data || (Array.isArray(data) && data.length === 0)) {
-    matchesList.innerHTML = `<li>${t("no_clasificacion", getEquipoLabel())}</li>`;
+    renderEmptyState(matchesList, t("no_clasificacion", getEquipoLabel()));
     return;
   }
   if (!Array.isArray(data)) {
-    matchesList.innerHTML = `<li>${t("no_clasificacion", getEquipoLabel())}</li>`;
+    renderEmptyState(matchesList, t("no_clasificacion", getEquipoLabel()));
     return;
   }
 
