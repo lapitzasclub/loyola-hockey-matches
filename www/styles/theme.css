@@ -119,6 +119,8 @@ body[data-theme="dark"] {
   --color-menu-text: var(--color-primary); /* acento turquesa en oscuro */
   --color-overlay: #000000cc;
   --color-active-team: hsl(186 72% 32%);
+  --color-active-surface: hsl(186 72% 58%);
+  --color-on-active-surface: hsl(192 62% 10%);
   --color-proximo-partido-bg: hsl(45 30% 20%);
   --color-proximo-partido-border: hsl(42 80% 55%);
   --color-proximo-partido-shadow: #00000066;

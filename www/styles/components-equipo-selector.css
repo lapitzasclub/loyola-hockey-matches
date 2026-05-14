@@ -476,9 +476,31 @@ body[data-theme="dark"] .team-selector-group {
   min-height: 42px;
   margin: 0;
   padding: 0;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent);
   border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-bg-card));
+  color: var(--color-primary);
   font-size: 1.5rem;
+  font-weight: 800;
   line-height: 1;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-shadow) 18%, transparent);
+}
+
+.team-selector-overlay-close:hover,
+.team-selector-overlay-close:focus-visible {
+  background: color-mix(in srgb, var(--color-primary) 24%, var(--color-bg-card));
+}
+
+body[data-theme="dark"] .team-selector-overlay-close {
+  border-color: color-mix(in srgb, var(--color-active-surface, var(--color-primary)) 44%, transparent);
+  background: var(--color-active-surface, var(--color-primary));
+  color: var(--color-on-active-surface, #082028);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-active-surface, var(--color-primary)) 24%, transparent);
+}
+
+body[data-theme="dark"] .team-selector-overlay-close:hover,
+body[data-theme="dark"] .team-selector-overlay-close:focus-visible {
+  background: color-mix(in srgb, var(--color-active-surface, var(--color-primary)) 88%, white 12%);
 }
 
 body.is-onboarding-active .bottom-nav,
