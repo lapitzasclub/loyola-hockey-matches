@@ -9,15 +9,12 @@ import { escapeHtml } from "./partidoDetalleUtils.js";
  */
 export function renderJugadorHeader(state) {
   const jugador = state.selectedJugador;
-  if (!jugador) return `<div>${escapeHtml(t("detail_match"))}</div>`;
-  const nombre = jugador.statsGlobales?.nombre || jugador.nombre || "Jugador";
-  const meta = jugador.dorsal ? `#${escapeHtml(jugador.dorsal)}` : "";
+  if (!jugador) return `<div>${escapeHtml(t("detail_player_statistics"))}</div>`;
 
   return `
-    <div class="partido-detalle-subheader subview-enter${jugador.loading ? " partido-detalle-subheader-loading" : ""}">
-      <div class="partido-detalle-subheader-top">${escapeHtml(jugador.teamName || jugador.teamType || t("detail_match"))}</div>
-      <div class="partido-detalle-subheader-title">${escapeHtml(nombre)}</div>
-      <div class="partido-detalle-subheader-meta">${meta || (jugador.loading ? `<span class="partido-detalle-skeleton skeleton-line skeleton-line-xs"></span>` : "")}</div>
+    <div class="partido-detalle-subheader partido-detalle-subheader-minimal subview-enter${jugador.loading ? " partido-detalle-subheader-loading" : ""}">
+      <div class="partido-detalle-subheader-top">${escapeHtml(t("detail_player_statistics"))}</div>
+      <div class="partido-detalle-subheader-meta">${jugador.loading ? `<span class="partido-detalle-skeleton skeleton-line skeleton-line-xs"></span>` : escapeHtml(t("detail_match"))}</div>
     </div>
   `;
 }
