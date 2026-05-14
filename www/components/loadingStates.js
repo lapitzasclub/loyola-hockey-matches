@@ -142,9 +142,9 @@ export function renderTeamSelectionPromptState(matchesList) {
   matchesList.innerHTML = `
     <li class="match-empty-card">
       <div class="match-empty-shell">
-        <div class="match-empty-kicker">Loyola Hockey</div>
+        <div class="match-empty-kicker">${t("app_short_name")}</div>
         <div class="match-empty-title">${t("team_selector_prompt_inline")}</div>
-        <div class="match-empty-copy">Abre el selector y elige un equipo para ver partidos, clasificación y detalle.</div>
+        <div class="match-empty-copy">${t("team_selector_prompt_copy")}</div>
       </div>
     </li>
   `;
@@ -162,7 +162,7 @@ export function renderEmptyState(matchesList, title, copy = "") {
   matchesList.innerHTML = `
     <li class="match-empty-card">
       <div class="match-empty-shell">
-        <div class="match-empty-kicker">Loyola Hockey</div>
+        <div class="match-empty-kicker">${t("app_short_name")}</div>
         <div class="match-empty-title">${title}</div>
         ${copy ? `<div class="match-empty-copy">${copy}</div>` : ""}
       </div>
@@ -182,7 +182,7 @@ export function renderErrorState(matchesList, title, copy = "") {
   matchesList.innerHTML = `
     <li class="match-empty-card match-error-card">
       <div class="match-empty-shell match-error-shell">
-        <div class="match-empty-kicker">Loyola Hockey</div>
+        <div class="match-empty-kicker">${t("app_short_name")}</div>
         <div class="match-empty-title">${title}</div>
         ${copy ? `<div class="match-empty-copy">${copy}</div>` : ""}
       </div>
