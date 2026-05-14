@@ -5,6 +5,7 @@ import { renderClasificacion } from "../components/ui.js";
 import { setCompeticionHeader } from "./header.js";
 import { getEquiposLoyola, getEquipoSeleccionado } from "../state/equipos.js";
 import { getClasificacionLiga } from "../services.js";
+import { renderClasificacionLoadingState } from "../components/loadingStates.js";
 
 /**
  * Configura la navegación inferior y los listeners de los botones de navegación.
@@ -30,8 +31,7 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
         matchesList = document.getElementById("matches");
       }
       if (!matchesList) return;
-      matchesList.innerHTML = "";
-      matchesList.innerHTML = `<li><div class='spinner-container'><div class='spinner' aria-label='Cargando'></div></div></li>`;
+      renderClasificacionLoadingState(matchesList);
       if (!getEquipoSeleccionado()) {
         matchesList.innerHTML = `<li>${t("team_selector_prompt_inline")}</li>`;
         setCompeticionHeader("");

@@ -5,6 +5,7 @@ import { getEquipoLabel } from "../equipo.js";
 import { t } from "../i18n.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
 import { decodeApiRaw, safeStr } from "../utils/helpers.js";
+import { renderClasificacionLoadingState } from "./loadingStates.js";
 
 /**
  * Genera la clave de almacenamiento local para una clasificación concreta.
@@ -32,8 +33,7 @@ export function renderClasificacion(matchesList, raw) {
  * @returns {void}
  */
 async function renderClasificacionContent(matchesList, raw) {
-  // Mostrar spinner mientras se procesa la carga (útil si tarda en calcular flechas)
-  matchesList.innerHTML = `<li><div class='spinner-container'><div class='spinner' aria-label='Cargando'></div></div></li>`;
+  renderClasificacionLoadingState(matchesList);
   const data = decodeApiRaw(raw);
   if (data?.__error) {
     matchesList.innerHTML = `<li>${t("error", data.__error)}</li>`;

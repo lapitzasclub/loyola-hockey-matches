@@ -71,9 +71,63 @@ export function renderPartidosLoadingState(matchesList) {
 export function renderInitialTeamLoadingState(container) {
   container.innerHTML = `
     <section class="initial-team-loading" aria-live="polite">
-      <div class="spinner-container initial-team-loading-spinner-wrap">
-        <div class="spinner" aria-label="${t("loading")}"></div>
+      <div class="initial-team-loading-card" aria-hidden="true">
+        <span class="match-skeleton-block match-skeleton-text-lg"></span>
+        <span class="match-skeleton-block match-skeleton-text-md"></span>
+        <div class="initial-team-loading-list">
+          <span class="match-skeleton-block match-skeleton-text-lg"></span>
+          <span class="match-skeleton-block match-skeleton-text-lg"></span>
+          <span class="match-skeleton-block match-skeleton-text-md"></span>
+        </div>
       </div>
     </section>
+  `;
+}
+
+/**
+ * Renderiza skeletons de clasificación mientras llega la respuesta o se procesan datos auxiliares.
+ *
+ * @param {HTMLElement} matchesList Lista o contenedor donde pintar el estado.
+ * @returns {void}
+ */
+export function renderClasificacionLoadingState(matchesList) {
+  matchesList.innerHTML = `
+    <li class="clas-card clas-skeleton-card" aria-hidden="true">
+      <div class="clas-skeleton-head">
+        <span class="clas-skeleton-block clas-skeleton-title"></span>
+        <span class="clas-skeleton-block clas-skeleton-pill"></span>
+      </div>
+      <div class="clas-skeleton-table">
+        <div class="clas-skeleton-row">
+          <span class="clas-skeleton-block clas-skeleton-pos"></span>
+          <span class="clas-skeleton-block clas-skeleton-team"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+        </div>
+        <div class="clas-skeleton-row">
+          <span class="clas-skeleton-block clas-skeleton-pos"></span>
+          <span class="clas-skeleton-block clas-skeleton-team"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+        </div>
+        <div class="clas-skeleton-row">
+          <span class="clas-skeleton-block clas-skeleton-pos"></span>
+          <span class="clas-skeleton-block clas-skeleton-team"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+        </div>
+        <div class="clas-skeleton-row">
+          <span class="clas-skeleton-block clas-skeleton-pos"></span>
+          <span class="clas-skeleton-block clas-skeleton-team"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-num"></span>
+        </div>
+      </div>
+    </li>
+    <li class="match-skeleton-status">${t("loading")}</li>
   `;
 }

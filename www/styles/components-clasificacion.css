@@ -96,6 +96,47 @@
   box-shadow: var(--clas-shadow);
 }
 
+.clas-skeleton-card {
+  padding: 1rem !important;
+}
+
+.clas-skeleton-head,
+.clas-skeleton-row {
+  display: grid;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.clas-skeleton-head {
+  grid-template-columns: minmax(0, 1fr) 4.5rem;
+  margin-bottom: 0.95rem;
+}
+
+.clas-skeleton-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.clas-skeleton-row {
+  grid-template-columns: 1.2rem minmax(0, 1fr) 2.2rem 2.2rem 2.2rem;
+}
+
+.clas-skeleton-block {
+  display: block;
+  height: 0.95rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-text) 8%, transparent) 25%, color-mix(in srgb, white 18%, transparent) 50%, color-mix(in srgb, var(--color-text) 8%, transparent) 75%);
+  background-size: 220% 100%;
+  animation: clas-skeleton-shimmer 1.2s linear infinite;
+}
+
+.clas-skeleton-title { height: 1.1rem; width: 62%; }
+.clas-skeleton-pill { height: 1.6rem; width: 100%; border-radius: 999px; }
+.clas-skeleton-pos { width: 100%; }
+.clas-skeleton-team { width: 78%; }
+.clas-skeleton-num { width: 100%; }
+
 .clas-table-wrap {
   width: 100%;
   overflow: hidden;
@@ -359,6 +400,11 @@
 .clas-acc-content.open {
   max-height: 1000px;
   transition: max-height 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes clas-skeleton-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
 }
 
 @media (max-width: 600px) {

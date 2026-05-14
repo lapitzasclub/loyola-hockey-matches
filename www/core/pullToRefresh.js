@@ -3,6 +3,7 @@
 import { getClasificacionLiga } from "../services.js";
 import { renderClasificacion } from "../components/ui.js";
 import { t } from "../i18n.js";
+import { renderClasificacionLoadingState } from "../components/loadingStates.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { invalidateApiCache } from "../utils/apiCache.js";
 import { setCompeticionHeader } from "./header.js";
@@ -94,8 +95,7 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
         try {
           if (navClasEl?.classList.contains("active")) {
             const listEl = document.getElementById("matches");
-            listEl.innerHTML = "";
-            listEl.innerHTML = `<li>${t("loading")}</li>`;
+            renderClasificacionLoadingState(listEl);
             if (!getEquipoSeleccionado()) {
               if (
                 getEquipoSeleccionado() === null ||
