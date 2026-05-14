@@ -252,6 +252,52 @@ body.app-ready .app-hidden-initially {
 .side-menu-content h3 {
   margin-top: 0;
 }
+
+.side-menu-content #teamSelectorMenuContainer {
+  margin-bottom: 0.25rem;
+}
+
+.side-menu .team-selector-launcher {
+  gap: 0.8rem;
+}
+
+.side-menu .team-selector-launcher-label {
+  margin-bottom: 0.55rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--color-text-header) 74%, var(--color-primary) 26%);
+}
+
+.side-menu .team-selector-launcher-card {
+  padding: 0.95rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--color-bg-card) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 12%, transparent), 0 8px 18px color-mix(in srgb, var(--color-shadow) 22%, transparent);
+}
+
+.side-menu .team-selector-launcher-logo {
+  width: 48px;
+  height: 48px;
+  padding: 0.22rem;
+}
+
+.side-menu .team-selector-launcher-team {
+  font-size: 0.98rem;
+}
+
+.side-menu .team-selector-launcher-comp,
+.side-menu .team-selector-launcher-empty {
+  font-size: 0.9rem;
+  opacity: 0.88;
+}
+
+.side-menu .team-selector-launcher-button {
+  border-radius: 16px;
+  padding: 0.98rem 1rem;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--color-shadow) 34%, transparent);
+}
+
 .side-menu-content hr {
   margin: 1.05rem 0 0.95rem;
   border: 0;
