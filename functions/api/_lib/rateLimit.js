@@ -5,17 +5,34 @@ export async function applyRateLimit(request, env, keySuffix = 'default') {
   if ((env.CF_PAGES || '').toLowerCase() !== '1' && request.headers.get('host')?.startsWith('127.0.0.1:')) {
     return null;
   }
+
+  const kv = env.API_RATE_LIMIT;
+  if (!kv?.get || !kv?.put) {
+    return null;
+  }
+
   const ip = request.headers.get('cf-connecting-ip') || 'unknown';
   const key = `rate:${keySuffix}:${ip}`;
   const now = Date.now();
-  const bucket = await env.API_RATE_LIMIT.get(key, 'json');
+
+  let bucket;
+  try {
+    bucket = await kv.get(key, 'json');
+  } catch (error) {
+    console.warn(`Rate limit KV get falló para ${keySuffix}:`, error);
+    return null;
+  }
 
   if (!bucket || now - bucket.windowStart >= WINDOW_MS) {
-    await env.API_RATE_LIMIT.put(
-      key,
-      JSON.stringify({ count: 1, windowStart: now }),
-      { expirationTtl: Math.ceil(WINDOW_MS / 1000) + 5 },
-    );
+    try {
+      await kv.put(
+        key,
+        JSON.stringify({ count: 1, windowStart: now }),
+        { expirationTtl: Math.ceil(WINDOW_MS / 1000) + 5 },
+      );
+    } catch (error) {
+      console.warn(`Rate limit KV put inicial falló para ${keySuffix}:`, error);
+    }
     return null;
   }
 
@@ -33,11 +50,15 @@ export async function applyRateLimit(request, env, keySuffix = 'default') {
     );
   }
 
-  await env.API_RATE_LIMIT.put(
-    key,
-    JSON.stringify({ count: bucket.count + 1, windowStart: bucket.windowStart }),
-    { expirationTtl: Math.ceil(WINDOW_MS / 1000) + 5 },
-  );
+  try {
+    await kv.put(
+      key,
+      JSON.stringify({ count: bucket.count + 1, windowStart: bucket.windowStart }),
+      { expirationTtl: Math.ceil(WINDOW_MS / 1000) + 5 },
+    );
+  } catch (error) {
+    console.warn(`Rate limit KV put incremental falló para ${keySuffix}:`, error);
+  }
 
   return null;
 }
