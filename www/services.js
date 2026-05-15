@@ -7,6 +7,7 @@ const FVP_BASE_URL = "https://fvpatinaje.eus/webservices/WSCompeticiones.asmx";
 const APP_PROXY_BASE_URL = "https://loyola-hockey-matches.pages.dev";
 const ENTITY_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/entidad/200x200";
 const competitionCatalogCache = new Map();
+const competitionCatalogInflight = new Map();
 
 /**
  * Normaliza respuestas legacy ASMX que pueden venir como string JSON, como objeto con `d`
@@ -318,76 +319,100 @@ export async function getLoyolaCompetitionCatalog() {
   if (competitionCatalogCache.has(cacheKey)) {
     return competitionCatalogCache.get(cacheKey);
   }
-
-  const compUrl = getAppApiUrl('/api/GetCompeticiones');
-  const compRes = await fetch(compUrl, {
-    method: "POST",
-    headers: HEADERS,
-    body: JSON.stringify({ modalidad: "hp", temporada: "21" }),
-  });
-
-  let compJson;
-  try {
-    compJson = await compRes.json();
-  } catch (error) {
-    console.error("Error parseando JSON de competiciones:", error);
-    return [];
+  if (competitionCatalogInflight.has(cacheKey)) {
+    return competitionCatalogInflight.get(cacheKey);
   }
 
-  let competiciones;
-  try {
-    competiciones = compJson.d ? JSON.parse(compJson.d) : [];
-  } catch (error) {
-    console.error("Error parseando compJson.d:", compJson.d, error);
-    return [];
-  }
+  const requestPromise = (async () => {
+    const compUrl = getAppApiUrl('/api/GetCompeticiones');
+    const compRes = await fetch(compUrl, {
+      method: "POST",
+      headers: HEADERS,
+      body: JSON.stringify({ modalidad: "hp", temporada: "21" }),
+    });
 
-  const catalog = [];
-  for (const comp of competiciones) {
-    const rawParams = await getParametrosCompeticion(comp.IdCompeticion);
-    let params;
-    try {
-      params = unwrapLegacyPayload(rawParams);
-    } catch (error) {
-      console.error("Error parseando parametros de competición:", comp.IdCompeticion, error);
-      continue;
+    if (!compRes.ok) {
+      throw new Error(`Error cargando competiciones (${compRes.status})`);
     }
 
-    const competitionData = Array.isArray(params) ? params[0] : null;
-    const equipos = Array.isArray(competitionData?.Equipos) ? competitionData.Equipos : [];
-    const equiposLoyola = equipos
-      .filter(isLoyolaTeam)
-      .map((equipo) => ({
+    let compJson;
+    try {
+      compJson = await compRes.json();
+    } catch (error) {
+      console.error("Error parseando JSON de competiciones:", error);
+      throw new Error("No se pudo interpretar la respuesta de competiciones", { cause: error });
+    }
+
+    if (compJson?.error) {
+      throw new Error(compJson.message || "Error remoto cargando competiciones");
+    }
+
+    let competiciones;
+    try {
+      competiciones = compJson.d ? JSON.parse(compJson.d) : [];
+    } catch (error) {
+      console.error("Error parseando compJson.d:", compJson.d, error);
+      throw new Error("Formato inválido en competiciones", { cause: error });
+    }
+
+    const catalog = [];
+    for (const comp of competiciones) {
+      const rawParams = await getParametrosCompeticion(comp.IdCompeticion);
+      if (rawParams?.error) {
+        console.error("Error remoto cargando parametros de competición:", comp.IdCompeticion, rawParams.message);
+        continue;
+      }
+      let params;
+      try {
+        params = unwrapLegacyPayload(rawParams);
+      } catch (error) {
+        console.error("Error parseando parametros de competición:", comp.IdCompeticion, error);
+        continue;
+      }
+
+      const competitionData = Array.isArray(params) ? params[0] : null;
+      const equipos = Array.isArray(competitionData?.Equipos) ? competitionData.Equipos : [];
+      const equiposLoyola = equipos
+        .filter(isLoyolaTeam)
+        .map((equipo) => ({
+          idCompeticion: comp.IdCompeticion,
+          nombreCompeticion: comp.DenoComp,
+          temporada: comp.Temporada || competitionData?.Temporada || "",
+          modalidad: comp.IdModalidadComp || competitionData?.IdModalidadComp || "hp",
+          idEquipoComp: equipo.IdEquipoComp,
+          idEntidadEquipo: equipo.IdEntidadEquipo,
+          nombreEquipo: equipo.NombreEquipo,
+          nombreEquipoAbrev: equipo.NombreEquipoAbrev,
+          tieneLogo: !!equipo.TieneLogo,
+          logoEquipoUrl: equipo.TieneLogo ? getEntityLogoUrl(equipo.IdEntidadEquipo) : getEntityLogoUrl("sinescudo"),
+        }));
+
+      if (!equiposLoyola.length) continue;
+
+      catalog.push({
         idCompeticion: comp.IdCompeticion,
         nombreCompeticion: comp.DenoComp,
+        nombreCompeticionAbrev: comp.DenoAbrevComp || comp.DenoComp,
         temporada: comp.Temporada || competitionData?.Temporada || "",
         modalidad: comp.IdModalidadComp || competitionData?.IdModalidadComp || "hp",
-        idEquipoComp: equipo.IdEquipoComp,
-        idEntidadEquipo: equipo.IdEntidadEquipo,
-        nombreEquipo: equipo.NombreEquipo,
-        nombreEquipoAbrev: equipo.NombreEquipoAbrev,
-        tieneLogo: !!equipo.TieneLogo,
-        logoEquipoUrl: equipo.TieneLogo ? getEntityLogoUrl(equipo.IdEntidadEquipo) : getEntityLogoUrl("sinescudo"),
-      }));
+        tieneLogoComp: !!competitionData?.LogoComp,
+        logoCompeticionUrl: competitionData?.LogoComp && competitionData?.IdEntidad
+          ? getEntityLogoUrl(competitionData.IdEntidad)
+          : getEntityLogoUrl("sinescudo"),
+        equipos: equiposLoyola,
+      });
+    }
 
-    if (!equiposLoyola.length) continue;
+    competitionCatalogCache.set(cacheKey, catalog);
+    return catalog;
+  })();
 
-    catalog.push({
-      idCompeticion: comp.IdCompeticion,
-      nombreCompeticion: comp.DenoComp,
-      nombreCompeticionAbrev: comp.DenoAbrevComp || comp.DenoComp,
-      temporada: comp.Temporada || competitionData?.Temporada || "",
-      modalidad: comp.IdModalidadComp || competitionData?.IdModalidadComp || "hp",
-      tieneLogoComp: !!competitionData?.LogoComp,
-      logoCompeticionUrl: competitionData?.LogoComp && competitionData?.IdEntidad
-        ? getEntityLogoUrl(competitionData.IdEntidad)
-        : getEntityLogoUrl("sinescudo"),
-      equipos: equiposLoyola,
-    });
+  competitionCatalogInflight.set(cacheKey, requestPromise);
+  try {
+    return await requestPromise;
+  } finally {
+    competitionCatalogInflight.delete(cacheKey);
   }
-
-  competitionCatalogCache.set(cacheKey, catalog);
-  return catalog;
 }
 
 /**

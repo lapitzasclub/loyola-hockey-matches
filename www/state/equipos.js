@@ -1,6 +1,6 @@
 // equipos.js
 // Carga y gestión del selector de equipos
-import { getEquiposLoyolaTodasCompeticiones, getLoyolaCompetitionCatalog } from "../services.js";
+import { getLoyolaCompetitionCatalog } from "../services.js";
 
 let _equiposLoyola = [];
 let _competitionCatalog = [];
@@ -51,10 +51,8 @@ export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion,
   if (!selector) return;
   selector.innerHTML = `<option value="">Cargando equipos...</option>`;
   try {
-    const [equipos, catalog] = await Promise.all([
-      getEquiposLoyolaTodasCompeticiones(),
-      getLoyolaCompetitionCatalog(),
-    ]);
+    const catalog = await getLoyolaCompetitionCatalog();
+    const equipos = catalog.flatMap((competition) => competition.equipos);
     setEquiposLoyola(equipos);
     setCompetitionCatalog(catalog);
     selector.innerHTML = "";
@@ -90,6 +88,8 @@ export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion,
     });
     setEquipoSeleccionado(saved || null);
   } catch (err) {
+    selector.innerHTML = `<option value="">Error cargando equipos</option>`;
+    console.error("Error cargando selector de equipos Loyola:", err);
     mostrarPantallaErrorGlobal(err);
   }
 }
