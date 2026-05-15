@@ -43,9 +43,15 @@ export async function proxyLegacyRequest(request, endpoint, cacheSeconds = 120) 
     method: 'GET',
   });
 
-  const cache = caches.default;
-  const cached = await cache.match(cacheKey);
-  if (cached) return cached;
+  const cache = globalThis.caches?.default;
+  if (cache) {
+    try {
+      const cached = await cache.match(cacheKey);
+      if (cached) return cached;
+    } catch (error) {
+      console.warn(`Cache match falló para ${endpoint}:`, error);
+    }
+  }
 
   let upstreamResponse;
   try {
@@ -84,7 +90,14 @@ export async function proxyLegacyRequest(request, endpoint, cacheSeconds = 120) 
     },
   });
 
-  await cache.put(cacheKey, response.clone());
+  if (cache) {
+    try {
+      await cache.put(cacheKey, response.clone());
+    } catch (error) {
+      console.warn(`Cache put falló para ${endpoint}:`, error);
+    }
+  }
+
   return response;
 }
 
