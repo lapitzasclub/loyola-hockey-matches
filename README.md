@@ -2,7 +2,7 @@
 
 Aplicación web y móvil, basada en Capacitor, para consultar calendario, clasificación y detalle en vivo de los equipos de hockey patines del Loyola.
 
-Versión actual: **1.3.0**
+Versión actual: **1.4.0**
 
 ## Estado actual
 
@@ -26,6 +26,17 @@ En las últimas iteraciones se ha trabajado sobre todo en:
 - jQuery + SignalR clásico para tiempo real
 - Cloudflare Pages Functions para proxy `/api/*` y `/signalr/hubs`
 
+## Cambios clave en 1.4.0
+
+- Corregida la carga inicial del selector Loyola en Android nativo.
+- Eliminada la doble petición concurrente a `GetCompeticiones`.
+- Añadida deduplicación de requests en vuelo para el catálogo de competiciones.
+- Mejorado el manejo de errores del selector para mostrar fallo real de carga en vez de lista vacía engañosa.
+- Restaurada y documentada la política correcta de red por runtime:
+  - Android nativo usa acceso directo al ASMX legacy también para `GetCompeticiones`.
+  - Web pública usa `/api/*` en Cloudflare para evitar CORS.
+- Endurecido el proxy web de Cloudflare para que fallos de caché no tumben el Worker.
+
 ## Modelo de arquitectura recomendado
 
 El proyecto debe mantenerse como **frontend compartido con dos targets**:
@@ -40,6 +51,16 @@ El proyecto debe mantenerse como **frontend compartido con dos targets**:
 La política de runtime está centralizada en:
 
 - `www/config/runtime.js`
+
+Lección importante de esta fase:
+
+- no basta con restaurar la política global en `runtime.js` si un flujo concreto usa otra helper paralela.
+- el bug real de Android en 1.4.0 apareció porque `GetCompeticiones` no seguía `getLegacyApiMode()` y seguía yendo a Cloudflare desde `getAppApiUrl()`.
+- cuando se toque transporte, hay que validar específicamente:
+  - selector inicial de equipo
+  - calendario/clasificación
+  - detalle de partido
+  - runtime Android vs web pública
 
 Y la documentación específica está en:
 
