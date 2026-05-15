@@ -33,14 +33,13 @@ export function isWebRuntime() {
 /**
  * Política de acceso a servicios legacy.
  *
- * Se fuerza siempre el backend propio `/api/*` para evitar diferencias entre
- * navegador y APK nativa frente al ASMX legacy (TLS, WAF, CORS implícito,
- * cabeceras o respuestas inconsistentes desde WebView/HTTP nativo).
+ * Android nativo debe ir directo al ASMX legacy.
+ * Web pública debe pasar por `/api/*` para evitar CORS desde navegador.
  *
  * @returns {'direct'|'proxy'} Estrategia de transporte.
  */
 export function getLegacyApiMode() {
-  return 'proxy';
+  return isAndroidNativeApp() ? 'direct' : 'proxy';
 }
 
 /**
