@@ -99,6 +99,13 @@ export const i18n = {
     team_selector_group_leagues: "Ligas",
     team_selector_group_tournaments: "Torneos",
     team_selector_choose_action: "Elegir este equipo",
+    global_error_kicker: "Ups",
+    global_error_title: "Ha habido un problema al cargar la app",
+    global_error_message: "No hemos podido completar la carga inicial. Puedes intentarlo de nuevo o recargar la aplicación.",
+    global_error_retry: "Reintentar",
+    global_error_retrying: "Reintentando...",
+    global_error_reload: "Recargar app",
+    global_error_details: "Ver detalles técnicos",
   },
   eu: {
     title: "Loyola Indautxu Partidak",
@@ -183,6 +190,13 @@ export const i18n = {
     team_selector_group_leagues: "Ligak",
     team_selector_group_tournaments: "Txapelketak",
     team_selector_choose_action: "Aukeratu talde hau",
+    global_error_kicker: "Aupa",
+    global_error_title: "Arazo bat egon da aplikazioa kargatzean",
+    global_error_message: "Hasierako karga ezin izan da osatu. Berriro saia zaitezke edo aplikazioa berriz kargatu.",
+    global_error_retry: "Berriz saiatu",
+    global_error_retrying: "Berriz saiatzen...",
+    global_error_reload: "Aplikazioa berriz kargatu",
+    global_error_details: "Ikusi xehetasun teknikoak",
   },
 };
 
