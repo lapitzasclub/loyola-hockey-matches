@@ -275,6 +275,17 @@ button {
   cursor: pointer;
   margin-right: 0.5em;
   margin-top: 0.5em;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.partido-detalle-back,
+.partido-detalle-close,
+.side-menu-close,
+.team-selector-overlay-close {
+  overflow: hidden;
+  background-clip: padding-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 select {
