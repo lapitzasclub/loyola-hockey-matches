@@ -138,6 +138,9 @@ function getServiceUrl(endpoint) {
  * @returns {string} Ruta final consumible por el cliente.
  */
 function getAppApiUrl(path) {
+  if (getLegacyApiMode() === "direct") {
+    return `${FVP_BASE_URL}/${path.replace(/^\/api\//, "")}`;
+  }
   if (isNative()) {
     return `${APP_PROXY_BASE_URL}${path}`;
   }
