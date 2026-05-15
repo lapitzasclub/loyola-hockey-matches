@@ -1,43 +1,19 @@
 import { t } from "../i18n.js";
 import {
   callPartidoHubServerMethod,
-  getEstadisticaJugador,
   getEstadisticaPartido,
   getPartido,
   subscribePartidoHubEvents,
 } from "../services.js";
-import { renderAlineaciones } from "./partidoDetalleAlineaciones.js";
-import { renderEventos } from "./partidoDetalleEventos.js";
-import {
-  renderDetalleSkeleton,
-  renderPartidoHeader,
-  renderPartidoHeaderSkeleton,
-  renderPenaltis,
-  renderResumen,
-  updateTabVisibility,
-} from "./partidoDetalleRender.js";
-import { ensureBaseLayout } from "./partidoDetalleTabs.js";
+import { renderPartidoHeader } from "./partidoDetalleRender.js";
 import {
   createDetalleState,
-  emptyArray,
   escapeHtml,
-  getCurrentTab,
-  getCurrentView,
   getViewStack,
   parseApiArrayResponse,
   popView,
-  pushView,
   setCurrentView,
 } from "./partidoDetalleUtils.js";
-import {
-  getJugadorFotoUrl,
-  getPlayerStatsData,
-  renderJugadorCompeticion,
-  renderJugadorTimeline,
-  renderPartidoJugadorChips,
-  safeNumber,
-} from "./partidoDetalleJugadorStats.js";
-import { resolveJugadorDetalle } from "./partidoDetalleJugadorData.js";
 import {
   updateAlineaciones,
   updateEstadisticaPayload,
@@ -45,15 +21,17 @@ import {
   updatePartido,
   updatePenaltis,
 } from "./partidoDetalleState.js";
-import { renderJugadorHeader } from "./partidoDetalleJugadorView.js";
 import {
-  bindPlayerAccordions,
-  nextFrame,
-  scrollDetalleToTop,
+  hydrateJugadorStats,
+  renderDetalleSubview,
+  renderJugadorHeader,
+} from "./partidoDetalleJugadorSubview.js";
+import {
   syncMobileBackState,
   transitionDetalleView,
-  updateChrome,
 } from "./partidoDetalleNavigation.js";
+import { bindPlayerLinks } from "./partidoDetallePlayerLinks.js";
+import { renderAll as renderDetalleState } from "./partidoDetalleRenderCoordinator.js";
 
 /**
  * Actualiza el contenido HTML de la cabecera del modal y deja una traza de depuración.
@@ -184,8 +162,7 @@ async function waitForSignalRConnected(timeout = 4000) {
 }
 
 /**
- * Re-renderiza el estado completo del modal, cabecera incluida.
- * Decide si mostrar la vista del partido o la subvista de jugador.
+ * Re-renderiza el estado completo del modal delegando en el coordinador de render.
  *
  * @param {object} state Estado interno del detalle de partido.
  * @param {HTMLElement} headerEl Contenedor de cabecera del modal.
@@ -193,68 +170,17 @@ async function waitForSignalRConnected(timeout = 4000) {
  * @returns {void}
  */
 function renderAll(state, headerEl, bodyEl) {
-  const modal = bodyEl.closest(".partido-detalle-modal");
-  updateChrome(state, modal);
-  if (state.partido) {
-    const headerHtml = getCurrentView(state) === "jugador" ? renderJugadorHeader(state) : renderPartidoHeader(state);
-    setHeaderContent(headerEl, headerHtml, "renderAll");
-  } else if (getCurrentView(state) === "partido" && state.loadingMatch) {
-    setHeaderContent(headerEl, renderPartidoHeaderSkeleton(), "renderAll-skeleton");
-  }
-  if (getCurrentView(state) !== "partido") {
-    bodyEl.innerHTML = renderSubview(state);
-    bindPlayerLinks(bodyEl, state, headerEl);
-    bindPlayerAccordions(bodyEl);
-    return;
-  }
-  if (!bodyEl.querySelector("#tab-resumen")) {
-    ensureBaseLayout(bodyEl, state);
-    scrollDetalleToTop(bodyEl);
-  }
-  if (state.loadingMatch && !state.partido) {
-    renderDetalleSkeleton(bodyEl);
-    return;
-  }
-  bodyEl.querySelector("#tab-resumen").innerHTML = renderResumen(state);
-  bodyEl.querySelector("#tab-alineaciones").innerHTML = renderAlineaciones(state);
-  bodyEl.querySelector("#tab-eventos").innerHTML = renderEventos(state);
-  bodyEl.querySelector("#tab-penaltis").innerHTML = renderPenaltis(state);
-  updateTabVisibility(bodyEl, getCurrentTab(state));
-  bindPlayerLinks(bodyEl, state, headerEl);
-}
-
-/**
- * Enlaza los elementos interactivos que abren la subvista de jugador.
- *
- * @param {HTMLElement} rootEl Nodo raíz donde buscar enlaces de jugador.
- * @param {object} state Estado interno del detalle de partido.
- * @param {HTMLElement} headerEl Contenedor de cabecera del modal.
- * @returns {void}
- */
-function bindPlayerLinks(rootEl, state, headerEl) {
-  rootEl.querySelectorAll(".partido-detalle-player-link").forEach((btn) => {
-    btn.onclick = async () => {
-      let payload;
-      try {
-        payload = JSON.parse(btn.dataset.player || "null");
-      } catch {
-        payload = null;
-      }
-      state.selectedJugador = payload ? resolveJugadorDetalle(state, payload) : null;
-      if (!state.selectedJugador) return;
-      pushView(state, getCurrentView(state));
-      state.selectedJugador.loading = true;
-      const bodyEl = rootEl.closest("#partido-detalle-body") || rootEl;
-      await transitionDetalleView(bodyEl, async () => {
-        setCurrentView(state, "jugador");
-        renderAll(state, headerEl, bodyEl);
-      }, "forward");
-      syncMobileBackState();
-      await nextFrame();
-      await nextFrame();
-      await hydrateJugadorStats(state, headerEl, bodyEl);
-    };
-  });
+  renderDetalleState(
+    state,
+    headerEl,
+    bodyEl,
+    setHeaderContent,
+    renderSubview,
+    renderJugadorHeader,
+    bindPlayerLinks,
+    hydrateJugadorStats,
+    renderAll,
+  );
 }
 
 /**
@@ -264,144 +190,7 @@ function bindPlayerLinks(rootEl, state, headerEl) {
  * @returns {string} HTML de la subvista activa.
  */
 function renderSubview(state) {
-  if (getCurrentView(state) === "jugador") {
-    return renderJugadorSubview(state);
-  }
-  return `
-    <div class="partido-detalle-subview-placeholder">
-      <div class="partido-detalle-empty">${escapeHtml(t("detail_loading_view"))}</div>
-    </div>
-  `;
-}
-
-/**
- * Renderiza la hoja completa del detalle de jugador dentro del modal.
- * Mantiene la shell estable y revela el contenido hidratado por bloques.
- *
- * @param {object} state Estado interno del detalle de partido.
- * @returns {string} HTML de la subvista de jugador.
- */
-function renderJugadorSubview(state) {
-  const jugador = state.selectedJugador;
-  if (!jugador) {
-    return `
-      <div class="partido-detalle-subview-placeholder subview-enter">
-        <div class="partido-detalle-empty">${escapeHtml(t("detail_player_unavailable"))}</div>
-      </div>
-    `;
-  }
-
-  const partidoStats = jugador.partidoStats || {};
-  const globales = jugador.statsGlobales;
-  const hasGlobales = !!globales;
-  const foto = getJugadorFotoUrl(globales?.foto);
-  const competicionesOrdenadas = emptyArray(globales?.competiciones)
-    .slice()
-    .sort((a, b) => safeNumber(b?.partidos || emptyArray(b?.filas).length) - safeNumber(a?.partidos || emptyArray(a?.filas).length));
-  const competicionesHtml = competicionesOrdenadas.length
-    ? competicionesOrdenadas.map((comp, index) => renderJugadorCompeticion(comp, jugador.licenciaTipo || "j", state.modalidad || "hp", { open: index === 0 })).join("")
-    : "";
-  const timeline = renderJugadorTimeline(jugador.eventos);
-  const partidoChips = renderPartidoJugadorChips(partidoStats);
-
-  return `
-    <div class="partido-detalle-player-sheet subview-enter">
-      <section class="partido-detalle-section partido-detalle-player-card partido-detalle-player-card-hero">
-        <div class="partido-detalle-player-block ${hasGlobales ? "is-ready" : "is-loading"}">
-          <div class="partido-detalle-player-block-loading partido-detalle-player-hero partido-detalle-player-hero-lg partido-detalle-player-hero-card">
-            <span class="partido-detalle-skeleton skeleton-photo"></span>
-            <div class="partido-detalle-player-skeleton-meta">
-              <span class="partido-detalle-skeleton skeleton-line skeleton-line-sm"></span>
-              <span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span>
-              <span class="partido-detalle-skeleton skeleton-line skeleton-line-xs"></span>
-              <span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span>
-            </div>
-          </div>
-          <div class="partido-detalle-player-block-content partido-detalle-player-hero partido-detalle-player-hero-lg partido-detalle-player-hero-card">
-            <img class="partido-detalle-player-photo" src="${foto}" alt="${escapeHtml(jugador.nombre || "Jugador")}" loading="eager" decoding="async" onload="this.classList.add('is-loaded')">
-            <div class="partido-detalle-player-identity">
-              <div class="partido-detalle-player-eyebrow">${escapeHtml(jugador.equipo || state.partido?.equipoLoyola || "")}</div>
-              <div class="partido-detalle-player-name">${escapeHtml(jugador.nombre || "Jugador")}</div>
-              ${jugador.dorsal ? `<div class="partido-detalle-player-number">#${escapeHtml(jugador.dorsal)}</div>` : ""}
-              <div class="partido-detalle-player-meta partido-detalle-player-meta-compact">${[globales?.nacionalidad ? `${escapeHtml(t("detail_player_nationality"))}: ${escapeHtml(globales.nacionalidad)}` : "", globales?.nacimiento ? `${escapeHtml(t("detail_player_birth"))}: ${escapeHtml(globales.nacimiento)}` : ""].filter(Boolean).join(" · ")}</div>
-            </div>
-          </div>
-        </div>
-        ${jugador.error ? `<div class="partido-detalle-empty small cardish">${escapeHtml(jugador.error)}</div>` : ""}
-      </section>
-      <section class="partido-detalle-section partido-detalle-player-events-card">
-        <div class="partido-detalle-section-title">${escapeHtml(t("detail_match"))}</div>
-        <div class="partido-detalle-player-section-body">
-          ${partidoChips ? `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact">${partidoChips}</div>` : `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact"><span class="partido-detalle-skeleton skeleton-chip"></span><span class="partido-detalle-skeleton skeleton-chip"></span></div>`}
-          <div class="partido-detalle-player-events-list">${timeline}</div>
-        </div>
-      </section>
-      <section class="partido-detalle-section partido-detalle-player-events-card">
-        <div class="partido-detalle-section-title">${escapeHtml(t("detail_player_statistics"))}</div>
-        <div class="partido-detalle-player-block ${hasGlobales ? "is-ready" : "is-loading"}">
-          <div class="partido-detalle-player-block-loading partido-detalle-player-competitions">
-            <div class="partido-detalle-player-competition partido-detalle-player-competition-skeleton">
-              <div class="partido-detalle-player-competition-bar">
-                <div class="partido-detalle-player-competition-summary-main">
-                  <span class="partido-detalle-skeleton skeleton-line skeleton-line-sm"></span>
-                  <span class="partido-detalle-skeleton skeleton-line skeleton-line-xs"></span>
-                </div>
-                <div class="partido-detalle-player-competition-summary-side">
-                  <span class="partido-detalle-skeleton skeleton-chip"></span>
-                </div>
-              </div>
-              <div class="partido-detalle-player-history-list-skeleton">
-                <div class="partido-detalle-player-history-row partido-detalle-player-history-row-skeleton"><span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span><span class="partido-detalle-skeleton skeleton-line skeleton-line-md"></span></div>
-                <div class="partido-detalle-player-history-row partido-detalle-player-history-row-skeleton"><span class="partido-detalle-skeleton skeleton-line skeleton-line-lg"></span><span class="partido-detalle-skeleton skeleton-line skeleton-line-sm"></span></div>
-              </div>
-            </div>
-          </div>
-          <div class="partido-detalle-player-block-content">
-            ${competicionesHtml ? `<div class="partido-detalle-player-competitions">${competicionesHtml}</div>` : `<div class="partido-detalle-empty small cardish">${escapeHtml(t("detail_no_matches_available"))}</div>`}
-          </div>
-        </div>
-      </section>
-    </div>
-  `;
-}
-
-/**
- * Hidrata las estadísticas globales del jugador seleccionado y relanza el render.
- *
- * @param {object} state Estado interno del detalle de partido.
- * @param {HTMLElement} headerEl Contenedor de cabecera del modal.
- * @param {HTMLElement} bodyEl Contenedor principal del modal.
- * @returns {Promise<void>} Promesa resuelta cuando termina la carga del jugador.
- */
-async function hydrateJugadorStats(state, headerEl, bodyEl) {
-  const jugador = state.selectedJugador;
-  if (!jugador?.idLicencia) {
-    jugador.loading = false;
-    jugador.error = t("detail_player_no_license");
-    renderAll(state, headerEl, bodyEl);
-    return;
-  }
-
-  try {
-    const statsRes = await getEstadisticaJugador(jugador.idLicencia);
-    jugador.statsGlobales = getPlayerStatsData(statsRes);
-    console.log("[Detalle jugador] statsGlobales", {
-      idLicencia: jugador.idLicencia,
-      nombre: jugador.statsGlobales?.nombre,
-      competiciones: emptyArray(jugador.statsGlobales?.competiciones).length,
-      filasPorCompeticion: emptyArray(jugador.statsGlobales?.competiciones).map((comp) => ({
-        titulo: comp?.titulo,
-        filas: emptyArray(comp?.filas).length,
-      })),
-      raw: jugador.statsGlobales,
-    });
-    jugador.error = jugador.statsGlobales ? "" : t("detail_player_load_error");
-  } catch (error) {
-    jugador.error = error?.message || t("detail_player_load_error");
-  } finally {
-    jugador.loading = false;
-    renderAll(state, headerEl, bodyEl);
-  }
+  return renderDetalleSubview(state);
 }
 
 
@@ -431,7 +220,6 @@ async function cargarDetallePartido(idPartido) {
   window.__partidoDetalleState = state;
 
   setHeaderContent(headerEl, escapeHtml(t("loading")), "init-loading");
-  ensureBaseLayout(bodyEl, state);
   renderAll(state, headerEl, bodyEl);
 
   const partidoRes = await getPartido(idPartido);

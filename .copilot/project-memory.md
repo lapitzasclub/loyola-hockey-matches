@@ -26,9 +26,13 @@ Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de 
 - `www/config/runtime.js` centraliza la política dual de ejecución (`android-native` vs `web`).
 - `www/core/` contiene arranque, navegación e inicialización.
 - `www/core/teamSelectorFlow.js` concentra ahora el flujo de onboarding, cambio de idioma y refresco del selector de equipo.
+- `www/core/initBootstrap.js` encapsula el bootstrap ligero de controles de tema, idioma, side menu y selector oculto.
+- `www/core/mobileBackCoordinator.js` concentra la lógica del botón atrás web/native y el cierre ordenado de overlays.
 - `www/components/` contiene renderizado de partidos, clasificación y detalle.
 - `www/components/equipoSelector.js` queda centrado en render del selector, mientras `www/components/equipoSelectorAccordion.js` encapsula el comportamiento del acordeón animado.
 - `www/services.js` concentra acceso a datos remotos, el unwrap de respuestas legacy y el bus local de eventos de partido.
+- `www/servicesCompetitionCatalog.js` encapsula el catálogo Loyola de competiciones, cachés y agregación de equipos.
+- `www/servicesShared.js` centraliza constantes compartidas de transporte legacy.
 - `www/styles/components-partido-detalle.css` contiene el estilo del modal de detalle de partido.
 
 ## Estado actual del detalle de partido
@@ -41,8 +45,14 @@ El detalle de partido ha pasado de ser un archivo monolítico a una estructura m
   - coordinador principal del modal
   - navegación interna entre partido y jugador
   - transición entre subviews
-  - hidratación de estadísticas de jugador
   - coordinación de SignalR y ciclo de vida del modal
+- `www/components/partidoDetalleJugadorSubview.js`
+  - render de la subvista de jugador
+  - hidratación de estadísticas del jugador
+- `www/components/partidoDetallePlayerLinks.js`
+  - binding de clics/enlaces que abren la subvista de jugador
+- `www/components/partidoDetalleRenderCoordinator.js`
+  - coordinación del render principal del modal de detalle
 - `www/components/partidoDetalleUtils.js`
   - utilidades base y estado
 - `www/components/partidoDetalleAlineaciones.js`
@@ -75,6 +85,7 @@ El detalle de partido ha pasado de ser un archivo monolítico a una estructura m
 - Se detectó un bug de Cloudflare cache con POST y se resolvió usando una cache key GET sintética derivada del body.
 - El detalle de partido necesitó una corrección específica: si `getPartido()` llega vacío al principio, la UI no debe fijar demasiado pronto el estado de "no data", porque luego pueden llegar datos válidos por estadísticas o realtime.
 - El refactor del detalle de jugador se rehízo de forma conservadora, en cortes pequeños y validados uno a uno.
+- La siguiente fase de refactor se amplió a `services.js`, `core/main.js` y `core/init.js`, priorizando fronteras seguras, menos complejidad cognitiva y sustitución progresiva de `window` por `globalThis` cuando procede.
 - Se abortó una extracción demasiado agresiva porque rompía visualmente la subvista de jugador.
 - La frontera segura comprobada ha sido:
   - helpers de stats
@@ -84,6 +95,12 @@ El detalle de partido ha pasado de ser un archivo monolítico a una estructura m
   - render base del partido
   - resumen y penaltis
   - actualización de estado del detalle
+  - render coordinado del modal
+  - subvista de jugador e hidratación asociada
+  - enlaces que disparan navegación interna a jugador
+  - bootstrap de UI en `core/init.js`
+  - coordinador de botón atrás web/native
+  - catálogo Loyola de competiciones separado del transporte general
 - La parte que queda más pegada al coordinador principal es:
   - `renderJugadorSubview`
   - `hydrateJugadorStats`
@@ -120,6 +137,7 @@ La base está claramente más sana que al inicio de esta fase:
 - botón atrás Android integrado
 - shell/skeleton del detalle suavizado
 - lint limpio
+- build web validada tras cada extracción importante
 - README y memoria técnica actualizados
 - módulos del detalle ya mucho mejor separados
 - onboarding real para primera selección de equipo

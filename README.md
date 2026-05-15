@@ -15,7 +15,7 @@ En las últimas iteraciones se ha trabajado sobre todo en:
 - refactor progresivo de `partidoDetalle.js` a módulos más pequeños
 - nuevo selector Loyola reutilizable con onboarding y overlay desde side menu
 - separación de competiciones en ligas y torneos con acordeón animado
-- limpieza técnica, JSDoc y lint
+- limpieza técnica, JSDoc, reducción de complejidad y sustitución progresiva de `window` por `globalThis` donde aplica
 
 ## Stack
 
@@ -73,6 +73,10 @@ Y la documentación específica está en:
 
 - `www/core/`
   - arranque, navegación, pull-to-refresh e integración móvil
+- `www/core/initBootstrap.js`
+  - bootstrap ligero de tema, idioma, side menu y selector oculto
+- `www/core/mobileBackCoordinator.js`
+  - coordinación del botón atrás web/native y cierre ordenado de overlays
 - `www/core/teamSelectorFlow.js`
   - flujo del selector Loyola, onboarding y refresco del launcher del side menu
 - `www/components/`
@@ -80,7 +84,11 @@ Y la documentación específica está en:
 - `www/components/equipoSelectorAccordion.js`
   - comportamiento del acordeón exclusivo del selector Loyola
 - `www/services.js`
-  - acceso a endpoints legacy y bus local de eventos de partido
+  - acceso a endpoints legacy, SignalR y bus local de eventos de partido
+- `www/servicesCompetitionCatalog.js`
+  - catálogo Loyola, caché en memoria y agregación de equipos por competición
+- `www/servicesShared.js`
+  - constantes compartidas de transporte legacy
 - `www/i18n.js`
   - textos de la aplicación
 - `www/styles/components-partido-detalle.css`
@@ -90,6 +98,12 @@ Y la documentación específica está en:
 
 - `www/components/partidoDetalle.js`
   - coordinador principal del modal
+- `www/components/partidoDetalleJugadorSubview.js`
+  - subvista de jugador e hidratación asociada
+- `www/components/partidoDetallePlayerLinks.js`
+  - enlaces y navegación interna hacia jugador
+- `www/components/partidoDetalleRenderCoordinator.js`
+  - coordinación del render principal del modal
 - `www/components/partidoDetalleUtils.js`
   - utilidades y estado base
 - `www/components/partidoDetalleAlineaciones.js`

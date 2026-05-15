@@ -17,12 +17,21 @@ const SIGNALR_EVENT_NAMES = [
 ];
 
 /**
+ * Devuelve el proxy global actual del hub legacy, si existe.
+ *
+ * @returns {any} Proxy global del hub o null.
+ */
+function getHubProxy() {
+  return globalThis.hubProxy || null;
+}
+
+/**
  * Indica si la app se está ejecutando en desarrollo local web.
  *
  * @returns {boolean} True cuando el host es localhost o loopback.
  */
 function isLocalDev() {
-  const host = window.location.hostname;
+  const host = globalThis.location?.hostname;
   return host === "localhost" || host === "127.0.0.1";
 }
 
@@ -61,10 +70,10 @@ function loadScript(src) {
 /**
  * Garantiza que el script `/hubs` esté cargado antes de usar el proxy global.
  *
- * @returns {Promise<void>} Promesa resuelta cuando `window.$.connection.enDirecto` existe.
+ * @returns {Promise<void>} Promesa resuelta cuando `globalThis.$.connection.enDirecto` existe.
  */
 async function ensureSignalRHubsLoaded() {
-  if (window.$?.connection?.enDirecto) return;
+  if (globalThis.$?.connection?.enDirecto) return;
   const hubsUrl = `${getSignalRBaseUrl()}/hubs`;
   await loadScript(hubsUrl);
 }
@@ -89,14 +98,15 @@ function getSelectedModalidad() {
  */
 function joinSelectedModalidad() {
   const modalidad = getSelectedModalidad();
+  const hubProxy = getHubProxy();
   console.log("[SignalR] Intentando unirse a modalidad", {
     modalidad,
-    hasHubProxy: !!window.hubProxy,
-    hasServer: !!window.hubProxy?.server,
-    hasJoinGroup: !!window.hubProxy?.server?.joinGroup,
+    hasHubProxy: !!hubProxy,
+    hasServer: !!hubProxy?.server,
+    hasJoinGroup: !!hubProxy?.server?.joinGroup,
     state: $.connection?.hub?.state,
   });
-  if (!window.hubProxy?.server?.joinGroup) {
+  if (!hubProxy?.server?.joinGroup) {
     console.warn("[SignalR] joinGroup no disponible en hubProxy.server");
     return;
   }
@@ -104,7 +114,7 @@ function joinSelectedModalidad() {
     console.warn("[SignalR] No se puede unir a la modalidad, conexión no activa.");
     return;
   }
-  window.hubProxy.server
+  hubProxy.server
     .joinGroup(modalidad)
     .done(() => {
       console.log(`[SignalR] Unido a la modalidad ${modalidad}`);
@@ -120,7 +130,7 @@ function joinSelectedModalidad() {
  * @returns {Promise<void>} Promesa resuelta tras lanzar la conexión inicial.
  */
 async function initSignalR() {
-  if (!window.$?.connection?.hub) {
+  if (!globalThis.$?.connection?.hub) {
     console.warn("[SignalR] jQuery SignalR no disponible.");
     return;
   }
@@ -132,16 +142,20 @@ async function initSignalR() {
     return;
   }
 
-  if (!window.$?.connection?.enDirecto) {
+  if (!globalThis.$?.connection?.enDirecto) {
     console.warn("[SignalR] Hub enDirecto no disponible tras cargar /hubs.");
     return;
   }
 
   const signalrUrl = getSignalRBaseUrl();
   $.connection.hub.url = signalrUrl;
-  window.hubProxy = $.connection.enDirecto;
+  globalThis.hubProxy = $.connection.enDirecto;
 
-  const client = window.hubProxy.client;
+  const client = getHubProxy()?.client;
+  if (!client) {
+    console.warn("[SignalR] Cliente del hub no disponible.");
+    return;
+  }
   SIGNALR_EVENT_NAMES.forEach((eventName) => {
     client[eventName] = (payload, idpartido) => {
       console.log(`[SignalR] EVENT global: ${eventName} para partido ${idpartido}`, payload);
@@ -203,7 +217,7 @@ async function initSignalR() {
 /**
  * Arranca la aplicación cuando el DOM ya está disponible.
  */
-window.addEventListener("DOMContentLoaded", async () => {
+globalThis.addEventListener("DOMContentLoaded", async () => {
   await initApp();
   await initSignalR();
 });
