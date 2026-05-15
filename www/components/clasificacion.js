@@ -1,11 +1,14 @@
 // clasificacion.js — clasificación en tabla estilo BeSoccer
 
-import { getCalendarioTodosEquipos } from "../services.js";
+import { getCalendarioTodosEquipos, getParametrosCompeticion } from "../services.js";
+import { ENTITY_LOGO_BASE_URL } from "../servicesShared.js";
 import { getEquipoLabel } from "../equipo.js";
 import { t } from "../i18n.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
 import { decodeApiRaw, safeStr } from "../utils/helpers.js";
 import { renderClasificacionLoadingState, renderEmptyState, renderErrorState } from "./loadingStates.js";
+
+const competitionLogoCache = new Map();
 
 /**
  * Genera la clave de almacenamiento local para una clasificación concreta.
@@ -17,12 +20,217 @@ function getClasificacionStorageKey(grupo) {
 }
 
 /**
+ * Obtiene una URL de escudo a partir del identificador de entidad.
+ *
+ * @param {string|number|null|undefined} entityId Identificador de entidad.
+ * @returns {string} URL pública del escudo.
+ */
+function getEntityLogoUrl(entityId) {
+  return `${ENTITY_LOGO_BASE_URL}/${entityId || "sinescudo"}.png`;
+}
+
+/**
+ * Resuelve el identificador estable del equipo presente en clasificación y calendario.
+ *
+ * @param {object} equipo Datos del equipo o fila de clasificación.
+ * @returns {string} Identificador utilizable o cadena vacía.
+ */
+function getStableTeamId(equipo) {
+  if (typeof equipo?.IdEquipo === "number" || (typeof equipo?.IdEquipo === "string" && equipo.IdEquipo !== "")) {
+    return String(equipo.IdEquipo);
+  }
+  if (typeof equipo?.IdEquipoComp === "number" || (typeof equipo?.IdEquipoComp === "string" && equipo.IdEquipoComp !== "")) {
+    return String(equipo.IdEquipoComp);
+  }
+  return "";
+}
+
+/**
+ * Indica si un partido puede considerarse finalizado para calcular rachas.
+ *
+ * @param {object} partido Partido del calendario.
+ * @returns {boolean} True cuando hay resultado final.
+ */
+function isFinishedMatch(partido) {
+  return partido?.EstadoPartido == 2 && partido?.GolesLocal != null && partido?.GolesVisit != null;
+}
+
+/**
+ * Carga y cachea el mapa de logos de la competición.
+ *
+ * @param {string|number|null} idCompeticion ID de competición.
+ * @param {Array<object>} equipos Datos de clasificación como fallback.
+ * @returns {Promise<Map<string, {entityId: string|null, hasLogo: boolean}>>} Mapa de logos por equipo.
+ */
+async function getCompetitionLogoMap(idCompeticion, equipos) {
+  const competitionId = idCompeticion != null ? String(idCompeticion) : "";
+  if (!competitionId) return new Map();
+  if (competitionLogoCache.has(competitionId)) return competitionLogoCache.get(competitionId);
+
+  const fallbackMap = new Map();
+  for (const equipo of equipos) {
+    const stableId = getStableTeamId(equipo);
+    if (!stableId) continue;
+    fallbackMap.set(stableId, {
+      entityId: equipo?.IdEntidadEquipo != null ? String(equipo.IdEntidadEquipo) : null,
+      hasLogo: !!equipo?.TieneLogo || !!equipo?.IdEntidadEquipo,
+    });
+  }
+
+  try {
+    const raw = await getParametrosCompeticion(competitionId);
+    const parsed = decodeApiRaw(raw);
+    const comp = Array.isArray(parsed) ? parsed[0] : null;
+    const equiposComp = Array.isArray(comp?.Equipos) ? comp.Equipos : [];
+    const logoMap = new Map();
+    for (const equipo of equiposComp) {
+      logoMap.set(String(equipo.IdEquipoComp), {
+        entityId: equipo?.IdEntidadEquipo != null ? String(equipo.IdEntidadEquipo) : null,
+        hasLogo: !!equipo?.TieneLogo,
+      });
+      if (equipo?.IdEquipo != null) {
+        logoMap.set(String(equipo.IdEquipo), {
+          entityId: equipo?.IdEntidadEquipo != null ? String(equipo.IdEntidadEquipo) : null,
+          hasLogo: !!equipo?.TieneLogo,
+        });
+      }
+    }
+    competitionLogoCache.set(competitionId, logoMap);
+    return logoMap;
+  } catch {
+    competitionLogoCache.set(competitionId, fallbackMap);
+    return fallbackMap;
+  }
+}
+
+/**
+ * Construye un mapa con la racha reciente de cada equipo.
+ *
+ * @param {Array<object>} partidos Partidos de la competición.
+ * @returns {Map<string, Array<"V"|"E"|"D">>} Racha por equipo.
+ */
+function buildRecentFormMap(partidos) {
+  const formMap = new Map();
+  const finishedMatches = partidos
+    .filter(isFinishedMatch)
+    .slice()
+    .sort((a, b) => {
+      const orderDiff = Number(a?.Orden || 0) - Number(b?.Orden || 0);
+      if (orderDiff !== 0) return orderDiff;
+      return Number(a?.IdPartido || 0) - Number(b?.IdPartido || 0);
+    });
+
+  for (const partido of finishedMatches) {
+    const localId = String(partido?.IdEquipoLocal || "");
+    const visitId = String(partido?.IdEquipoVisit || "");
+    const golesLocal = Number(partido?.GolesLocal || 0);
+    const golesVisit = Number(partido?.GolesVisit || 0);
+
+    if (localId) {
+      if (!formMap.has(localId)) formMap.set(localId, []);
+      formMap.get(localId).push(golesLocal > golesVisit ? "V" : golesLocal < golesVisit ? "D" : "E");
+    }
+
+    if (visitId) {
+      if (!formMap.has(visitId)) formMap.set(visitId, []);
+      formMap.get(visitId).push(golesVisit > golesLocal ? "V" : golesVisit < golesLocal ? "D" : "E");
+    }
+  }
+
+  for (const [teamId, form] of formMap.entries()) {
+    formMap.set(teamId, form.slice(-5).reverse());
+  }
+
+  return formMap;
+}
+
+/**
+ * Devuelve el HTML de la racha reciente de un equipo.
+ *
+ * @param {Array<"V"|"E"|"D">} form Resultados recientes.
+ * @returns {string} HTML de chips.
+ */
+function renderRecentForm(form) {
+  if (!Array.isArray(form) || form.length === 0) return "";
+  return `
+    <div class="clas-team-form" aria-label="Últimos cinco partidos">
+      ${form.map((result) => `
+        <span class="clas-form-chip is-${result.toLowerCase()}" aria-label="${result === "V" ? "Victoria" : result === "E" ? "Empate" : "Derrota"}">${result}</span>
+      `).join("")}
+    </div>
+  `;
+}
+
+/**
+ * Devuelve el HTML del escudo de un equipo.
+ *
+ * @param {Map<string, {entityId: string|null, hasLogo: boolean}>} logoMap Mapa de logos.
+ * @param {object} equipo Fila de equipo de clasificación.
+ * @returns {string} HTML del escudo.
+ */
+function renderTeamLogo(logoMap, equipo) {
+  const logoInfo = logoMap.get(getStableTeamId(equipo));
+  const src = logoInfo?.hasLogo ? getEntityLogoUrl(logoInfo.entityId) : getEntityLogoUrl("sinescudo");
+  return `<img class="clas-team-logo" src="${src}" alt="Escudo de ${safeStr(equipo?.NombreEquipo || "equipo")}" loading="lazy" decoding="async">`;
+}
+
+/**
+ * Devuelve el HTML del indicador de posición con caret compacto.
+ *
+ * @param {object} equipo Fila de clasificación.
+ * @param {Object} prevPosMap Mapa de posiciones previas.
+ * @returns {string} HTML de posición.
+ */
+function renderPositionCell(equipo, prevPosMap) {
+  const eqId = getStableTeamId(equipo);
+  const prevPos = prevPosMap[eqId];
+  let caretHtml = '<span class="clas-pos-caret-spacer" aria-hidden="true"></span>';
+
+  if (typeof prevPos === "number") {
+    if (Number(equipo?.Posicion) < prevPos) {
+      caretHtml = '<span class="clas-pos-caret is-up" aria-label="Sube">▲</span>';
+    } else if (Number(equipo?.Posicion) > prevPos) {
+      caretHtml = '<span class="clas-pos-caret is-down" aria-label="Baja">▼</span>';
+    }
+  }
+
+  return `
+    <div class="clas-pos-stack">
+      ${caretHtml}
+      <span class="clas-pos-number">${safeStr(equipo?.Posicion)}</span>
+    </div>
+  `;
+}
+
+/**
+ * Construye la celda completa de equipo con escudo, nombre y racha.
+ *
+ * @param {object} equipo Fila de clasificación.
+ * @param {Map<string, {entityId: string|null, hasLogo: boolean}>} logoMap Mapa de logos.
+ * @param {Map<string, Array<"V"|"E"|"D">>} formMap Mapa de rachas.
+ * @returns {string} HTML de la celda.
+ */
+function renderTeamCell(equipo, logoMap, formMap) {
+  const stableId = getStableTeamId(equipo);
+  const recentForm = formMap.get(stableId) || [];
+  return `
+    <div class="clas-team-cell">
+      <div class="clas-team-logo-wrap">${renderTeamLogo(logoMap, equipo)}</div>
+      <div class="clas-team-copy">
+        <span class="team-name">${safeStr(equipo?.NombreEquipo)}</span>
+        ${renderRecentForm(recentForm)}
+      </div>
+    </div>
+  `;
+}
+
+/**
  * Renderiza la clasificación. Si la API retorna vacío o error, muestra mensaje amigable.
  * @param {HTMLElement} matchesList - Elemento donde renderizar la clasificación.
  * @param {any} raw - Respuesta cruda de la API.
  */
 export function renderClasificacion(matchesList, raw) {
-  renderClasificacionContent(matchesList, raw);
+  void renderClasificacionContent(matchesList, raw);
 }
 
 /**
@@ -30,7 +238,7 @@ export function renderClasificacion(matchesList, raw) {
  *
  * @param {HTMLElement} matchesList Elemento donde renderizar la clasificación.
  * @param {any} raw Respuesta cruda de la API.
- * @returns {void}
+ * @returns {Promise<void>} Promesa resuelta al terminar la preparación.
  */
 async function renderClasificacionContent(matchesList, raw) {
   renderClasificacionLoadingState(matchesList);
@@ -39,7 +247,6 @@ async function renderClasificacionContent(matchesList, raw) {
     renderErrorState(matchesList, t("error", data.__error));
     return;
   }
-  // Si la API retorna {d: ""} o similar, decodeApiRaw devuelve null o string vacío
   if (!data || (Array.isArray(data) && data.length === 0)) {
     renderEmptyState(matchesList, t("no_clasificacion", getEquipoLabel()));
     return;
@@ -49,7 +256,6 @@ async function renderClasificacionContent(matchesList, raw) {
     return;
   }
 
-  // Obtener el calendario de todos los equipos de la competición para calcular flechas
   const idCompeticion = data[0]?.IdCompeticion ?? null;
   let partidos = [];
   if (idCompeticion) {
@@ -58,7 +264,10 @@ async function renderClasificacionContent(matchesList, raw) {
       partidos = await getCalendarioTodosEquipos(idCompeticion, idsEquipos);
     } catch {}
   }
-  window._partidosLoyola = partidos;
+  globalThis._partidosLoyola = partidos;
+
+  const logoMap = await getCompetitionLogoMap(idCompeticion, data);
+  const formMap = buildRecentFormMap(partidos);
 
   matchesList.innerHTML = "";
   const selectedInfo = getSelectedEquipoInfo();
@@ -66,30 +275,34 @@ async function renderClasificacionContent(matchesList, raw) {
   const gruposKeys = Object.keys(grupos);
   if (gruposKeys.length === 1) {
     const grupo = gruposKeys[0];
-    const table = renderClasificacionTable(grupo, grupos[grupo], selectedInfo);
-    matchesList.appendChild(table);
+    const table = renderClasificacionTable(grupo, grupos[grupo], selectedInfo, logoMap, formMap);
+    const tableWrap = document.createElement("div");
+    tableWrap.className = "clas-table-wrap";
+    tableWrap.appendChild(table);
+    matchesList.appendChild(tableWrap);
   } else {
-    renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo);
+    renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo, logoMap, formMap);
   }
 }
 
 /**
  * Renderiza la tabla de clasificación de equipos para un grupo.
- * Calcula las posiciones previas para mostrar flechas de subida/bajada.
- * @param {string} grupo - Nombre del grupo o competición.
- * @param {Array} equipos - Array de objetos equipo de la clasificación.
- * @param {Object} selectedInfo - Información del equipo seleccionado.
+ *
+ * @param {string} grupo Nombre del grupo o competición.
+ * @param {Array} equipos Array de objetos equipo de la clasificación.
+ * @param {Object} selectedInfo Información del equipo seleccionado.
+ * @param {Map<string, {entityId: string|null, hasLogo: boolean}>} logoMap Mapa de logos.
+ * @param {Map<string, Array<"V"|"E"|"D">>} formMap Mapa de rachas.
  * @returns {HTMLTableElement} Tabla HTML con la clasificación.
  */
-function renderClasificacionTable(grupo, equipos, selectedInfo) {
+function renderClasificacionTable(grupo, equipos, selectedInfo, logoMap, formMap) {
   const currKey = getClasificacionStorageKey(grupo);
-  // Calcular posiciones previas usando helper modularizado
   let prevPosMap = {};
   try {
-    const partidos = Array.isArray(window._partidosLoyola) ? window._partidosLoyola : [];
+    const partidos = Array.isArray(globalThis._partidosLoyola) ? globalThis._partidosLoyola : [];
     prevPosMap = calcularPosicionesPrevias(equipos, partidos);
   } catch {}
-  // Render tabla
+
   const table = document.createElement("table");
   table.className = "clas-table";
   table.setAttribute("role", "grid");
@@ -124,45 +337,25 @@ function renderClasificacionTable(grupo, equipos, selectedInfo) {
     <tbody></tbody>
   `;
   const tbody = table.querySelector("tbody");
-  // Para guardar la clasificación actual
   const currData = [];
+
   for (const eq of equipos) {
     const dg = Number(eq?.DiferenciaGoles ?? 0);
-    const dgTxt = (dg >= 0 ? "+" : "") + dg;
+    const dgTxt = `${dg >= 0 ? "+" : ""}${dg}`;
     const tr = document.createElement("tr");
-    // Usar IdEquipo si existe y es válido, si no IdEquipoComp
-    const eqId = (
-      typeof eq?.IdEquipo === "number" ||
-      (typeof eq?.IdEquipo === "string" && eq.IdEquipo !== "")
-    )
-      ? String(eq.IdEquipo)
-      : String(eq?.IdEquipoComp);
+    const eqId = getStableTeamId(eq);
     const eqNombre = eq?.NombreEquipo?.toUpperCase();
     const eqAbrev = eq?.NombreEquipoAbrev?.toUpperCase();
     currData.push({ IdEquipo: eqId, Posicion: eq?.Posicion });
-    // Caret logic
-    let caret = "&nbsp;";
-    const prevPos = prevPosMap[eqId];
-    if (typeof prevPos === "number") {
-      if (Number(eq?.Posicion) < prevPos) {
-        caret = `<span class='caret-up' title='Sube'>&#9650;</span>`;
-      } else if (Number(eq?.Posicion) > prevPos) {
-        caret = `<span class='caret-down' title='Baja'>&#9660;</span>`;
-      }
-    }
+
     if (isFav(eqId, eqNombre, eqAbrev, selectedInfo)) {
       tr.classList.add("fav");
     }
+
     tr.innerHTML = `
-      <td class="col-pos"><span class="caret-space">${caret}</span>${safeStr(
-      eq?.Posicion
-    )}</td>
-      <td class="col-team"><span class="team-name">${safeStr(
-        eq?.NombreEquipo
-      )}</span></td>
-      <td class="col-pts"><strong class="val">${safeStr(
-        eq?.Puntos
-      )}</strong></td>
+      <td class="col-pos">${renderPositionCell(eq, prevPosMap)}</td>
+      <td class="col-team">${renderTeamCell(eq, logoMap, formMap)}</td>
+      <td class="col-pts"><strong class="val">${safeStr(eq?.Puntos)}</strong></td>
       <td class="col-num">${safeStr(eq?.PartidosJugados)}</td>
       <td class="col-num">${safeStr(eq?.PartidosGanados)}</td>
       <td class="col-num">${safeStr(eq?.PartidosEmpatados)}</td>
@@ -173,8 +366,8 @@ function renderClasificacionTable(grupo, equipos, selectedInfo) {
     `;
     tbody.appendChild(tr);
   }
+
   table.appendChild(tbody);
-  // Guardar la clasificación actual para la próxima jornada
   try {
     localStorage.setItem(currKey, JSON.stringify(currData));
   } catch {}
@@ -183,17 +376,18 @@ function renderClasificacionTable(grupo, equipos, selectedInfo) {
 
 /**
  * Renderiza la vista de clasificación, incluyendo grupos y cálculo de flechas.
- * @param {HTMLElement} matchesList - Elemento contenedor donde se renderiza la tabla.
- * @param {any} raw - Datos crudos de la API (JSON o string).
+ *
+ * @param {HTMLElement} matchesList Elemento contenedor donde se renderiza la tabla.
+ * @param {Object} grupos Agrupación de equipos por grupo.
+ * @param {Array<string>} gruposKeys Claves de grupos.
+ * @param {Object} selectedInfo Información del equipo seleccionado.
+ * @param {Map<string, {entityId: string|null, hasLogo: boolean}>} logoMap Mapa de logos.
+ * @param {Map<string, Array<"V"|"E"|"D">>} formMap Mapa de rachas.
+ * @returns {void}
  */
-function renderClasificacionAccordion(
-  matchesList,
-  grupos,
-  gruposKeys,
-  selectedInfo
-) {
-  let openIdx = 0;
-  for (let idx = 0; idx < gruposKeys.length; idx++) {
+function renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo, logoMap, formMap) {
+  const openIdx = 0;
+  for (let idx = 0; idx < gruposKeys.length; idx += 1) {
     const grupo = gruposKeys[idx];
     const accLi = document.createElement("li");
     accLi.className = "clas-card clas-accordion";
@@ -201,26 +395,36 @@ function renderClasificacionAccordion(
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "clas-acc-btn";
-    btn.textContent = grupo;
     btn.setAttribute("aria-expanded", idx === openIdx ? "true" : "false");
+    btn.innerHTML = `
+      <span class="clas-acc-summary-main">
+        <span class="clas-acc-title">${safeStr(grupo)}</span>
+      </span>
+      <span class="clas-acc-summary-side">
+        <span class="clas-acc-chevron" aria-hidden="true"></span>
+      </span>
+    `;
     accLi.appendChild(btn);
 
     const content = document.createElement("div");
     content.className = "clas-acc-content";
     if (idx === openIdx) content.classList.add("open");
 
-    const table = renderClasificacionTable(grupo, grupos[grupo], selectedInfo);
-    content.appendChild(table);
+    const table = renderClasificacionTable(grupo, grupos[grupo], selectedInfo, logoMap, formMap);
+    const tableWrap = document.createElement("div");
+    tableWrap.className = "clas-table-wrap";
+    tableWrap.appendChild(table);
+    content.appendChild(tableWrap);
     accLi.appendChild(content);
 
     btn.addEventListener("click", () => {
       const allBtns = matchesList.querySelectorAll(".clas-acc-btn");
       const allContents = matchesList.querySelectorAll(".clas-acc-content");
-      for (const b of allBtns) {
-        if (b !== btn) b.setAttribute("aria-expanded", "false");
+      for (const otherBtn of allBtns) {
+        if (otherBtn !== btn) otherBtn.setAttribute("aria-expanded", "false");
       }
-      for (const c of allContents) {
-        if (c !== content) c.classList.remove("open");
+      for (const otherContent of allContents) {
+        if (otherContent !== content) otherContent.classList.remove("open");
       }
       const expanded = btn.getAttribute("aria-expanded") === "true";
       btn.setAttribute("aria-expanded", expanded ? "false" : "true");
@@ -245,12 +449,9 @@ function renderClasificacionAccordion(
  */
 function isFav(eqId, eqNombre, eqAbrev, selectedInfo) {
   return (
-    (selectedInfo.selectedIdEquipo &&
-      eqId === String(selectedInfo.selectedIdEquipo)) ||
+    (selectedInfo.selectedIdEquipo && eqId === String(selectedInfo.selectedIdEquipo)) ||
     (selectedInfo.selectedNombre && eqNombre === selectedInfo.selectedNombre) ||
-    (selectedInfo.selectedAbrev &&
-      eqAbrev &&
-      eqAbrev === selectedInfo.selectedAbrev)
+    (selectedInfo.selectedAbrev && eqAbrev && eqAbrev === selectedInfo.selectedAbrev)
   );
 }
 
@@ -259,21 +460,18 @@ function isFav(eqId, eqNombre, eqAbrev, selectedInfo) {
  * @returns {{selectedIdEquipo: string|null, selectedNombre: string|null, selectedAbrev: string|null}}
  */
 function getSelectedEquipoInfo() {
-  let selectedIdEquipo = null,
-    selectedNombre = null,
-    selectedAbrev = null;
+  let selectedIdEquipo = null;
+  let selectedNombre = null;
+  let selectedAbrev = null;
   try {
     const sel = localStorage.getItem("equipoLoyolaSel");
     if (sel) {
       const parts = sel.split("|");
       if (parts.length === 2) {
         selectedIdEquipo = parts[1];
-        const equipos =
-          globalThis._equiposLoyola ?? globalThis.getEquiposLoyola?.();
+        const equipos = globalThis._equiposLoyola ?? globalThis.getEquiposLoyola?.();
         if (Array.isArray(equipos)) {
-          const eqSel = equipos.find(
-            (e) => String(e.idEquipoComp) === String(selectedIdEquipo)
-          );
+          const eqSel = equipos.find((equipo) => String(equipo.idEquipoComp) === String(selectedIdEquipo));
           if (eqSel) {
             selectedNombre = eqSel.nombreEquipo?.toUpperCase();
             selectedAbrev = eqSel.nombreEquipoAbrev?.toUpperCase();

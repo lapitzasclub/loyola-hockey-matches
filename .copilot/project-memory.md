@@ -4,6 +4,8 @@
 
 Proyecto: `loyola-hockey-matches`
 
+Versión actual de trabajo: `1.5.0`
+
 Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de los equipos de hockey patines del Loyola. La base sigue conviviendo con servicios legacy de la FVP, pero en esta fase ya tiene una arquitectura dual Android + web pública, con frontend compartido y backend web desplegable en Cloudflare Pages Functions.
 
 ## Stack actual
@@ -33,6 +35,7 @@ Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de 
 - `www/services.js` concentra acceso a datos remotos, el unwrap de respuestas legacy y el bus local de eventos de partido.
 - `www/servicesCompetitionCatalog.js` encapsula el catálogo Loyola de competiciones, cachés y agregación de equipos.
 - `www/servicesShared.js` centraliza constantes compartidas de transporte legacy.
+- `www/components/clasificacion.js` ahora enriquece la tabla con racha reciente, escudos y layout compacto responsive.
 - `www/styles/components-partido-detalle.css` contiene el estilo del modal de detalle de partido.
 
 ## Estado actual del detalle de partido
@@ -86,6 +89,7 @@ El detalle de partido ha pasado de ser un archivo monolítico a una estructura m
 - El detalle de partido necesitó una corrección específica: si `getPartido()` llega vacío al principio, la UI no debe fijar demasiado pronto el estado de "no data", porque luego pueden llegar datos válidos por estadísticas o realtime.
 - El refactor del detalle de jugador se rehízo de forma conservadora, en cortes pequeños y validados uno a uno.
 - La siguiente fase de refactor se amplió a `services.js`, `core/main.js` y `core/init.js`, priorizando fronteras seguras, menos complejidad cognitiva y sustitución progresiva de `window` por `globalThis` cuando procede.
+- La clasificación recibió una pasada fuerte de UX inspirada en la referencia del usuario: columna de posición compacta con caret encima, bloque de equipo con escudo y racha de 5 partidos, scroll horizontal con columnas sticky y ajuste agresivo de densidad para móvil.
 - Se abortó una extracción demasiado agresiva porque rompía visualmente la subvista de jugador.
 - La frontera segura comprobada ha sido:
   - helpers de stats
@@ -138,6 +142,7 @@ La base está claramente más sana que al inicio de esta fase:
 - shell/skeleton del detalle suavizado
 - lint limpio
 - build web validada tras cada extracción importante
+- las tablas de clasificación quedaron ya con scroll horizontal táctil real mediante `.clas-table-wrap`, evitando recortes silenciosos de columnas finales como GC y DG
 - README y memoria técnica actualizados
 - módulos del detalle ya mucho mejor separados
 - onboarding real para primera selección de equipo

@@ -1,38 +1,14 @@
-/* Caret space for position change indicator */
-.caret-space {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.15em;
-  text-align: center;
-  vertical-align: middle;
-  font-size: 1em;
-  margin-right: 0.08em;
-}
-
-.caret-up {
-  color: #22c06f;
-  font-size: 0.95em;
-  text-shadow: 0 0 10px color-mix(in srgb, #22c06f 35%, transparent);
-}
-
-.caret-down {
-  color: #ff6b57;
-  font-size: 0.95em;
-  text-shadow: 0 0 10px color-mix(in srgb, #ff6b57 30%, transparent);
-}
-
 /* Column widths for standings table */
-.col-pos-width { width: 5ch; }
+.col-pos-width { width: 1.46rem; }
 .col-team-width { width: auto; }
-.col-pts-width { width: 3.2ch; }
-.col-j-width { width: 3.0ch; }
-.col-g-width { width: 3.0ch; }
-.col-e-width { width: 3.0ch; }
-.col-p-width { width: 3.0ch; }
-.col-f-width { width: 3.2ch; }
-.col-c-width { width: 3.2ch; }
-.col-dif-width { width: 3.6ch; }
+.col-pts-width { width: 2.02rem; }
+.col-j-width { width: 1.7rem; }
+.col-g-width { width: 1.7rem; }
+.col-e-width { width: 1.7rem; }
+.col-p-width { width: 1.7rem; }
+.col-f-width { width: 1.8rem; }
+.col-c-width { width: 1.8rem; }
+.col-dif-width { width: 1.96rem; }
 
 /* =======================
    components-clasificacion.css
@@ -139,7 +115,9 @@
 
 .clas-table-wrap {
   width: 100%;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   border-radius: 12px;
   border: 1px solid var(--clas-border);
   background: var(--clas-surface);
@@ -148,8 +126,9 @@
 
 /* ---- Tabla ---- */
 .clas-table {
-  width: 100%;
-  table-layout: fixed;
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
   border-collapse: separate;
   border-spacing: 0;
   font-variant-numeric: tabular-nums;
@@ -162,20 +141,22 @@
   background: var(--clas-surface-soft);
   color: var(--color-text);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.7rem;
+  letter-spacing: 0.01em;
+  font-size: 0.58rem;
   font-weight: 800;
   text-align: center;
-  padding: 0.5em 0.36em;
+  padding: 0.38em 0.12em;
   border-bottom: 1px solid var(--clas-border);
 }
 
 /* Celdas */
 .clas-table td {
-  padding: 0.5em 0.36em;
-  font-size: 0.84rem;
+  padding: 0.32rem 0.14rem;
+  font-size: 0.72rem;
+  line-height: 1.18;
   border-bottom: 1px solid var(--clas-border);
   background: var(--clas-surface);
+  vertical-align: middle;
 }
 
 .clas-table tbody tr:nth-child(even) td {
@@ -221,8 +202,8 @@
   font-weight: 800;
   background: var(--clas-surface);
   border-right: 1px solid var(--clas-border);
-  padding-left: 0.2rem;
-  padding-right: 0.2rem;
+  padding-left: 0.04rem;
+  padding-right: 0.04rem;
   background-clip: padding-box;
 }
 
@@ -231,24 +212,12 @@
   position: sticky;
   left: var(--col-pos-w);
   z-index: 4;
-  min-width: 7.2rem;
+  width: 9.7rem;
+  min-width: 9.7rem;
   background: var(--clas-surface);
   border-right: 1px solid var(--clas-border);
   overflow: hidden;
   background-clip: padding-box;
-}
-
-/* Nombre del equipo */
-.clas-table .team-name {
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-weight: 700;
-  font-size: 11px;
-  line-height: 1.1;
-  color: var(--color-text);
-  width: 100%;
 }
 
 .clas-table tbody td.col-pos,
@@ -270,7 +239,7 @@
   display: inline-block;
   min-width: 2ch;
   font-weight: 900;
-  font-size: 0.92rem;
+  font-size: 0.78rem;
 }
 
 /* ---- Stripes verticales ---- */
@@ -335,9 +304,15 @@
     --col-pos-w: 1.9rem;
   }
 
+  .clas-team-logo {
+    width: 1.48rem;
+    height: 1.48rem;
+  }
+
   .clas-table th.col-team,
   .clas-table td.col-team {
-    min-width: 6.2rem;
+    width: 8rem;
+    min-width: 8rem;
   }
 
   .clas-table thead th {
@@ -351,49 +326,226 @@
   }
 }
 
+.clas-pos-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-height: 2.55rem;
+}
+
+.clas-pos-caret,
+.clas-pos-caret-spacer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0.46rem;
+  font-size: 0.46rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.clas-pos-caret-spacer {
+  width: 0.42rem;
+}
+
+.clas-pos-caret.is-up {
+  color: #22c06f;
+  text-shadow: 0 0 10px color-mix(in srgb, #22c06f 35%, transparent);
+}
+
+.clas-pos-caret.is-down {
+  color: #ff6b57;
+  text-shadow: 0 0 10px color-mix(in srgb, #ff6b57 30%, transparent);
+}
+
+.clas-pos-number {
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.clas-team-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.44rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.clas-team-logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.clas-team-logo {
+  width: 1.62rem;
+  height: 1.62rem;
+  border-radius: 999px;
+  object-fit: cover;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--clas-border) 80%, transparent);
+  box-shadow: 0 1px 6px color-mix(in srgb, var(--color-shadow) 14%, transparent);
+}
+
+.clas-team-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 0.22rem;
+}
+
+.clas-table .team-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.12;
+  text-transform: none;
+}
+
+.clas-team-form {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.18rem;
+  overflow: hidden;
+}
+
+.clas-form-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0.8rem;
+  height: 0.8rem;
+  padding: 0 0.14rem;
+  border-radius: 0.22rem;
+  font-size: 0.52rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  flex: 0 0 auto;
+}
+
+.clas-form-chip.is-v {
+  background: linear-gradient(180deg, #32d58b 0%, #1fb871 100%);
+}
+
+.clas-form-chip.is-e {
+  background: linear-gradient(180deg, #f7c948 0%, #ecb521 100%);
+  color: #4a3200;
+}
+
+.clas-form-chip.is-d {
+  background: linear-gradient(180deg, #f97366 0%, #e25549 100%);
+}
+
 /* ---- Acordeón de clasificación ---- */
 .clas-accordion {
-  border-radius: 14px;
+  border-radius: 1rem;
   margin-bottom: 0.9em;
   box-shadow: var(--clas-shadow);
-  border: 1px solid var(--clas-border);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--clas-border));
   overflow: hidden;
-  background: var(--clas-accordion-bg);
+  background: color-mix(in srgb, var(--clas-accordion-bg) 92%, var(--clas-surface));
+}
+
+body[data-theme="dark"] .clas-accordion {
+  border-color: color-mix(in srgb, var(--color-primary) 22%, var(--clas-border));
+  background: color-mix(in srgb, var(--clas-accordion-bg) 96%, var(--clas-surface));
 }
 
 .clas-acc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
   width: 100%;
-  background: var(--clas-accordion-bg);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--clas-surface));
   color: var(--color-text);
   border: none;
   outline: none;
   font-size: 1.02rem;
   font-weight: 800;
-  padding: 0.95em 1em;
+  padding: 1rem;
   margin: 0;
   text-align: left;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.18s ease;
-  border-bottom: 1px solid var(--clas-border);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  transition: background-color 300ms ease, transform 300ms ease, box-shadow 300ms ease, color 220ms ease;
+  border-bottom: 1px solid transparent;
+  letter-spacing: 0.01em;
+}
+
+.clas-acc-btn:active {
+  transform: scale(0.992);
 }
 
 .clas-acc-btn[aria-expanded="true"] {
-  background: var(--clas-accordion-open-bg);
-  color: #fff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--clas-surface));
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
-.clas-acc-btn:focus {
+body[data-theme="dark"] .clas-acc-btn {
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--clas-surface));
+}
+
+body[data-theme="dark"] .clas-acc-btn[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--color-active-surface, var(--color-primary)) 20%, var(--clas-surface));
+  color: var(--color-text);
+}
+
+.clas-acc-btn:focus-visible {
   outline: 2px solid var(--color-primary, #2a5cff);
   outline-offset: -2px;
+}
+
+.clas-acc-summary-main {
+  min-width: 0;
+}
+
+.clas-acc-summary-side {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+
+.clas-acc-title {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: inherit;
+}
+
+.clas-acc-chevron {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-right: 2px solid var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  transform: rotate(45deg);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), border-color 300ms ease;
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+}
+
+.clas-acc-btn[aria-expanded="true"] .clas-acc-chevron {
+  transform: rotate(225deg);
+}
+
+body[data-theme="dark"] .clas-acc-btn[aria-expanded="true"] .clas-acc-chevron {
+  border-right-color: var(--color-on-active-surface, #082028);
+  border-bottom-color: var(--color-on-active-surface, #082028);
 }
 
 .clas-acc-content {
   max-height: 0;
   overflow: hidden;
-  background: var(--clas-surface);
+  background: color-mix(in srgb, var(--clas-surface) 98%, var(--color-bg));
   transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
 }
 
