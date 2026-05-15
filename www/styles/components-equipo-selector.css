@@ -422,6 +422,11 @@ body[data-theme="dark"] .team-selector-group {
   inset: 0;
   background: color-mix(in srgb, #031522 78%, transparent);
   backdrop-filter: blur(2px);
+  animation: team-selector-backdrop-in 220ms ease;
+}
+
+.team-selector-overlay.is-closing .team-selector-overlay-backdrop {
+  animation: team-selector-backdrop-out 200ms ease forwards;
 }
 
 .team-selector-overlay-sheet {
@@ -440,6 +445,10 @@ body[data-theme="dark"] .team-selector-group {
   animation: team-selector-sheet-up 240ms ease;
   isolation: isolate;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+.team-selector-overlay.is-closing .team-selector-overlay-sheet {
+  animation: team-selector-sheet-down 200ms ease forwards;
 }
 
 .team-selector-overlay-header {
@@ -537,6 +546,24 @@ body.is-team-selector-overlay-open {
   }
 }
 
+@keyframes team-selector-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes team-selector-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes team-selector-sheet-up {
   from {
     opacity: 0;
@@ -545,6 +572,17 @@ body.is-team-selector-overlay-open {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes team-selector-sheet-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
   }
 }
 

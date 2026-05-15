@@ -2,6 +2,20 @@ import { t } from "../i18n.js";
 import { renderEquipoSelector } from "./equipoSelector.js";
 import { setTeamSelectorOverlayOpen } from "../core/layoutState.js";
 
+const OVERLAY_CLOSE_ANIMATION_MS = 220;
+
+/**
+ * Desmonta por completo el overlay del selector de equipo.
+ *
+ * @param {HTMLElement} overlay Nodo raíz del overlay.
+ * @returns {void}
+ */
+function teardownEquipoSelectorOverlay(overlay) {
+  overlay.hidden = true;
+  overlay.innerHTML = "";
+  overlay.classList.remove("is-closing");
+}
+
 /**
  * Cierra el overlay del selector de equipo.
  *
@@ -9,11 +23,15 @@ import { setTeamSelectorOverlayOpen } from "../core/layoutState.js";
  */
 export function closeEquipoSelectorOverlay() {
   const overlay = document.getElementById("teamSelectorOverlay");
-  if (!overlay) return;
-  overlay.hidden = true;
-  overlay.innerHTML = "";
+  if (!overlay || overlay.hidden || overlay.classList.contains("is-closing")) return;
+
+  overlay.classList.add("is-closing");
   setTeamSelectorOverlayOpen(false);
-  window.dispatchEvent(new CustomEvent("app:overlay-state-changed"));
+  globalThis.dispatchEvent(new CustomEvent("app:overlay-state-changed"));
+
+  globalThis.setTimeout(() => {
+    teardownEquipoSelectorOverlay(overlay);
+  }, OVERLAY_CLOSE_ANIMATION_MS);
 }
 
 /**
@@ -28,6 +46,7 @@ export function openEquipoSelectorOverlay(options = {}) {
   if (!overlay) return;
 
   overlay.hidden = false;
+  overlay.classList.remove("is-closing");
   setTeamSelectorOverlayOpen(true);
   overlay.innerHTML = `
     <div class="team-selector-overlay-backdrop" data-close-team-selector-overlay></div>
@@ -60,5 +79,5 @@ export function openEquipoSelectorOverlay(options = {}) {
     node.addEventListener("click", () => closeEquipoSelectorOverlay());
   });
 
-  window.dispatchEvent(new CustomEvent("app:overlay-state-changed"));
+  globalThis.dispatchEvent(new CustomEvent("app:overlay-state-changed"));
 }
