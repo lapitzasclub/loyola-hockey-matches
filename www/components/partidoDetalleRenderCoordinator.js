@@ -21,10 +21,11 @@ import { bindPlayerAccordions, scrollDetalleToTop, updateChrome } from "./partid
  * @param {HTMLElement} bodyEl Contenedor principal de contenido del modal.
  * @param {(headerEl: HTMLElement, html: string, reason?: string) => void} setHeaderContent Helper para actualizar cabecera.
  * @param {(state: object) => string} renderSubview Renderer de subviews secundarias.
- * @param {(state: object) => string} renderJugadorHeader Renderer específico de cabecera de jugador.
+ * @param {(state: object) => string} renderSubviewHeader Renderer de cabecera para subviews.
  * @param {(rootEl: HTMLElement, state: object, headerEl: HTMLElement, renderAll: Function, hydrateJugadorStats: Function) => void} bindPlayerLinks Binder de enlaces de jugador.
  * @param {Function} hydrateJugadorStats Hidratador de estadísticas globales del jugador.
  * @param {Function} renderAll Referencia al propio coordinador para callbacks recursivos.
+ * @param {(rootEl: HTMLElement, state: object, headerEl: HTMLElement, bodyEl: HTMLElement, renderAll: Function) => void} [bindExtraInteractions] Binder opcional para otras subviews.
  * @returns {void}
  */
 export function renderAll(
@@ -33,17 +34,19 @@ export function renderAll(
   bodyEl,
   setHeaderContent,
   renderSubview,
-  renderJugadorHeader,
+  renderSubviewHeader,
   bindPlayerLinks,
   hydrateJugadorStats,
   renderAll,
+  bindExtraInteractions,
 ) {
   const modal = bodyEl.closest(".partido-detalle-modal");
   updateChrome(state, modal);
 
-  if (state.partido) {
-    const headerHtml = getCurrentView(state) === "jugador" ? renderJugadorHeader(state) : renderPartidoHeader(state);
-    setHeaderContent(headerEl, headerHtml, "renderAll");
+  if (getCurrentView(state) !== "partido") {
+    setHeaderContent(headerEl, renderSubviewHeader(state), "renderAll-subview");
+  } else if (state.partido) {
+    setHeaderContent(headerEl, renderPartidoHeader(state), "renderAll");
   } else if (getCurrentView(state) === "partido" && state.loadingMatch) {
     setHeaderContent(headerEl, renderPartidoHeaderSkeleton(), "renderAll-skeleton");
   }
@@ -51,6 +54,7 @@ export function renderAll(
   if (getCurrentView(state) !== "partido") {
     bodyEl.innerHTML = renderSubview(state);
     bindPlayerLinks(bodyEl, state, headerEl, renderAll, hydrateJugadorStats);
+    bindExtraInteractions?.(bodyEl, state, headerEl, bodyEl, renderAll);
     bindPlayerAccordions(bodyEl);
     return;
   }

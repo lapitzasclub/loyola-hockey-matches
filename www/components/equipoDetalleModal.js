@@ -3,6 +3,7 @@ import { syncMobileBackState } from "./partidoDetalleNavigation.js";
 import { normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
 import { loadEquipoDetalleMatches, renderEquipoDetalleMatches, renderEquipoDetalleSummary } from "./equipoDetalle.js";
 import { createModalHandoffCover, removeModalHandoffCover } from "./modalHandoff.js";
+import { mountDetalleModalShell } from "./detalleModalShell.js";
 
 function renderEquipoDetalleHeader(equipo) {
   return `
@@ -64,31 +65,30 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
     closeEquipoDetalle({ immediate: true, preserveBodyLock });
   }
 
-  const modal = document.createElement("div");
-  modal.className = "team-detail-modal";
-  modal.innerHTML = `
-    <div class="team-detail-shell">
-      <div class="partido-detalle-grabber"></div>
-      <div class="team-detail-header">
-        <div class="team-detail-header-content">${renderEquipoDetalleHeader(equipo)}</div>
-        <button class="team-detail-close" aria-label="Cerrar">&times;</button>
-      </div>
-      <div class="team-detail-body">${renderEquipoDetalleBody(equipo, [], true)}</div>
-    </div>
-  `;
+  const { modal, headerEl, bodyEl, closeBtn } = mountDetalleModalShell({
+    rootClassName: "team-detail-modal",
+    shellClassName: "team-detail-shell",
+    headerClassName: "team-detail-header",
+    bodyClassName: "team-detail-body",
+    headerContentClassName: "team-detail-header-content",
+    showBack: false,
+    showClose: true,
+    closeAriaLabel: "Cerrar",
+    contentIdPrefix: "team-detail",
+    instantOpen: skipCloseExisting,
+  });
 
-  document.body.appendChild(modal);
-  document.body.classList.add("modal-abierto");
-  modal.addEventListener("click", closeOnBackdrop);
-  modal.querySelector(".team-detail-close")?.addEventListener("click", () => closeEquipoDetalle());
-  if (skipCloseExisting) {
-    modal.classList.add("is-open");
-  } else {
-    requestAnimationFrame(() => modal.classList.add("is-open"));
+  if (headerEl instanceof HTMLElement) {
+    headerEl.innerHTML = renderEquipoDetalleHeader(equipo);
   }
-  syncMobileBackState();
+  if (bodyEl instanceof HTMLElement) {
+    bodyEl.innerHTML = renderEquipoDetalleBody(equipo, [], true);
+  }
 
-  const bodyEl = modal.querySelector(".team-detail-body");
+  modal.addEventListener("click", closeOnBackdrop);
+  closeBtn?.addEventListener("click", () => closeEquipoDetalle());
+
+  if (!(bodyEl instanceof HTMLElement)) return;
   if (!(bodyEl instanceof HTMLElement)) return;
 
   const partidos = await loadEquipoDetalleMatches(equipo);

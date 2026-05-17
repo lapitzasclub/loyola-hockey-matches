@@ -22,7 +22,7 @@ export function updateChrome(state, modal) {
   const backBtn = modal?.querySelector(".partido-detalle-back");
   if (!backBtn) return;
   const hasTeamReturnContext = !!window.__teamDetailReturnContext?.equipo;
-  const canGoBack = hasTeamReturnContext || !!getViewStack(state).length;
+  const canGoBack = hasTeamReturnContext || !!state?.parentView || !!getViewStack(state).length;
   backBtn.hidden = !canGoBack;
   backBtn.disabled = !canGoBack;
 }

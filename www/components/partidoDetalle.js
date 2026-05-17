@@ -9,6 +9,7 @@ import { renderPartidoHeader, renderPartidoHeaderSkeleton } from "./partidoDetal
 import {
   createDetalleState,
   escapeHtml,
+  getCurrentView,
   getViewStack,
   parseApiArrayResponse,
   popView,
@@ -33,6 +34,8 @@ import {
 import { bindPlayerLinks } from "./partidoDetallePlayerLinks.js";
 import { renderAll as renderDetalleState } from "./partidoDetalleRenderCoordinator.js";
 import { ensureBaseLayout } from "./partidoDetalleTabs.js";
+import { mountDetalleModalShell } from "./detalleModalShell.js";
+import { bindEquipoMatchLinks, renderEquipoDetalleHeader, renderEquipoSubview } from "./equipoDetalleSubview.js";
 
 /**
  * Actualiza el contenido HTML de la cabecera del modal y deja una traza de depuración.
@@ -58,38 +61,19 @@ function setHeaderContent(headerEl, html, reason = "") {
  */
 function mountPartidoDetalleModal(options = {}) {
   const { instantOpen = false } = options;
-  const modal = document.createElement("div");
-  modal.className = "partido-detalle-modal";
-  modal.innerHTML = `
-    <div class="partido-detalle-shell">
-      <div class="partido-detalle-grabber"></div>
-      <div class="partido-detalle-header">
-        <button class="partido-detalle-back" aria-label="Volver" hidden disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M15.5 5 8.5 12l7 7" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <div class="partido-detalle-header-content" id="partido-detalle-header-content"></div>
-        <button class="partido-detalle-close" aria-label="Cerrar">&times;</button>
-      </div>
-      <div class="partido-detalle-body" id="partido-detalle-body"></div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  const shellEl = modal.querySelector(".partido-detalle-shell");
-  const bodyScrollEl = modal.querySelector(".partido-detalle-body");
-  if (shellEl) shellEl.scrollTop = 0;
-  if (bodyScrollEl) bodyScrollEl.scrollTop = 0;
-
-  if (instantOpen) {
-    modal.classList.add("is-open");
-  } else {
-    requestAnimationFrame(() => modal.classList.add("is-open"));
-  }
-  document.body.classList.add("modal-abierto");
-  syncMobileBackState();
-  return modal;
+  return mountDetalleModalShell({
+    rootClassName: "partido-detalle-modal",
+    shellClassName: "partido-detalle-shell",
+    headerClassName: "partido-detalle-header",
+    bodyClassName: "partido-detalle-body",
+    headerContentClassName: "partido-detalle-header-content",
+    showBack: true,
+    showClose: true,
+    backAriaLabel: "Volver",
+    closeAriaLabel: "Cerrar",
+    contentIdPrefix: "partido-detalle",
+    instantOpen,
+  }).modal;
 }
 
 /**
@@ -124,9 +108,21 @@ function bindPartidoDetalleModalControls(modal) {
     }
 
     const state = window.__partidoDetalleState;
-    if (!getViewStack(state).length) return;
+    if (!getViewStack(state).length && !(state?.parentView && getCurrentView(state) === "partido")) return;
     const headerEl = document.getElementById("partido-detalle-header-content");
     const bodyEl = document.getElementById("partido-detalle-body");
+
+    if (state?.parentView === "equipo" && getCurrentView(state) === "partido") {
+      state.navigation.viewStack = [];
+      state.parentView = null;
+      await transitionDetalleView(bodyEl, async () => {
+        setCurrentView(state, "equipo");
+        renderAll(state, headerEl, bodyEl);
+      }, "back");
+      syncMobileBackState();
+      return;
+    }
+
     await transitionDetalleView(bodyEl, async () => {
       setCurrentView(state, popView(state) || "partido");
       renderAll(state, headerEl, bodyEl);
@@ -142,7 +138,7 @@ function bindPartidoDetalleModalControls(modal) {
  * @returns {void}
  */
 export function openPartidoDetalle(idPartido, options = {}) {
-  const { preserveBodyLock = false, skipCloseExisting = false } = options;
+  const { preserveBodyLock = false, skipCloseExisting = false, initialState = null, initialHeaderHtml = "" } = options;
   if (!skipCloseExisting) {
     closePartidoDetalle({ immediate: true, preserveBodyLock });
   }
@@ -159,11 +155,23 @@ export function openPartidoDetalle(idPartido, options = {}) {
   const headerEl = modal.querySelector("#partido-detalle-header-content");
   const bodyEl = modal.querySelector("#partido-detalle-body");
   if (headerEl instanceof HTMLElement && bodyEl instanceof HTMLElement) {
-    headerEl.innerHTML = renderPartidoHeaderSkeleton();
-    ensureBaseLayout(bodyEl, createDetalleState(idPartido));
+    if (initialState && getCurrentView(initialState) === "equipo") {
+      headerEl.innerHTML = initialHeaderHtml;
+    } else {
+      headerEl.innerHTML = renderPartidoHeaderSkeleton();
+      ensureBaseLayout(bodyEl, createDetalleState(idPartido));
+    }
   }
 
-  void cargarDetallePartido(idPartido);
+  if (initialState && getCurrentView(initialState) === "equipo") {
+    window.__partidoDetalleState = initialState;
+    if (headerEl instanceof HTMLElement && bodyEl instanceof HTMLElement) {
+      renderAll(initialState, headerEl, bodyEl);
+    }
+    return;
+  }
+
+  void cargarDetallePartido(idPartido, initialState, headerEl, bodyEl);
 }
 
 /**
@@ -268,16 +276,18 @@ async function waitForSignalRConnected(timeout = 4000) {
  * @returns {void}
  */
 function renderAll(state, headerEl, bodyEl) {
+  window.__partidoDetalleRenderAll = renderAll;
   renderDetalleState(
     state,
     headerEl,
     bodyEl,
     setHeaderContent,
     renderSubview,
-    renderJugadorHeader,
+    renderSubviewHeader,
     bindPlayerLinks,
     hydrateJugadorStats,
     renderAll,
+    bindTeamInteractions,
   );
 }
 
@@ -288,22 +298,68 @@ function renderAll(state, headerEl, bodyEl) {
  * @returns {string} HTML de la subvista activa.
  */
 function renderSubview(state) {
+  if (getCurrentView(state) === "equipo") {
+    return renderEquipoSubview(state);
+  }
   return renderDetalleSubview(state);
 }
 
-async function cargarDetallePartido(idPartido) {
+function renderSubviewHeader(state) {
+  if (getCurrentView(state) === "equipo" && state.selectedEquipo) {
+    return renderEquipoDetalleHeader(state.selectedEquipo);
+  }
+  if (getCurrentView(state) === "jugador") {
+    return renderJugadorHeader(state);
+  }
+  return renderPartidoHeader(state);
+}
+
+function bindTeamInteractions(rootEl, state, headerEl, bodyEl, renderAllFn) {
+  if (getCurrentView(state) === "equipo") {
+    bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAllFn, openMatchInSharedModal);
+  }
+}
+
+async function openMatchInSharedModal(state, partido, headerEl, bodyEl, renderAllFn) {
+  state.parentView = getCurrentView(state);
+  state.idPartido = String(partido.IdPartido);
+  state.partido = null;
+  state.eventos = [];
+  state.alineaciones = null;
+  state.penaltis = [];
+  state.statsResumen = [];
+  state.localKey = null;
+  state.visitKey = null;
+  state.loadingMatch = true;
+  state.loadingStats = true;
+  state.selectedJugador = null;
+
+  await transitionDetalleView(bodyEl, async () => {
+    setCurrentView(state, "partido");
+    renderAllFn(state, headerEl, bodyEl);
+  }, "forward");
+
+  await cargarDetallePartido(partido.IdPartido, state, headerEl, bodyEl);
+}
+
+async function cargarDetallePartido(idPartido, stateOverride = null, headerOverride = null, bodyOverride = null) {
   await waitForSignalRProxy();
   console.log("[SignalR] Esperando conexión activa del hub...");
   await waitForSignalRConnected();
   console.log("[SignalR] Hub conectado:", $.connection.hub);
 
-  const headerEl = document.getElementById("partido-detalle-header-content");
-  const bodyEl = document.getElementById("partido-detalle-body");
-  const state = createDetalleState(idPartido);
+  const headerEl = headerOverride || document.getElementById("partido-detalle-header-content");
+  const bodyEl = bodyOverride || document.getElementById("partido-detalle-body");
+  const state = stateOverride || createDetalleState(idPartido);
+  state.idPartido = String(idPartido);
   window.__partidoDetalleId = String(idPartido);
   window.__partidoDetalleState = state;
 
-  setHeaderContent(headerEl, escapeHtml(t("loading")), "init-loading");
+  if (getCurrentView(state) === "equipo" && state.selectedEquipo) {
+    setHeaderContent(headerEl, renderEquipoDetalleHeader(state.selectedEquipo), "equipo-header");
+  } else {
+    setHeaderContent(headerEl, escapeHtml(t("loading")), "init-loading");
+  }
   renderAll(state, headerEl, bodyEl);
 
   const partidoRes = await getPartido(idPartido);

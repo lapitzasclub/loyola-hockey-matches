@@ -24,19 +24,92 @@ export async function loadEquipoDetalleMatches(equipo) {
  * @param {object} equipo Fila normalizada del equipo.
  * @returns {string} HTML del resumen.
  */
-export function renderEquipoDetalleSummary(equipo) {
+export function computeTeamAggregateStats(equipo, partidos) {
+  const normalized = normalizarEquipoClasificacion(equipo);
+  if (!normalized) return null;
+
+  const teamIds = new Set([normalized.idEquipo, normalized.idEquipoComp].filter(Boolean).map(String));
+  const stats = {
+    puntos: normalized.puntos,
+    partidosJugados: normalized.partidosJugados,
+    partidosGanados: normalized.partidosGanados,
+    partidosEmpatados: normalized.partidosEmpatados,
+    partidosPerdidos: normalized.partidosPerdidos,
+    golesAFavor: normalized.golesAFavor,
+    golesEnContra: normalized.golesEnContra,
+    diferenciaGoles: normalized.diferenciaGoles,
+  };
+
+  const hasExistingStats = [
+    stats.puntos,
+    stats.partidosJugados,
+    stats.partidosGanados,
+    stats.partidosEmpatados,
+    stats.partidosPerdidos,
+    stats.golesAFavor,
+    stats.golesEnContra,
+  ].some((value) => Number(value) !== 0);
+
+  if (hasExistingStats || !Array.isArray(partidos) || !partidos.length) {
+    return stats;
+  }
+
+  const computed = {
+    puntos: 0,
+    partidosJugados: 0,
+    partidosGanados: 0,
+    partidosEmpatados: 0,
+    partidosPerdidos: 0,
+    golesAFavor: 0,
+    golesEnContra: 0,
+    diferenciaGoles: 0,
+  };
+
+  for (const partido of partidos) {
+    if (partido?.EstadoPartido != 2 || partido?.GolesLocal == null || partido?.GolesVisit == null) continue;
+    const isLocal = teamIds.has(String(partido?.IdEquipoLocal || ""));
+    const isVisit = teamIds.has(String(partido?.IdEquipoVisit || ""));
+    if (!isLocal && !isVisit) continue;
+
+    const gf = Number(isLocal ? partido.GolesLocal : partido.GolesVisit) || 0;
+    const gc = Number(isLocal ? partido.GolesVisit : partido.GolesLocal) || 0;
+
+    computed.partidosJugados += 1;
+    computed.golesAFavor += gf;
+    computed.golesEnContra += gc;
+
+    if (gf > gc) {
+      computed.partidosGanados += 1;
+      computed.puntos += 3;
+    } else if (gf === gc) {
+      computed.partidosEmpatados += 1;
+      computed.puntos += 1;
+    } else {
+      computed.partidosPerdidos += 1;
+    }
+  }
+
+  computed.diferenciaGoles = computed.golesAFavor - computed.golesEnContra;
+  return computed;
+}
+
+export function renderEquipoDetalleSummary(equipo, partidos = []) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized) return "";
 
+  const aggregate = computeTeamAggregateStats(normalized, partidos);
+  if (!aggregate) return "";
+
+  const goalDiffText = aggregate.diferenciaGoles > 0 ? `+${aggregate.diferenciaGoles}` : String(aggregate.diferenciaGoles);
   const summaryItems = [
-    [t("team_detail_points"), normalized.puntos],
-    [t("team_detail_played"), normalized.partidosJugados],
-    [t("team_detail_won"), normalized.partidosGanados],
-    [t("team_detail_drawn"), normalized.partidosEmpatados],
-    [t("team_detail_lost"), normalized.partidosPerdidos],
-    [t("team_detail_goals_for"), normalized.golesAFavor],
-    [t("team_detail_goals_against"), normalized.golesEnContra],
-    [t("team_detail_goal_difference"), `${normalized.diferenciaGoles >= 0 ? "+" : ""}${normalized.diferenciaGoles}`],
+    [t("team_detail_points"), aggregate.puntos],
+    [t("team_detail_played"), aggregate.partidosJugados],
+    [t("team_detail_won"), aggregate.partidosGanados],
+    [t("team_detail_drawn"), aggregate.partidosEmpatados],
+    [t("team_detail_lost"), aggregate.partidosPerdidos],
+    [t("team_detail_goals_for"), aggregate.golesAFavor],
+    [t("team_detail_goals_against"), aggregate.golesEnContra],
+    [t("team_detail_goal_difference"), goalDiffText],
   ];
 
   return `

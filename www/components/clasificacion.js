@@ -7,7 +7,7 @@ import { t } from "../i18n.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
 import { comparePartidosByScheduledDate, decodeApiRaw, safeStr } from "../utils/helpers.js";
 import { renderClasificacionLoadingState, renderEmptyState, renderErrorState } from "./loadingStates.js";
-import { openEquipoDetalle } from "./equipoDetalleModal.js";
+import { openPartidoDetalle } from "./partidoDetalle.js";
 
 const competitionLogoCache = new Map();
 
@@ -313,6 +313,7 @@ async function renderClasificacionContent(matchesList, raw, renderToken) {
   const logoMap = await getCompetitionLogoMap(idCompeticion, data);
   if (!isRenderStillValid()) return;
 
+  window._clasificacionLoyola = data;
   matchesList.innerHTML = "";
   const selectedInfo = getSelectedEquipoInfo();
   const grupos = groupClasificacionData(data);
@@ -517,7 +518,28 @@ function bindClasificacionTeamButtons(rootEl) {
         equipo = null;
       }
       if (!equipo) return;
-      await openEquipoDetalle({ ...equipo, IdCompeticion: equipo.IdCompeticion ?? competitionId });
+      const payload = { ...equipo, IdCompeticion: equipo.IdCompeticion ?? competitionId };
+      const utils = await import("./partidoDetalleUtils.js");
+      const subview = await import("./equipoDetalleSubview.js");
+      const initialState = utils.createDetalleState("team-detail-entry");
+      initialState.selectedEquipo = utils.normalizarEquipoClasificacion(payload);
+      initialState.loadingTeam = true;
+      initialState.navigation.currentView = "equipo";
+      openPartidoDetalle("team-detail-entry", {
+        initialState,
+        initialHeaderHtml: subview.renderEquipoDetalleHeader(initialState.selectedEquipo),
+      });
+      requestAnimationFrame(async () => {
+        const state = window.__partidoDetalleState;
+        const headerEl = document.getElementById("partido-detalle-header-content");
+        const bodyEl = document.getElementById("partido-detalle-body");
+        const renderAll = window.__partidoDetalleRenderAll;
+        if (!state || !headerEl || !bodyEl || typeof renderAll !== "function") return;
+        state.selectedEquipo = initialState.selectedEquipo;
+        state.loadingTeam = true;
+        state.navigation.currentView = "equipo";
+        await subview.openEquipoSubview(state, payload, headerEl, bodyEl, renderAll);
+      });
     };
 
     node.addEventListener("click", open);

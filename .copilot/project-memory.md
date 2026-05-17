@@ -4,7 +4,7 @@
 
 Proyecto: `loyola-hockey-matches`
 
-Versión actual de trabajo: `1.5.1`
+Versión actual de trabajo: `1.6.0`
 
 Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de los equipos de hockey patines del Loyola. La base sigue conviviendo con servicios legacy de la FVP, pero en esta fase ya tiene una arquitectura dual Android + web pública, con frontend compartido y backend web desplegable en Cloudflare Pages Functions.
 
@@ -38,19 +38,25 @@ Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de 
 - `www/servicesShared.js` centraliza constantes compartidas de transporte legacy.
 - `www/components/clasificacion.js` ahora enriquece la tabla con racha reciente, escudos y layout compacto responsive.
 - `www/utils/helpers.js` centraliza ahora el comparador cronológico real de partidos (`fecha + hora`, con fallback) reutilizado por partidos y clasificación.
-- `www/styles/components-partido-detalle.css` contiene el estilo del modal de detalle de partido.
+- `www/styles/components-partido-detalle.css` contiene el estilo del detalle compartido y la subvista de equipo.
 
-## Estado actual del detalle de partido
+## Estado actual del detalle compartido
 
-El detalle de partido ha pasado de ser un archivo monolítico a una estructura más separada, manteniendo la UX estable durante el refactor.
+El detalle ha pasado de ser un archivo monolítico centrado en partidos a una estructura más separada y reutilizable, manteniendo la UX estable durante el refactor.
 
 ### Módulos actuales del detalle
 
 - `www/components/partidoDetalle.js`
-  - coordinador principal del modal
-  - navegación interna entre partido y jugador
+  - coordinador principal del modal compartido
+  - navegación interna entre equipo, partido y jugador
   - transición entre subviews
   - coordinación de SignalR y ciclo de vida del modal
+- `www/components/detalleModalShell.js`
+  - shell compartido del detalle
+- `www/components/equipoDetalle.js`
+  - render de resumen y lista de partidos del equipo
+- `www/components/equipoDetalleSubview.js`
+  - subvista integrada del detalle de equipo dentro del modal compartido
 - `www/components/partidoDetalleJugadorSubview.js`
   - render de la subvista de jugador
   - hidratación de estadísticas del jugador
@@ -118,6 +124,7 @@ El detalle de partido ha pasado de ser un archivo monolítico a una estructura m
   - transiciones del modal
   - binding de acordeones
   - carga inicial y subscripción al hub
+  - la retirada final de la vía antigua de `equipoDetalleModal.js` si ya no queda uso real
 
 ## Calidad y tooling
 
@@ -163,6 +170,9 @@ La base está claramente más sana que al inicio de esta fase:
 - proxy API y SignalR operativos para runtime web
 - soporte PWA/iPhone mejorado con metadatos Apple y `apple-touch-icon`
 - corregido el solape de la última tarjeta de partidos con la bottom nav en iPhone
+- detalle de equipo funcional dentro del modal compartido, accesible desde clasificación y desde tarjetas de partidos
+- navegación funcional `clasificación -> equipo -> partido -> jugador -> partido -> equipo` con back consistente
+- detalle de equipo con escudo en cabecera y resumen capaz de reconstruir agregados desde calendario cuando la entrada no viene enriquecida desde clasificación
 
 ## Cambios recientes del selector Loyola
 
@@ -189,3 +199,4 @@ La base está claramente más sana que al inicio de esta fase:
 6. Seguir reduciendo `partidoDetalle.js` solo si aparece otra frontera realmente clara.
 7. Si no, priorizar limpieza, JSDoc y endurecimiento técnico sobre más fragmentación.
 8. Mantener validación visual real después de cada iteración del detalle.
+9. Retirar la vía antigua de `equipoDetalleModal.js` si ya no se necesita en ningún flujo.

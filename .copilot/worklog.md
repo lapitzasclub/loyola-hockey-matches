@@ -61,6 +61,20 @@
 - Se corrigieron varias carreras de navegación y refresco: si una carga de clasificación termina cuando el usuario ya ha vuelto a partidos, ya no debe repintar clasificación por detrás dejando la botonera incoherente.
 - Se preparó la versión `1.5.1`.
 - `npm run lint` siguió limpio tras los cambios.
+- Se inició la implementación del nuevo detalle de equipo reutilizando infraestructura del detalle de partido, primero con una modal separada como prototipo y después reconduciéndolo a una arquitectura mejor: un shell compartido y subvistas internas.
+- Se añadió `www/components/detalleModalShell.js` para centralizar el montaje de la shell de detalle sin alterar la pinta existente.
+- Se añadió `www/components/equipoDetalle.js` para renderizar resumen del equipo y calendario simplificado.
+- Se añadió `www/components/equipoDetalleSubview.js` como subvista real dentro del modal compartido, con cabecera propia, resumen, partidos del equipo y apertura de partido dentro del mismo contenedor.
+- Se conectó apertura de detalle de equipo desde clasificación y desde la lista de partidos al tocar nombre o escudo del equipo.
+- Se corrigió el contrato de navegación real validado por el usuario: `clasificación -> equipo -> partido -> jugador -> back -> partido -> back -> equipo`, sin dejar un back fantasma al volver al último nivel de equipo.
+- Se corrigió la cabecera del detalle compartido para que siga la vista actual (`equipo`, `partido` o `jugador`) en vez de quedarse pegada a la última cabecera de partido.
+- Se evitó que la apertura inicial del detalle de equipo intentase cargar `team-detail-entry` como si fuera un partido real contra APIs/SignalR.
+- Se añadió el escudo en la cabecera del detalle de equipo.
+- Se corrigió el caso de apertura desde tarjetas de partidos para pasar `IdEntidadEquipo` y así resolver el escudo correcto en cabecera.
+- Se corrigió el caso de apertura desde partidos cuando no había fila enriquecida de clasificación disponible: el resumen del equipo ahora reconstruye agregados desde el calendario del propio equipo usando partidos cerrados.
+- Se corrigió el formato de diferencia de goles para que `0` no se pinte como `+0`.
+- Se mejoró la tarjeta de partido alineando arriba los bloques del duelo y centrando horizontalmente escudo + nombre dentro de cada equipo.
+- La release objetivo pasó a ser `1.6.0`.
 
 ## 2026-05-11
 

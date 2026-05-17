@@ -159,6 +159,7 @@ export function createDetalleState(idPartido) {
     selectedEquipo: null,
     teamMatches: [],
     loadingTeam: false,
+    parentView: null,
     navigation: {
       currentView: "partido",
       currentTab: "resumen",

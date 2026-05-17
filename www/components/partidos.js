@@ -8,6 +8,7 @@ import { createCalendarButton } from "../utils/calendar.js";
 import { comparePartidosByScheduledDate, extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
 import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml, scrollToProximo } from "../utils/partidosHelpers.js";
 import { renderEmptyState, renderErrorState } from "./loadingStates.js";
+import { openPartidoDetalle } from "./partidoDetalle.js";
 
 const ENTITY_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/entidad/200x200";
 const competitionLogoCache = new Map();
@@ -244,7 +245,57 @@ function renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap) {
  * @param {object} partido Partido asociado.
  * @returns {void}
  */
-function bindPartidoInteractions(li, partido) {
+function enrichTeamPayloadFromAvailableData(equipoPayload) {
+  const competitionId = String(equipoPayload?.IdCompeticion || "");
+  const teamId = String(equipoPayload?.IdEquipoComp || equipoPayload?.IdEquipo || "");
+
+  const clasData = Array.isArray(window._clasificacionLoyola) ? window._clasificacionLoyola : [];
+  const clasMatch = clasData.find((eq) => String(eq?.IdCompeticion || "") === competitionId && String(eq?.IdEquipoComp || eq?.IdEquipo || "") === teamId);
+  if (clasMatch) {
+    return { ...clasMatch, ...equipoPayload, IdCompeticion: equipoPayload.IdCompeticion || clasMatch.IdCompeticion };
+  }
+
+  const catalogMatch = getEquiposLoyola().find((eq) => String(eq?.idCompeticion || "") === competitionId && String(eq?.idEquipoComp || "") === teamId);
+  if (catalogMatch) {
+    return {
+      ...equipoPayload,
+      IdCompeticion: equipoPayload.IdCompeticion || catalogMatch.idCompeticion,
+      IdEquipoComp: equipoPayload.IdEquipoComp || catalogMatch.idEquipoComp,
+      IdEntidadEquipo: equipoPayload.IdEntidadEquipo || catalogMatch.idEntidadEquipo || null,
+      NombreEquipo: equipoPayload.NombreEquipo || catalogMatch.nombreEquipo,
+      NombreGrupo: equipoPayload.NombreGrupo || catalogMatch.nombreCompeticion || "",
+    };
+  }
+
+  return equipoPayload;
+}
+
+async function openTeamDetailFromMatch(equipoPayload) {
+  const enrichedPayload = enrichTeamPayloadFromAvailableData(equipoPayload);
+  const utils = await import("./partidoDetalleUtils.js");
+  const subview = await import("./equipoDetalleSubview.js");
+  const initialState = utils.createDetalleState("team-detail-entry");
+  initialState.selectedEquipo = utils.normalizarEquipoClasificacion(enrichedPayload);
+  initialState.loadingTeam = true;
+  initialState.navigation.currentView = "equipo";
+  openPartidoDetalle("team-detail-entry", {
+    initialState,
+    initialHeaderHtml: subview.renderEquipoDetalleHeader(initialState.selectedEquipo),
+  });
+  requestAnimationFrame(async () => {
+    const state = window.__partidoDetalleState;
+    const headerEl = document.getElementById("partido-detalle-header-content");
+    const bodyEl = document.getElementById("partido-detalle-body");
+    const renderAll = window.__partidoDetalleRenderAll;
+    if (!state || !headerEl || !bodyEl || typeof renderAll !== "function") return;
+    state.selectedEquipo = initialState.selectedEquipo;
+    state.loadingTeam = true;
+    state.navigation.currentView = "equipo";
+    await subview.openEquipoSubview(state, enrichedPayload, headerEl, bodyEl, renderAll);
+  });
+}
+
+function bindPartidoInteractions(li, partido, logoMap) {
   const warmupDetalle = () => {
     void preloadPartidoDetalleModule();
     li.removeEventListener("pointerenter", warmupDetalle);
@@ -255,6 +306,25 @@ function bindPartidoInteractions(li, partido) {
   li.addEventListener("pointerenter", warmupDetalle, { passive: true });
   li.addEventListener("touchstart", warmupDetalle, { passive: true, once: true });
   li.addEventListener("focusin", warmupDetalle, { once: true });
+
+  li.querySelectorAll(".partido-team").forEach((teamEl) => {
+    teamEl.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      const isLocal = teamEl.classList.contains("partido-team-local");
+      const teamCompId = String(isLocal ? partido.IdEquipoLocal : partido.IdEquipoVisit);
+      const logoInfo = logoMap?.get(teamCompId);
+      const equipoPayload = {
+        IdEquipo: isLocal ? partido.IdEquipoLocal : partido.IdEquipoVisit,
+        IdEquipoComp: isLocal ? partido.IdEquipoLocal : partido.IdEquipoVisit,
+        IdEntidadEquipo: logoInfo?.entityId || null,
+        NombreEquipo: isLocal ? partido.EquipoLocal : partido.EquipoVisit,
+        IdCompeticion: getSelectedCompetitionId(),
+        NombreGrupo: partido.NombreCompeticion || partido.NombreGrupo || "",
+      };
+      await openTeamDetailFromMatch(equipoPayload);
+    });
+  });
+
   li.onclick = () => {
     if (partido.IdPartido) {
       preloadPartidoDetalleModule().then((mod) => mod.openPartidoDetalle(partido.IdPartido));
@@ -288,7 +358,7 @@ function renderPartidosList(matchesList, partidosOrdenados, renderContext) {
       proximoLi = li;
     }
 
-    bindPartidoInteractions(li, partido);
+    bindPartidoInteractions(li, partido, renderContext.logoMap);
     matchesList.appendChild(li);
   }
 
