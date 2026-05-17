@@ -50,15 +50,12 @@ function setHeaderContent(headerEl, html, reason = "") {
   });
 }
 
-
 /**
- * Abre el modal de detalle de un partido y arranca su ciclo de carga.
+ * Construye y monta el modal base del detalle de partido en el DOM.
  *
- * @param {string|number} idPartido Identificador del partido a abrir.
- * @returns {void}
+ * @returns {HTMLDivElement} Nodo raíz del modal recién montado.
  */
-export function openPartidoDetalle(idPartido) {
-  closePartidoDetalle({ immediate: true });
+function mountPartidoDetalleModal() {
   const modal = document.createElement("div");
   modal.className = "partido-detalle-modal";
   modal.innerHTML = `
@@ -77,13 +74,25 @@ export function openPartidoDetalle(idPartido) {
     </div>
   `;
   document.body.appendChild(modal);
+
   const shellEl = modal.querySelector(".partido-detalle-shell");
   const bodyScrollEl = modal.querySelector(".partido-detalle-body");
   if (shellEl) shellEl.scrollTop = 0;
   if (bodyScrollEl) bodyScrollEl.scrollTop = 0;
+
   requestAnimationFrame(() => modal.classList.add("is-open"));
   document.body.classList.add("modal-abierto");
   syncMobileBackState();
+  return modal;
+}
+
+/**
+ * Conecta los controles básicos del modal ya montado.
+ *
+ * @param {HTMLDivElement} modal Nodo raíz del modal.
+ * @returns {void}
+ */
+function bindPartidoDetalleModalControls(modal) {
   modal.querySelector(".partido-detalle-close").onclick = () => closePartidoDetalle();
   modal.querySelector(".partido-detalle-back").onclick = async () => {
     const state = window.__partidoDetalleState;
@@ -96,6 +105,18 @@ export function openPartidoDetalle(idPartido) {
     }, "back");
     syncMobileBackState();
   };
+}
+
+/**
+ * Abre el modal de detalle de un partido y arranca su ciclo de carga.
+ *
+ * @param {string|number} idPartido Identificador del partido a abrir.
+ * @returns {void}
+ */
+export function openPartidoDetalle(idPartido) {
+  closePartidoDetalle({ immediate: true });
+  const modal = mountPartidoDetalleModal();
+  bindPartidoDetalleModalControls(modal);
   cargarDetallePartido(idPartido);
 }
 
@@ -151,13 +172,41 @@ export function closePartidoDetalle(options = {}) {
  * @param {number} [timeout=4000] Tiempo máximo de espera en milisegundos.
  * @returns {Promise<void>} Promesa resuelta cuando el hub está conectado.
  */
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Espera a que el proxy global legacy de SignalR exista.
+ *
+ * @param {number} [timeout=4000] Tiempo máximo de espera en milisegundos.
+ * @returns {Promise<void>} Promesa resuelta cuando `window.hubProxy` está disponible.
+ */
+async function waitForSignalRProxy(timeout = 4000) {
+  console.log("[SignalR] Esperando disponibilidad de window.hubProxy...");
+  const start = Date.now();
+  while (!window.hubProxy) {
+    if (Date.now() - start > timeout) {
+      throw new Error("SignalR hubProxy no disponible");
+    }
+    await delay(50);
+  }
+  console.log("[SignalR] hubProxy disponible:", window.hubProxy);
+}
+
+/**
+ * Espera a que la conexión SignalR esté plenamente operativa.
+ *
+ * @param {number} [timeout=4000] Tiempo máximo de espera en milisegundos.
+ * @returns {Promise<void>} Promesa resuelta cuando el hub está conectado.
+ */
 async function waitForSignalRConnected(timeout = 4000) {
   const start = Date.now();
   while ($.connection.hub.state !== $.signalR.connectionState.connected) {
     if (Date.now() - start > timeout) {
       throw new Error("SignalR hub no conectado");
     }
-    await new Promise((res) => setTimeout(res, 50));
+    await delay(50);
   }
 }
 
@@ -201,14 +250,7 @@ function renderSubview(state) {
  * @returns {Promise<void>} Promesa resuelta al terminar la carga inicial.
  */
 async function cargarDetallePartido(idPartido) {
-  console.log("[SignalR] Esperando disponibilidad de window.hubProxy...");
-  const start = Date.now();
-  while (!window.hubProxy) {
-    if (Date.now() - start > 4000) throw new Error("SignalR hubProxy no disponible");
-    await new Promise((res) => setTimeout(res, 50));
-  }
-
-  console.log("[SignalR] hubProxy disponible:", window.hubProxy);
+  await waitForSignalRProxy();
   console.log("[SignalR] Esperando conexión activa del hub...");
   await waitForSignalRConnected();
   console.log("[SignalR] Hub conectado:", $.connection.hub);

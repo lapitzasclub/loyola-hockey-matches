@@ -13,6 +13,11 @@ const ENTITY_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-pu
 const competitionLogoCache = new Map();
 let partidoDetalleModulePromise = null;
 
+/**
+ * Precarga diferida del módulo pesado de detalle para mejorar la sensación de respuesta.
+ *
+ * @returns {Promise<typeof import("./partidoDetalle.js")>} Módulo de detalle de partido.
+ */
 export function preloadPartidoDetalleModule() {
   if (!partidoDetalleModulePromise) {
     partidoDetalleModulePromise = import("./partidoDetalle.js");
@@ -35,14 +40,20 @@ function getEntityLogoUrl(entityId) {
  *
  * @returns {Promise<Map<string, {entityId: string|null, hasLogo: boolean}>>} Mapa por `IdEquipoComp`.
  */
-async function getCompetitionLogoMap() {
+function getSelectedCompetitionId() {
   const selected = getEquipoSeleccionado();
-  if (!selected) return new Map();
-
+  if (!selected) return "";
   const [idCompeticion] = selected.split("|");
-  if (!idCompeticion) return new Map();
-  if (competitionLogoCache.has(idCompeticion)) return competitionLogoCache.get(idCompeticion);
+  return idCompeticion || "";
+}
 
+/**
+ * Construye un mapa fallback de logos con los equipos ya cargados en memoria.
+ *
+ * @param {string} idCompeticion Identificador de competición.
+ * @returns {Map<string, {entityId: string|null, hasLogo: boolean}>} Mapa base por equipo.
+ */
+function buildFallbackCompetitionLogoMap(idCompeticion) {
   const fallbackMap = new Map();
   const equipos = getEquiposLoyola();
   for (const eq of equipos) {
@@ -52,19 +63,46 @@ async function getCompetitionLogoMap() {
       hasLogo: !!eq.idEntidadEquipo,
     });
   }
+  return fallbackMap;
+}
+
+/**
+ * Normaliza la respuesta de parámetros de competición a un mapa de logos por `IdEquipoComp`.
+ *
+ * @param {any} raw Respuesta cruda del endpoint.
+ * @returns {Map<string, {entityId: string|null, hasLogo: boolean}>} Mapa de logos.
+ */
+function parseCompetitionLogoMap(raw) {
+  const parsed = typeof raw === "string" ? JSON.parse(JSON.parse(raw).d) : raw?.d ? JSON.parse(raw.d) : raw;
+  const comp = Array.isArray(parsed) ? parsed[0] : null;
+  const equiposComp = Array.isArray(comp?.Equipos) ? comp.Equipos : [];
+  const logoMap = new Map();
+
+  for (const equipo of equiposComp) {
+    logoMap.set(String(equipo.IdEquipoComp), {
+      entityId: equipo?.IdEntidadEquipo != null ? String(equipo.IdEntidadEquipo) : null,
+      hasLogo: !!equipo?.TieneLogo,
+    });
+  }
+
+  return logoMap;
+}
+
+/**
+ * Carga y cachea el mapa de logos de la competición actualmente seleccionada.
+ *
+ * @returns {Promise<Map<string, {entityId: string|null, hasLogo: boolean}>>} Mapa por `IdEquipoComp`.
+ */
+async function getCompetitionLogoMap() {
+  const idCompeticion = getSelectedCompetitionId();
+  if (!idCompeticion) return new Map();
+  if (competitionLogoCache.has(idCompeticion)) return competitionLogoCache.get(idCompeticion);
+
+  const fallbackMap = buildFallbackCompetitionLogoMap(idCompeticion);
 
   try {
     const raw = await getParametrosCompeticion(idCompeticion);
-    const parsed = typeof raw === "string" ? JSON.parse(JSON.parse(raw).d) : raw?.d ? JSON.parse(raw.d) : raw;
-    const comp = Array.isArray(parsed) ? parsed[0] : null;
-    const equiposComp = Array.isArray(comp?.Equipos) ? comp.Equipos : [];
-    const logoMap = new Map();
-    for (const equipo of equiposComp) {
-      logoMap.set(String(equipo.IdEquipoComp), {
-        entityId: equipo?.IdEntidadEquipo != null ? String(equipo.IdEntidadEquipo) : null,
-        hasLogo: !!equipo?.TieneLogo,
-      });
-    }
+    const logoMap = parseCompetitionLogoMap(raw);
     competitionLogoCache.set(idCompeticion, logoMap);
     return logoMap;
   } catch {
@@ -96,47 +134,30 @@ function renderTeamLogo(logoMap, equipoCompId, nombre) {
 export async function renderPartidos(matchesList, raw) {
   const { error, partidos } = extractPartidos(raw);
   const partidosOrdenados = Array.isArray(partidos) ? partidos.slice().sort(comparePartidosByScheduledDate) : [];
-  // Exponer el histórico de partidos para la clasificación
-  if (Array.isArray(partidosOrdenados)) {
-    window._partidosLoyola = partidosOrdenados;
-  }
+
+  window._partidosLoyola = partidosOrdenados;
+
   if (error) {
     renderErrorState(matchesList, t("error", error));
     return;
   }
+
   if (!partidosOrdenados.length) {
     renderEmptyState(matchesList, t("no_matches", getEquipoLabel()));
     return;
   }
+
   matchesList.innerHTML = "";
   void preloadPartidoDetalleModule();
-  const equipoSel = getEquipoNombreCompleto();
-  const lang = getLang() === "eu" ? "eu" : "es";
-  const now = new Date();
-  const proximoIdx = getProximoPartidoIdx(partidosOrdenados, now);
-  const logoMap = await getCompetitionLogoMap();
-  let proximoLi = null;
-  for (let idx = 0; idx < partidosOrdenados.length; idx++) {
-    const p = partidosOrdenados[idx];
-    const li = renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap);
-    if (idx === proximoIdx) proximoLi = li;
-    // Abrir detalle de partido al hacer click
-    const warmupDetalle = () => {
-      void preloadPartidoDetalleModule();
-      li.removeEventListener("pointerenter", warmupDetalle);
-      li.removeEventListener("touchstart", warmupDetalle);
-      li.removeEventListener("focusin", warmupDetalle);
-    };
-    li.addEventListener("pointerenter", warmupDetalle, { passive: true });
-    li.addEventListener("touchstart", warmupDetalle, { passive: true, once: true });
-    li.addEventListener("focusin", warmupDetalle, { once: true });
-    li.onclick = () => {
-      if (p.IdPartido) {
-        preloadPartidoDetalleModule().then(mod => mod.openPartidoDetalle(p.IdPartido));
-      }
-    };
-    matchesList.appendChild(li);
-  }
+
+  const renderContext = {
+    equipoSel: getEquipoNombreCompleto(),
+    lang: getLang() === "eu" ? "eu" : "es",
+    proximoIdx: getProximoPartidoIdx(partidosOrdenados, new Date()),
+    logoMap: await getCompetitionLogoMap(),
+  };
+
+  const proximoLi = renderPartidosList(matchesList, partidosOrdenados, renderContext);
   scrollToProximo(proximoLi);
 }
 
@@ -214,5 +235,63 @@ function renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap) {
     li.classList.add("proximo-partido");
   }
   return li;
+}
+
+/**
+ * Vincula interacciones ligeras de precarga y apertura de detalle sobre una tarjeta.
+ *
+ * @param {HTMLLIElement} li Tarjeta del partido.
+ * @param {object} partido Partido asociado.
+ * @returns {void}
+ */
+function bindPartidoInteractions(li, partido) {
+  const warmupDetalle = () => {
+    void preloadPartidoDetalleModule();
+    li.removeEventListener("pointerenter", warmupDetalle);
+    li.removeEventListener("touchstart", warmupDetalle);
+    li.removeEventListener("focusin", warmupDetalle);
+  };
+
+  li.addEventListener("pointerenter", warmupDetalle, { passive: true });
+  li.addEventListener("touchstart", warmupDetalle, { passive: true, once: true });
+  li.addEventListener("focusin", warmupDetalle, { once: true });
+  li.onclick = () => {
+    if (partido.IdPartido) {
+      preloadPartidoDetalleModule().then((mod) => mod.openPartidoDetalle(partido.IdPartido));
+    }
+  };
+}
+
+/**
+ * Renderiza secuencialmente la lista de partidos usando un contexto compartido.
+ *
+ * @param {HTMLElement} matchesList Contenedor destino.
+ * @param {Array<object>} partidosOrdenados Lista ordenada de partidos.
+ * @param {{equipoSel:string, lang:string, proximoIdx:number, logoMap:Map<string, {entityId: string|null, hasLogo: boolean}>}} renderContext Contexto estable de render.
+ * @returns {HTMLLIElement|null} Nodo del próximo partido, si existe.
+ */
+function renderPartidosList(matchesList, partidosOrdenados, renderContext) {
+  let proximoLi = null;
+
+  for (let idx = 0; idx < partidosOrdenados.length; idx += 1) {
+    const partido = partidosOrdenados[idx];
+    const li = renderPartidoLi(
+      partido,
+      renderContext.equipoSel,
+      renderContext.lang,
+      renderContext.proximoIdx,
+      idx,
+      renderContext.logoMap,
+    );
+
+    if (idx === renderContext.proximoIdx) {
+      proximoLi = li;
+    }
+
+    bindPartidoInteractions(li, partido);
+    matchesList.appendChild(li);
+  }
+
+  return proximoLi;
 }
 

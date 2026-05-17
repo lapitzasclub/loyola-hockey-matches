@@ -6,6 +6,10 @@ import { FVP_BASE_URL, HEADERS } from "./servicesShared.js";
 export { getEquiposLoyolaTodasCompeticiones, getLoyolaCompetitionCatalog } from "./servicesCompetitionCatalog.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";
+const CERT_PATH_ERROR_HINTS = [
+  "CertPathValidatorException",
+  "Trust anchor for certification path not found",
+];
 
 /**
  * Normaliza respuestas legacy ASMX que pueden venir como string JSON, como objeto con `d`
@@ -19,16 +23,11 @@ function unwrapLegacyPayload(raw) {
 
   if (typeof raw === "string") {
     const first = JSON.parse(raw);
-    return typeof first?.d === "string" ? JSON.parse(first.d) : (first?.d ?? first);
+    return unwrapLegacyPayload(first);
   }
 
-  if (typeof raw === "object") {
-    if (typeof raw.d === "string") {
-      return JSON.parse(raw.d);
-    }
-    if (raw.d !== undefined) {
-      return raw.d;
-    }
+  if (typeof raw === "object" && raw.d !== undefined) {
+    return typeof raw.d === "string" ? JSON.parse(raw.d) : raw.d;
   }
 
   return raw;
@@ -155,15 +154,86 @@ async function callLegacyService(endpoint, payload) {
 }
 
 /**
+ * Ejecuta un endpoint cuyo parámetro principal es `idcompeticion`.
+ *
+ * @param {string} endpoint Nombre del método remoto.
+ * @param {string|number} idCompeticion Identificador de competición.
+ * @param {object} [extraPayload={}] Campos adicionales del payload.
+ * @returns {Promise<any>} Respuesta de la API legacy.
+ */
+function callCompetitionService(endpoint, idCompeticion, extraPayload = {}) {
+  return callLegacyService(endpoint, {
+    idcompeticion: String(idCompeticion),
+    ...extraPayload,
+  });
+}
+
+/**
+ * Ejecuta un endpoint legacy cuyo payload contiene una sola entidad principal.
+ *
+ * @param {string} endpoint Nombre del método remoto.
+ * @param {string} fieldName Nombre del campo principal del payload.
+ * @param {string|number} value Valor a serializar.
+ * @returns {Promise<any>} Respuesta de la API legacy.
+ */
+function callEntityService(endpoint, fieldName, value) {
+  return callLegacyService(endpoint, {
+    [fieldName]: String(value),
+  });
+}
+
+/**
  * Obtiene el calendario completo de una competición (todos los partidos).
  *
  * @param {string|number} idCompeticion ID de la competición.
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getCalendarioCompeticionCompleto(idCompeticion) {
-  return callLegacyService("GetCalendarioCompeticion", {
-    idcompeticion: String(idCompeticion),
+  return callCompetitionService("GetCalendarioCompeticion", idCompeticion);
+}
+
+/**
+ * Ejecuta una petición POST a la API real o al proxy, con caché local.
+ *
+ * @param {object} options Opciones de petición.
+ * @param {string} options.url URL absoluta o relativa del endpoint.
+ * @param {string} options.body Cuerpo JSON serializado.
+ * @param {boolean} options.preferNative Indica si debe priorizar el plugin nativo HTTP.
+ * @returns {Promise<unknown>} Respuesta cruda del endpoint.
+ */
+function isCertificatePathError(error) {
+  const message = String(error?.message || error);
+  return CERT_PATH_ERROR_HINTS.some((hint) => message.includes(hint));
+}
+
+/**
+ * Ejecuta la petición por `fetch` como ruta estándar y fallback universal.
+ *
+ * @param {string} url URL de destino.
+ * @param {string} body Cuerpo JSON serializado.
+ * @returns {Promise<string>} Texto crudo devuelto por el backend.
+ */
+async function postWithFetch(url, body) {
+  const response = await fetch(url, { method: "POST", headers: HEADERS, body });
+  return response.text();
+}
+
+/**
+ * Ejecuta la petición por el plugin HTTP nativo cuando está disponible.
+ *
+ * @param {string} url URL de destino.
+ * @param {string} body Cuerpo JSON serializado.
+ * @returns {Promise<unknown>} Payload devuelto por el transporte nativo.
+ */
+async function postWithNativeHttp(url, body) {
+  const http = getHttp();
+  const response = await http.request({
+    method: "POST",
+    url,
+    headers: HEADERS,
+    data: body,
   });
+  return response.data;
 }
 
 /**
@@ -176,39 +246,25 @@ export async function getCalendarioCompeticionCompleto(idCompeticion) {
  * @returns {Promise<unknown>} Respuesta cruda del endpoint.
  */
 async function post({ url, body, preferNative }) {
-  // --- CACHE ---
   const cached = getCachedApi(url, body);
   if (cached !== null) return cached;
 
-  const http = getHttp();
+  const canUseNative = preferNative && shouldPreferNativeHttp() && getHttp();
   let result;
-  if (preferNative && shouldPreferNativeHttp() && http) {
+
+  if (canUseNative) {
     try {
-      const res = await http.request({
-        method: "POST",
-        url,
-        headers: HEADERS,
-        data: body, // string JSON va bien con el plugin oficial
-      });
-      result = res.data;
-    } catch (e) {
-      // Si el error es de certificado, reintenta con fetch
-      if (
-        String(e?.message || e).includes("CertPathValidatorException") ||
-        String(e?.message || e).includes(
-          "Trust anchor for certification path not found"
-        )
-      ) {
-        const r = await fetch(url, { method: "POST", headers: HEADERS, body });
-        result = await r.text();
-      } else {
-        throw e;
+      result = await postWithNativeHttp(url, body);
+    } catch (error) {
+      if (!isCertificatePathError(error)) {
+        throw error;
       }
+      result = await postWithFetch(url, body);
     }
   } else {
-    const r = await fetch(url, { method: "POST", headers: HEADERS, body });
-    result = await r.text();
+    result = await postWithFetch(url, body);
   }
+
   setCachedApi(url, body, result);
   return result;
 }
@@ -236,9 +292,7 @@ function ensureJsonOrThrow(raw) {
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getClasificacionLiga(idCompeticion) {
-  return callLegacyService("GetClasificacionCompeticion", {
-    idcompeticion: String(idCompeticion),
-  });
+  return callCompetitionService("GetClasificacionCompeticion", idCompeticion);
 }
 
 /**
@@ -249,8 +303,7 @@ export async function getClasificacionLiga(idCompeticion) {
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getCalendarioLoyola(equipoId, idCompeticion) {
-  return callLegacyService("GetCalendarioCompeticion", {
-    idcompeticion: String(idCompeticion),
+  return callCompetitionService("GetCalendarioCompeticion", idCompeticion, {
     idequipocomp: String(equipoId),
   });
 }
@@ -262,9 +315,7 @@ export async function getCalendarioLoyola(equipoId, idCompeticion) {
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getParametrosCompeticion(idCompeticion) {
-  return callLegacyService("GetParametrosCompeticion", {
-    idcompeticion: String(idCompeticion),
-  });
+  return callCompetitionService("GetParametrosCompeticion", idCompeticion);
 }
 
 
@@ -275,9 +326,7 @@ export async function getParametrosCompeticion(idCompeticion) {
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getPartido(idPartido) {
-  return callLegacyService("GetParametrosPartido", {
-    idpartido: String(idPartido),
-  });
+  return callEntityService("GetParametrosPartido", "idpartido", idPartido);
 }
 
 /**
@@ -287,9 +336,7 @@ export async function getPartido(idPartido) {
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getEstadisticaPartido(idPartido) {
-  return callLegacyService("GetEstadisticaPartido", {
-    idpartido: String(idPartido),
-  });
+  return callEntityService("GetEstadisticaPartido", "idpartido", idPartido);
 }
 
 /**
@@ -299,8 +346,6 @@ export async function getEstadisticaPartido(idPartido) {
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getEstadisticaJugador(idLicencia) {
-  return callLegacyService("GetEstadisticasJugador", {
-    idlicencia: String(idLicencia),
-  });
+  return callEntityService("GetEstadisticasJugador", "idlicencia", idLicencia);
 }
 
