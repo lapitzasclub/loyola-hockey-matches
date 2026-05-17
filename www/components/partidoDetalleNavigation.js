@@ -21,7 +21,8 @@ export function syncMobileBackState() {
 export function updateChrome(state, modal) {
   const backBtn = modal?.querySelector(".partido-detalle-back");
   if (!backBtn) return;
-  const canGoBack = !!getViewStack(state).length;
+  const hasTeamReturnContext = !!window.__teamDetailReturnContext?.equipo;
+  const canGoBack = hasTeamReturnContext || !!getViewStack(state).length;
   backBtn.hidden = !canGoBack;
   backBtn.disabled = !canGoBack;
 }

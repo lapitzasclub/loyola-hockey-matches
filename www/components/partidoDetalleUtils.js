@@ -156,6 +156,9 @@ export function createDetalleState(idPartido) {
     loadingMatch: true,
     loadingStats: true,
     selectedJugador: null,
+    selectedEquipo: null,
+    teamMatches: [],
+    loadingTeam: false,
     navigation: {
       currentView: "partido",
       currentTab: "resumen",
@@ -235,4 +238,46 @@ export function popView(state) {
  */
 export function pushView(state, view) {
   state.navigation.viewStack.push(view);
+}
+
+/**
+ * Normaliza una fila de clasificación a un shape ligero reutilizable por el detalle de equipo.
+ *
+ * @param {object|null|undefined} equipo Fila original de clasificación.
+ * @returns {object|null} Equipo normalizado o null.
+ */
+export function normalizarEquipoClasificacion(equipo) {
+  if (!equipo || typeof equipo !== "object") return null;
+
+  const pickNumber = (...values) => {
+    for (const value of values) {
+      if (value == null || value === "") continue;
+      const numeric = Number(value);
+      if (!Number.isNaN(numeric)) return numeric;
+    }
+    return 0;
+  };
+
+  const idEquipo = equipo.IdEquipo ?? equipo.IdEquipoComp ?? equipo.idEquipo ?? equipo.idEquipoComp ?? null;
+  const idEquipoComp = equipo.IdEquipoComp ?? equipo.IdEquipo ?? equipo.idEquipoComp ?? equipo.idEquipo ?? null;
+  const goalDifference = pickNumber(equipo.DiferenciaGoles, equipo.diferenciaGoles);
+
+  return {
+    idCompeticion: equipo.IdCompeticion != null ? String(equipo.IdCompeticion) : equipo.idCompeticion != null ? String(equipo.idCompeticion) : null,
+    idEquipo: idEquipo != null ? String(idEquipo) : null,
+    idEquipoComp: idEquipoComp != null ? String(idEquipoComp) : null,
+    idEntidadEquipo: equipo.IdEntidadEquipo != null ? String(equipo.IdEntidadEquipo) : equipo.idEntidadEquipo != null ? String(equipo.idEntidadEquipo) : null,
+    nombreEquipo: equipo.NombreEquipo || equipo.nombreEquipo || "",
+    nombreEquipoAbrev: equipo.NombreEquipoAbrev || equipo.nombreEquipoAbrev || "",
+    nombreGrupo: equipo.NombreGrupo || equipo.DenoComp || equipo.nombreGrupo || "",
+    posicion: pickNumber(equipo.Posicion, equipo.posicion),
+    puntos: pickNumber(equipo.Puntos, equipo.puntos),
+    partidosJugados: pickNumber(equipo.PartidosJugados, equipo.partidosJugados),
+    partidosGanados: pickNumber(equipo.PartidosGanados, equipo.partidosGanados),
+    partidosEmpatados: pickNumber(equipo.PartidosEmpatados, equipo.partidosEmpatados),
+    partidosPerdidos: pickNumber(equipo.PartidosPerdidos, equipo.partidosPerdidos),
+    golesAFavor: pickNumber(equipo.GolesAFavor, equipo.golesAFavor),
+    golesEnContra: pickNumber(equipo.GolesEnContra, equipo.golesEnContra),
+    diferenciaGoles: goalDifference,
+  };
 }

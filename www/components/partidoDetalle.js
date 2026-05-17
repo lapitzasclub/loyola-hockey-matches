@@ -5,7 +5,7 @@ import {
   getPartido,
   subscribePartidoHubEvents,
 } from "../services.js";
-import { renderPartidoHeader } from "./partidoDetalleRender.js";
+import { renderPartidoHeader, renderPartidoHeaderSkeleton } from "./partidoDetalleRender.js";
 import {
   createDetalleState,
   escapeHtml,
@@ -32,6 +32,7 @@ import {
 } from "./partidoDetalleNavigation.js";
 import { bindPlayerLinks } from "./partidoDetallePlayerLinks.js";
 import { renderAll as renderDetalleState } from "./partidoDetalleRenderCoordinator.js";
+import { ensureBaseLayout } from "./partidoDetalleTabs.js";
 
 /**
  * Actualiza el contenido HTML de la cabecera del modal y deja una traza de depuración.
@@ -55,7 +56,8 @@ function setHeaderContent(headerEl, html, reason = "") {
  *
  * @returns {HTMLDivElement} Nodo raíz del modal recién montado.
  */
-function mountPartidoDetalleModal() {
+function mountPartidoDetalleModal(options = {}) {
+  const { instantOpen = false } = options;
   const modal = document.createElement("div");
   modal.className = "partido-detalle-modal";
   modal.innerHTML = `
@@ -80,7 +82,11 @@ function mountPartidoDetalleModal() {
   if (shellEl) shellEl.scrollTop = 0;
   if (bodyScrollEl) bodyScrollEl.scrollTop = 0;
 
-  requestAnimationFrame(() => modal.classList.add("is-open"));
+  if (instantOpen) {
+    modal.classList.add("is-open");
+  } else {
+    requestAnimationFrame(() => modal.classList.add("is-open"));
+  }
   document.body.classList.add("modal-abierto");
   syncMobileBackState();
   return modal;
@@ -95,6 +101,28 @@ function mountPartidoDetalleModal() {
 function bindPartidoDetalleModalControls(modal) {
   modal.querySelector(".partido-detalle-close").onclick = () => closePartidoDetalle();
   modal.querySelector(".partido-detalle-back").onclick = async () => {
+    const returnContext = window.__teamDetailReturnContext;
+    if (returnContext?.equipo) {
+      window.__teamDetailReturnContext = null;
+      const currentModal = document.querySelector(".partido-detalle-modal");
+      const mod = await import("./equipoDetalleModal.js");
+      await mod.openEquipoDetalle(returnContext.equipo, { preserveBodyLock: true, skipCloseExisting: true });
+      requestAnimationFrame(() => {
+        currentModal?.remove();
+        if (window.signalR?.enDirecto?.server?.salirDePartido && window.__partidoDetalleId) {
+          callPartidoHubServerMethod("salirDePartido", window.__partidoDetalleId);
+        }
+        if (window.__partidoDetalleUnsub) {
+          window.__partidoDetalleUnsub();
+          window.__partidoDetalleUnsub = null;
+        }
+        window.__partidoDetalleId = null;
+        window.__partidoDetalleState = null;
+        syncMobileBackState();
+      });
+      return;
+    }
+
     const state = window.__partidoDetalleState;
     if (!getViewStack(state).length) return;
     const headerEl = document.getElementById("partido-detalle-header-content");
@@ -113,10 +141,28 @@ function bindPartidoDetalleModalControls(modal) {
  * @param {string|number} idPartido Identificador del partido a abrir.
  * @returns {void}
  */
-export function openPartidoDetalle(idPartido) {
-  closePartidoDetalle({ immediate: true });
-  const modal = mountPartidoDetalleModal();
+export function openPartidoDetalle(idPartido, options = {}) {
+  const { preserveBodyLock = false, skipCloseExisting = false } = options;
+  if (!skipCloseExisting) {
+    closePartidoDetalle({ immediate: true, preserveBodyLock });
+  }
+  const modal = mountPartidoDetalleModal({ instantOpen: skipCloseExisting });
   bindPartidoDetalleModalControls(modal);
+
+  const returnContext = window.__teamDetailReturnContext;
+  const backBtn = modal.querySelector(".partido-detalle-back");
+  if (returnContext?.equipo && backBtn instanceof HTMLButtonElement) {
+    backBtn.hidden = false;
+    backBtn.disabled = false;
+  }
+
+  const headerEl = modal.querySelector("#partido-detalle-header-content");
+  const bodyEl = modal.querySelector("#partido-detalle-body");
+  if (headerEl instanceof HTMLElement && bodyEl instanceof HTMLElement) {
+    headerEl.innerHTML = renderPartidoHeaderSkeleton();
+    ensureBaseLayout(bodyEl, createDetalleState(idPartido));
+  }
+
   void cargarDetallePartido(idPartido);
 }
 
@@ -128,14 +174,16 @@ export function openPartidoDetalle(idPartido) {
  * @returns {void}
  */
 export function closePartidoDetalle(options = {}) {
-  const { immediate = false } = options;
+  const { immediate = false, preserveBodyLock = false } = options;
   const modal = document.querySelector(".partido-detalle-modal");
   if (!modal) return;
   if (modal.dataset.closing === "true") return;
 
   const cleanup = () => {
     modal.remove();
-    document.body.classList.remove("modal-abierto");
+    if (!preserveBodyLock) {
+      document.body.classList.remove("modal-abierto");
+    }
     if (window.signalR?.enDirecto?.server?.salirDePartido && window.__partidoDetalleId) {
       callPartidoHubServerMethod("salirDePartido", window.__partidoDetalleId);
     }
@@ -145,6 +193,7 @@ export function closePartidoDetalle(options = {}) {
     }
     window.__partidoDetalleId = null;
     window.__partidoDetalleState = null;
+    window.__teamDetailReturnContext = null;
     syncMobileBackState();
   };
 

@@ -469,6 +469,15 @@
 }
 
 .clas-team-cell {
+  cursor: pointer;
+}
+
+.clas-team-cell:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.clas-team-cell {
   display: flex;
   align-items: center;
   gap: 0.44rem;

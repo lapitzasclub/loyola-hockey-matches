@@ -7,6 +7,7 @@ import { t } from "../i18n.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
 import { comparePartidosByScheduledDate, decodeApiRaw, safeStr } from "../utils/helpers.js";
 import { renderClasificacionLoadingState, renderEmptyState, renderErrorState } from "./loadingStates.js";
+import { openEquipoDetalle } from "./equipoDetalleModal.js";
 
 const competitionLogoCache = new Map();
 
@@ -246,7 +247,7 @@ function renderTeamCell(equipo, logoMap, formMap) {
   const stableId = getStableTeamId(equipo);
   const recentForm = formMap.get(stableId) || [];
   return `
-    <div class="clas-team-cell">
+    <div class="clas-team-cell" data-clas-team='${safeStr(JSON.stringify(equipo))}' role="button" tabindex="0">
       <div class="clas-team-logo-wrap">${renderTeamLogo(logoMap, equipo)}</div>
       <div class="clas-team-copy">
         <span class="team-name">${safeStr(equipo?.NombreEquipo)}</span>
@@ -298,6 +299,7 @@ async function renderClasificacionContent(matchesList, raw, renderToken) {
   if (!isRenderStillValid()) return;
 
   const idCompeticion = data[0]?.IdCompeticion ?? null;
+  matchesList.dataset.clasCompeticionId = idCompeticion != null ? String(idCompeticion) : "";
   let partidos = [];
   if (idCompeticion) {
     const idsEquipos = Array.from(new Set(data.map((eq) => eq.IdEquipo || eq.IdEquipoComp)));
@@ -411,6 +413,7 @@ function renderClasificacionTable(grupo, equipos, selectedInfo, logoMap, formMap
   }
 
   table.appendChild(tbody);
+  bindClasificacionTeamButtons(table);
   try {
     localStorage.setItem(currKey, JSON.stringify(currData));
   } catch {}
@@ -503,6 +506,30 @@ function isFav(eqId, eqNombre, eqAbrev, selectedInfo) {
  * Obtiene la información del equipo seleccionado desde localStorage.
  * @returns {{selectedIdEquipo: string|null, selectedNombre: string|null, selectedAbrev: string|null}}
  */
+function bindClasificacionTeamButtons(rootEl) {
+  const competitionId = rootEl.closest("#matchesList")?.dataset?.clasCompeticionId || "";
+  rootEl.querySelectorAll("[data-clas-team]").forEach((node) => {
+    const open = async () => {
+      let equipo;
+      try {
+        equipo = JSON.parse(node.getAttribute("data-clas-team") || "null");
+      } catch {
+        equipo = null;
+      }
+      if (!equipo) return;
+      await openEquipoDetalle({ ...equipo, IdCompeticion: equipo.IdCompeticion ?? competitionId });
+    };
+
+    node.addEventListener("click", open);
+    node.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        void open();
+      }
+    });
+  });
+}
+
 function getSelectedEquipoInfo() {
   let selectedIdEquipo = null;
   let selectedNombre = null;
