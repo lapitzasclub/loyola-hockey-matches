@@ -55,6 +55,11 @@
 - Se eliminó ese `reverse()` y se mantuvo la racha en sentido temporal natural.
 - También se robusteció el cruce de IDs de equipo en clasificación (`IdEquipo` / `IdEquipoComp`) para evitar pérdidas de resultados según la competición.
 - Se validó el fix con trazas reales en navegador sobre el caso de `LOYOLA INDAUTXU A`, donde la racha quedó corregida.
+- Se rehízo bastante el `pull-to-refresh`: nueva sensación visual de separación entre capas, resistencia inicial, estados de texto más claros, caret con estados explícitos abajo/arriba, spinner de carga y mejor comportamiento en claro/oscuro.
+- Se corrigió la interferencia entre el `pull-to-refresh` y el scroll horizontal de la clasificación, manteniendo el scroll vertical normal de la página sobre la tabla.
+- Se añadió scroll al inicio al entrar en clasificación.
+- Se corrigieron varias carreras de navegación y refresco: si una carga de clasificación termina cuando el usuario ya ha vuelto a partidos, ya no debe repintar clasificación por detrás dejando la botonera incoherente.
+- Se preparó la versión `1.5.1`.
 - `npm run lint` siguió limpio tras los cambios.
 
 ## 2026-05-11

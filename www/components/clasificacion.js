@@ -246,7 +246,9 @@ function renderTeamCell(equipo, logoMap, formMap) {
  * @param {any} raw - Respuesta cruda de la API.
  */
 export function renderClasificacion(matchesList, raw) {
-  void renderClasificacionContent(matchesList, raw);
+  const renderToken = String(Date.now()) + Math.random().toString(36).slice(2);
+  matchesList.dataset.clasRenderToken = renderToken;
+  void renderClasificacionContent(matchesList, raw, renderToken);
 }
 
 /**
@@ -256,8 +258,13 @@ export function renderClasificacion(matchesList, raw) {
  * @param {any} raw Respuesta cruda de la API.
  * @returns {Promise<void>} Promesa resuelta al terminar la preparación.
  */
-async function renderClasificacionContent(matchesList, raw) {
+async function renderClasificacionContent(matchesList, raw, renderToken) {
   renderClasificacionLoadingState(matchesList);
+
+  const isRenderStillValid = () => {
+    const navClas = document.getElementById("navClas");
+    return matchesList.dataset.clasRenderToken === renderToken && !!navClas?.classList.contains("active");
+  };
   const data = decodeApiRaw(raw);
   if (data?.__error) {
     renderErrorState(matchesList, t("error", data.__error));
@@ -272,6 +279,8 @@ async function renderClasificacionContent(matchesList, raw) {
     return;
   }
 
+  if (!isRenderStillValid()) return;
+
   const idCompeticion = data[0]?.IdCompeticion ?? null;
   let partidos = [];
   if (idCompeticion) {
@@ -280,11 +289,14 @@ async function renderClasificacionContent(matchesList, raw) {
       partidos = await getCalendarioTodosEquipos(idCompeticion, idsEquipos);
     } catch {}
   }
+  if (!isRenderStillValid()) return;
   globalThis._partidosLoyola = partidos;
 
   const logoMap = await getCompetitionLogoMap(idCompeticion, data);
+  if (!isRenderStillValid()) return;
   const formMap = buildRecentFormMap(partidos, data);
 
+  if (!isRenderStillValid()) return;
   matchesList.innerHTML = "";
   const selectedInfo = getSelectedEquipoInfo();
   const grupos = groupClasificacionData(data);

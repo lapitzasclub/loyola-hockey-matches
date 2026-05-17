@@ -82,8 +82,9 @@
     <div id="sideMenuOverlay" class="side-menu-overlay"></div>
     <main>
       <div id="pullToRefresh" class="pull-to-refresh">
-        <span id="ptrIcon" class="ptr-icon">
+        <span id="ptrIcon" class="ptr-icon" data-state="down">
           <svg
+            class="ptr-icon-arrow"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             width="24"
@@ -98,6 +99,7 @@
               stroke-linejoin="round"
             />
           </svg>
+          <span class="ptr-icon-spinner" aria-hidden="true"></span>
         </span>
         <span id="ptrText" class="ptr-text">Desliza para refrescar...</span>
       </div>

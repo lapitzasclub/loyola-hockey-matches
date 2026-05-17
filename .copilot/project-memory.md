@@ -4,7 +4,7 @@
 
 Proyecto: `loyola-hockey-matches`
 
-Versión actual de trabajo: `1.5.0`
+Versión actual de trabajo: `1.5.1`
 
 Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de los equipos de hockey patines del Loyola. La base sigue conviviendo con servicios legacy de la FVP, pero en esta fase ya tiene una arquitectura dual Android + web pública, con frontend compartido y backend web desplegable en Cloudflare Pages Functions.
 
@@ -30,6 +30,7 @@ Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de 
 - `www/core/teamSelectorFlow.js` concentra ahora el flujo de onboarding, cambio de idioma y refresco del selector de equipo.
 - `www/core/initBootstrap.js` encapsula el bootstrap ligero de controles de tema, idioma, side menu y selector oculto.
 - `www/core/mobileBackCoordinator.js` concentra la lógica del botón atrás web/native y el cierre ordenado de overlays.
+- `www/core/pullToRefresh.js` quedó bastante más afinado a nivel gestual y visual, con estados explícitos del icono y guardas para no repintar clasificación fuera de contexto.
 - `www/components/` contiene renderizado de partidos, clasificación y detalle.
 - `www/components/equipoSelector.js` queda centrado en render del selector, mientras `www/components/equipoSelectorAccordion.js` encapsula el comportamiento del acordeón animado.
 - `www/services.js` concentra acceso a datos remotos, el unwrap de respuestas legacy y el bus local de eventos de partido.
@@ -93,6 +94,9 @@ El detalle de partido ha pasado de ser un archivo monolítico a una estructura m
 - La clasificación recibió una pasada fuerte de UX inspirada en la referencia del usuario: columna de posición compacta con caret encima, bloque de equipo con escudo y racha de 5 partidos, scroll horizontal con columnas sticky y ajuste agresivo de densidad para móvil.
 - Se detectó y corrigió un bug funcional en el orden cronológico real: la lista de partidos y la racha de clasificación no debían confiar en `Orden` cuando había aplazados, sino en `Fecha` + `Hora` reprogramadas con desempate estable.
 - Durante esa corrección apareció un segundo bug en clasificación: la racha se estaba invirtiendo visualmente al hacer `reverse()` tras quedarse con los últimos 5, y además hubo que robustecer el cruce entre `IdEquipo` e `IdEquipoComp` para no perder resultados según la competición.
+- Se rehízo y pulió el `pull-to-refresh` con sensación de apertura entre capas, resistencia inicial, estados visuales más claros (`Sigue tirando`, `Suelta`, `Actualizando`), caret/spinner explícitos y mejor lectura en claro/oscuro.
+- Se corrigió la convivencia entre `pull-to-refresh` y la tabla horizontal de clasificación: no debe dispararse por gestos laterales dominantes, pero tampoco bloquear el scroll vertical normal sobre la tabla.
+- Se corrigieron varias carreras de navegación: al cambiar de clasificación a partidos, ninguna carga asíncrona tardía de clasificación debe volver a pintar la vista si la pestaña activa ya no es clasificación.
 - Se abortó una extracción demasiado agresiva porque rompía visualmente la subvista de jugador.
 - La frontera segura comprobada ha sido:
   - helpers de stats
@@ -148,6 +152,7 @@ La base está claramente más sana que al inicio de esta fase:
 - las tablas de clasificación quedaron ya con scroll horizontal táctil real mediante `.clas-table-wrap`, evitando recortes silenciosos de columnas finales como GC y DG
 - la lista de partidos ya recoloca correctamente los aplazados según su nueva fecha/hora real
 - la racha de clasificación ya usa orden cronológico real y mantiene el sentido temporal correcto al pintar los últimos 5
+- el `pull-to-refresh` quedó bastante más pulido visualmente y ya no compite con el scroll horizontal de clasificación ni repinta vistas obsoletas al navegar
 - README y memoria técnica actualizados
 - módulos del detalle ya mucho mejor separados
 - onboarding real para primera selección de equipo
@@ -180,6 +185,7 @@ La base está claramente más sana que al inicio de esta fase:
 2. Preparar un icono iOS específico con más margen visual para evitar recorte feo en el icono de pantalla de inicio.
 3. Revisar si conviene optimizar la carga inicial para reducir fan-out de `GetParametrosCompeticion`.
 4. Revisar si existe en la API algún campo aún más fiable que `Fecha` + `Hora` para distinguir fecha original frente a fecha reprogramada en todos los calendarios legacy.
-5. Seguir reduciendo `partidoDetalle.js` solo si aparece otra frontera realmente clara.
-6. Si no, priorizar limpieza, JSDoc y endurecimiento técnico sobre más fragmentación.
-7. Mantener validación visual real después de cada iteración del detalle.
+5. Validar el `pull-to-refresh` en más móviles reales para afinar sensaciones del umbral, resistencia y transición visual entre claro/oscuro.
+6. Seguir reduciendo `partidoDetalle.js` solo si aparece otra frontera realmente clara.
+7. Si no, priorizar limpieza, JSDoc y endurecimiento técnico sobre más fragmentación.
+8. Mantener validación visual real después de cada iteración del detalle.

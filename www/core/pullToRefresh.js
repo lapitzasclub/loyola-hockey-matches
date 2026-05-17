@@ -18,108 +18,216 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
   const ptrIcon = document.getElementById("ptrIcon");
   const ptrText = document.getElementById("ptrText");
   const matchesList = document.getElementById("matches");
+  const main = document.querySelector("main");
+  const threshold = 52;
+  const maxPull = 96;
+  const activationDelta = 10;
+  const horizontalLockDelta = 12;
+  const horizontalBias = 1.15;
+  let startX = null;
   let startY = null;
   let pulling = false;
-  const threshold = 56;
   let refreshing = false;
+  let horizontalPanLocked = false;
+  let eligible = false;
+  let ptrTextSwapTimer = null;
+
+  function setPtrIconState(nextState) {
+    if (!ptrIcon) return;
+    ptrIcon.dataset.state = nextState;
+    ptrIcon.classList.toggle("is-ready", nextState === "up");
+  }
+
+  function setPtrText(nextText, { immediate = false } = {}) {
+    if (!ptrText) return;
+    if (ptrText.dataset.stateText === nextText) return;
+    if (ptrTextSwapTimer) {
+      clearTimeout(ptrTextSwapTimer);
+      ptrTextSwapTimer = null;
+    }
+
+    if (immediate) {
+      ptrText.classList.remove("is-changing");
+      ptrText.textContent = nextText;
+      ptrText.dataset.stateText = nextText;
+      return;
+    }
+
+    ptrText.classList.add("is-changing");
+    ptrTextSwapTimer = globalThis.setTimeout(() => {
+      ptrText.textContent = nextText;
+      ptrText.dataset.stateText = nextText;
+      ptrText.classList.remove("is-changing");
+      ptrTextSwapTimer = null;
+    }, 18);
+  }
+
+  function getResistedPull(delta) {
+    const rawClamped = Math.max(0, Math.min(delta, maxPull));
+    if (rawClamped <= 18) return rawClamped * 0.18;
+    if (rawClamped <= 42) return 3.24 + (rawClamped - 18) * 0.45;
+    return 14.04 + (rawClamped - 42) * 0.82;
+  }
+
   function resetPTR() {
-    if (ptr) ptr.classList.remove("active");
-    if (ptrIcon) ptrIcon.classList.remove("rotate");
-    if (ptrText) ptrText.textContent = "Desliza para refrescar...";
+    if (ptr) {
+      ptr.classList.remove("active", "ready", "refreshing", "cancelling");
+      ptr.style.removeProperty("--ptr-pull");
+      ptr.style.removeProperty("--ptr-progress");
+      ptr.style.removeProperty("--ptr-seam-opacity");
+    }
+    if (main) {
+      main.classList.remove("ptr-pulling", "ptr-ready", "ptr-refreshing");
+      main.style.removeProperty("--ptr-pull");
+      main.style.removeProperty("--ptr-progress");
+      main.style.removeProperty("--ptr-content-shift");
+      main.style.removeProperty("--ptr-content-scale");
+      main.style.removeProperty("--ptr-top-split");
+      main.style.removeProperty("--ptr-bottom-split");
+      main.style.removeProperty("--ptr-ambient-opacity");
+    }
+    setPtrIconState("down");
+    if (ptrTextSwapTimer) {
+      clearTimeout(ptrTextSwapTimer);
+      ptrTextSwapTimer = null;
+    }
+    if (ptrText) {
+      ptrText.classList.remove("is-changing");
+      ptrText.textContent = "Desliza para refrescar...";
+      ptrText.dataset.stateText = "Desliza para refrescar...";
+    }
     pulling = false;
+    horizontalPanLocked = false;
+    eligible = false;
+    startX = null;
     startY = null;
   }
 
-  // Detectar el elemento con scroll vertical
   function getScrollOwner() {
-    // matchesList suele ser <ul>, pero puede que el scroll esté en <main>
-    const main = document.querySelector("main");
     if (main && main.scrollHeight > main.clientHeight) return main;
-    if (matchesList && matchesList.scrollHeight > matchesList.clientHeight)
-      return matchesList;
-    // fallback: body
+    if (matchesList && matchesList.scrollHeight > matchesList.clientHeight) return matchesList;
     return document.scrollingElement || document.documentElement;
   }
 
-  if (matchesList) {
-    matchesList.addEventListener("touchstart", (e) => {
+  function isInsideHorizontalClassifier(target) {
+    if (!(target instanceof Element)) return false;
+    return !!target.closest(".clas-table-wrap");
+  }
+
+  function applyPullVisuals(delta) {
+    if (!ptr || !ptrIcon || !ptrText) return;
+    const clamped = Math.max(0, Math.min(getResistedPull(delta), maxPull));
+    const progress = Math.max(0, Math.min(clamped / threshold, 1));
+
+    ptr.classList.toggle("active", clamped > activationDelta);
+    ptr.classList.toggle("ready", progress >= 1);
+    ptr.style.setProperty("--ptr-pull", `${clamped}px`);
+    ptr.style.setProperty("--ptr-progress", progress.toFixed(3));
+
+    if (progress >= 1) {
+      setPtrIconState("up");
+      setPtrText("Suelta para refrescar...");
+    } else if (clamped > activationDelta) {
+      setPtrIconState("down");
+      setPtrText("Sigue tirando para refrescar...", { immediate: true });
+    } else {
+      setPtrIconState("down");
+      setPtrText("Desliza para refrescar...", { immediate: true });
+    }
+  }
+
+  const gestureHost = main || matchesList;
+
+  if (gestureHost) {
+    gestureHost.addEventListener("touchstart", (e) => {
       const scrollEl = getScrollOwner();
-      if (
-        (scrollEl.scrollTop <= 2 || scrollEl.scrollTop === 0) &&
-        !refreshing
-      ) {
-        startY = e.touches[0].clientY;
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      horizontalPanLocked = false;
+      eligible = isInsideHorizontalClassifier(e.target);
+      if ((scrollEl.scrollTop <= 2 || scrollEl.scrollTop === 0) && !refreshing) {
         pulling = true;
       } else {
         pulling = false;
+        startX = null;
         startY = null;
       }
-    });
-    matchesList.addEventListener("touchmove", (e) => {
-      if (!pulling || refreshing) return;
+    }, { passive: true });
+
+    gestureHost.addEventListener("touchmove", (e) => {
+      if (!pulling || refreshing || startY == null || startX == null) return;
       const scrollEl = getScrollOwner();
       if (!(scrollEl.scrollTop <= 2 || scrollEl.scrollTop === 0)) {
-        pulling = false;
-        ptr.classList.remove("active");
+        resetPTR();
         return;
       }
-      const delta = e.touches[0].clientY - startY;
-      if (!ptr || !ptrIcon || !ptrText) return;
-      if (delta > 10) {
-        ptr.classList.add("active");
-        if (delta > threshold) {
-          ptrIcon.classList.add("rotate");
-          ptrText.textContent = "Suelta para refrescar...";
-        } else {
-          ptrIcon.classList.remove("rotate");
-          ptrText.textContent = "Desliza para refrescar...";
-        }
-      } else {
-        ptr.classList.remove("active");
+
+      const touch = e.touches[0];
+      const deltaY = touch.clientY - startY;
+      const deltaX = touch.clientX - startX;
+      const absDeltaY = Math.abs(deltaY);
+      const absDeltaX = Math.abs(deltaX);
+
+      if (eligible && (horizontalPanLocked || (absDeltaX > horizontalLockDelta && absDeltaX > absDeltaY * horizontalBias))) {
+        horizontalPanLocked = true;
+        pulling = false;
+        resetPTR();
+        return;
       }
-    });
-    matchesList.addEventListener("touchend", async (e) => {
-      if (!pulling || refreshing) return;
+
+      if (deltaY <= 0) {
+        applyPullVisuals(0);
+        return;
+      }
+
+      applyPullVisuals(deltaY);
+    }, { passive: true });
+
+    gestureHost.addEventListener("touchend", async (e) => {
+      if (!pulling || refreshing || startY == null) {
+        resetPTR();
+        return;
+      }
       const scrollEl = getScrollOwner();
       if (!(scrollEl.scrollTop <= 2 || scrollEl.scrollTop === 0)) {
         resetPTR();
         return;
       }
       const delta = e.changedTouches[0].clientY - startY;
-      if (delta > threshold) {
+      const resistedPull = getResistedPull(delta);
+      if (resistedPull >= threshold) {
         refreshing = true;
-        if (ptrText) ptrText.textContent = "Actualizando...";
-        // Invalidar caché API antes de refrescar
+        if (ptr) ptr.classList.add("refreshing");
+        setPtrIconState("loading");
+        setPtrText("Actualizando...");
         invalidateApiCache();
         const navClasEl = document.getElementById("navClas");
+        const clasRefreshStarted = !!navClasEl?.classList.contains("active");
         try {
-          if (navClasEl?.classList.contains("active")) {
+          if (clasRefreshStarted) {
             const listEl = document.getElementById("matches");
             renderClasificacionLoadingState(listEl);
             if (!getEquipoSeleccionado()) {
-              if (
-                getEquipoSeleccionado() === null ||
-                getEquipoSeleccionado() === undefined
-              ) {
+              if (getEquipoSeleccionado() === null || getEquipoSeleccionado() === undefined) {
+                if (!navClasEl?.classList.contains("active")) return;
                 listEl.innerHTML = `<li>Selecciona un equipo Loyola</li>`;
                 setCompeticionHeader("");
               } else {
                 const [idComp] = getEquipoSeleccionado().split("|");
-                const eq = getEquiposLoyola().find(
-                  (e) => e.idCompeticion == idComp
-                );
-                setCompeticionHeader(eq?.nombreCompeticion || "");
+                const eq = getEquiposLoyola().find((team) => team.idCompeticion == idComp);
                 const raw = await getClasificacionLiga(idComp);
+                if (!navClasEl?.classList.contains("active")) return;
+                setCompeticionHeader(eq?.nombreCompeticion || "");
                 listEl.innerHTML = "";
                 renderClasificacion(listEl, raw);
               }
             } else {
               const [idComp] = getEquipoSeleccionado().split("|");
-              const eq = getEquiposLoyola().find(
-                (e) => e.idCompeticion == idComp
-              );
-              setCompeticionHeader(eq?.nombreCompeticion || "");
+              const eq = getEquiposLoyola().find((team) => team.idCompeticion == idComp);
               const raw = await getClasificacionLiga(idComp);
+              if (!navClasEl?.classList.contains("active")) return;
+              setCompeticionHeader(eq?.nombreCompeticion || "");
               listEl.innerHTML = "";
               renderClasificacion(listEl, raw);
             }
@@ -128,10 +236,7 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
           }
         } catch (error) {
           const listEl = document.getElementById("matches");
-          listEl.innerHTML = `<li>${t(
-            "error",
-            error?.message || String(error)
-          )}</li>`;
+          listEl.innerHTML = `<li>${t("error", error?.message || String(error))}</li>`;
         } finally {
           setTimeout(() => {
             refreshing = false;
@@ -139,8 +244,15 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
           }, 600);
         }
       } else {
-        resetPTR();
+        if (ptr) ptr.classList.add("cancelling");
+        setTimeout(() => {
+          if (!refreshing) resetPTR();
+        }, 160);
       }
-    });
+    }, { passive: true });
+
+    gestureHost.addEventListener("touchcancel", () => {
+      if (!refreshing) resetPTR();
+    }, { passive: true });
   }
 }

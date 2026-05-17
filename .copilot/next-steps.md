@@ -7,8 +7,9 @@
 - [ ] Revisar si conviene optimizar la carga inicial para reducir llamadas repetidas a `GetParametrosCompeticion`.
 - [ ] Mantener validación manual del detalle de partido y subvista de jugador tras cada cambio sensible.
 - [ ] Revisar si conviene unificar `getServiceUrl()` y `getAppApiUrl()` bajo una sola política de transporte para evitar futuras divergencias entre Android y web.
-- [ ] Validar la release 1.5.0 en los tres entornos: Android nativo, web local y Cloudflare Pages.
+- [ ] Validar la release 1.5.1 en los tres entornos: Android nativo, web local y Cloudflare Pages.
 - [ ] Verificar en más competiciones con aplazados que la lista de partidos y la racha de clasificación siguen el orden cronológico real esperado.
+- [ ] Validar en varios móviles reales las sensaciones del `pull-to-refresh` y revisar si conviene afinar un poco más resistencia, umbral o sombras según plataforma.
 - [ ] Revisar y pulir el pequeño "tembleque" visual de las columnas sticky en la tabla de clasificación durante el scroll horizontal móvil.
 
 ## Prioridad media

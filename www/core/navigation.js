@@ -16,6 +16,7 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
   const navPartidos = document.getElementById("navPartidos");
   const navClas = document.getElementById("navClas");
   const bottomNav = document.querySelector(".bottom-nav");
+  let clasLoadToken = 0;
 
   const setActiveTab = (tab) => {
     if (!navPartidos || !navClas || !bottomNav) return;
@@ -29,19 +30,26 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
     setActiveTab("partidos");
 
     navPartidos.addEventListener("click", async () => {
+      clasLoadToken += 1;
       setActiveTab("partidos");
       await mostrarPartidosYClasificacion();
     });
 
     navClas.addEventListener("click", async () => {
+      const loadToken = ++clasLoadToken;
       setActiveTab("clasificacion");
+      const main = document.querySelector("main");
       const screenContent = document.getElementById("screenContent");
+      if (main) {
+        main.scrollTo({ top: 0, behavior: "auto" });
+      }
       let matchesList = document.getElementById("matches");
       if (!matchesList && screenContent) {
         screenContent.innerHTML = '<ul id="matches"></ul>';
         matchesList = document.getElementById("matches");
       }
       if (!matchesList) return;
+      matchesList.scrollTop = 0;
       renderClasificacionLoadingState(matchesList);
       if (!getEquipoSeleccionado()) {
         renderTeamSelectionPromptState(matchesList);
@@ -53,9 +61,11 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
       setCompeticionHeader(eq?.nombreCompeticion || "");
       try {
         const raw = await getClasificacionLiga(idComp);
+        if (loadToken !== clasLoadToken || !navClas.classList.contains("active")) return;
         matchesList.innerHTML = "";
         renderClasificacion(matchesList, raw);
       } catch (e) {
+        if (loadToken !== clasLoadToken || !navClas.classList.contains("active")) return;
         matchesList.innerHTML = `<li>${t("error", e?.message || String(e))}</li>`;
       }
     });
