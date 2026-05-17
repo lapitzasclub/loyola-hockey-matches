@@ -5,6 +5,7 @@ import { setCompeticionHeader } from "./header.js";
 import { mostrarPantallaErrorGlobal } from "../state/errorOverlay.js";
 import { renderPartidos } from "../components/ui.js";
 import { renderPartidosLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
+import { renderEquipoSelectorSkeleton } from "../components/equipoSelector.js";
 import { preloadPartidoDetalleModule } from "../components/partidos.js";
 import { t, updateTexts } from "../i18n.js";
 import { applyTheme, listenSystemScheme } from "../theme.js";
@@ -47,6 +48,18 @@ export async function initApp() {
   const shouldShowOnboarding = !hasEquipoFavorito();
   if (shouldShowOnboarding) {
     setOnboardingActive(true);
+  }
+
+  if (shouldShowOnboarding) {
+    const screenContent = document.getElementById("screenContent");
+    if (screenContent) {
+      renderEquipoSelectorSkeleton(screenContent, "onboarding");
+    }
+  } else {
+    const initialMatchesList = ensureMatchesList();
+    if (initialMatchesList) {
+      renderPartidosLoadingState(initialMatchesList);
+    }
   }
 
   try {

@@ -296,6 +296,11 @@ body[data-theme="dark"] .match-error-shell {
   box-shadow: 0 10px 24px color-mix(in srgb, var(--color-shadow) 38%, transparent);
 }
 
+.match-skeleton-shell-proximo {
+  background: color-mix(in srgb, var(--color-proximo-partido-bg, #5f4f1b) 88%, var(--color-bg-card));
+  border-left: 5px solid var(--color-proximo-partido-border, #d0a327);
+}
+
 .match-skeleton-header,
 .match-skeleton-duelo,
 .match-skeleton-footer {
@@ -303,6 +308,15 @@ body[data-theme="dark"] .match-error-shell {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.match-skeleton-header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  align-items: flex-start;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .match-skeleton-duelo {
@@ -331,20 +345,52 @@ body[data-theme="dark"] .match-error-shell {
   height: 1.35rem;
 }
 
+.match-skeleton-calendar {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.5rem;
+  flex: 0 0 auto;
+}
+
 .match-skeleton-text-sm {
-  width: 5.5rem;
+  width: 7.2rem;
   height: 0.95rem;
+}
+
+.match-skeleton-text-sm.is-short {
+  width: 5.8rem;
 }
 
 .match-skeleton-text-md {
   width: 7.2rem;
-  height: 1rem;
+  height: 0.98rem;
+}
+
+.match-skeleton-text-md.is-short {
+  width: 5.8rem;
+}
+
+.match-skeleton-text-xs {
+  width: 4.9rem;
+  height: 0.82rem;
+}
+
+.match-skeleton-text-xs.is-short {
+  width: 4rem;
+}
+
+.match-skeleton-text-xs.is-tiny {
+  width: 3rem;
 }
 
 .match-skeleton-text-lg {
   width: 10rem;
   height: 0.95rem;
   margin-left: auto;
+}
+
+.match-skeleton-text-lg.is-wide {
+  width: 11.8rem;
 }
 
 .match-skeleton-logo {
@@ -362,6 +408,10 @@ body[data-theme="dark"] .match-error-shell {
   width: 4rem;
   height: 2rem;
   border-radius: 12px;
+}
+
+.match-skeleton-score-pending {
+  width: 5.4rem;
 }
 
 .match-skeleton-status {

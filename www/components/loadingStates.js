@@ -11,13 +11,17 @@ export function renderPartidosLoadingState(matchesList) {
     <li class="match-skeleton-card" aria-hidden="true">
       <div class="match-skeleton-shell">
         <div class="match-skeleton-header">
-          <span class="match-skeleton-block match-skeleton-pill"></span>
-          <span class="match-skeleton-block match-skeleton-text-sm"></span>
+          <div class="match-skeleton-header-copy">
+            <span class="match-skeleton-block match-skeleton-pill"></span>
+            <span class="match-skeleton-block match-skeleton-text-sm"></span>
+          </div>
+          <span class="match-skeleton-block match-skeleton-calendar"></span>
         </div>
         <div class="match-skeleton-duelo">
           <div class="match-skeleton-team">
             <span class="match-skeleton-block match-skeleton-logo"></span>
             <span class="match-skeleton-block match-skeleton-text-md"></span>
+            <span class="match-skeleton-block match-skeleton-text-xs"></span>
           </div>
           <div class="match-skeleton-center">
             <span class="match-skeleton-block match-skeleton-vs"></span>
@@ -25,7 +29,8 @@ export function renderPartidosLoadingState(matchesList) {
           </div>
           <div class="match-skeleton-team">
             <span class="match-skeleton-block match-skeleton-logo"></span>
-            <span class="match-skeleton-block match-skeleton-text-md"></span>
+            <span class="match-skeleton-block match-skeleton-text-md is-short"></span>
+            <span class="match-skeleton-block match-skeleton-text-xs is-tiny"></span>
           </div>
         </div>
         <div class="match-skeleton-footer">
@@ -36,13 +41,17 @@ export function renderPartidosLoadingState(matchesList) {
     <li class="match-skeleton-card" aria-hidden="true">
       <div class="match-skeleton-shell">
         <div class="match-skeleton-header">
-          <span class="match-skeleton-block match-skeleton-pill"></span>
-          <span class="match-skeleton-block match-skeleton-text-sm"></span>
+          <div class="match-skeleton-header-copy">
+            <span class="match-skeleton-block match-skeleton-pill"></span>
+            <span class="match-skeleton-block match-skeleton-text-sm is-short"></span>
+          </div>
+          <span class="match-skeleton-block match-skeleton-calendar"></span>
         </div>
         <div class="match-skeleton-duelo">
           <div class="match-skeleton-team">
             <span class="match-skeleton-block match-skeleton-logo"></span>
-            <span class="match-skeleton-block match-skeleton-text-md"></span>
+            <span class="match-skeleton-block match-skeleton-text-md is-short"></span>
+            <span class="match-skeleton-block match-skeleton-text-xs"></span>
           </div>
           <div class="match-skeleton-center">
             <span class="match-skeleton-block match-skeleton-vs"></span>
@@ -51,6 +60,37 @@ export function renderPartidosLoadingState(matchesList) {
           <div class="match-skeleton-team">
             <span class="match-skeleton-block match-skeleton-logo"></span>
             <span class="match-skeleton-block match-skeleton-text-md"></span>
+            <span class="match-skeleton-block match-skeleton-text-xs is-short"></span>
+          </div>
+        </div>
+        <div class="match-skeleton-footer">
+          <span class="match-skeleton-block match-skeleton-text-lg is-wide"></span>
+        </div>
+      </div>
+    </li>
+    <li class="match-skeleton-card" aria-hidden="true">
+      <div class="match-skeleton-shell match-skeleton-shell-proximo">
+        <div class="match-skeleton-header">
+          <div class="match-skeleton-header-copy">
+            <span class="match-skeleton-block match-skeleton-pill"></span>
+            <span class="match-skeleton-block match-skeleton-text-sm"></span>
+          </div>
+          <span class="match-skeleton-block match-skeleton-calendar"></span>
+        </div>
+        <div class="match-skeleton-duelo">
+          <div class="match-skeleton-team">
+            <span class="match-skeleton-block match-skeleton-logo"></span>
+            <span class="match-skeleton-block match-skeleton-text-md"></span>
+            <span class="match-skeleton-block match-skeleton-text-xs is-short"></span>
+          </div>
+          <div class="match-skeleton-center">
+            <span class="match-skeleton-block match-skeleton-vs"></span>
+            <span class="match-skeleton-block match-skeleton-score match-skeleton-score-pending"></span>
+          </div>
+          <div class="match-skeleton-team">
+            <span class="match-skeleton-block match-skeleton-logo"></span>
+            <span class="match-skeleton-block match-skeleton-text-md is-short"></span>
+            <span class="match-skeleton-block match-skeleton-text-xs is-tiny"></span>
           </div>
         </div>
         <div class="match-skeleton-footer">
@@ -58,7 +98,6 @@ export function renderPartidosLoadingState(matchesList) {
         </div>
       </div>
     </li>
-    <li class="match-skeleton-status">${t("loading")}</li>
   `;
 }
 
@@ -69,19 +108,11 @@ export function renderPartidosLoadingState(matchesList) {
  * @returns {void}
  */
 export function renderInitialTeamLoadingState(container) {
-  container.innerHTML = `
-    <section class="initial-team-loading" aria-live="polite">
-      <div class="initial-team-loading-card" aria-hidden="true">
-        <span class="match-skeleton-block match-skeleton-text-lg"></span>
-        <span class="match-skeleton-block match-skeleton-text-md"></span>
-        <div class="initial-team-loading-list">
-          <span class="match-skeleton-block match-skeleton-text-lg"></span>
-          <span class="match-skeleton-block match-skeleton-text-lg"></span>
-          <span class="match-skeleton-block match-skeleton-text-md"></span>
-        </div>
-      </div>
-    </section>
-  `;
+  container.innerHTML = '<ul id="matches"></ul>';
+  const matchesList = container.querySelector("#matches");
+  if (matchesList instanceof HTMLElement) {
+    renderPartidosLoadingState(matchesList);
+  }
 }
 
 /**
@@ -93,42 +124,135 @@ export function renderInitialTeamLoadingState(container) {
 export function renderClasificacionLoadingState(matchesList) {
   matchesList.innerHTML = `
     <li class="clas-card clas-skeleton-card" aria-hidden="true">
-      <div class="clas-skeleton-head">
-        <span class="clas-skeleton-block clas-skeleton-title"></span>
-        <span class="clas-skeleton-block clas-skeleton-pill"></span>
+      <div class="clas-skeleton-competition-head">
+        <span class="clas-skeleton-block clas-skeleton-competition-title"></span>
+        <span class="clas-skeleton-block clas-skeleton-chevron"></span>
       </div>
-      <div class="clas-skeleton-table">
-        <div class="clas-skeleton-row">
-          <span class="clas-skeleton-block clas-skeleton-pos"></span>
-          <span class="clas-skeleton-block clas-skeleton-team"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
+      <div class="clas-skeleton-table-shell">
+        <div class="clas-skeleton-table-head">
+          <span class="clas-skeleton-block clas-skeleton-th clas-skeleton-th-pos"></span>
+          <span class="clas-skeleton-block clas-skeleton-th clas-skeleton-th-team"></span>
+          <span class="clas-skeleton-block clas-skeleton-th clas-skeleton-th-pts"></span>
+          <span class="clas-skeleton-block clas-skeleton-th clas-skeleton-th-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-th clas-skeleton-th-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-th clas-skeleton-th-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-th clas-skeleton-th-num"></span>
+          <span class="clas-skeleton-block clas-skeleton-th clas-skeleton-th-num"></span>
         </div>
-        <div class="clas-skeleton-row">
-          <span class="clas-skeleton-block clas-skeleton-pos"></span>
-          <span class="clas-skeleton-block clas-skeleton-team"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-        </div>
-        <div class="clas-skeleton-row">
-          <span class="clas-skeleton-block clas-skeleton-pos"></span>
-          <span class="clas-skeleton-block clas-skeleton-team"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-        </div>
-        <div class="clas-skeleton-row">
-          <span class="clas-skeleton-block clas-skeleton-pos"></span>
-          <span class="clas-skeleton-block clas-skeleton-team"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
-          <span class="clas-skeleton-block clas-skeleton-num"></span>
+        <div class="clas-skeleton-table-body">
+          <div class="clas-skeleton-row">
+            <span class="clas-skeleton-block clas-skeleton-pos"></span>
+            <div class="clas-skeleton-team-cell">
+              <span class="clas-skeleton-block clas-skeleton-logo"></span>
+              <div class="clas-skeleton-team-copy">
+                <span class="clas-skeleton-block clas-skeleton-team-name"></span>
+                <div class="clas-skeleton-form">
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                </div>
+              </div>
+            </div>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+          </div>
+          <div class="clas-skeleton-row">
+            <span class="clas-skeleton-block clas-skeleton-pos"></span>
+            <div class="clas-skeleton-team-cell">
+              <span class="clas-skeleton-block clas-skeleton-logo"></span>
+              <div class="clas-skeleton-team-copy">
+                <span class="clas-skeleton-block clas-skeleton-team-name is-short"></span>
+                <div class="clas-skeleton-form">
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                </div>
+              </div>
+            </div>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+          </div>
+          <div class="clas-skeleton-row is-fav">
+            <span class="clas-skeleton-block clas-skeleton-pos"></span>
+            <div class="clas-skeleton-team-cell">
+              <span class="clas-skeleton-block clas-skeleton-logo"></span>
+              <div class="clas-skeleton-team-copy">
+                <span class="clas-skeleton-block clas-skeleton-team-name"></span>
+                <div class="clas-skeleton-form">
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                </div>
+              </div>
+            </div>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+          </div>
+          <div class="clas-skeleton-row">
+            <span class="clas-skeleton-block clas-skeleton-pos"></span>
+            <div class="clas-skeleton-team-cell">
+              <span class="clas-skeleton-block clas-skeleton-logo"></span>
+              <div class="clas-skeleton-team-copy">
+                <span class="clas-skeleton-block clas-skeleton-team-name is-tiny"></span>
+                <div class="clas-skeleton-form">
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                </div>
+              </div>
+            </div>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+          </div>
+          <div class="clas-skeleton-row">
+            <span class="clas-skeleton-block clas-skeleton-pos"></span>
+            <div class="clas-skeleton-team-cell">
+              <span class="clas-skeleton-block clas-skeleton-logo"></span>
+              <div class="clas-skeleton-team-copy">
+                <span class="clas-skeleton-block clas-skeleton-team-name is-short"></span>
+                <div class="clas-skeleton-form">
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                  <span class="clas-skeleton-block clas-skeleton-form-chip"></span>
+                </div>
+              </div>
+            </div>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+            <span class="clas-skeleton-block clas-skeleton-num"></span>
+          </div>
         </div>
       </div>
     </li>
-    <li class="match-skeleton-status">${t("loading")}</li>
   `;
 }
 

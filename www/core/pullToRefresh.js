@@ -93,8 +93,8 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
     }
     if (ptrText) {
       ptrText.classList.remove("is-changing");
-      ptrText.textContent = "Desliza para refrescar...";
-      ptrText.dataset.stateText = "Desliza para refrescar...";
+      ptrText.textContent = t("ptr_pull_hint");
+      ptrText.dataset.stateText = t("ptr_pull_hint");
     }
     pulling = false;
     horizontalPanLocked = false;
@@ -126,13 +126,13 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
 
     if (progress >= 1) {
       setPtrIconState("up");
-      setPtrText("Suelta para refrescar...");
+      setPtrText(t("ptr_release"));
     } else if (clamped > activationDelta) {
       setPtrIconState("down");
-      setPtrText("Sigue tirando para refrescar...", { immediate: true });
+      setPtrText(t("ptr_pull_more"), { immediate: true });
     } else {
       setPtrIconState("down");
-      setPtrText("Desliza para refrescar...", { immediate: true });
+      setPtrText(t("ptr_pull_hint"), { immediate: true });
     }
   }
 
@@ -200,7 +200,7 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
         refreshing = true;
         if (ptr) ptr.classList.add("refreshing");
         setPtrIconState("loading");
-        setPtrText("Actualizando...");
+        setPtrText(t("ptr_refreshing"));
         invalidateApiCache();
         const navClasEl = document.getElementById("navClas");
         const clasRefreshStarted = !!navClasEl?.classList.contains("active");

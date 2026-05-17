@@ -169,9 +169,9 @@ function buildRecentFormMap(partidos, equipos) {
 function renderRecentForm(form) {
   if (!Array.isArray(form) || form.length === 0) return "";
   return `
-    <div class="clas-team-form" aria-label="Últimos cinco partidos">
+    <div class="clas-team-form" aria-label="${t("clas_form_aria")}">
       ${form.map((result) => `
-        <span class="clas-form-chip is-${result.toLowerCase()}" aria-label="${result === "V" ? "Victoria" : result === "E" ? "Empate" : "Derrota"}">${result}</span>
+        <span class="clas-form-chip is-${result.toLowerCase()}" aria-label="${result === "V" ? t("clas_form_win") : result === "E" ? t("clas_form_draw") : t("clas_form_loss")}">${result}</span>
       `).join("")}
     </div>
   `;
@@ -204,9 +204,9 @@ function renderPositionCell(equipo, prevPosMap) {
 
   if (typeof prevPos === "number") {
     if (Number(equipo?.Posicion) < prevPos) {
-      caretHtml = '<span class="clas-pos-caret is-up" aria-label="Sube">▲</span>';
+      caretHtml = `<span class="clas-pos-caret is-up" aria-label="${t("clas_pos_up")}">▲</span>`;
     } else if (Number(equipo?.Posicion) > prevPos) {
-      caretHtml = '<span class="clas-pos-caret is-down" aria-label="Baja">▼</span>';
+      caretHtml = `<span class="clas-pos-caret is-down" aria-label="${t("clas_pos_down")}">▼</span>`;
     }
   }
 
@@ -351,7 +351,7 @@ function renderClasificacionTable(grupo, equipos, selectedInfo, logoMap, formMap
     <thead>
       <tr>
         <th class="col-pos">#</th>
-        <th class="col-team">${t("team") || "Equipo"}</th>
+        <th class="col-team">${t("clas_team_header")}</th>
         <th class="col-pts">Pts</th>
         <th class="col-num">PJ</th>
         <th class="col-num">PG</th>
