@@ -45,6 +45,18 @@
 - Se eliminaron heurísticas frágiles basadas en comparar cadenas ya traducidas y se sustituyeron por claves de i18n dedicadas del detalle.
 - La build se volvió a verificar tras la pasada de contraste e i18n del detalle.
 
+## 2026-05-17
+
+- Se revisó un bug en clasificación y calendario con partidos aplazados: la lista de partidos sí debía recolocar encuentros por fecha/hora reprogramadas reales, no por `Orden` de jornada.
+- Se añadió en `www/utils/helpers.js` un comparador cronológico compartido (`comparePartidosByScheduledDate`) basado en `Fecha` + `Hora`, con fallback a mediodía y desempate por `Orden` e `IdPartido`.
+- `www/components/partidos.js` pasó a ordenar localmente el calendario antes de renderizarlo, corrigiendo la posición visible de partidos aplazados con nueva fecha.
+- `www/components/clasificacion.js` pasó a calcular la racha reciente usando ese mismo orden cronológico real.
+- Durante la validación se detectó un segundo bug: la racha se invertía visualmente porque después de coger los últimos 5 se aplicaba `reverse()`, produciendo secuencias como `D,V,D` cuando la secuencia temporal real era `D,D,V`.
+- Se eliminó ese `reverse()` y se mantuvo la racha en sentido temporal natural.
+- También se robusteció el cruce de IDs de equipo en clasificación (`IdEquipo` / `IdEquipoComp`) para evitar pérdidas de resultados según la competición.
+- Se validó el fix con trazas reales en navegador sobre el caso de `LOYOLA INDAUTXU A`, donde la racha quedó corregida.
+- `npm run lint` siguió limpio tras los cambios.
+
 ## 2026-05-11
 
 - Se retomó el proyecto con foco en refactor seguro, Sonar/JSDoc, clasificación, tarjetas de partido y nuevo selector Loyola reutilizable.

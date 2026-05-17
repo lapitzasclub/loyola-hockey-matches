@@ -36,6 +36,7 @@ Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de 
 - `www/servicesCompetitionCatalog.js` encapsula el catálogo Loyola de competiciones, cachés y agregación de equipos.
 - `www/servicesShared.js` centraliza constantes compartidas de transporte legacy.
 - `www/components/clasificacion.js` ahora enriquece la tabla con racha reciente, escudos y layout compacto responsive.
+- `www/utils/helpers.js` centraliza ahora el comparador cronológico real de partidos (`fecha + hora`, con fallback) reutilizado por partidos y clasificación.
 - `www/styles/components-partido-detalle.css` contiene el estilo del modal de detalle de partido.
 
 ## Estado actual del detalle de partido
@@ -90,6 +91,8 @@ El detalle de partido ha pasado de ser un archivo monolítico a una estructura m
 - El refactor del detalle de jugador se rehízo de forma conservadora, en cortes pequeños y validados uno a uno.
 - La siguiente fase de refactor se amplió a `services.js`, `core/main.js` y `core/init.js`, priorizando fronteras seguras, menos complejidad cognitiva y sustitución progresiva de `window` por `globalThis` cuando procede.
 - La clasificación recibió una pasada fuerte de UX inspirada en la referencia del usuario: columna de posición compacta con caret encima, bloque de equipo con escudo y racha de 5 partidos, scroll horizontal con columnas sticky y ajuste agresivo de densidad para móvil.
+- Se detectó y corrigió un bug funcional en el orden cronológico real: la lista de partidos y la racha de clasificación no debían confiar en `Orden` cuando había aplazados, sino en `Fecha` + `Hora` reprogramadas con desempate estable.
+- Durante esa corrección apareció un segundo bug en clasificación: la racha se estaba invirtiendo visualmente al hacer `reverse()` tras quedarse con los últimos 5, y además hubo que robustecer el cruce entre `IdEquipo` e `IdEquipoComp` para no perder resultados según la competición.
 - Se abortó una extracción demasiado agresiva porque rompía visualmente la subvista de jugador.
 - La frontera segura comprobada ha sido:
   - helpers de stats
@@ -143,6 +146,8 @@ La base está claramente más sana que al inicio de esta fase:
 - lint limpio
 - build web validada tras cada extracción importante
 - las tablas de clasificación quedaron ya con scroll horizontal táctil real mediante `.clas-table-wrap`, evitando recortes silenciosos de columnas finales como GC y DG
+- la lista de partidos ya recoloca correctamente los aplazados según su nueva fecha/hora real
+- la racha de clasificación ya usa orden cronológico real y mantiene el sentido temporal correcto al pintar los últimos 5
 - README y memoria técnica actualizados
 - módulos del detalle ya mucho mejor separados
 - onboarding real para primera selección de equipo
@@ -174,6 +179,7 @@ La base está claramente más sana que al inicio de esta fase:
 1. Probar la web pública en más iPhone/iPad y validar instalación real como webapp desde pantalla de inicio.
 2. Preparar un icono iOS específico con más margen visual para evitar recorte feo en el icono de pantalla de inicio.
 3. Revisar si conviene optimizar la carga inicial para reducir fan-out de `GetParametrosCompeticion`.
-4. Seguir reduciendo `partidoDetalle.js` solo si aparece otra frontera realmente clara.
-5. Si no, priorizar limpieza, JSDoc y endurecimiento técnico sobre más fragmentación.
-6. Mantener validación visual real después de cada iteración del detalle.
+4. Revisar si existe en la API algún campo aún más fiable que `Fecha` + `Hora` para distinguir fecha original frente a fecha reprogramada en todos los calendarios legacy.
+5. Seguir reduciendo `partidoDetalle.js` solo si aparece otra frontera realmente clara.
+6. Si no, priorizar limpieza, JSDoc y endurecimiento técnico sobre más fragmentación.
+7. Mantener validación visual real después de cada iteración del detalle.

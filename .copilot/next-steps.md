@@ -8,12 +8,14 @@
 - [ ] Mantener validación manual del detalle de partido y subvista de jugador tras cada cambio sensible.
 - [ ] Revisar si conviene unificar `getServiceUrl()` y `getAppApiUrl()` bajo una sola política de transporte para evitar futuras divergencias entre Android y web.
 - [ ] Validar la release 1.5.0 en los tres entornos: Android nativo, web local y Cloudflare Pages.
+- [ ] Verificar en más competiciones con aplazados que la lista de partidos y la racha de clasificación siguen el orden cronológico real esperado.
 - [ ] Revisar y pulir el pequeño "tembleque" visual de las columnas sticky en la tabla de clasificación durante el scroll horizontal móvil.
 
 ## Prioridad media
 
 - [ ] Revisar `www/services.js` para separar helpers o dominios sin romper el flujo legacy.
 - [ ] Evaluar si la racha de 5 partidos y el layout enriquecido de clasificación necesitan algún ajuste adicional de densidad para móviles muy estrechos.
+- [ ] Revisar si la API legacy expone algún campo más fiable que `Fecha` + `Hora` para reflejar reprogramaciones frente a orden/jornada original.
 - [ ] Revisar si `renderJugadorSubview` debe quedarse en el coordinador o si merece un módulo propio sin comprometer la UX.
 - [ ] Revisar la integración SignalR en runtime web público y documentar mejor el flujo completo de eventos.
 - [ ] Revisar dependencias legacy que ya no aportan valor claro.

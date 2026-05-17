@@ -5,7 +5,7 @@ import { ENTITY_LOGO_BASE_URL } from "../servicesShared.js";
 import { getEquipoLabel } from "../equipo.js";
 import { t } from "../i18n.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
-import { decodeApiRaw, safeStr } from "../utils/helpers.js";
+import { comparePartidosByScheduledDate, decodeApiRaw, safeStr } from "../utils/helpers.js";
 import { renderClasificacionLoadingState, renderEmptyState, renderErrorState } from "./loadingStates.js";
 
 const competitionLogoCache = new Map();
@@ -109,16 +109,34 @@ async function getCompetitionLogoMap(idCompeticion, equipos) {
  * @param {Array<object>} partidos Partidos de la competición.
  * @returns {Map<string, Array<"V"|"E"|"D">>} Racha por equipo.
  */
-function buildRecentFormMap(partidos) {
+function buildRecentFormMap(partidos, equipos) {
   const formMap = new Map();
+  const aliasMap = new Map();
+
+  for (const equipo of Array.isArray(equipos) ? equipos : []) {
+    const ids = [equipo?.IdEquipo, equipo?.IdEquipoComp]
+      .filter((value) => value != null && value !== "")
+      .map((value) => String(value));
+    for (const id of ids) {
+      if (!aliasMap.has(id)) aliasMap.set(id, new Set());
+      for (const otherId of ids) aliasMap.get(id).add(otherId);
+    }
+  }
+
+  const pushResult = (teamId, result) => {
+    const aliases = aliasMap.get(teamId);
+    const targetIds = aliases && aliases.size ? Array.from(aliases) : [teamId];
+    for (const targetId of targetIds) {
+      if (!targetId) continue;
+      if (!formMap.has(targetId)) formMap.set(targetId, []);
+      formMap.get(targetId).push(result);
+    }
+  };
+
   const finishedMatches = partidos
     .filter(isFinishedMatch)
     .slice()
-    .sort((a, b) => {
-      const orderDiff = Number(a?.Orden || 0) - Number(b?.Orden || 0);
-      if (orderDiff !== 0) return orderDiff;
-      return Number(a?.IdPartido || 0) - Number(b?.IdPartido || 0);
-    });
+    .sort(comparePartidosByScheduledDate);
 
   for (const partido of finishedMatches) {
     const localId = String(partido?.IdEquipoLocal || "");
@@ -127,18 +145,16 @@ function buildRecentFormMap(partidos) {
     const golesVisit = Number(partido?.GolesVisit || 0);
 
     if (localId) {
-      if (!formMap.has(localId)) formMap.set(localId, []);
-      formMap.get(localId).push(golesLocal > golesVisit ? "V" : golesLocal < golesVisit ? "D" : "E");
+      pushResult(localId, golesLocal > golesVisit ? "V" : golesLocal < golesVisit ? "D" : "E");
     }
 
     if (visitId) {
-      if (!formMap.has(visitId)) formMap.set(visitId, []);
-      formMap.get(visitId).push(golesVisit > golesLocal ? "V" : golesVisit < golesLocal ? "D" : "E");
+      pushResult(visitId, golesVisit > golesLocal ? "V" : golesVisit < golesLocal ? "D" : "E");
     }
   }
 
   for (const [teamId, form] of formMap.entries()) {
-    formMap.set(teamId, form.slice(-5).reverse());
+    formMap.set(teamId, form.slice(-5));
   }
 
   return formMap;
@@ -267,7 +283,7 @@ async function renderClasificacionContent(matchesList, raw) {
   globalThis._partidosLoyola = partidos;
 
   const logoMap = await getCompetitionLogoMap(idCompeticion, data);
-  const formMap = buildRecentFormMap(partidos);
+  const formMap = buildRecentFormMap(partidos, data);
 
   matchesList.innerHTML = "";
   const selectedInfo = getSelectedEquipoInfo();

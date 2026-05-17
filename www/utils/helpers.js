@@ -58,6 +58,73 @@ export function parseFecha(fechaStr) {
 }
 
 /**
+ * Parsea una hora en formato HH:mm o HH:mm:ss.
+ *
+ * @param {string|number|null|undefined} horaStr Hora de entrada.
+ * @returns {{hours: number, minutes: number, seconds: number}|null} Partes válidas o null.
+ */
+export function parseHoraParts(horaStr) {
+  if (horaStr == null || horaStr === "") return null;
+  const text = String(horaStr).trim();
+  const match = text.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (!match) return null;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const seconds = Number(match[3] || 0);
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    Number.isNaN(seconds) ||
+    hours < 0 || hours > 23 ||
+    minutes < 0 || minutes > 59 ||
+    seconds < 0 || seconds > 59
+  ) {
+    return null;
+  }
+
+  return { hours, minutes, seconds };
+}
+
+/**
+ * Construye una fecha-hora local combinando la fecha del partido y su hora programada.
+ *
+ * @param {object} partido Partido del calendario.
+ * @returns {Date|null} Fecha local completa o null si no hay fecha válida.
+ */
+export function getPartidoDateTime(partido) {
+  const dateObj = parseFecha(partido?.Fecha);
+  if (!dateObj || Number.isNaN(dateObj.getTime())) return null;
+
+  const hora = parseHoraParts(partido?.Hora);
+  if (hora) {
+    dateObj.setHours(hora.hours, hora.minutes, hora.seconds, 0);
+  } else {
+    dateObj.setHours(12, 0, 0, 0);
+  }
+
+  return dateObj;
+}
+
+/**
+ * Compara dos partidos por fecha/hora real y usa el orden original como desempate estable.
+ *
+ * @param {object} a Partido A.
+ * @param {object} b Partido B.
+ * @returns {number} Valor compatible con Array.sort.
+ */
+export function comparePartidosByScheduledDate(a, b) {
+  const timeA = getPartidoDateTime(a)?.getTime() ?? Number.POSITIVE_INFINITY;
+  const timeB = getPartidoDateTime(b)?.getTime() ?? Number.POSITIVE_INFINITY;
+  if (timeA !== timeB) return timeA - timeB;
+
+  const orderDiff = Number(a?.Orden || 0) - Number(b?.Orden || 0);
+  if (orderDiff !== 0) return orderDiff;
+
+  return Number(a?.IdPartido || 0) - Number(b?.IdPartido || 0);
+}
+
+/**
  * Formatea una fecha numérica según el idioma actual o el indicado.
  * - es: DD/MM/YYYY
  * - eu: YYYY/MM/DD

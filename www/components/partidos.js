@@ -5,7 +5,7 @@ import { getLang, t } from "../i18n.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { getParametrosCompeticion } from "../services.js";
 import { createCalendarButton } from "../utils/calendar.js";
-import { extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
+import { comparePartidosByScheduledDate, extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
 import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml, scrollToProximo } from "../utils/partidosHelpers.js";
 import { renderEmptyState, renderErrorState } from "./loadingStates.js";
 
@@ -95,15 +95,16 @@ function renderTeamLogo(logoMap, equipoCompId, nombre) {
  */
 export async function renderPartidos(matchesList, raw) {
   const { error, partidos } = extractPartidos(raw);
+  const partidosOrdenados = Array.isArray(partidos) ? partidos.slice().sort(comparePartidosByScheduledDate) : [];
   // Exponer el histórico de partidos para la clasificación
-  if (Array.isArray(partidos)) {
-    window._partidosLoyola = partidos;
+  if (Array.isArray(partidosOrdenados)) {
+    window._partidosLoyola = partidosOrdenados;
   }
   if (error) {
     renderErrorState(matchesList, t("error", error));
     return;
   }
-  if (!partidos.length) {
+  if (!partidosOrdenados.length) {
     renderEmptyState(matchesList, t("no_matches", getEquipoLabel()));
     return;
   }
@@ -112,11 +113,11 @@ export async function renderPartidos(matchesList, raw) {
   const equipoSel = getEquipoNombreCompleto();
   const lang = getLang() === "eu" ? "eu" : "es";
   const now = new Date();
-  const proximoIdx = getProximoPartidoIdx(partidos, now);
+  const proximoIdx = getProximoPartidoIdx(partidosOrdenados, now);
   const logoMap = await getCompetitionLogoMap();
   let proximoLi = null;
-  for (let idx = 0; idx < partidos.length; idx++) {
-    const p = partidos[idx];
+  for (let idx = 0; idx < partidosOrdenados.length; idx++) {
+    const p = partidosOrdenados[idx];
     const li = renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap);
     if (idx === proximoIdx) proximoLi = li;
     // Abrir detalle de partido al hacer click
