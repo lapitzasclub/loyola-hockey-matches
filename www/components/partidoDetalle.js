@@ -117,7 +117,7 @@ export function openPartidoDetalle(idPartido) {
   closePartidoDetalle({ immediate: true });
   const modal = mountPartidoDetalleModal();
   bindPartidoDetalleModalControls(modal);
-  cargarDetallePartido(idPartido);
+  void cargarDetallePartido(idPartido);
 }
 
 /**
@@ -242,13 +242,6 @@ function renderSubview(state) {
   return renderDetalleSubview(state);
 }
 
-
-/**
- * Carga el detalle completo del partido, engancha SignalR y activa el render reactivo del modal.
- *
- * @param {string|number} idPartido Identificador del partido a cargar.
- * @returns {Promise<void>} Promesa resuelta al terminar la carga inicial.
- */
 async function cargarDetallePartido(idPartido) {
   await waitForSignalRProxy();
   console.log("[SignalR] Esperando conexión activa del hub...");
