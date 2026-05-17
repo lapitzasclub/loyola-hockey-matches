@@ -39,36 +39,6 @@ export function renderPartidosLoadingState(matchesList) {
       </div>
     </li>
     <li class="match-skeleton-card" aria-hidden="true">
-      <div class="match-skeleton-shell">
-        <div class="match-skeleton-header">
-          <div class="match-skeleton-header-copy">
-            <span class="match-skeleton-block match-skeleton-pill"></span>
-            <span class="match-skeleton-block match-skeleton-text-sm is-short"></span>
-          </div>
-          <span class="match-skeleton-block match-skeleton-calendar"></span>
-        </div>
-        <div class="match-skeleton-duelo">
-          <div class="match-skeleton-team">
-            <span class="match-skeleton-block match-skeleton-logo"></span>
-            <span class="match-skeleton-block match-skeleton-text-md is-short"></span>
-            <span class="match-skeleton-block match-skeleton-text-xs"></span>
-          </div>
-          <div class="match-skeleton-center">
-            <span class="match-skeleton-block match-skeleton-vs"></span>
-            <span class="match-skeleton-block match-skeleton-score"></span>
-          </div>
-          <div class="match-skeleton-team">
-            <span class="match-skeleton-block match-skeleton-logo"></span>
-            <span class="match-skeleton-block match-skeleton-text-md"></span>
-            <span class="match-skeleton-block match-skeleton-text-xs is-short"></span>
-          </div>
-        </div>
-        <div class="match-skeleton-footer">
-          <span class="match-skeleton-block match-skeleton-text-lg is-wide"></span>
-        </div>
-      </div>
-    </li>
-    <li class="match-skeleton-card" aria-hidden="true">
       <div class="match-skeleton-shell match-skeleton-shell-proximo">
         <div class="match-skeleton-header">
           <div class="match-skeleton-header-copy">
@@ -95,6 +65,36 @@ export function renderPartidosLoadingState(matchesList) {
         </div>
         <div class="match-skeleton-footer">
           <span class="match-skeleton-block match-skeleton-text-lg"></span>
+        </div>
+      </div>
+    </li>
+    <li class="match-skeleton-card" aria-hidden="true">
+      <div class="match-skeleton-shell">
+        <div class="match-skeleton-header">
+          <div class="match-skeleton-header-copy">
+            <span class="match-skeleton-block match-skeleton-pill"></span>
+            <span class="match-skeleton-block match-skeleton-text-sm is-short"></span>
+          </div>
+          <span class="match-skeleton-block match-skeleton-calendar"></span>
+        </div>
+        <div class="match-skeleton-duelo">
+          <div class="match-skeleton-team">
+            <span class="match-skeleton-block match-skeleton-logo"></span>
+            <span class="match-skeleton-block match-skeleton-text-md is-short"></span>
+            <span class="match-skeleton-block match-skeleton-text-xs"></span>
+          </div>
+          <div class="match-skeleton-center">
+            <span class="match-skeleton-block match-skeleton-vs"></span>
+            <span class="match-skeleton-block match-skeleton-score"></span>
+          </div>
+          <div class="match-skeleton-team">
+            <span class="match-skeleton-block match-skeleton-logo"></span>
+            <span class="match-skeleton-block match-skeleton-text-md"></span>
+            <span class="match-skeleton-block match-skeleton-text-xs is-short"></span>
+          </div>
+        </div>
+        <div class="match-skeleton-footer">
+          <span class="match-skeleton-block match-skeleton-text-lg is-wide"></span>
         </div>
       </div>
     </li>

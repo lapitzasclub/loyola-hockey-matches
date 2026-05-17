@@ -112,12 +112,14 @@ async function getCompetitionLogoMap(idCompeticion, equipos) {
 function buildRecentFormMap(partidos, equipos) {
   const formMap = new Map();
   const aliasMap = new Map();
+  const groupTeamIds = new Set();
 
   for (const equipo of Array.isArray(equipos) ? equipos : []) {
     const ids = [equipo?.IdEquipo, equipo?.IdEquipoComp]
       .filter((value) => value != null && value !== "")
       .map((value) => String(value));
     for (const id of ids) {
+      groupTeamIds.add(id);
       if (!aliasMap.has(id)) aliasMap.set(id, new Set());
       for (const otherId of ids) aliasMap.get(id).add(otherId);
     }
@@ -127,14 +129,19 @@ function buildRecentFormMap(partidos, equipos) {
     const aliases = aliasMap.get(teamId);
     const targetIds = aliases && aliases.size ? Array.from(aliases) : [teamId];
     for (const targetId of targetIds) {
-      if (!targetId) continue;
+      if (!targetId || !groupTeamIds.has(targetId)) continue;
       if (!formMap.has(targetId)) formMap.set(targetId, []);
       formMap.get(targetId).push(result);
     }
   };
 
   const finishedMatches = partidos
-    .filter(isFinishedMatch)
+    .filter((partido) => {
+      if (!isFinishedMatch(partido)) return false;
+      const localId = String(partido?.IdEquipoLocal || "");
+      const visitId = String(partido?.IdEquipoVisit || "");
+      return groupTeamIds.has(localId) && groupTeamIds.has(visitId);
+    })
     .slice()
     .sort(comparePartidosByScheduledDate);
 
@@ -150,6 +157,15 @@ function buildRecentFormMap(partidos, equipos) {
 
     if (visitId) {
       pushResult(visitId, golesVisit > golesLocal ? "V" : golesVisit < golesLocal ? "D" : "E");
+    }
+  }
+
+  for (const equipo of Array.isArray(equipos) ? equipos : []) {
+    const ids = [equipo?.IdEquipo, equipo?.IdEquipoComp]
+      .filter((value) => value != null && value !== "")
+      .map((value) => String(value));
+    for (const id of ids) {
+      if (!formMap.has(id)) formMap.set(id, []);
     }
   }
 
@@ -294,22 +310,21 @@ async function renderClasificacionContent(matchesList, raw, renderToken) {
 
   const logoMap = await getCompetitionLogoMap(idCompeticion, data);
   if (!isRenderStillValid()) return;
-  const formMap = buildRecentFormMap(partidos, data);
 
-  if (!isRenderStillValid()) return;
   matchesList.innerHTML = "";
   const selectedInfo = getSelectedEquipoInfo();
   const grupos = groupClasificacionData(data);
   const gruposKeys = Object.keys(grupos);
   if (gruposKeys.length === 1) {
     const grupo = gruposKeys[0];
+    const formMap = buildRecentFormMap(partidos, grupos[grupo]);
     const table = renderClasificacionTable(grupo, grupos[grupo], selectedInfo, logoMap, formMap);
     const tableWrap = document.createElement("div");
     tableWrap.className = "clas-table-wrap";
     tableWrap.appendChild(table);
     matchesList.appendChild(tableWrap);
   } else {
-    renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo, logoMap, formMap);
+    renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo, logoMap, partidos);
   }
 }
 
@@ -413,7 +428,7 @@ function renderClasificacionTable(grupo, equipos, selectedInfo, logoMap, formMap
  * @param {Map<string, Array<"V"|"E"|"D">>} formMap Mapa de rachas.
  * @returns {void}
  */
-function renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo, logoMap, formMap) {
+function renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo, logoMap, partidos) {
   const openIdx = 0;
   for (let idx = 0; idx < gruposKeys.length; idx += 1) {
     const grupo = gruposKeys[idx];
@@ -438,6 +453,7 @@ function renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedI
     content.className = "clas-acc-content";
     if (idx === openIdx) content.classList.add("open");
 
+    const formMap = buildRecentFormMap(partidos, grupos[grupo]);
     const table = renderClasificacionTable(grupo, grupos[grupo], selectedInfo, logoMap, formMap);
     const tableWrap = document.createElement("div");
     tableWrap.className = "clas-table-wrap";
