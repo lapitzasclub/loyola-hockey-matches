@@ -70,6 +70,12 @@ export async function initApp() {
     listenSystemScheme();
     observeThemeAttribute();
     globalThis.addEventListener("load", () => scheduleApplySystemBars(1));
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        scheduleApplySystemBars(1);
+        scheduleApplySystemBars(140);
+      }
+    });
     updateTexts();
     scheduleDetalleWarmup();
     initLanguageControls(mobileBackCoordinator, handleLanguageChange, mostrarPartidosYClasificacion);

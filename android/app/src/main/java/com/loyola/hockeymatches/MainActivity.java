@@ -2,10 +2,8 @@ package com.loyola.hockeymatches;
 
 import android.os.Bundle;
 import java.security.cert.CertificateException;
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -28,10 +26,10 @@ public class MainActivity extends com.getcapacitor.BridgeActivity {
                     }
                 }
             };
-            SSLContext sc = SSLContext.getInstance("TLS"); // Usar protocolo fuerte
+            SSLContext sc = SSLContext.getInstance("TLS");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true); // Lambda, acepta cualquier hostname
+            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
         } catch (Exception e) {
             e.printStackTrace();
         }

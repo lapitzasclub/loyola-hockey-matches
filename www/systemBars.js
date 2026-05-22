@@ -1,6 +1,9 @@
 // systemBars.js — coloriza StatusBar y NavigationBar leyendo el UI real
 
 const DEBUG = true;
+const FALLBACK_ANDROID_STATUSBAR_INSET_PX = 28;
+const DEFAULT_HEADER_COLOR = "#0e3a43";
+const DEFAULT_NAV_COLOR = "#0e3a43";
 
 // ===== Helpers de color =====
 /**
@@ -72,6 +75,16 @@ export function scheduleApplySystemBars(delay = 80) {
   }, delay);
 }
 
+function getStatusBarStyleForColor(hexColor) {
+  const hex = String(hexColor || "").trim();
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) return "DARK";
+  const r = Number.parseInt(hex.slice(1, 3), 16);
+  const g = Number.parseInt(hex.slice(3, 5), 16);
+  const b = Number.parseInt(hex.slice(5, 7), 16);
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return luminance > 0.62 ? "LIGHT" : "DARK";
+}
+
 // ===== Aplicación real a barras del sistema =====
 /**
  * Aplica los colores actuales del UI a la StatusBar y NavigationBar (web y nativo).
@@ -82,10 +95,14 @@ export async function applySystemBars() {
   const C = window.Capacitor;
   const platform = C?.getPlatform?.();
 
+  applySafeAreaInsets(platform);
+
   // Colores efectivos del UI
-  const headerVar = hexFromAny(cssVar("--color-bg-header") || "#0e3a43");
-  const headerColor = resolvedColor(".header", headerVar);
-  const navColor = resolvedColor(".bottom-nav", headerColor);
+  const headerVar = hexFromAny(cssVar("--color-bg-header") || DEFAULT_HEADER_COLOR);
+  const headerColor = resolvedColor(".header", headerVar) || DEFAULT_HEADER_COLOR;
+  const navColor = resolvedColor(".bottom-nav", headerColor) || DEFAULT_NAV_COLOR;
+  const statusBarStyle = getStatusBarStyleForColor(headerColor);
+  const navigationBarStyle = getStatusBarStyleForColor(navColor);
 
   // Meta theme-color (web/PWA)
   let meta = document.querySelector('meta[name="theme-color"]');
@@ -107,23 +124,31 @@ export async function applySystemBars() {
       await StatusBar.setOverlaysWebView({ overlay: false });
     }
     // Color + iconos BLANCOS (en tu dispositivo style "DARK" = blancos)
+    const statusBarColor = headerColor || DEFAULT_HEADER_COLOR;
+    if (StatusBar?.setOverlaysWebView) {
+      await StatusBar.setOverlaysWebView({ overlay: false });
+    }
     if (StatusBar?.setBackgroundColor) {
-      await StatusBar.setBackgroundColor({ color: headerColor });
+      await StatusBar.setBackgroundColor({ color: statusBarColor });
     }
     if (StatusBar?.setStyle) {
-      await StatusBar.setStyle({ style: "DARK" });
+      await StatusBar.setStyle({ style: statusBarStyle });
     }
-    // Refuerzo tras un tick
-    setTimeout(async () => {
-      try {
-        if (StatusBar?.setBackgroundColor) {
-          await StatusBar.setBackgroundColor({ color: headerColor });
-        }
-        if (StatusBar?.setStyle) {
-          await StatusBar.setStyle({ style: "DARK" });
-        }
-      } catch {}
-    }, 60);
+    [0, 80, 220, 500].forEach((delay) => {
+      setTimeout(async () => {
+        try {
+          if (StatusBar?.setOverlaysWebView) {
+            await StatusBar.setOverlaysWebView({ overlay: false });
+          }
+          if (StatusBar?.setBackgroundColor) {
+            await StatusBar.setBackgroundColor({ color: statusBarColor });
+          }
+          if (StatusBar?.setStyle) {
+            await StatusBar.setStyle({ style: statusBarStyle });
+          }
+        } catch {}
+      }, delay);
+    });
   } catch (err) {
     DEBUG && console.error("StatusBar error:", err);
   }
@@ -133,7 +158,7 @@ export async function applySystemBars() {
       await NavigationBar.setBackgroundColor({ color: navColor });
     }
     if (NavigationBar?.setStyle) {
-      await NavigationBar.setStyle({ style: "DARK" }); // iconos blancos
+      await NavigationBar.setStyle({ style: navigationBarStyle });
     }
     if (NavigationBar?.setDividerColor) {
       await NavigationBar.setDividerColor({ color: navColor });
@@ -148,6 +173,35 @@ export async function applySystemBars() {
  * Observa cambios en el atributo data-theme del body para re-aplicar los colores del sistema.
  * @returns {MutationObserver} Observador creado.
  */
+/**
+ * Aplica variables CSS normalizadas para safe areas.
+ * En Android nativo, muchos dispositivos no exponen `env(safe-area-inset-top)` de forma consistente,
+ * así que añadimos un fallback conservador cuando el inset superior sale a cero.
+ * @param {string | undefined} platform Plataforma Capacitor actual.
+ * @returns {void}
+ */
+export function applySafeAreaInsets(platform) {
+  const root = document.documentElement;
+  if (!root) return;
+
+  const probe = document.createElement("div");
+  probe.style.cssText = "position:fixed;top:0;left:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);";
+  document.body?.appendChild(probe);
+
+  const probeStyles = getComputedStyle(probe);
+  const envTop = Number.parseFloat(probeStyles.paddingTop || "0");
+  const envBottom = Number.parseFloat(probeStyles.paddingBottom || "0");
+  probe.remove();
+
+  const resolvedTop = platform === "android" && (!Number.isFinite(envTop) || envTop <= 0)
+    ? FALLBACK_ANDROID_STATUSBAR_INSET_PX
+    : Math.max(0, Number.isFinite(envTop) ? envTop : 0);
+  const resolvedBottom = Math.max(0, Number.isFinite(envBottom) ? envBottom : 0);
+
+  root.style.setProperty("--app-safe-area-top", `${resolvedTop}px`);
+  root.style.setProperty("--app-safe-area-bottom", `${resolvedBottom}px`);
+}
+
 export function observeThemeAttribute() {
   const obs = new MutationObserver(() => scheduleApplySystemBars());
   obs.observe(document.body, {

@@ -8,7 +8,8 @@ import { createCalendarButton } from "../utils/calendar.js";
 import { comparePartidosByScheduledDate, extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
 import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml, scrollToProximo } from "../utils/partidosHelpers.js";
 import { renderEmptyState, renderErrorState } from "./loadingStates.js";
-import { openPartidoDetalle } from "./partidoDetalle.js";
+import { renderEquipoDetalleHeader, openEquipoSubview } from "./equipoDetalleSubview.js";
+import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
 
 const ENTITY_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/entidad/200x200";
 const competitionLogoCache = new Map();
@@ -24,6 +25,11 @@ export function preloadPartidoDetalleModule() {
     partidoDetalleModulePromise = import("./partidoDetalle.js");
   }
   return partidoDetalleModulePromise;
+}
+
+async function openPartidoDetalleLazy(idPartido, options = {}) {
+  const { openPartidoDetalle } = await preloadPartidoDetalleModule();
+  openPartidoDetalle(idPartido, options);
 }
 
 /**
@@ -272,15 +278,13 @@ function enrichTeamPayloadFromAvailableData(equipoPayload) {
 
 async function openTeamDetailFromMatch(equipoPayload) {
   const enrichedPayload = enrichTeamPayloadFromAvailableData(equipoPayload);
-  const utils = await import("./partidoDetalleUtils.js");
-  const subview = await import("./equipoDetalleSubview.js");
-  const initialState = utils.createDetalleState("team-detail-entry");
-  initialState.selectedEquipo = utils.normalizarEquipoClasificacion(enrichedPayload);
+  const initialState = createDetalleState("team-detail-entry");
+  initialState.selectedEquipo = normalizarEquipoClasificacion(enrichedPayload);
   initialState.loadingTeam = true;
   initialState.navigation.currentView = "equipo";
-  openPartidoDetalle("team-detail-entry", {
+  await openPartidoDetalleLazy("team-detail-entry", {
     initialState,
-    initialHeaderHtml: subview.renderEquipoDetalleHeader(initialState.selectedEquipo),
+    initialHeaderHtml: renderEquipoDetalleHeader(initialState.selectedEquipo),
   });
   requestAnimationFrame(async () => {
     const state = window.__partidoDetalleState;
@@ -291,7 +295,7 @@ async function openTeamDetailFromMatch(equipoPayload) {
     state.selectedEquipo = initialState.selectedEquipo;
     state.loadingTeam = true;
     state.navigation.currentView = "equipo";
-    await subview.openEquipoSubview(state, enrichedPayload, headerEl, bodyEl, renderAll);
+    await openEquipoSubview(state, enrichedPayload, headerEl, bodyEl, renderAll);
   });
 }
 
@@ -327,7 +331,7 @@ function bindPartidoInteractions(li, partido, logoMap) {
 
   li.onclick = () => {
     if (partido.IdPartido) {
-      preloadPartidoDetalleModule().then((mod) => mod.openPartidoDetalle(partido.IdPartido));
+      void openPartidoDetalleLazy(partido.IdPartido);
     }
   };
 }

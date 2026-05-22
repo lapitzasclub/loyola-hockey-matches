@@ -7,9 +7,23 @@ import { t } from "../i18n.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
 import { comparePartidosByScheduledDate, decodeApiRaw, safeStr } from "../utils/helpers.js";
 import { renderClasificacionLoadingState, renderEmptyState, renderErrorState } from "./loadingStates.js";
-import { openPartidoDetalle } from "./partidoDetalle.js";
+import { renderEquipoDetalleHeader, openEquipoSubview } from "./equipoDetalleSubview.js";
+import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
 
 const competitionLogoCache = new Map();
+let partidoDetalleModulePromise = null;
+
+function preloadPartidoDetalleModule() {
+  if (!partidoDetalleModulePromise) {
+    partidoDetalleModulePromise = import("./partidoDetalle.js");
+  }
+  return partidoDetalleModulePromise;
+}
+
+async function openPartidoDetalleLazy(idPartido, options = {}) {
+  const { openPartidoDetalle } = await preloadPartidoDetalleModule();
+  openPartidoDetalle(idPartido, options);
+}
 
 /**
  * Genera la clave de almacenamiento local para una clasificación concreta.
@@ -519,15 +533,13 @@ function bindClasificacionTeamButtons(rootEl) {
       }
       if (!equipo) return;
       const payload = { ...equipo, IdCompeticion: equipo.IdCompeticion ?? competitionId };
-      const utils = await import("./partidoDetalleUtils.js");
-      const subview = await import("./equipoDetalleSubview.js");
-      const initialState = utils.createDetalleState("team-detail-entry");
-      initialState.selectedEquipo = utils.normalizarEquipoClasificacion(payload);
+      const initialState = createDetalleState("team-detail-entry");
+      initialState.selectedEquipo = normalizarEquipoClasificacion(payload);
       initialState.loadingTeam = true;
       initialState.navigation.currentView = "equipo";
-      openPartidoDetalle("team-detail-entry", {
+      await openPartidoDetalleLazy("team-detail-entry", {
         initialState,
-        initialHeaderHtml: subview.renderEquipoDetalleHeader(initialState.selectedEquipo),
+        initialHeaderHtml: renderEquipoDetalleHeader(initialState.selectedEquipo),
       });
       requestAnimationFrame(async () => {
         const state = window.__partidoDetalleState;
@@ -538,7 +550,7 @@ function bindClasificacionTeamButtons(rootEl) {
         state.selectedEquipo = initialState.selectedEquipo;
         state.loadingTeam = true;
         state.navigation.currentView = "equipo";
-        await subview.openEquipoSubview(state, payload, headerEl, bodyEl, renderAll);
+        await openEquipoSubview(state, payload, headerEl, bodyEl, renderAll);
       });
     };
 

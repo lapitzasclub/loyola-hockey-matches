@@ -108,8 +108,8 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
       };
       const cover = createModalHandoffCover();
       const currentModal = document.querySelector(".team-detail-modal");
-      const mod = await import("./partidoDetalle.js");
-      mod.openPartidoDetalle(partido.IdPartido, { preserveBodyLock: true, skipCloseExisting: true });
+      const { openPartidoDetalle } = await import("./partidoDetalle.js");
+      openPartidoDetalle(partido.IdPartido, { preserveBodyLock: true, skipCloseExisting: true });
       requestAnimationFrame(() => {
         currentModal?.remove();
         requestAnimationFrame(() => {

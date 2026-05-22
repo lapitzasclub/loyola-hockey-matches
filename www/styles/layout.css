@@ -14,7 +14,7 @@
   width: 2.2em;
   margin-right: 0.8em;
   margin-left: 0;
-  background: var(--color-bg-card) url("loyola_hockey.png") center/contain
+  background: var(--color-bg-card) url("../loyola_hockey.png") center/contain
     no-repeat;
   border-radius: 50%;
   box-shadow: 0 1px 4px var(--color-shadow);
@@ -84,8 +84,8 @@ body[data-theme="dark"] .side-menu .equipoOpt.active {
   align-items: stretch;
   box-shadow: 0 -8px 24px color-mix(in srgb, var(--color-shadow) 38%, transparent);
   z-index: 100;
-  padding: var(--bottom-nav-pad-y) var(--bottom-nav-pad-x) calc(var(--bottom-nav-pad-y) + env(safe-area-inset-bottom, 0px));
-  min-height: calc(var(--bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px));
+  padding: var(--bottom-nav-pad-y) var(--bottom-nav-pad-x) calc(var(--bottom-nav-pad-y) + var(--app-safe-area-bottom, 0px));
+  min-height: calc(var(--bottom-nav-height, 56px) + var(--app-safe-area-bottom, 0px));
   overflow: hidden;
 }
 
@@ -93,7 +93,7 @@ body[data-theme="dark"] .side-menu .equipoOpt.active {
   position: absolute;
   top: var(--bottom-nav-pad-y);
   right: var(--bottom-nav-pad-x);
-  bottom: calc(var(--bottom-nav-pad-y) + env(safe-area-inset-bottom, 0px));
+  bottom: calc(var(--bottom-nav-pad-y) + var(--app-safe-area-bottom, 0px));
   left: var(--bottom-nav-pad-x);
   border-radius: 20px;
   background: color-mix(in srgb, var(--color-bg-card) 22%, transparent);
@@ -238,13 +238,19 @@ body {
 body.app-ready .app-hidden-initially {
   display: flex !important;
 }
+
+:root {
+  --app-safe-area-top: env(safe-area-inset-top, 0px);
+  --app-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 .header {
   display: flex;
   align-items: center;
   min-height: 44px;
   background: var(--color-bg-header);
   color: var(--color-text-header);
-  padding-top: calc(env(safe-area-inset-top, 0px) + 0.7em);
+  padding-top: calc(var(--app-safe-area-top, 0px) + 0.7em);
   padding-right: 0.7em;
   padding-bottom: 0.3em;
   padding-left: 0.5em;
@@ -310,7 +316,7 @@ body.app-ready .app-hidden-initially {
 .side-menu-content {
   position: relative;
   height: 100%;
-  padding: calc(1.1rem + env(safe-area-inset-top, 0px)) 1rem 1.35rem 1.15rem;
+  padding: calc(1.1rem + var(--app-safe-area-top, 0px)) 1rem 1.35rem 1.15rem;
   overflow-y: auto;
   backdrop-filter: blur(10px);
 }
@@ -475,5 +481,5 @@ main {
   flex: 1 1 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: calc(var(--bottom-nav-height, 56px) + 1.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--bottom-nav-height, 56px) + 1.5rem + var(--app-safe-area-bottom, 0px));
 }
