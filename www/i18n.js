@@ -385,6 +385,17 @@ function setText(selector, text) {
   if (el) el.textContent = text;
 }
 
+function setBottomNavLabel(selector, text) {
+  const el = document.querySelector(selector);
+  if (!el) return;
+  const label = el.querySelector?.(".nav-btn-label");
+  if (label) {
+    label.textContent = text;
+    return;
+  }
+  el.textContent = text;
+}
+
 /**
  * Establecer un aria-label de un selector si existe.
  * @param {string} selector - Selector CSS del elemento.
@@ -444,8 +455,8 @@ export function updateTexts() {
   setText('.equipoOpt[data-equipo="A"]', t("loyA"));
   setText('.equipoOpt[data-equipo="B"]', t("loyB"));
   setText('[data-i18n="select_theme"]', t("select_theme"));
-  setText('[data-i18n="nav_matches"]', t("nav_matches"));
-  setText('[data-i18n="nav_clas"]', t("nav_clas"));
+  setBottomNavLabel('[data-i18n="nav_matches"]', t("nav_matches"));
+  setBottomNavLabel('[data-i18n="nav_clas"]', t("nav_clas"));
   setText('[data-i18n="app_short_name"]', t("app_short_name"));
   setText('[data-i18n="side_menu_title"]', t("side_menu_title"));
 
