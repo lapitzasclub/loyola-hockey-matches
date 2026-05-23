@@ -1,27 +1,21 @@
 // header.js
-// Gestión de la cabecera de competición
+// Gestión del contexto superior de equipo y competición
 
 /**
- * Establece o actualiza la cabecera de la competición en la interfaz.
- * Si no existe, la crea e inserta al inicio del <main>.
+ * Muestra la competición seleccionada como subtítulo del header principal.
+ * Mantiene oculto el bloque antiguo `competicionHeader` si aún existe en el DOM.
  * @param {string} nombreCompeticion - Nombre de la competición a mostrar.
  */
 export function setCompeticionHeader(nombreCompeticion) {
-  let header = document.getElementById("competicionHeader");
-  if (!header) {
-    header = document.createElement("div");
-    header.id = "competicionHeader";
-    header.className = "competicion-header";
-    const main = document.querySelector("main");
-    const pullToRefresh = document.getElementById("pullToRefresh");
-    if (main) {
-      if (pullToRefresh) {
-        main.insertBefore(header, pullToRefresh.nextSibling);
-      } else {
-        main.insertBefore(header, main.firstChild);
-      }
-    }
+  const subtitle = document.getElementById("headerSubtitle");
+  if (subtitle) {
+    subtitle.textContent = nombreCompeticion || "";
+    subtitle.hidden = !nombreCompeticion;
   }
-  header.textContent = nombreCompeticion || "";
-  header.hidden = !nombreCompeticion;
+
+  const legacyHeader = document.getElementById("competicionHeader");
+  if (legacyHeader) {
+    legacyHeader.textContent = nombreCompeticion || "";
+    legacyHeader.hidden = true;
+  }
 }

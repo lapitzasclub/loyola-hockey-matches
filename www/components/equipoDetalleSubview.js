@@ -3,15 +3,16 @@ import { nextFrame, syncMobileBackState, transitionDetalleView } from "./partido
 import { getCurrentView, logoUrl, normalizarEquipoClasificacion, pushView, setCurrentView } from "./partidoDetalleUtils.js";
 import { loadEquipoDetalleMatches, renderEquipoDetalleMatches, renderEquipoDetalleSummary } from "./equipoDetalle.js";
 
-export function renderEquipoDetalleHeader(equipo) {
+export function renderEquipoDetalleHeader(equipo, competitionName = "") {
   const logoSrc = logoUrl(equipo?.idEntidadEquipo || "sinescudo");
+  const subtitle = equipo?.nombreGrupo || competitionName || "";
   return `
-    <div class="team-detail-modal-topline">
-      ${equipo?.nombreGrupo ? `<span>${equipo.nombreGrupo}</span>` : ""}
-    </div>
     <div class="team-detail-modal-hero">
       <img class="team-detail-modal-logo" src="${logoSrc}" alt="${equipo?.nombreEquipo || "Equipo"}">
-      <div class="team-detail-modal-title">${equipo?.nombreEquipo || ""}</div>
+      <div class="team-detail-modal-hero-copy">
+        <div class="team-detail-modal-title">${equipo?.nombreEquipo || ""}</div>
+        ${subtitle ? `<div class="team-detail-modal-subtitle">${subtitle}</div>` : ""}
+      </div>
     </div>
   `;
 }
@@ -38,6 +39,7 @@ export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, 
   const isInitialOpen = previousView === "equipo" && !state.teamMatches.length && state.loadingTeam;
 
   state.selectedEquipo = equipo;
+  state.teamCompetitionName = equipo?.nombreGrupo || equipoPayload?.NombreGrupo || equipoPayload?.nombreGrupo || state.teamCompetitionName || "";
   state.loadingTeam = true;
   state.teamMatches = [];
 

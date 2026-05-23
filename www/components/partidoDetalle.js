@@ -306,7 +306,7 @@ function renderSubview(state) {
 
 function renderSubviewHeader(state) {
   if (getCurrentView(state) === "equipo" && state.selectedEquipo) {
-    return renderEquipoDetalleHeader(state.selectedEquipo);
+    return renderEquipoDetalleHeader(state.selectedEquipo, state.teamCompetitionName || "");
   }
   if (getCurrentView(state) === "jugador") {
     return renderJugadorHeader(state);
@@ -356,7 +356,7 @@ async function cargarDetallePartido(idPartido, stateOverride = null, headerOverr
   window.__partidoDetalleState = state;
 
   if (getCurrentView(state) === "equipo" && state.selectedEquipo) {
-    setHeaderContent(headerEl, renderEquipoDetalleHeader(state.selectedEquipo), "equipo-header");
+    setHeaderContent(headerEl, renderEquipoDetalleHeader(state.selectedEquipo, state.teamCompetitionName || ""), "equipo-header");
   } else {
     setHeaderContent(headerEl, escapeHtml(t("loading")), "init-loading");
   }
