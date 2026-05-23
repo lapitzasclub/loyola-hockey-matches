@@ -52,8 +52,8 @@ export function renderEquipoSelectorLauncher(container, options = {}) {
     <div class="team-selector-launcher team-selector-launcher-sidepanel">
       ${selectedTeam ? `
         <div class="team-selector-launcher-hero-shell">
-          <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-light" src="/assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_claro.png" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
-          <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-dark" src="/assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_oscuro.png" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
+          <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-light" src="assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_claro.png" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
+          <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-dark" src="assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_oscuro.png" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
           <div class="team-selector-launcher-copy team-selector-launcher-copy-hero">
             <strong class="team-selector-launcher-team">${selectedTeam.nombreEquipo}</strong>
             <span class="team-selector-launcher-underline" aria-hidden="true"></span>

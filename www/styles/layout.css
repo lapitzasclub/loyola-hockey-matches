@@ -326,7 +326,7 @@ body[data-theme="dark"] .side-menu {
 .side-menu-content {
   position: relative;
   height: 100%;
-  padding: calc(1rem + var(--app-safe-area-top, 0px)) 1rem 1rem 1rem;
+  padding: calc(0.92rem + var(--app-safe-area-top, 0px)) 1rem 0.95rem 1rem;
   overflow: hidden;
   display: grid;
   grid-template-rows: auto 1fr;
@@ -335,8 +335,7 @@ body[data-theme="dark"] .side-menu {
 }
 
 .side-menu-content::before,
-.side-menu-content::after,
-.side-menu::before {
+.side-menu-content::after {
   content: "";
   position: absolute;
   pointer-events: none;
@@ -351,48 +350,55 @@ body[data-theme="dark"] .side-menu {
   width: 246px;
   height: 128px;
   background-position: top right;
-  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_superior_derecha_tema_claro.png');
+  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_superior_derecha_tema_claro.png');
 }
 
 .side-menu-content::after {
-  left: 0;
-  bottom: 31px;
-  width: 148px;
-  height: 72px;
-  background-position: left bottom;
-  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_inferior_izquierda_tema_claro.png');
+  content: none;
 }
 
-.side-menu::before {
-  right: 0;
+.side-menu-corner {
+  position: absolute;
   bottom: 0;
   width: 148px;
   height: 72px;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: contain;
+  z-index: 0;
+}
+
+.side-menu-corner-bottom-left {
+  left: 0;
+  background-position: left bottom;
+  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_inferior_izquierda_tema_claro.png');
+}
+
+.side-menu-corner-bottom-right {
+  right: 0;
   background-position: right bottom;
-  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_inferior_derecha_tema_claro.png');
+  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_inferior_derecha_tema_claro.png');
 }
 
 body[data-theme="dark"] .side-menu-content::before {
-  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_superior_derecha_tema_noche.png');
+  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_superior_derecha_tema_noche.png');
 }
 
-body[data-theme="dark"] .side-menu-content::after {
-  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_inferior_izquierda_tema_noche.png');
+body[data-theme="dark"] .side-menu-corner-bottom-left {
+  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_inferior_izquierda_tema_noche.png');
 }
 
-body[data-theme="dark"] .side-menu::before {
-  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_inferior_derecha_tema_noche.png');
+body[data-theme="dark"] .side-menu-corner-bottom-right {
+  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_inferior_derecha_tema_noche.png');
   filter: none;
   opacity: 1;
 }
 
 .side-menu-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 0.9rem;
-  margin: -0.05rem 0 0.1rem 0;
-  min-height: 2.9rem;
+  position: relative;
+  display: block;
+  margin: 0 0 0.2rem 0;
+  min-height: 3.15rem;
 }
 
 .side-menu-stack {
@@ -406,9 +412,10 @@ body[data-theme="dark"] .side-menu::before {
 }
 
 .side-menu-close {
-  position: relative;
-  z-index: 1;
-  flex: 0 0 auto;
+  position: absolute;
+  top: calc(var(--app-safe-area-top, 0px) + 0.72rem);
+  left: 0.72rem;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -416,8 +423,7 @@ body[data-theme="dark"] .side-menu::before {
   height: 3.35rem;
   min-width: 3.35rem;
   min-height: 3.35rem;
-  margin-top: -0.02rem;
-  margin-left: -0.1rem;
+  margin: 0;
   padding: 0;
   border: 0;
   border-radius: 999px;
@@ -592,12 +598,12 @@ body[data-theme="dark"] .side-menu .team-selector-launcher-empty {
 }
 
 .side-menu .team-selector-launcher-button-icon {
-  background-image: url('/assets/sidebar-loyola/iconos_svg/icono_cambiar_equipo.svg');
+  background-image: url('../assets/sidebar-loyola/iconos_svg/icono_cambiar_equipo.svg');
   filter: invert(23%) sepia(88%) saturate(3600%) hue-rotate(344deg) brightness(94%) contrast(96%);
 }
 
 .side-menu .team-selector-launcher-button-chevron {
-  background-image: url('/assets/sidebar-loyola/iconos_svg/icono_chevron_derecha.svg');
+  background-image: url('../assets/sidebar-loyola/iconos_svg/icono_chevron_derecha.svg');
 }
 
 .side-menu .team-selector-launcher-button-text {

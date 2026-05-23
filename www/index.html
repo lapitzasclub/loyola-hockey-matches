@@ -48,12 +48,13 @@
       aria-label="Menú lateral"
       data-i18n-aria="side_menu_aria"
     >
+      <button id="sideMenuCloseBtn" class="side-menu-close" aria-label="Cerrar menú" data-i18n-aria="side_menu_close">
+        <img src="assets/sidebar-loyola/iconos_svg/icono_cerrar.svg" alt="" aria-hidden="true">
+      </button>
+      <span class="side-menu-corner side-menu-corner-bottom-left" aria-hidden="true"></span>
+      <span class="side-menu-corner side-menu-corner-bottom-right" aria-hidden="true"></span>
       <div class="side-menu-content">
-        <div class="side-menu-header">
-          <button id="sideMenuCloseBtn" class="side-menu-close" aria-label="Cerrar menú" data-i18n-aria="side_menu_close">
-            <img src="/assets/sidebar-loyola/iconos_svg/icono_cerrar.svg" alt="" aria-hidden="true">
-          </button>
-        </div>
+        <div class="side-menu-header"></div>
         <div class="side-menu-stack">
           <div id="teamSelectorMenuContainer"></div>
           <select
@@ -67,7 +68,7 @@
           <div class="side-menu-control-block side-menu-control-block-lang">
             <div class="side-menu-lang-card" role="group" aria-label="Idioma">
               <div class="side-menu-control-icon side-menu-control-icon-inline" aria-hidden="true">
-                <img src="/assets/sidebar-loyola/iconos_svg/icono_idioma_globo.svg" alt="">
+                <img src="assets/sidebar-loyola/iconos_svg/icono_idioma_globo.svg" alt="">
               </div>
               <button type="button" class="side-menu-chip" data-lang-option="es">ES</button>
               <span class="side-menu-chip-separator" aria-hidden="true">|</span>
@@ -84,15 +85,15 @@
           <div class="side-menu-control-block side-menu-control-block-theme">
             <div id="themeCycleBtn" class="side-menu-theme-cycle" role="group" aria-label="Cambiar tema">
               <button type="button" class="side-menu-theme-option" data-theme-option="light">
-                <span class="side-menu-theme-option-icon" aria-hidden="true"><img src="/assets/sidebar-loyola/iconos_svg/icono_tema_dia.svg" alt=""></span>
+                <span class="side-menu-theme-option-icon" aria-hidden="true"><img src="assets/sidebar-loyola/iconos_svg/icono_tema_dia.svg" alt=""></span>
                 <span class="side-menu-theme-option-label">Día</span>
               </button>
               <button type="button" class="side-menu-theme-option" data-theme-option="dark">
-                <span class="side-menu-theme-option-icon" aria-hidden="true"><img src="/assets/sidebar-loyola/iconos_svg/icono_tema_noche.svg" alt=""></span>
+                <span class="side-menu-theme-option-icon" aria-hidden="true"><img src="assets/sidebar-loyola/iconos_svg/icono_tema_noche.svg" alt=""></span>
                 <span class="side-menu-theme-option-label">Noche</span>
               </button>
               <button type="button" class="side-menu-theme-option" data-theme-option="auto">
-                <span class="side-menu-theme-option-icon" aria-hidden="true"><img src="/assets/sidebar-loyola/iconos_svg/icono_tema_auto.svg" alt=""></span>
+                <span class="side-menu-theme-option-icon" aria-hidden="true"><img src="assets/sidebar-loyola/iconos_svg/icono_tema_auto.svg" alt=""></span>
                 <span class="side-menu-theme-option-label">Auto</span>
               </button>
             </div>

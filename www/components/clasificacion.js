@@ -13,6 +13,11 @@ import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDeta
 const competitionLogoCache = new Map();
 let partidoDetalleModulePromise = null;
 
+/**
+ * Precarga diferida del módulo de detalle de partido para mejorar la respuesta inicial.
+ *
+ * @returns {Promise<typeof import("./partidoDetalle.js")>} Módulo de detalle cargado bajo demanda.
+ */
 function preloadPartidoDetalleModule() {
   if (!partidoDetalleModulePromise) {
     partidoDetalleModulePromise = import("./partidoDetalle.js");
@@ -20,6 +25,13 @@ function preloadPartidoDetalleModule() {
   return partidoDetalleModulePromise;
 }
 
+/**
+ * Abre de forma diferida el detalle de partido reutilizando la precarga compartida.
+ *
+ * @param {string} idPartido Identificador del partido o contexto sintético.
+ * @param {object} [options={}] Opciones de inicialización para el detalle.
+ * @returns {Promise<void>}
+ */
 async function openPartidoDetalleLazy(idPartido, options = {}) {
   const { openPartidoDetalle } = await preloadPartidoDetalleModule();
   openPartidoDetalle(idPartido, options);
@@ -447,11 +459,13 @@ function renderClasificacionTable(grupo, equipos, selectedInfo, logoMap, formMap
  * @returns {void}
  */
 function renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo, logoMap, partidos) {
+  // Cada grupo se renderiza como bloque autónomo para no depender semánticamente
+  // de la lista de partidos, aunque comparta el mismo contenedor de pantalla.
   const openIdx = 0;
   for (let idx = 0; idx < gruposKeys.length; idx += 1) {
     const grupo = gruposKeys[idx];
-    const accLi = document.createElement("li");
-    accLi.className = "clas-card clas-accordion";
+    const accLi = document.createElement("div");
+    accLi.className = "clas-accordion-item clas-accordion";
 
     const btn = document.createElement("button");
     btn.type = "button";
@@ -521,6 +535,12 @@ function isFav(eqId, eqNombre, eqAbrev, selectedInfo) {
  * Obtiene la información del equipo seleccionado desde localStorage.
  * @returns {{selectedIdEquipo: string|null, selectedNombre: string|null, selectedAbrev: string|null}}
  */
+/**
+ * Vincula apertura de detalle de equipo sobre la tabla de clasificación renderizada.
+ *
+ * @param {ParentNode} rootEl Nodo raíz que contiene los botones/celdas de equipo.
+ * @returns {void}
+ */
 function bindClasificacionTeamButtons(rootEl) {
   const competitionId = rootEl.closest("#matchesList")?.dataset?.clasCompeticionId || "";
   rootEl.querySelectorAll("[data-clas-team]").forEach((node) => {
@@ -532,9 +552,14 @@ function bindClasificacionTeamButtons(rootEl) {
         equipo = null;
       }
       if (!equipo) return;
-      const payload = { ...equipo, IdCompeticion: equipo.IdCompeticion ?? competitionId };
+      const payload = {
+        ...equipo,
+        IdCompeticion: equipo.IdCompeticion ?? competitionId,
+        NombreGrupo: equipo.NombreGrupo || equipo.DenoComp || equipo.nombreGrupo || equipo.nombreCompeticion || equipo.NombreCompeticion || "",
+      };
       const initialState = createDetalleState("team-detail-entry");
       initialState.selectedEquipo = normalizarEquipoClasificacion(payload);
+      initialState.teamCompetitionName = payload?.NombreGrupo || payload?.nombreGrupo || "";
       initialState.loadingTeam = true;
       initialState.navigation.currentView = "equipo";
       await openPartidoDetalleLazy("team-detail-entry", {
@@ -548,6 +573,7 @@ function bindClasificacionTeamButtons(rootEl) {
         const renderAll = window.__partidoDetalleRenderAll;
         if (!state || !headerEl || !bodyEl || typeof renderAll !== "function") return;
         state.selectedEquipo = initialState.selectedEquipo;
+        state.teamCompetitionName = initialState.teamCompetitionName || state.teamCompetitionName || "";
         state.loadingTeam = true;
         state.navigation.currentView = "equipo";
         await openEquipoSubview(state, payload, headerEl, bodyEl, renderAll);

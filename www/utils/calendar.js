@@ -97,7 +97,7 @@ export function createCalendarButton(p) {
   const btnCal = document.createElement("button");
   btnCal.className = "btn-calendario";
   btnCal.title = t("add_to_calendar") || "Añadir al calendario";
-  btnCal.innerHTML = `<img src="/assets/sidebar-loyola/iconos_svg/calendar-plus.svg" alt="" aria-hidden="true">`;
+  btnCal.innerHTML = `<img src="assets/sidebar-loyola/iconos_svg/calendar-plus.svg" alt="" aria-hidden="true">`;
   btnCal.addEventListener("click", () => handleCalendarClick(p));
   return btnCal;
 }

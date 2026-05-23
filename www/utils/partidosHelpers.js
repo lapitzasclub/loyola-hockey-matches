@@ -69,7 +69,7 @@ export function makeInstalacionActionHtml(p) {
   const label = encodeURIComponent(nombre);
   const geoUrl = `geo:${lat},${lng}?q=${lat},${lng}(${label})`;
   const gmapsUrl = `https://maps.google.com/?q=${lat},${lng}(${label})`;
-  return `<a href="${geoUrl}" onclick="if(!window.navigator.userAgent.match(/Android|iPhone|iPad/i)){window.open('${gmapsUrl}','_blank');return false;}" class="partido-header-action partido-header-action-location" aria-label="${safeStr(nombre)}" title="${safeStr(nombre)}"><img src="/assets/sidebar-loyola/iconos_svg/map-pin.svg" alt="" aria-hidden="true"></a>`;
+  return `<a href="${geoUrl}" onclick="if(!window.navigator.userAgent.match(/Android|iPhone|iPad/i)){window.open('${gmapsUrl}','_blank');return false;}" class="partido-header-action partido-header-action-location" aria-label="${safeStr(nombre)}" title="${safeStr(nombre)}"><img src="assets/sidebar-loyola/iconos_svg/map-pin.svg" alt="" aria-hidden="true"></a>`;
 }
 
 /**
