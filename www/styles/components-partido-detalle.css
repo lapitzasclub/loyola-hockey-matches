@@ -37,6 +37,14 @@
   transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1), opacity 280ms ease;
 }
 
+.team-detail-shell .partido-detalle-grabber {
+  width: 38px;
+  height: 4px;
+  margin: 0.08rem auto 0.04rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 16%, transparent);
+}
+
 .team-detail-modal.is-open {
   opacity: 1;
 }
@@ -61,23 +69,23 @@
   top: 0;
   z-index: 3;
   display: block;
-  padding: 0.8rem 1rem 0.9rem;
+  padding: 0 3.45rem 0.24rem 0.78rem;
   background: var(--color-bg-card);
   color: var(--color-text);
   border-bottom: 1px solid var(--color-card-border);
-  box-shadow: 0 2px 10px color-mix(in srgb, var(--color-shadow) 45%, transparent);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--color-shadow) 22%, transparent);
 }
 
 .team-detail-close {
   position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
+  top: 0.08rem;
+  right: 0.62rem;
   z-index: 4;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.08rem;
+  height: 2.08rem;
   margin: 0;
   padding: 0;
   border: 1px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
@@ -92,32 +100,30 @@
 
 .team-detail-header-content {
   min-width: 0;
-  padding-top: 1rem;
-}
-
-.team-detail-modal-topline {
-  display: flex;
-  flex-direction: column;
-  gap: 0.18rem;
-  margin-bottom: 0.4rem;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--color-fecha);
-  text-transform: uppercase;
+  padding-top: 0;
+  margin-top: -0.02rem;
 }
 
 .team-detail-modal-hero {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.56rem;
+  min-width: 0;
+}
+
+.team-detail-modal-hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.18rem;
   min-width: 0;
 }
 
 .team-detail-modal-logo {
-  width: 52px;
-  height: 52px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
-  flex: 0 0 52px;
+  flex: 0 0 38px;
   border-radius: 14px;
   background: color-mix(in srgb, var(--color-bg-card) 88%, #ffffff 12%);
   border: 1px solid var(--color-card-border, #e0e0e0);
@@ -126,10 +132,23 @@
 }
 
 .team-detail-modal-title {
-  font-size: 1.45rem;
-  font-weight: 900;
+  font-size: 1.08rem;
+  font-weight: 800;
   color: var(--color-text);
   min-width: 0;
+  line-height: 0.98;
+}
+
+.team-detail-modal-subtitle {
+  font-size: 0.64rem;
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 52%, #738a9b 48%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .team-detail-body {
@@ -152,7 +171,7 @@
 
 .team-detail-section-title {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--color-text);
 }
 
@@ -164,21 +183,36 @@
 
 .team-detail-summary-card {
   padding: 0.9rem;
-  border: 1px solid var(--color-card-border);
+  border: 1px solid color-mix(in srgb, var(--color-card-border) 88%, #d9e3ec 12%);
   border-radius: 1rem;
-  background: var(--color-bg-header);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--color-shadow) 10%, transparent);
 }
 
 .team-detail-summary-label {
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--color-fecha);
+  color: color-mix(in srgb, var(--color-text) 52%, #6f879a 48%);
 }
 
 .team-detail-summary-value {
   margin-top: 0.35rem;
   font-size: 1.2rem;
-  font-weight: 900;
+  font-weight: 800;
+  color: color-mix(in srgb, var(--color-text) 82%, var(--color-primary) 18%);
+}
+
+body[data-theme="dark"] .team-detail-summary-card {
+  border: 1px solid var(--color-card-border);
+  background: var(--color-bg-header);
+  box-shadow: none;
+}
+
+body[data-theme="dark"] .team-detail-summary-label {
+  color: var(--color-fecha);
+}
+
+body[data-theme="dark"] .team-detail-summary-value {
   color: var(--color-text-header);
 }
 
@@ -219,12 +253,12 @@
 }
 
 .team-detail-match-team {
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .team-detail-match-score {
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .team-detail-match-venue {
@@ -238,7 +272,7 @@
   border-radius: 1rem;
   background: var(--color-bg-header);
   color: var(--color-text-header);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .partido-detalle-modal {
@@ -306,9 +340,15 @@
   top: 0;
   z-index: 3;
   display: block;
-  padding: 0.8rem 1rem 0.9rem;
-  background: var(--color-bg-card);
+  padding: 0.62rem 1rem 0.72rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
   color: var(--color-text);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-card-border) 86%, #dbe4ee 14%);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-shadow) 10%, transparent);
+}
+
+body[data-theme="dark"] .partido-detalle-header {
+  background: var(--color-bg-card);
   border-bottom: 1px solid var(--color-card-border);
   box-shadow: 0 2px 10px color-mix(in srgb, var(--color-shadow) 45%, transparent);
 }
@@ -322,15 +362,15 @@
   height: 2.5rem;
   margin: 0;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, #cfdae4 82%);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg-card));
-  color: var(--color-primary);
+  background: #edf4f7;
+  color: #14889b;
   font-size: 1.55rem;
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-shadow) 16%, transparent);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-shadow) 10%, transparent);
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
@@ -400,10 +440,10 @@ body[data-theme="dark"] .partido-detalle-close:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.18rem;
-  margin-bottom: 0.6rem;
-  font-size: 0.74rem;
+  margin-bottom: 0.55rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  color: var(--color-fecha);
+  color: color-mix(in srgb, var(--color-text) 58%, #708595 42%);
   text-transform: uppercase;
 }
 
@@ -532,10 +572,10 @@ body[data-theme="dark"] .partido-detalle-close:focus-visible {
 .partido-detalle-status {
   display: inline-block;
   margin-bottom: 0.35rem;
-  padding: 0.18rem 0.48rem;
-  background: var(--color-bg-header);
-  color: var(--color-text-header);
-  border-radius: 0.35rem;
+  padding: 0.22rem 0.56rem;
+  background: #173746;
+  color: #ffffff;
+  border-radius: 0.5rem;
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -554,10 +594,10 @@ body[data-theme="dark"] .partido-detalle-close:focus-visible {
 .partido-detalle-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-top: 0.8rem;
-  font-size: 0.9rem;
-  color: var(--color-fecha);
+  gap: 0.28rem;
+  margin-top: 0.72rem;
+  font-size: 0.92rem;
+  color: color-mix(in srgb, var(--color-text) 72%, #6c8293 28%);
   text-align: center;
 }
 
@@ -594,7 +634,12 @@ body[data-theme="dark"] .partido-detalle-close:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
-  padding: 0.65rem 0.85rem 0.7rem;
+  padding: 0.6rem 0.85rem 0.68rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-card-border) 78%, #dbe4ee 22%);
+}
+
+body[data-theme="dark"] .partido-detalle-tabs {
   background: var(--color-bg-card);
   border-bottom: 1px solid color-mix(in srgb, var(--color-card-border) 70%, transparent);
 }
@@ -603,10 +648,10 @@ body[data-theme="dark"] .partido-detalle-close:focus-visible {
   width: 100%;
   margin: 0;
   padding: 0.55rem 0.65rem;
-  border: 1px solid transparent;
+  border: 1px solid #d9e6ec;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg-card));
-  color: var(--color-primary);
+  background: #eef6f8;
+  color: #16879a;
   font-size: 0.95rem;
   font-weight: 700;
   white-space: nowrap;
@@ -614,10 +659,10 @@ body[data-theme="dark"] .partido-detalle-close:focus-visible {
 }
 
 .tab-btn.active {
-  background: var(--color-primary);
-  color: #06252c;
-  border-color: color-mix(in srgb, var(--color-primary) 70%, #ffffff 30%);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 28%, transparent);
+  background: linear-gradient(180deg, #2696a5 0%, #1b8796 100%);
+  color: #ffffff;
+  border-color: color-mix(in srgb, var(--color-primary) 52%, #ffffff 48%);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--color-primary) 24%, transparent);
 }
 
 body[data-theme="dark"] .tab-btn {
@@ -660,20 +705,33 @@ body[data-theme="dark"] .tab-btn.active {
 }
 
 .partido-detalle-section {
+  background: #ffffff;
+  border: 1px solid #d7e0ea;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--color-shadow) 8%, transparent);
+}
+
+body[data-theme="dark"] .partido-detalle-section {
   background: color-mix(in srgb, var(--color-bg-card) 88%, var(--color-bg));
   border: 1px solid var(--color-card-border);
-  border-radius: 0.8rem;
-  overflow: hidden;
+  box-shadow: none;
 }
 
 .partido-detalle-section-title,
 .alineacion-team-title {
-  padding: 0.6rem 0.8rem;
-  background: color-mix(in srgb, var(--color-text) 10%, var(--color-bg-card));
-  color: var(--color-fecha);
+  padding: 0.72rem 0.85rem;
+  background: #eef2f6;
+  color: color-mix(in srgb, var(--color-text) 68%, #6e8191 32%);
   font-size: 0.9rem;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+body[data-theme="dark"] .partido-detalle-section-title,
+body[data-theme="dark"] .alineacion-team-title {
+  background: color-mix(in srgb, var(--color-text) 10%, var(--color-bg-card));
+  color: var(--color-fecha);
 }
 
 .partido-detalle-summary-table-wrap {
@@ -689,13 +747,13 @@ body[data-theme="dark"] .tab-btn.active {
 .partido-detalle-summary-table th,
 .partido-detalle-summary-table td {
   padding: 0.85rem 0.8rem;
-  border-top: 1px solid var(--color-card-border);
+  border-top: 1px solid #dce4ec;
 }
 
 .partido-detalle-summary-table thead th {
   font-size: 0.78rem;
   font-weight: 800;
-  color: var(--color-fecha);
+  color: color-mix(in srgb, var(--color-text) 58%, #778b9c 42%);
   text-transform: uppercase;
 }
 
@@ -712,7 +770,7 @@ body[data-theme="dark"] .tab-btn.active {
 .partido-detalle-summary-table tbody th {
   font-size: 0.84rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: color-mix(in srgb, var(--color-text) 88%, #5a6f80 12%);
   text-align: left;
 }
 

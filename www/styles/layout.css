@@ -2,7 +2,7 @@
 .bottom-nav {
   --bottom-nav-pad-x: 0.26rem;
   --bottom-nav-pad-y: 0.18rem;
-  --bottom-nav-indicator-width: 40px;
+  --bottom-nav-indicator-width: min(30vw, 72px);
   position: fixed;
   left: 0;
   right: 0;
@@ -41,7 +41,7 @@
   background: none;
   color: var(--color-nav-text);
   font-size: 0.62rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
@@ -61,7 +61,7 @@
   content: "";
   position: absolute;
   left: 50%;
-  bottom: calc(5px + var(--app-safe-area-bottom, 0px));
+  top: -5px;
   width: var(--bottom-nav-indicator-width);
   height: 3.5px;
   border-radius: 999px;
@@ -216,8 +216,8 @@ body.app-ready .app-hidden-initially {
 }
 
 #headerTitle {
-  font-size: 1.1em;
-  font-weight: bold;
+  font-size: 1.06em;
+  font-weight: 700;
   letter-spacing: 0.01em;
   margin: 0;
   padding: 0;
