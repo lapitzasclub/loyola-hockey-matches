@@ -39,6 +39,7 @@ Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de 
 - `www/components/clasificacion.js` ahora enriquece la tabla con racha reciente, escudos y layout compacto responsive.
 - `www/utils/helpers.js` centraliza ahora el comparador cronológico real de partidos (`fecha + hora`, con fallback) reutilizado por partidos y clasificación.
 - `www/styles/components-partido-detalle.css` contiene el estilo del detalle compartido y la subvista de equipo.
+- `.copilot/` se usa como memoria técnica viva del repo, especialmente para resumir decisiones visuales y estructurales de la fase Loyola.
 
 ## Estado actual del detalle compartido
 
@@ -188,6 +189,33 @@ La base está claramente más sana que al inicio de esta fase:
   - spinner limpio durante la transición inicial
   - actualización inmediata del resumen del side menu tras la primera selección
 - Se eliminó un `@ts-ignore` en `www/i18n.js` mediante tipado JSDoc más preciso.
+
+## Fase visual Loyola
+
+- Se tomó el mock/sidebar Loyola como referencia principal de identidad visual para claro y oscuro.
+- Se rediseñó el side menu para acercarlo al lenguaje editorial Loyola, limpiando controles antiguos y simplificando especialmente selector de tema e idioma.
+- La paleta global de la app se alineó con el side menu Loyola: marfil y carbón como bases, rojo Loyola como primario y superficies menos azuladas en oscuro.
+- Se redujo agresividad tipográfica en varias vistas para depender menos de pesos 800/900 y más de tamaño, color y espaciado.
+- Header, `main`, `#screenContent` y bottom nav quedaron visualmente integrados con el mismo color base del shell por tema, evitando una app demasiado modular o parcheada.
+- El header pasó a usar escudos Loyola reales por tema y una composición más asentada.
+- Las tarjetas de partidos dejaron de sentirse como cajas flotantes y pasaron a una lógica de lista editorial fundida con separadores finos y acentos internos.
+- La ubicación del partido subió al header de tarjeta como acción compacta junto al calendario, usando SVG externos (`map-pin.svg`, `calendar-plus.svg`).
+- La clasificación se empezó a desacoplar de la semántica heredada de partidos:
+  - los grupos del acordeón ya no se renderizan como `li`, sino como `div.clas-accordion-item.clas-accordion`
+  - el loading state de clasificación también usa `clas-accordion-item`
+  - se eliminaron dependencias como `#matches li.clas-card` en la base de estilos
+- Los assets Loyola usados por URL directa se copiaron también a `www/public/assets/sidebar-loyola/...` porque Vite/Capacitor no garantizaban su presencia en `dist` si solo vivían en `www/assets/...`.
+- La X del side menu y los decoradores inferiores se rehicieron como capas absolutas ancladas al contenedor correcto para que fueran robustos en APK/móvil real.
+- En `www/components/equipoSelectorLauncher.js` se introdujeron constantes para centralizar las rutas del escudo Loyola claro/oscuro.
+- Commits importantes de esta fase:
+  - `6e87676` `Redesign Loyola sidebar UI and theme controls`
+  - `d1b1115` `Clean up Loyola sidebar styles`
+  - `eacc28c` `Align app theme palette with Loyola sidebar`
+  - `1cce185` `Refine typography across match views`
+  - `7323117` `Integrate Loyola shell and match card styling`
+  - `5530e24` `Refactor Loyola visual styling cleanup`
+  - `87d37d2` `Polish Loyola sidebar and standings integration`
+  - `9eedd25` `Refine Loyola asset references and standings loading state`
 
 ## Recomendación de trabajo siguiente
 

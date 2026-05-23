@@ -2,6 +2,9 @@
 
 ## Prioridad alta
 
+- [ ] Validar en móvil real/APK el nuevo side menu Loyola, especialmente la X de cierre y los decoradores inferiores absolutos.
+- [ ] Seguir puliendo la clasificación Loyola para que quede tan sólida como partidos, sin transparencias ni restos de la semántica vieja.
+- [ ] Evaluar si conviene desacoplar también el contenedor general de clasificación del naming histórico `#matches`.
 - [ ] Validar en producción pública el flujo completo en iPhone abriendo desde icono de pantalla de inicio, no desde Safari normal.
 - [ ] Preparar un icono iOS específico con margen interno para que no quede recortado raro al instalar la webapp.
 - [ ] Revisar si conviene optimizar la carga inicial para reducir llamadas repetidas a `GetParametrosCompeticion`.

@@ -76,6 +76,22 @@
 - Se mejoró la tarjeta de partido alineando arriba los bloques del duelo y centrando horizontalmente escudo + nombre dentro de cada equipo.
 - La release objetivo pasó a ser `1.6.0`.
 
+## 2026-05-23
+
+- Se continuó la fase visual Loyola tomando el mock del sidebar como base para claro y oscuro.
+- Se integró el lenguaje Loyola en el shell global de la app, haciendo que header, fondo principal y bottom nav compartan base visual por tema.
+- Se pasó la lista de partidos a una lógica más editorial y fundida con el fondo, con acciones compactas en cabecera para ubicación y calendario.
+- Se inició el desacople estructural de clasificación respecto a la semántica heredada de partidos:
+  - la base visual ya no depende de `#matches li.clas-card`
+  - los items del acordeón de clasificación se renderizan como `div` con clase propia `clas-accordion-item`
+  - el skeleton/loading de clasificación también usa esa nueva clase base
+- Se reforzó la robustez de assets para APK/Capacitor copiando los Loyola de uso directo a `www/public/assets/sidebar-loyola/...`.
+- Se rehízo el cierre del side menu móvil y las esquinas inferiores como capas absolutas reales, para que no dependan de la grid interna.
+- Se añadieron constantes de ruta para el escudo Loyola claro/oscuro en `www/components/equipoSelectorLauncher.js`.
+- Se fueron dejando commits pequeños y temáticos durante la fase, culminando en:
+  - `87d37d2` `Polish Loyola sidebar and standings integration`
+  - `9eedd25` `Refine Loyola asset references and standings loading state`
+
 ## 2026-05-11
 
 - Se retomó el proyecto con foco en refactor seguro, Sonar/JSDoc, clasificación, tarjetas de partido y nuevo selector Loyola reutilizable.
