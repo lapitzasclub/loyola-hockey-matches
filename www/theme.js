@@ -22,11 +22,8 @@ export function getTheme() {
  * @param {string} theme - Tema a aplicar ('auto', 'light', 'dark').
  */
 export function applyTheme(theme) {
-  if (theme === "auto") {
-    document.body.removeAttribute("data-theme");
-  } else {
-    document.body.setAttribute("data-theme", theme);
-  }
+  const effectiveTheme = theme === "auto" ? getSystemTheme() : theme;
+  document.body.setAttribute("data-theme", effectiveTheme);
 }
 /**
  * Guarda el tema elegido por el usuario y lo aplica.

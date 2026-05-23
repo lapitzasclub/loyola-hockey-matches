@@ -10,13 +10,54 @@ import { scheduleApplySystemBars } from "../systemBars.js";
  */
 export function initThemeControls(applyTheme) {
   const themeSelect = document.getElementById("themeSelect");
+  const themeCycleBtn = document.getElementById("themeCycleBtn");
+  const themeButtons = Array.from(document.querySelectorAll("[data-theme-option]"));
   const savedTheme = getTheme();
+
+  const syncThemeUi = (value) => {
+    if (themeSelect) themeSelect.value = value;
+    if (!themeCycleBtn) return;
+    themeCycleBtn.dataset.themeValue = value;
+    themeCycleBtn.dataset.effectiveTheme = value === "auto" ? getSystemTheme() : value;
+    themeButtons.forEach((button) => {
+      const isActive = button.dataset.themeOption === value;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  };
 
   if (themeSelect) {
     themeSelect.value = savedTheme;
-    themeSelect.addEventListener("change", (event) => setTheme(event.target.value));
+    themeSelect.addEventListener("change", (event) => {
+      const nextTheme = event.target.value;
+      syncThemeUi(nextTheme);
+      setTheme(nextTheme);
+    });
   }
 
+  themeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextTheme = button.dataset.themeOption;
+      if (!nextTheme) return;
+
+      const apply = () => {
+        syncThemeUi(nextTheme);
+        setTheme(nextTheme);
+      };
+
+      if (typeof document.startViewTransition === "function") {
+        const rect = button.getBoundingClientRect();
+        document.documentElement.style.setProperty("--theme-toggle-x", `${rect.left + rect.width / 2}px`);
+        document.documentElement.style.setProperty("--theme-toggle-y", `${rect.top + rect.height / 2}px`);
+        document.startViewTransition(apply);
+        return;
+      }
+
+      apply();
+    });
+  });
+
+  syncThemeUi(savedTheme);
   applyTheme(savedTheme === "auto" ? getSystemTheme() : savedTheme);
   scheduleApplySystemBars(1);
 }
@@ -31,11 +72,33 @@ export function initThemeControls(applyTheme) {
  */
 export function initLanguageControls(mobileBackCoordinator, handleLanguageChange, mostrarPartidosYClasificacion) {
   const langSelect = document.getElementById("langSelect");
+  const langButtons = Array.from(document.querySelectorAll("[data-lang-option]"));
   if (!langSelect) return;
 
-  langSelect.value = getLang();
+  const syncLangUi = (value) => {
+    langSelect.value = value;
+    langButtons.forEach((button) => {
+      button.classList.toggle("active", button.dataset.langOption === value);
+      button.setAttribute("aria-pressed", button.dataset.langOption === value ? "true" : "false");
+    });
+  };
+
+  syncLangUi(getLang());
   langSelect.addEventListener("change", async (event) => {
-    await handleLanguageChange(mobileBackCoordinator, event.target.value, mostrarPartidosYClasificacion);
+    const nextLang = event.target.value;
+    syncLangUi(nextLang);
+    await handleLanguageChange(mobileBackCoordinator, nextLang, mostrarPartidosYClasificacion);
+    syncLangUi(getLang());
+  });
+
+  langButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      const nextLang = button.dataset.langOption;
+      if (!nextLang || nextLang === langSelect.value) return;
+      syncLangUi(nextLang);
+      await handleLanguageChange(mobileBackCoordinator, nextLang, mostrarPartidosYClasificacion);
+      syncLangUi(getLang());
+    });
   });
 }
 

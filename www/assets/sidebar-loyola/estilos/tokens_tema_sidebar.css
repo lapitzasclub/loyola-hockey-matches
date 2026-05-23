@@ -1,0 +1,37 @@
+/* Tokens base para el sidebar Loyola Indautxu.
+   Los SVG usan currentColor, por lo que se colorean con la propiedad CSS color. */
+
+:root {
+  --loyola-rojo: #e01f2d;
+  --loyola-amarillo: #f5c51b;
+  --loyola-negro: #111317;
+  --loyola-blanco: #ffffff;
+}
+
+.sidebar-loyola[data-theme="light"] {
+  --sidebar-bg: #ffffff;
+  --sidebar-surface: #ffffff;
+  --sidebar-surface-soft: #f7f7f5;
+  --sidebar-text: #171a1f;
+  --sidebar-text-muted: #6f737a;
+  --sidebar-border: rgba(17, 19, 23, 0.12);
+  --sidebar-accent: var(--loyola-rojo);
+  --sidebar-accent-secondary: var(--loyola-amarillo);
+}
+
+.sidebar-loyola[data-theme="dark"] {
+  --sidebar-bg: #111317;
+  --sidebar-surface: #181b20;
+  --sidebar-surface-soft: #20242b;
+  --sidebar-text: #f6f7f9;
+  --sidebar-text-muted: #a7abb3;
+  --sidebar-border: rgba(255, 255, 255, 0.10);
+  --sidebar-accent: #f23545;
+  --sidebar-accent-secondary: #f5c51b;
+}
+
+.icono-sidebar {
+  width: 24px;
+  height: 24px;
+  color: currentColor;
+}

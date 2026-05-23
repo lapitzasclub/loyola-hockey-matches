@@ -49,23 +49,24 @@ export function renderEquipoSelectorLauncher(container, options = {}) {
   const selectedTeam = getSelectedTeamData();
 
   container.innerHTML = `
-    <div class="team-selector-launcher">
-      <div class="team-selector-launcher-current">
-        <span class="team-selector-launcher-label">${t("team_selector_current_team")}</span>
-        ${selectedTeam ? `
-          <div class="team-selector-launcher-card">
-            <img class="team-selector-launcher-logo" src="${selectedTeam.logoEquipoUrl}" alt="Escudo de ${selectedTeam.nombreEquipo}" loading="lazy" decoding="async">
-            <div class="team-selector-launcher-copy">
-              <strong class="team-selector-launcher-team">${selectedTeam.nombreEquipo}</strong>
-              <span class="team-selector-launcher-comp">${selectedTeam.nombreCompeticion}</span>
-            </div>
+    <div class="team-selector-launcher team-selector-launcher-sidepanel">
+      ${selectedTeam ? `
+        <div class="team-selector-launcher-hero-shell">
+          <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-light" src="/assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_claro.png" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
+          <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-dark" src="/assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_oscuro.png" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
+          <div class="team-selector-launcher-copy team-selector-launcher-copy-hero">
+            <strong class="team-selector-launcher-team">${selectedTeam.nombreEquipo}</strong>
+            <span class="team-selector-launcher-underline" aria-hidden="true"></span>
+            <span class="team-selector-launcher-comp">${selectedTeam.nombreCompeticion}${selectedTeam.temporada ? ` · ${selectedTeam.temporada}` : ""}</span>
           </div>
-        ` : `
-          <p class="team-selector-launcher-empty">${t("team_selector_empty")}</p>
-        `}
-      </div>
-      <button type="button" class="team-selector-launcher-button" id="openTeamSelectorButton">
-        ${selectedTeam ? t("team_selector_change") : t("team_selector_title")}
+        </div>
+      ` : `
+        <p class="team-selector-launcher-empty">${t("team_selector_empty")}</p>
+      `}
+      <button type="button" class="team-selector-launcher-button team-selector-launcher-button-loyola" id="openTeamSelectorButton">
+        <span class="team-selector-launcher-button-icon" aria-hidden="true"></span>
+        <span class="team-selector-launcher-button-text">${selectedTeam ? t("team_selector_change") : t("team_selector_title")}</span>
+        <span class="team-selector-launcher-button-chevron" aria-hidden="true"></span>
       </button>
     </div>
   `;
