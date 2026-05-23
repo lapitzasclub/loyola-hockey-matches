@@ -8,42 +8,42 @@
 /* ========== BASE (por defecto: claro, salvo que el sistema prefiera oscuro) ========== */
 :root {
   /* Brand / Acción */
-  --color-primary: hsl(186 72% 32%); /* #0f7f82: turquesa oscuro (accesible sobre blanco) */
-  --color-primary-strong: hsl(186 78% 26%);
-  --color-primary-soft: hsl(186 52% 78%);
-  --color-primary-soft-2: hsl(186 42% 88%);
+  --color-primary: hsl(355 76% 50%); /* rojo Loyola */
+  --color-primary-strong: hsl(355 82% 43%);
+  --color-primary-soft: hsl(44 83% 84%);
+  --color-primary-soft-2: hsl(36 43% 93%);
 
   /* Texto / superficies */
-  --color-text: hsl(210 15% 18%); /* #2a2f33 */
-  --color-text-muted: hsl(210 8% 40%);
-  --color-text-soft: hsl(210 10% 65%);
+  --color-text: hsl(220 14% 12%); /* carbón suave */
+  --color-text-muted: hsl(220 8% 40%);
+  --color-text-soft: hsl(220 8% 61%);
   --color-text-contrast: hsl(0 0% 100%);
-  --color-bg: hsl(210 20% 98%); /* #f6f8fa */
-  --color-bg-card: hsl(0 0% 100%); /* #ffffff */
-  --color-bg-card-soft: hsl(210 25% 97%);
-  --color-bg-header: hsl(197 72% 16%); /* #0e3a43: cabecera y bottom-nav */
-  --color-bg-header-alt: hsl(197 64% 14%);
+  --color-bg: hsl(30 33% 98%); /* marfil del sidebar */
+  --color-bg-card: hsl(0 0% 100%);
+  --color-bg-card-soft: hsl(30 27% 97%);
+  --color-bg-header: hsl(220 14% 12%);
+  --color-bg-header-alt: hsl(220 12% 10%);
   --color-text-header: var(--color-text-contrast);
   --color-shadow: #0000003a;
-  --color-card-border: hsl(210 20% 86%); /* #d5dce3 */
+  --color-card-border: hsl(32 17% 84%);
   --color-overlay: #00000066;
 
   /* Meta / UI */
-  --color-header-bg: var(--color-bg-card-soft); /* chips de cabecera de cada partido */
+  --color-header-bg: var(--color-bg-card-soft);
   --color-fecha: var(--color-text-muted);
   --color-vs: var(--color-text-soft);
   --color-menu-bg: var(--color-bg-card);
   --color-menu-text: var(--color-text);
 
   /* Estado activo / navegación */
-  --color-active-surface: hsl(186 72% 58%);
-  --color-on-active-surface: hsl(192 62% 10%);
-  --color-nav-text: color-mix(in srgb, var(--color-text-header) 58%, var(--color-primary-soft) 42%);
-  --color-nav-text-active: hsl(186 100% 76%);
-  --color-nav-indicator: color-mix(in srgb, var(--color-primary) 92%, white 8%);
-  --color-nav-indicator-shadow: color-mix(in srgb, var(--color-primary) 34%, transparent);
-  --color-nav-icon-glow: color-mix(in srgb, var(--color-nav-text-active) 34%, transparent);
-  --color-nav-track: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 97%, #123849 3%) 0%, color-mix(in srgb, var(--color-bg-header-alt) 93%, #071f2b 7%) 100%);
+  --color-active-surface: hsl(44 83% 84%);
+  --color-on-active-surface: hsl(220 14% 12%);
+  --color-nav-text: color-mix(in srgb, var(--color-text-header) 68%, var(--color-primary-soft) 32%);
+  --color-nav-text-active: hsl(44 100% 78%);
+  --color-nav-indicator: color-mix(in srgb, var(--color-primary) 88%, white 12%);
+  --color-nav-indicator-shadow: color-mix(in srgb, var(--color-primary) 28%, transparent);
+  --color-nav-icon-glow: color-mix(in srgb, var(--color-nav-text-active) 28%, transparent);
+  --color-nav-track: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 97%, #2c2218 3%) 0%, color-mix(in srgb, var(--color-bg-header-alt) 93%, #120d09 7%) 100%);
   --color-nav-border: color-mix(in srgb, #ffffff 8%, transparent);
 
   /* Feedback */
@@ -54,7 +54,7 @@
   /* Superficies semánticas */
   --color-surface-elevated: var(--color-bg-card);
   --color-surface-elevated-soft: color-mix(in srgb, var(--color-bg-card) 94%, white 6%);
-  --color-surface-muted: color-mix(in srgb, var(--color-bg-card) 94%, #dfe8f3 6%);
+  --color-surface-muted: color-mix(in srgb, var(--color-bg-card) 92%, #f3ede4 8%);
   --color-surface-header-soft: color-mix(in srgb, var(--color-header-bg) 92%, transparent);
   --color-surface-interactive-soft: color-mix(in srgb, var(--color-primary) 12%, transparent);
   --color-surface-interactive-strong: color-mix(in srgb, var(--color-primary) 22%, var(--color-bg-card));
@@ -63,7 +63,7 @@
   --color-surface-overlay-strong: color-mix(in srgb, #031522 78%, transparent);
 
   /* Bordes / sombras */
-  --color-border-strong: color-mix(in srgb, var(--color-primary) 18%, var(--color-card-border));
+  --color-border-strong: color-mix(in srgb, var(--color-primary) 22%, var(--color-card-border));
   --color-border-soft: color-mix(in srgb, var(--color-card-border) 68%, transparent);
   --color-border-danger: color-mix(in srgb, var(--color-danger) 28%, var(--color-card-border));
   --color-shadow-soft: color-mix(in srgb, var(--color-shadow) 22%, transparent);
@@ -77,9 +77,9 @@
   --color-team-highlight-shadow: color-mix(in srgb, #ffffff 40%, transparent);
 
   /* Acentos: proximo partido & activos */
-  --color-active-team: hsl(42 100% 47%); /* #ffb300 */
-  --color-proximo-partido-bg: hsl(45 100% 90%); /* #fff3c4 suave */
-  --color-proximo-partido-border: hsl(42 96% 47%); /* #f59e0b / ámbar */
+  --color-active-team: hsl(44 100% 42%);
+  --color-proximo-partido-bg: hsl(36 100% 91%);
+  --color-proximo-partido-border: hsl(44 100% 42%);
   --color-proximo-partido-shadow: #f6e6b366;
 
   /* pequeños brillos para remarcados */
@@ -90,40 +90,40 @@
 /* ========== OSCURO (según preferencia del sistema) ========== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primary: hsl(186 72% 58%); /* turquesa claro para contraste en oscuro */
-    --color-primary-strong: hsl(186 78% 52%);
-    --color-primary-soft: hsl(186 72% 66%);
-    --color-primary-soft-2: hsl(188 70% 84%);
+    --color-primary: hsl(355 84% 58%);
+    --color-primary-strong: hsl(355 84% 52%);
+    --color-primary-soft: hsl(44 52% 66%);
+    --color-primary-soft-2: hsl(220 8% 78%);
 
-    --color-text: hsl(210 15% 92%);
-    --color-text-muted: hsl(210 8% 72%);
-    --color-text-soft: hsl(210 10% 58%);
+    --color-text: hsl(0 0% 96%);
+    --color-text-muted: hsl(220 8% 72%);
+    --color-text-soft: hsl(220 8% 58%);
     --color-text-contrast: hsl(0 0% 100%);
-    --color-bg: hsl(210 16% 12%); /* #1e2428 */
-    --color-bg-card: hsl(210 16% 16%); /* #272d31 */
-    --color-bg-card-soft: hsl(210 12% 20%);
-    --color-bg-header: hsl(197 70% 10%); /* #0a2429 */
-    --color-bg-header-alt: hsl(197 68% 8%);
+    --color-bg: hsl(0 0% 8%);
+    --color-bg-card: hsl(220 10% 12%);
+    --color-bg-card-soft: hsl(220 8% 15%);
+    --color-bg-header: hsl(0 0% 8%);
+    --color-bg-header-alt: hsl(0 0% 6%);
     --color-text-header: var(--color-text-contrast);
     --color-shadow: #000000aa;
-    --color-card-border: hsl(210 12% 26%);
+    --color-card-border: hsl(220 8% 22%);
     --color-overlay: #000000cc;
 
     --color-header-bg: var(--color-bg-card-soft);
     --color-fecha: var(--color-text-muted);
     --color-vs: var(--color-text-soft);
     --color-menu-bg: var(--color-bg-card);
-    --color-menu-text: var(--color-primary);
+    --color-menu-text: var(--color-text);
 
-    --color-active-team: hsl(186 72% 32%);
-    --color-active-surface: hsl(186 72% 58%);
-    --color-on-active-surface: hsl(192 62% 10%);
-    --color-nav-text: color-mix(in srgb, var(--color-text-header) 74%, var(--color-primary) 26%);
-    --color-nav-text-active: hsl(191 100% 81%);
-    --color-nav-indicator: color-mix(in srgb, var(--color-nav-text-active) 86%, #ffffff 14%);
-    --color-nav-indicator-shadow: color-mix(in srgb, var(--color-nav-text-active) 30%, transparent);
-    --color-nav-icon-glow: color-mix(in srgb, var(--color-nav-text-active) 34%, transparent);
-    --color-nav-track: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 97%, #123849 3%) 0%, color-mix(in srgb, var(--color-bg-header-alt) 93%, #071f2b 7%) 100%);
+    --color-active-team: hsl(355 84% 58%);
+    --color-active-surface: hsl(355 46% 18%);
+    --color-on-active-surface: hsl(0 0% 96%);
+    --color-nav-text: color-mix(in srgb, var(--color-text-header) 78%, var(--color-primary) 22%);
+    --color-nav-text-active: hsl(355 92% 66%);
+    --color-nav-indicator: color-mix(in srgb, var(--color-primary) 82%, white 18%);
+    --color-nav-indicator-shadow: color-mix(in srgb, var(--color-primary) 30%, transparent);
+    --color-nav-icon-glow: color-mix(in srgb, var(--color-nav-text-active) 28%, transparent);
+    --color-nav-track: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 97%, #231818 3%) 0%, color-mix(in srgb, var(--color-bg-header-alt) 93%, #090909 7%) 100%);
     --color-nav-border: color-mix(in srgb, #ffffff 8%, transparent);
 
     --color-success: hsl(145 70% 44%);
@@ -131,16 +131,16 @@
     --color-warning: hsl(42 80% 55%);
 
     --color-surface-elevated: var(--color-bg-card);
-    --color-surface-elevated-soft: color-mix(in srgb, var(--color-bg-card) 94%, #09141a 6%);
-    --color-surface-muted: color-mix(in srgb, var(--color-bg-card) 92%, #12202b 8%);
+    --color-surface-elevated-soft: color-mix(in srgb, var(--color-bg-card) 94%, #080808 6%);
+    --color-surface-muted: color-mix(in srgb, var(--color-bg-card) 92%, #151515 8%);
     --color-surface-header-soft: color-mix(in srgb, var(--color-header-bg) 92%, transparent);
     --color-surface-interactive-soft: color-mix(in srgb, var(--color-primary) 12%, transparent);
-    --color-surface-interactive-strong: color-mix(in srgb, var(--color-primary) 22%, var(--color-bg-card));
+    --color-surface-interactive-strong: color-mix(in srgb, var(--color-primary) 18%, var(--color-bg-card));
     --color-surface-danger-soft: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg-card));
     --color-surface-danger-soft-strong: color-mix(in srgb, var(--color-danger) 14%, var(--color-bg-card));
-    --color-surface-overlay-strong: color-mix(in srgb, #031522 78%, transparent);
+    --color-surface-overlay-strong: color-mix(in srgb, #000000 82%, transparent);
 
-    --color-border-strong: color-mix(in srgb, var(--color-primary) 18%, var(--color-card-border));
+    --color-border-strong: color-mix(in srgb, var(--color-primary) 20%, var(--color-card-border));
     --color-border-soft: color-mix(in srgb, var(--color-card-border) 68%, transparent);
     --color-border-danger: color-mix(in srgb, var(--color-danger) 28%, var(--color-card-border));
     --color-shadow-soft: color-mix(in srgb, var(--color-shadow) 22%, transparent);
@@ -148,12 +148,12 @@
     --color-shadow-card-strong: color-mix(in srgb, var(--color-shadow) 58%, transparent);
     --color-shadow-card-hover: color-mix(in srgb, var(--color-shadow) 72%, transparent);
 
-    --color-badge-bg: color-mix(in srgb, var(--color-primary) 34%, transparent);
+    --color-badge-bg: color-mix(in srgb, var(--color-primary) 30%, transparent);
     --color-score-surface: color-mix(in srgb, #11111128 84%, #ffffff 16%);
     --color-team-highlight-shadow: color-mix(in srgb, #000000 26%, transparent);
 
-    --color-proximo-partido-bg: hsl(45 30% 20%);
-    --color-proximo-partido-border: hsl(42 80% 55%);
+    --color-proximo-partido-bg: hsl(355 34% 18%);
+    --color-proximo-partido-border: hsl(44 72% 56%);
     --color-proximo-partido-shadow: #00000066;
 
     --color-remarcado-shadow1: #22222266;
@@ -163,23 +163,23 @@
 
 /* ========== FORZAR TEMA MANUAL (select de tu menú) ========== */
 body[data-theme="light"] {
-  --color-primary: hsl(186 72% 32%);
-  --color-primary-strong: hsl(186 78% 26%);
-  --color-primary-soft: hsl(186 52% 78%);
-  --color-primary-soft-2: hsl(186 42% 88%);
+  --color-primary: hsl(355 76% 50%);
+  --color-primary-strong: hsl(355 82% 43%);
+  --color-primary-soft: hsl(44 83% 84%);
+  --color-primary-soft-2: hsl(36 43% 93%);
 
-  --color-text: hsl(210 15% 18%);
-  --color-text-muted: hsl(210 8% 40%);
-  --color-text-soft: hsl(210 10% 65%);
+  --color-text: hsl(220 14% 12%);
+  --color-text-muted: hsl(220 8% 40%);
+  --color-text-soft: hsl(220 8% 61%);
   --color-text-contrast: hsl(0 0% 100%);
-  --color-bg: hsl(210 20% 98%);
+  --color-bg: hsl(30 33% 98%);
   --color-bg-card: hsl(0 0% 100%);
-  --color-bg-card-soft: hsl(210 25% 97%);
+  --color-bg-card-soft: hsl(30 27% 97%);
   --color-text-header: var(--color-text-contrast);
-  --color-bg-header: hsl(197 72% 16%);
-  --color-bg-header-alt: hsl(197 64% 14%);
+  --color-bg-header: hsl(220 14% 12%);
+  --color-bg-header-alt: hsl(220 12% 10%);
   --color-shadow: #0000003a;
-  --color-card-border: hsl(210 20% 86%);
+  --color-card-border: hsl(32 17% 84%);
   --color-overlay: #00000066;
 
   --color-header-bg: var(--color-bg-card-soft);
@@ -188,15 +188,15 @@ body[data-theme="light"] {
   --color-menu-bg: var(--color-bg-card);
   --color-menu-text: var(--color-text);
 
-  --color-active-team: hsl(42 100% 47%);
-  --color-active-surface: hsl(186 40% 90%);
-  --color-on-active-surface: hsl(186 72% 30%);
-  --color-nav-text: color-mix(in srgb, var(--color-text-header) 58%, var(--color-primary-soft) 42%);
-  --color-nav-text-active: hsl(186 100% 76%);
-  --color-nav-indicator: color-mix(in srgb, var(--color-primary) 92%, white 8%);
-  --color-nav-indicator-shadow: color-mix(in srgb, var(--color-primary) 34%, transparent);
-  --color-nav-icon-glow: color-mix(in srgb, var(--color-nav-text-active) 34%, transparent);
-  --color-nav-track: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 97%, #123849 3%) 0%, color-mix(in srgb, var(--color-bg-header-alt) 93%, #071f2b 7%) 100%);
+  --color-active-team: hsl(44 100% 42%);
+  --color-active-surface: hsl(44 83% 84%);
+  --color-on-active-surface: hsl(220 14% 12%);
+  --color-nav-text: color-mix(in srgb, var(--color-text-header) 68%, var(--color-primary-soft) 32%);
+  --color-nav-text-active: hsl(44 100% 78%);
+  --color-nav-indicator: color-mix(in srgb, var(--color-primary) 88%, white 12%);
+  --color-nav-indicator-shadow: color-mix(in srgb, var(--color-primary) 28%, transparent);
+  --color-nav-icon-glow: color-mix(in srgb, var(--color-nav-text-active) 28%, transparent);
+  --color-nav-track: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 97%, #2c2218 3%) 0%, color-mix(in srgb, var(--color-bg-header-alt) 93%, #120d09 7%) 100%);
   --color-nav-border: color-mix(in srgb, #ffffff 8%, transparent);
 
   --color-success: hsl(145 70% 44%);
@@ -205,7 +205,7 @@ body[data-theme="light"] {
 
   --color-surface-elevated: var(--color-bg-card);
   --color-surface-elevated-soft: color-mix(in srgb, var(--color-bg-card) 94%, white 6%);
-  --color-surface-muted: color-mix(in srgb, var(--color-bg-card) 94%, #dfe8f3 6%);
+  --color-surface-muted: color-mix(in srgb, var(--color-bg-card) 92%, #f3ede4 8%);
   --color-surface-header-soft: color-mix(in srgb, var(--color-header-bg) 92%, transparent);
   --color-surface-interactive-soft: color-mix(in srgb, var(--color-primary) 12%, transparent);
   --color-surface-interactive-strong: color-mix(in srgb, var(--color-primary) 22%, var(--color-bg-card));
@@ -213,7 +213,7 @@ body[data-theme="light"] {
   --color-surface-danger-soft-strong: color-mix(in srgb, var(--color-danger) 14%, var(--color-bg-card));
   --color-surface-overlay-strong: color-mix(in srgb, #031522 78%, transparent);
 
-  --color-border-strong: color-mix(in srgb, var(--color-primary) 18%, var(--color-card-border));
+  --color-border-strong: color-mix(in srgb, var(--color-primary) 22%, var(--color-card-border));
   --color-border-soft: color-mix(in srgb, var(--color-card-border) 68%, transparent);
   --color-border-danger: color-mix(in srgb, var(--color-danger) 28%, var(--color-card-border));
   --color-shadow-soft: color-mix(in srgb, var(--color-shadow) 22%, transparent);
@@ -225,8 +225,8 @@ body[data-theme="light"] {
   --color-score-surface: color-mix(in srgb, #11111108 80%, #ffffff 20%);
   --color-team-highlight-shadow: color-mix(in srgb, #ffffff 40%, transparent);
 
-  --color-proximo-partido-bg: hsl(45 100% 90%);
-  --color-proximo-partido-border: hsl(42 96% 47%);
+  --color-proximo-partido-bg: hsl(36 100% 91%);
+  --color-proximo-partido-border: hsl(44 100% 42%);
   --color-proximo-partido-shadow: #f6e6b366;
 
   --color-remarcado-shadow1: #ffffff66;
@@ -234,43 +234,43 @@ body[data-theme="light"] {
 }
 
 body[data-theme="dark"] {
-  --color-primary: hsl(186 72% 58%);
-  --color-primary-strong: hsl(186 78% 52%);
-  --color-primary-soft: hsl(186 72% 66%);
-  --color-primary-soft-2: hsl(188 70% 84%);
-  --color-text: hsl(210 15% 92%);
-  --color-text-muted: hsl(210 8% 72%);
-  --color-text-soft: hsl(210 10% 58%);
+  --color-primary: hsl(355 84% 58%);
+  --color-primary-strong: hsl(355 84% 52%);
+  --color-primary-soft: hsl(44 52% 66%);
+  --color-primary-soft-2: hsl(220 8% 78%);
+  --color-text: hsl(0 0% 96%);
+  --color-text-muted: hsl(220 8% 72%);
+  --color-text-soft: hsl(220 8% 58%);
   --color-text-contrast: hsl(0 0% 100%);
-  --color-bg: hsl(210 16% 12%);
-  --color-bg-card: hsl(210 16% 16%);
-  --color-bg-card-soft: hsl(210 12% 20%);
+  --color-bg: hsl(0 0% 8%);
+  --color-bg-card: hsl(220 10% 12%);
+  --color-bg-card-soft: hsl(220 8% 15%);
   --color-text-header: var(--color-text-contrast);
-  --color-bg-header: hsl(197 70% 10%);
-  --color-bg-header-alt: hsl(197 68% 8%);
+  --color-bg-header: hsl(0 0% 8%);
+  --color-bg-header-alt: hsl(0 0% 6%);
   --color-shadow: #000000aa;
-  --color-card-border: hsl(210 12% 26%);
+  --color-card-border: hsl(220 8% 22%);
   --color-header-bg: var(--color-bg-card-soft);
   --color-fecha: var(--color-text-muted);
   --color-vs: var(--color-text-soft);
   --color-menu-bg: var(--color-bg-card);
-  --color-menu-text: var(--color-primary);
+  --color-menu-text: var(--color-text);
   --color-overlay: #000000cc;
-  --color-active-team: hsl(186 72% 32%);
-  --color-active-surface: hsl(186 72% 58%);
-  --color-on-active-surface: hsl(192 62% 10%);
-  --color-nav-text: color-mix(in srgb, var(--color-text-header) 74%, var(--color-primary) 26%);
-  --color-nav-text-active: hsl(191 100% 81%);
-  --color-nav-indicator: color-mix(in srgb, var(--color-nav-text-active) 86%, #ffffff 14%);
-  --color-nav-indicator-shadow: color-mix(in srgb, var(--color-nav-text-active) 30%, transparent);
-  --color-nav-icon-glow: color-mix(in srgb, var(--color-nav-text-active) 34%, transparent);
-  --color-nav-track: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 97%, #123849 3%) 0%, color-mix(in srgb, var(--color-bg-header-alt) 93%, #071f2b 7%) 100%);
+  --color-active-team: hsl(355 84% 58%);
+  --color-active-surface: hsl(355 46% 18%);
+  --color-on-active-surface: hsl(0 0% 96%);
+  --color-nav-text: color-mix(in srgb, var(--color-text-header) 78%, var(--color-primary) 22%);
+  --color-nav-text-active: hsl(355 92% 66%);
+  --color-nav-indicator: color-mix(in srgb, var(--color-primary) 82%, #ffffff 18%);
+  --color-nav-indicator-shadow: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  --color-nav-icon-glow: color-mix(in srgb, var(--color-nav-text-active) 28%, transparent);
+  --color-nav-track: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-header) 97%, #231818 3%) 0%, color-mix(in srgb, var(--color-bg-header-alt) 93%, #090909 7%) 100%);
   --color-nav-border: color-mix(in srgb, #ffffff 8%, transparent);
   --color-success: hsl(145 70% 44%);
   --color-danger: hsl(7 92% 65%);
   --color-warning: hsl(42 80% 55%);
-  --color-proximo-partido-bg: hsl(45 30% 20%);
-  --color-proximo-partido-border: hsl(42 80% 55%);
+  --color-proximo-partido-bg: hsl(355 34% 18%);
+  --color-proximo-partido-border: hsl(44 72% 56%);
   --color-proximo-partido-shadow: #00000066;
   --color-remarcado-shadow1: #22222266;
   --color-remarcado-shadow2: #ffffff22;
