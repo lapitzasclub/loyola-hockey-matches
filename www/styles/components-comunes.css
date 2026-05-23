@@ -1,4 +1,29 @@
 /* Error Overlay Styles */
+:root {
+  --common-overlay-backdrop: color-mix(in srgb, var(--color-bg-header) 35%, #000 65%);
+  --common-overlay-card-bg: linear-gradient(180deg, var(--color-surface-elevated-soft) 0%, var(--color-surface-elevated) 100%);
+  --common-overlay-card-shadow: 0 24px 54px color-mix(in srgb, var(--color-shadow) 72%, transparent);
+  --common-warning-soft-bg: color-mix(in srgb, var(--color-warning) 18%, var(--color-bg));
+  --common-warning-soft-border: color-mix(in srgb, var(--color-warning) 42%, transparent);
+  --common-secondary-btn-bg: color-mix(in srgb, var(--color-bg) 82%, var(--color-bg-card));
+  --common-pre-bg: color-mix(in srgb, var(--color-bg) 92%, black 8%);
+  --common-ptr-bg: linear-gradient(180deg, color-mix(in srgb, #0e1b24 58%, var(--color-bg-card)) 0%, color-mix(in srgb, #142631 76%, var(--color-bg-card)) 42%, color-mix(in srgb, #0e1b24 62%, var(--color-bg-card)) 100%);
+  --common-ptr-bg-light: #7b8791;
+  --common-ptr-text: color-mix(in srgb, var(--color-primary) 82%, #b8f6ff 18%);
+  --common-ptr-text-light: #e9fdff;
+  --common-logo-bg: var(--color-surface-elevated);
+  --common-logo-border: var(--color-card-border);
+  --common-competition-header-bg: var(--color-surface-muted);
+  --common-competition-header-text: color-mix(in srgb, var(--color-primary) 68%, var(--color-text) 32%);
+  --common-competition-header-border: color-mix(in srgb, var(--color-card-border) 88%, transparent);
+}
+
+body[data-theme="dark"] {
+  --common-competition-header-bg: #2c333c;
+  --common-competition-header-text: #69d5e3;
+  --common-competition-header-border: #44515e;
+}
+
 .error-overlay {
   position: fixed;
   inset: 0;
@@ -12,7 +37,7 @@
 .error-overlay-backdrop {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--color-bg-header) 35%, #000 65%);
+  background: var(--common-overlay-backdrop);
   opacity: 0.88;
   backdrop-filter: blur(8px);
 }
@@ -22,10 +47,10 @@
   width: min(100%, 34rem);
   padding: 1.4rem 1.15rem 1.1rem;
   border-radius: 24px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-card) 94%, white 6%) 0%, var(--color-bg-card) 100%);
+  background: var(--common-overlay-card-bg);
   color: var(--color-text);
   border: 1px solid color-mix(in srgb, var(--color-card-border) 88%, transparent);
-  box-shadow: 0 24px 54px color-mix(in srgb, var(--color-shadow) 72%, transparent);
+  box-shadow: var(--common-overlay-card-shadow);
 }
 
 .error-overlay-icon {
@@ -36,8 +61,8 @@
   margin: 0 auto 0.9rem;
   border-radius: 999px;
   font-size: 1.75rem;
-  background: color-mix(in srgb, #f59e0b 18%, var(--color-bg));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 42%, transparent);
+  background: var(--common-warning-soft-bg);
+  box-shadow: inset 0 0 0 1px var(--common-warning-soft-border);
 }
 
 .error-overlay-copy {
@@ -92,12 +117,12 @@
 
 .error-overlay-btn-primary {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-contrast);
   box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 32%, transparent);
 }
 
 .error-overlay-btn-secondary {
-  background: color-mix(in srgb, var(--color-bg) 82%, var(--color-bg-card));
+  background: var(--common-secondary-btn-bg);
   color: var(--color-text);
   border: 1px solid color-mix(in srgb, var(--color-card-border) 90%, transparent);
 }
@@ -124,7 +149,7 @@
   margin: 0.8rem 0 0;
   padding: 0.9rem 1rem;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--color-bg) 92%, black 8%);
+  background: var(--common-pre-bg);
   color: var(--color-text);
   max-height: 32vh;
   overflow: auto;
@@ -153,7 +178,7 @@
 
 /* Partido instalación link */
 .partido-instalacion-link {
-  color: var(--color-primary, #1976d2);
+  color: var(--color-primary);
   text-decoration: underline;
 }
 /* =======================
@@ -177,11 +202,11 @@
   color: var(--color-primary);
   user-select: none;
   margin: 0 -1rem 0.7rem;
-  background: linear-gradient(180deg, color-mix(in srgb, #0e1b24 58%, var(--color-bg-card)) 0%, color-mix(in srgb, #142631 76%, var(--color-bg-card)) 42%, color-mix(in srgb, #0e1b24 62%, var(--color-bg-card)) 100%);
+  background: var(--common-ptr-bg);
 }
 
 body[data-theme="light"] #pullToRefresh.pull-to-refresh {
-  background: #7b8791;
+  background: var(--common-ptr-bg-light);
 }
 
 #pullToRefresh.pull-to-refresh::before,
@@ -293,10 +318,11 @@ body[data-theme="light"] #pullToRefresh.pull-to-refresh::after {
   padding: 0 0.9rem;
   border-radius: 999px;
   font-family: inherit;
-  font-size: 0.98rem;
-  font-weight: 800;
-  line-height: 1;
-  color: color-mix(in srgb, var(--color-primary) 82%, #b8f6ff 18%);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.05;
+  color: var(--common-ptr-text);
   background: color-mix(in srgb, #000 12%, transparent);
   box-shadow: none;
   transition: transform 0.06s linear, opacity 0.06s linear;
@@ -308,12 +334,12 @@ body[data-theme="light"] #pullToRefresh.pull-to-refresh::after {
 }
 
 body[data-theme="light"] .ptr-text {
-  color: #e9fdff;
+  color: var(--common-ptr-text-light);
   background: transparent;
 }
 
 body[data-theme="light"] .ptr-icon {
-  color: #e9fdff;
+  color: var(--common-ptr-text-light);
 }
 
 @keyframes ptr-caret-bob {
@@ -368,12 +394,21 @@ body[data-theme="light"] main.ptr-pulling > #screenContent {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2.5em;
-  width: 2.5em;
-  margin: 0 0.35em 0 0;
-  background: #fff url("../loyola_hockey.png") center/contain no-repeat;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px var(--color-shadow);
+  height: 3.22em;
+  width: 3.22em;
+  flex: 0 0 3.22em;
+  margin: 0 0.5em 0 0;
+  background-color: transparent;
+  background-image: url("/assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_claro.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body[data-theme="dark"] .logo-header {
+  background-image: url("/assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_oscuro.png");
 }
 
 .logo-equipo {
@@ -383,10 +418,10 @@ body[data-theme="light"] main.ptr-pulling > #screenContent {
   width: 2.2em;
   margin-right: 0.8em;
   margin-left: 0;
-  background: #fff url("../loyola_hockey.png") center/contain no-repeat;
+  background: var(--common-logo-bg) url("../loyola_hockey.png") center/contain no-repeat;
   border-radius: 50%;
   box-shadow: 0 1px 4px var(--color-shadow);
-  border: 1px solid #eee;
+  border: 1px solid var(--common-logo-border);
   flex-shrink: 0;
 }
 
@@ -395,10 +430,10 @@ body[data-theme="light"] main.ptr-pulling > #screenContent {
   height: 2em;
   width: 2em;
   margin: 0;
-  background: #fff url("../loyola_hockey.png") center/contain no-repeat;
+  background: var(--common-logo-bg) url("../loyola_hockey.png") center/contain no-repeat;
   border-radius: 50%;
   box-shadow: 0 1px 4px var(--color-shadow);
-  border: 1px solid #eee;
+  border: 1px solid var(--common-logo-border);
 }
 
 /* Cabecera de competición */
@@ -415,26 +450,23 @@ body[data-theme="light"] main.ptr-pulling > #screenContent {
   padding: 0.82em 0.9em;
   margin: 0 0 0.8em;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--color-bg-card) 94%, #dfe8f3 6%);
-  color: color-mix(in srgb, var(--color-primary) 68%, var(--color-text) 32%);
+  background: var(--common-competition-header-bg);
+  color: var(--common-competition-header-text);
   box-shadow: 0 6px 14px color-mix(in srgb, var(--color-shadow) 35%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-card-border, #e0e0e0) 88%, transparent);
+  border: 1px solid var(--common-competition-header-border);
   transition: background 0.2s, color 0.2s, border-color 0.2s;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 [data-theme="dark"] .competicion-header {
-  background: #2c333c;
-  color: #69d5e3;
-  border-color: #44515e;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
 }
 
 /* Controles generales */
 button {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-contrast);
   border: none;
   padding: 0.5em 1em;
   border-radius: 4px;

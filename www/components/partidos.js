@@ -6,7 +6,7 @@ import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { getParametrosCompeticion } from "../services.js";
 import { createCalendarButton } from "../utils/calendar.js";
 import { comparePartidosByScheduledDate, extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
-import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml, scrollToProximo } from "../utils/partidosHelpers.js";
+import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionActionHtml, makeInstalacionHtml, scrollToProximo } from "../utils/partidosHelpers.js";
 import { renderEmptyState, renderErrorState } from "./loadingStates.js";
 import { renderEquipoDetalleHeader, openEquipoSubview } from "./equipoDetalleSubview.js";
 import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
@@ -202,6 +202,7 @@ function renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap) {
   const fechaFormateada = formatFechaHelper(p.Fecha, lang);
   const hora = p.Hora ? p.Hora.slice(0, 5) : "";
   const instalacionHtml = makeInstalacionHtml(p);
+  const instalacionActionHtml = makeInstalacionActionHtml(p);
   const local = emphasizeTeam(p.EquipoLocal || null, equipoSel);
   const visit = emphasizeTeam(p.EquipoVisit || null, equipoSel);
   const localLogo = renderTeamLogo(logoMap, p.IdEquipoLocal, p.EquipoLocal);
@@ -215,7 +216,7 @@ function renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap) {
         <span class="partido-fecha">${safeStr(fechaFormateada)}${
     hora ? " · " + hora : ""
   }</span>
-        <span class="partido-calendario"></span>
+        <span class="partido-header-actions">${instalacionActionHtml}<span class="partido-calendario"></span></span>
       </div>
       <div class="partido-duelo">
         <div class="partido-team partido-team-local">
@@ -231,9 +232,7 @@ function renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap) {
           <span class="partido-visit">${visit}</span>
         </div>
       </div>
-      <div class="partido-footer">
-        <div class="partido-instalacion">${instalacionHtml}</div>
-      </div>
+      ${instalacionHtml ? `<div class="partido-footer partido-footer-sr-only"><div class="partido-instalacion">${instalacionHtml}</div></div>` : ""}
     </div>
   `;
   const btnCal = createCalendarButton(p);
@@ -251,14 +250,19 @@ function renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap) {
  * @param {object} partido Partido asociado.
  * @returns {void}
  */
-function enrichTeamPayloadFromAvailableData(equipoPayload) {
-  const competitionId = String(equipoPayload?.IdCompeticion || "");
+function enrichTeamPayloadFromAvailableData(equipoPayload, context = {}) {
+  const competitionId = String(equipoPayload?.IdCompeticion || context?.competitionId || "");
   const teamId = String(equipoPayload?.IdEquipoComp || equipoPayload?.IdEquipo || "");
 
   const clasData = Array.isArray(window._clasificacionLoyola) ? window._clasificacionLoyola : [];
   const clasMatch = clasData.find((eq) => String(eq?.IdCompeticion || "") === competitionId && String(eq?.IdEquipoComp || eq?.IdEquipo || "") === teamId);
   if (clasMatch) {
-    return { ...clasMatch, ...equipoPayload, IdCompeticion: equipoPayload.IdCompeticion || clasMatch.IdCompeticion };
+    return {
+      ...clasMatch,
+      ...equipoPayload,
+      IdCompeticion: equipoPayload.IdCompeticion || clasMatch.IdCompeticion,
+      NombreGrupo: equipoPayload.NombreGrupo || clasMatch.NombreGrupo || clasMatch.DenoComp || context?.competitionName || "",
+    };
   }
 
   const catalogMatch = getEquiposLoyola().find((eq) => String(eq?.idCompeticion || "") === competitionId && String(eq?.idEquipoComp || "") === teamId);
@@ -273,13 +277,30 @@ function enrichTeamPayloadFromAvailableData(equipoPayload) {
     };
   }
 
-  return equipoPayload;
+  return {
+    ...equipoPayload,
+    IdCompeticion: equipoPayload.IdCompeticion || context?.competitionId || "",
+    NombreGrupo: equipoPayload.NombreGrupo || context?.competitionName || "",
+  };
 }
 
-async function openTeamDetailFromMatch(equipoPayload) {
-  const enrichedPayload = enrichTeamPayloadFromAvailableData(equipoPayload);
+function resolveCompetitionNameFromContext(context = {}) {
+  if (context?.competitionName) return context.competitionName;
+  const competitionId = String(context?.competitionId || "");
+  if (!competitionId) return "";
+  const catalogMatch = getEquiposLoyola().find((eq) => String(eq?.idCompeticion || "") === competitionId);
+  return catalogMatch?.nombreCompeticion || "";
+}
+
+async function openTeamDetailFromMatch(equipoPayload, context = {}) {
+  const normalizedContext = {
+    ...context,
+    competitionName: context?.competitionName || resolveCompetitionNameFromContext(context),
+  };
+  const enrichedPayload = enrichTeamPayloadFromAvailableData(equipoPayload, normalizedContext);
   const initialState = createDetalleState("team-detail-entry");
   initialState.selectedEquipo = normalizarEquipoClasificacion(enrichedPayload);
+  initialState.teamCompetitionName = enrichedPayload?.NombreGrupo || enrichedPayload?.nombreGrupo || normalizedContext?.competitionName || "";
   initialState.loadingTeam = true;
   initialState.navigation.currentView = "equipo";
   await openPartidoDetalleLazy("team-detail-entry", {
@@ -293,6 +314,7 @@ async function openTeamDetailFromMatch(equipoPayload) {
     const renderAll = window.__partidoDetalleRenderAll;
     if (!state || !headerEl || !bodyEl || typeof renderAll !== "function") return;
     state.selectedEquipo = initialState.selectedEquipo;
+    state.teamCompetitionName = initialState.teamCompetitionName || state.teamCompetitionName || "";
     state.loadingTeam = true;
     state.navigation.currentView = "equipo";
     await openEquipoSubview(state, enrichedPayload, headerEl, bodyEl, renderAll);
@@ -325,7 +347,10 @@ function bindPartidoInteractions(li, partido, logoMap) {
         IdCompeticion: getSelectedCompetitionId(),
         NombreGrupo: partido.NombreCompeticion || partido.NombreGrupo || "",
       };
-      await openTeamDetailFromMatch(equipoPayload);
+      await openTeamDetailFromMatch(equipoPayload, {
+        competitionId: getSelectedCompetitionId(),
+        competitionName: partido.NombreCompeticion || partido.NombreGrupo || "",
+      });
     });
   });
 
