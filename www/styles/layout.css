@@ -141,7 +141,12 @@ body[data-theme="dark"] main,
 body[data-theme="dark"] #screenContent,
 body[data-theme="dark"] .header,
 body[data-theme="dark"] .bottom-nav,
-body[data-theme="dark"] .bottom-nav-track {
+body[data-theme="dark"] .bottom-nav-track,
+body[data-theme="light"] main,
+body[data-theme="light"] #screenContent,
+body[data-theme="light"] .header,
+body[data-theme="light"] .bottom-nav,
+body[data-theme="light"] .bottom-nav-track {
   background: var(--color-bg) !important;
 }
 
@@ -206,14 +211,6 @@ body.app-ready .app-hidden-initially {
 main,
 #screenContent {
   background: var(--color-bg);
-}
-
-body[data-theme="light"] main,
-body[data-theme="light"] #screenContent,
-body[data-theme="light"] .header,
-body[data-theme="light"] .bottom-nav,
-body[data-theme="light"] .bottom-nav-track {
-  background: var(--color-bg) !important;
 }
 
 :root {
