@@ -88,6 +88,7 @@
 - Se reforzó la robustez de assets para APK/Capacitor copiando los Loyola de uso directo a `www/public/assets/sidebar-loyola/...`.
 - Se rehízo el cierre del side menu móvil y las esquinas inferiores como capas absolutas reales, para que no dependan de la grid interna.
 - Se añadieron constantes de ruta para el escudo Loyola claro/oscuro en `www/components/equipoSelectorLauncher.js`.
+- Se sustituyó la duplicación manual de assets Loyola entre `www/assets/...` y `www/public/...` por una copia automática en build desde `vite.config.js`, dejando `www/assets/sidebar-loyola/...` como fuente editable principal.
 - Se fueron dejando commits pequeños y temáticos durante la fase, culminando en:
   - `87d37d2` `Polish Loyola sidebar and standings integration`
   - `9eedd25` `Refine Loyola asset references and standings loading state`

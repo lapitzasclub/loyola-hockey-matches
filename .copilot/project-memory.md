@@ -204,7 +204,8 @@ La base está claramente más sana que al inicio de esta fase:
   - los grupos del acordeón ya no se renderizan como `li`, sino como `div.clas-accordion-item.clas-accordion`
   - el loading state de clasificación también usa `clas-accordion-item`
   - se eliminaron dependencias como `#matches li.clas-card` en la base de estilos
-- Los assets Loyola usados por URL directa se copiaron también a `www/public/assets/sidebar-loyola/...` porque Vite/Capacitor no garantizaban su presencia en `dist` si solo vivían en `www/assets/...`.
+- Los assets Loyola de trabajo viven en `www/assets/sidebar-loyola/...` como fuente única editable.
+- `vite.config.js` incorpora un plugin inline que copia automáticamente esa carpeta a `dist/assets/sidebar-loyola/...` al final del build, para que Capacitor/APK reciba los mismos archivos sin mantener duplicado manual en `www/public/...`.
 - La X del side menu y los decoradores inferiores se rehicieron como capas absolutas ancladas al contenedor correcto para que fueran robustos en APK/móvil real.
 - En `www/components/equipoSelectorLauncher.js` se introdujeron constantes para centralizar las rutas del escudo Loyola claro/oscuro.
 - Commits importantes de esta fase:
