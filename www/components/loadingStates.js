@@ -123,7 +123,7 @@ export function renderInitialTeamLoadingState(container) {
  */
 export function renderClasificacionLoadingState(matchesList) {
   matchesList.innerHTML = `
-    <li class="clas-card clas-skeleton-card" aria-hidden="true">
+    <div class="clas-accordion-item clas-skeleton-card" aria-hidden="true">
       <div class="clas-skeleton-competition-head">
         <span class="clas-skeleton-block clas-skeleton-competition-title"></span>
         <span class="clas-skeleton-block clas-skeleton-chevron"></span>
@@ -252,7 +252,7 @@ export function renderClasificacionLoadingState(matchesList) {
           </div>
         </div>
       </div>
-    </li>
+    </div>
   `;
 }
 
