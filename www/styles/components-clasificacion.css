@@ -243,7 +243,7 @@ body[data-theme="dark"] {
   font-weight: 700;
   text-align: center;
   padding: 0.46em 0.12em 0.4em;
-  border-top: 1px solid color-mix(in srgb, var(--clas-border) 80%, transparent);
+  border-top: 0;
   border-bottom: 1px solid var(--clas-border);
   background-clip: padding-box;
 }
@@ -635,7 +635,7 @@ body[data-theme="dark"] {
 
 .clas-accordion[data-expanded="true"] .clas-acc-content,
 .clas-accordion[open] .clas-acc-content {
-  border-top-color: color-mix(in srgb, var(--clas-border) 100%, transparent);
+  border-top-color: transparent;
 }
 
 .clas-acc-btn:focus-visible {
