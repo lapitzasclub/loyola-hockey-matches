@@ -56,6 +56,9 @@ export function renderMenuTeamLauncher(mobileBackCoordinator, mostrarPartidosYCl
     onOpen: () => {
       mobileBackCoordinator.closeSideMenu();
       mobileBackCoordinator.syncHistory();
+      if (isOnboardingActive()) {
+        return;
+      }
       openEquipoSelectorOverlay({
         onSelect: async () => {
           setPartidosTabActive();
