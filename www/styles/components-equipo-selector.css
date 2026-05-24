@@ -392,10 +392,33 @@ body[data-theme="dark"] {
   animation: team-selector-shimmer 1.25s linear infinite;
 }
 
-.team-selector-skeleton-logo {
-  width: 54px;
-  height: 54px;
+.team-selector-group-skeleton .team-selector-group-caret {
+  opacity: 0.35;
+}
+
+.team-selector-skeleton-group-title {
+  width: 7.5rem;
+  height: 1rem;
+}
+
+.team-selector-skeleton-group-count {
+  width: 2.2rem;
+  height: 1.4rem;
+}
+
+.team-selector-skeleton-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
   border-radius: 16px;
+}
+
+.team-selector-skeleton-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
 }
 
 .team-selector-skeleton-line {
@@ -409,6 +432,12 @@ body[data-theme="dark"] {
 .team-selector-skeleton-line-sm {
   width: 6rem;
   margin-top: 0.45rem;
+}
+
+.team-selector-skeleton-row {
+  width: 100%;
+  height: 3.2rem;
+  border-radius: 12px;
 }
 
 .team-selector-skeleton-pill {
