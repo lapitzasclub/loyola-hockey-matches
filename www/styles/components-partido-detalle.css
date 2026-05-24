@@ -1276,11 +1276,6 @@ body[data-theme="dark"] .partido-detalle-player-card-hero {
   background: var(--color-accordion-surface);
 }
 
-body[data-theme="dark"] .partido-detalle-player-competition {
-  border-color: var(--color-accordion-divider);
-  background: var(--color-accordion-surface);
-}
-
 .partido-detalle-player-competition-bar {
   display: flex;
   align-items: flex-start;
@@ -1300,14 +1295,6 @@ body[data-theme="dark"] .partido-detalle-player-competition {
 .partido-detalle-player-competition[data-expanded="true"] .partido-detalle-player-competition-bar {
   background: var(--color-accordion-surface-open);
   box-shadow: inset 0 -1px 0 var(--color-accordion-divider);
-}
-
-body[data-theme="dark"] .partido-detalle-player-competition-bar {
-  background: var(--color-accordion-surface);
-}
-
-body[data-theme="dark"] .partido-detalle-player-competition[data-expanded="true"] .partido-detalle-player-competition-bar {
-  background: var(--color-accordion-surface-open);
 }
 
 .partido-detalle-player-competition-bar::-webkit-details-marker {
