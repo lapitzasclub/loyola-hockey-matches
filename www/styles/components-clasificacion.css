@@ -209,15 +209,15 @@ body[data-theme="dark"] {
 }
 
 .clas-table-wrap {
-  width: calc(100% + 2rem);
-  margin: 0 -1rem;
+  width: 100%;
+  margin: 0;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  border-radius: 0;
+  border-radius: 0 0 24px 24px;
   border: 0;
-  background: transparent;
+  background: var(--clas-surface-soft);
   box-shadow: none;
 }
 
@@ -235,14 +235,15 @@ body[data-theme="dark"] {
 .clas-table thead th {
   position: sticky;
   top: 0;
-  background: color-mix(in srgb, var(--clas-surface-soft) 82%, var(--clas-surface) 18%);
+  background: var(--clas-surface-soft);
   color: var(--color-text);
   text-transform: uppercase;
   letter-spacing: 0.01em;
   font-size: 0.58rem;
   font-weight: 700;
   text-align: center;
-  padding: 0.38em 0.12em;
+  padding: 0.46em 0.12em 0.4em;
+  border-top: 1px solid color-mix(in srgb, var(--clas-border) 80%, transparent);
   border-bottom: 1px solid var(--clas-border);
   background-clip: padding-box;
 }
@@ -255,6 +256,14 @@ body[data-theme="dark"] {
   border-bottom: 1px solid color-mix(in srgb, var(--clas-border) 84%, transparent);
   background: var(--clas-surface-alt);
   vertical-align: middle;
+}
+
+.clas-table thead th:first-child {
+  border-top-left-radius: 18px;
+}
+
+.clas-table thead th:last-child {
+  border-top-right-radius: 18px;
 }
 
 .clas-table tbody tr:nth-child(odd) td {
@@ -685,8 +694,8 @@ body[data-theme="dark"] {
   height: 0;
   opacity: 0;
   overflow: hidden;
-  background: transparent;
-  padding: 0 1rem 0.35rem;
+  background: var(--clas-surface-soft);
+  padding: 0;
   border-top: 1px solid transparent;
 }
 
