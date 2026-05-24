@@ -286,7 +286,7 @@ body[data-theme="dark"] {
 .team-selector-team-list::before {
   content: "";
   position: absolute;
-  left: -1.05rem;
+  left: 1.02rem;
   top: -0.95rem;
   bottom: 0.9rem;
   width: 1px;
@@ -315,9 +315,9 @@ body[data-theme="dark"] {
 .team-selector-team-button::before {
   content: "";
   position: absolute;
-  left: -1.05rem;
+  left: -2.02rem;
   top: 50%;
-  width: 0.95rem;
+  width: 1.12rem;
   height: 1px;
   background: var(--selector-card-divider);
 }
