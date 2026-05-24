@@ -193,7 +193,6 @@ function renderTecnicosCards(tecnicos, modalidad, teamType) {
       chips,
       emptyText: t("detail_no_incidents"),
       extraClass: "alineacion-item-staff",
-      playerPayload: getJugadorPayload(tecnico, teamType, "tecnico"),
     });
   }).join("");
 
