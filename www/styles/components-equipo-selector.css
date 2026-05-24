@@ -118,11 +118,11 @@ body[data-theme="dark"] {
 
 .team-selector-groups {
   display: grid;
-  gap: 0.95rem;
+  gap: var(--color-accordion-gap);
 }
 
 .team-selector-group {
-  border-radius: 24px;
+  border-radius: var(--color-accordion-radius);
   border: 1px solid color-mix(in srgb, var(--selector-card-divider) 100%, transparent);
   background: var(--selector-group-bg);
   box-shadow: none;
@@ -137,10 +137,10 @@ body[data-theme="dark"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.8rem;
+  gap: var(--color-accordion-header-gap);
   list-style: none;
   cursor: pointer;
-  padding: 0.92rem 1rem 0.88rem;
+  padding: var(--color-accordion-header-padding);
   font-weight: 900;
   color: var(--selector-text-strong);
   transition: background-color 220ms ease, transform 220ms ease, padding-bottom 260ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -192,8 +192,8 @@ body[data-theme="dark"] {
 }
 
 .team-selector-group-caret {
-  width: 0.72rem;
-  height: 0.72rem;
+  width: var(--color-accordion-chevron-size);
+  height: var(--color-accordion-chevron-size);
   border-right: 2px solid color-mix(in srgb, var(--selector-text-strong) 72%, transparent);
   border-bottom: 2px solid color-mix(in srgb, var(--selector-text-strong) 72%, transparent);
   transform: rotate(45deg);
@@ -207,7 +207,7 @@ body[data-theme="dark"] {
 }
 
 .team-selector-group-content {
-  padding: 0.15rem 1rem 0.35rem;
+  padding: var(--color-accordion-content-padding);
   height: 0;
   opacity: 0;
   overflow: hidden;

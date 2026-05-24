@@ -65,6 +65,12 @@
   --color-accordion-surface-open: #efe6de;
   --color-accordion-surface-alt: #f9f4ed;
   --color-accordion-divider: color-mix(in srgb, #8d7766 24%, transparent);
+  --color-accordion-radius: 24px;
+  --color-accordion-gap: 0.95rem;
+  --color-accordion-header-gap: 0.8rem;
+  --color-accordion-header-padding: 0.92rem 1rem 0.88rem;
+  --color-accordion-content-padding: 0.15rem 1rem 0.35rem;
+  --color-accordion-chevron-size: 0.8rem;
 
   /* Bordes / sombras */
   --color-border-strong: color-mix(in srgb, var(--color-primary) 22%, var(--color-card-border));
@@ -147,6 +153,12 @@
     --color-accordion-surface-open: #261d1e;
     --color-accordion-surface-alt: #211919;
     --color-accordion-divider: color-mix(in srgb, #ffffff 12%, transparent);
+    --color-accordion-radius: 24px;
+    --color-accordion-gap: 0.95rem;
+    --color-accordion-header-gap: 0.8rem;
+    --color-accordion-header-padding: 0.92rem 1rem 0.88rem;
+    --color-accordion-content-padding: 0.15rem 1rem 0.35rem;
+    --color-accordion-chevron-size: 0.8rem;
 
     --color-border-strong: color-mix(in srgb, var(--color-primary) 20%, var(--color-card-border));
     --color-border-soft: color-mix(in srgb, var(--color-card-border) 68%, transparent);
@@ -247,6 +259,12 @@ body[data-theme="light"] {
   --color-accordion-surface-open: #efe6de;
   --color-accordion-surface-alt: #f9f4ed;
   --color-accordion-divider: color-mix(in srgb, #8d7766 24%, transparent);
+  --color-accordion-radius: 24px;
+  --color-accordion-gap: 0.95rem;
+  --color-accordion-header-gap: 0.8rem;
+  --color-accordion-header-padding: 0.92rem 1rem 0.88rem;
+  --color-accordion-content-padding: 0.15rem 1rem 0.35rem;
+  --color-accordion-chevron-size: 0.8rem;
 }
 
 body[data-theme="dark"] {
@@ -294,6 +312,12 @@ body[data-theme="dark"] {
   --color-accordion-surface-open: #261d1e;
   --color-accordion-surface-alt: #211919;
   --color-accordion-divider: color-mix(in srgb, #ffffff 12%, transparent);
+  --color-accordion-radius: 24px;
+  --color-accordion-gap: 0.95rem;
+  --color-accordion-header-gap: 0.8rem;
+  --color-accordion-header-padding: 0.92rem 1rem 0.88rem;
+  --color-accordion-content-padding: 0.15rem 1rem 0.35rem;
+  --color-accordion-chevron-size: 0.8rem;
 }
 
 /* Accesibilidad: foco visible en elementos interactivos que usan var(--color-primary) */

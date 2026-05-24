@@ -58,12 +58,12 @@ body[data-theme="dark"] {
   position: relative;
   padding: 0;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: var(--color-accordion-radius);
   border: 1px solid var(--clas-border);
   background: var(--clas-surface);
   box-shadow: var(--clas-shadow);
-  margin-bottom: 0.95rem;
-  clip-path: inset(0 round 24px);
+  margin-bottom: var(--color-accordion-gap);
+  clip-path: inset(0 round var(--color-accordion-radius));
 }
 
 
@@ -216,7 +216,7 @@ body[data-theme="dark"] {
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  border-radius: 0 0 24px 24px;
+  border-radius: 0 0 var(--color-accordion-radius) var(--color-accordion-radius);
   border: 0;
   background: var(--clas-surface-soft);
   box-shadow: none;
@@ -604,7 +604,7 @@ body[data-theme="dark"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.8rem;
+  gap: var(--color-accordion-header-gap);
   width: 100%;
   min-width: 0;
   background: var(--clas-surface);
@@ -613,7 +613,7 @@ body[data-theme="dark"] {
   outline: none;
   font-size: 0.98rem;
   font-weight: 700;
-  padding: 0.92rem 1rem 0.88rem;
+  padding: var(--color-accordion-header-padding);
   margin: 0;
   text-align: left;
   cursor: pointer;
@@ -675,8 +675,8 @@ body[data-theme="dark"] {
 }
 
 .clas-acc-chevron {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: var(--color-accordion-chevron-size);
+  height: var(--color-accordion-chevron-size);
   border-right: 2px solid var(--color-primary);
   border-bottom: 2px solid var(--color-primary);
   transform: rotate(45deg);

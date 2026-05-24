@@ -1271,7 +1271,7 @@ body[data-theme="dark"] .partido-detalle-player-card-hero {
 .partido-detalle-player-competition {
   display: block;
   border: 1px solid var(--color-accordion-divider);
-  border-radius: 1rem;
+  border-radius: var(--color-accordion-radius);
   overflow: hidden;
   background: var(--color-accordion-surface);
 }
@@ -1285,8 +1285,8 @@ body[data-theme="dark"] .partido-detalle-player-competition {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.8rem;
-  padding: 1rem;
+  gap: var(--color-accordion-header-gap);
+  padding: var(--color-accordion-header-padding);
   background: var(--color-accordion-surface);
   cursor: pointer;
   list-style: none;
@@ -1332,8 +1332,8 @@ body[data-theme="dark"] .partido-detalle-player-competition[data-expanded="true"
 }
 
 .partido-detalle-player-competition-chevron {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: var(--color-accordion-chevron-size);
+  height: var(--color-accordion-chevron-size);
   border-right: 2px solid var(--color-primary);
   border-bottom: 2px solid var(--color-primary);
   transform: rotate(45deg);
