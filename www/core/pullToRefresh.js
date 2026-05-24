@@ -7,6 +7,7 @@ import { renderClasificacionLoadingState } from "../components/loadingStates.js"
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { invalidateApiCache } from "../utils/apiCache.js";
 import { setCompeticionHeader } from "./header.js";
+import { isOnboardingActive } from "./layoutState.js";
 
 /**
  * Configura el pull-to-refresh para recargar datos y limpiar caché.
@@ -197,6 +198,10 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
       const delta = e.changedTouches[0].clientY - startY;
       const resistedPull = getResistedPull(delta);
       if (resistedPull >= threshold) {
+        if (isOnboardingActive()) {
+          resetPTR();
+          return;
+        }
         refreshing = true;
         if (ptr) ptr.classList.add("refreshing");
         setPtrIconState("loading");
