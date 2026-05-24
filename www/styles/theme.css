@@ -243,6 +243,10 @@ body[data-theme="light"] {
 
   --color-remarcado-shadow1: #ffffff66;
   --color-remarcado-shadow2: #00000022;
+  --color-accordion-surface: #f6f1ea;
+  --color-accordion-surface-open: #efe6de;
+  --color-accordion-surface-alt: #f9f4ed;
+  --color-accordion-divider: color-mix(in srgb, #8d7766 24%, transparent);
 }
 
 body[data-theme="dark"] {
