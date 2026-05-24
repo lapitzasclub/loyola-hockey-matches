@@ -5,11 +5,17 @@
 
 :root {
   --selector-kicker-bg: color-mix(in srgb, var(--color-primary) 14%, #ffffff);
-  --selector-group-bg: color-mix(in srgb, var(--color-bg) 94%, #f4f0e8 6%);
-  --selector-group-open-bg: color-mix(in srgb, var(--color-primary) 4%, var(--selector-group-bg));
-  --selector-logo-bg: #f5f7fa;
+  --selector-group-bg: #1d1d1d;
+  --selector-group-open-bg: #2a2222;
+  --selector-card-divider: color-mix(in srgb, #ffffff 10%, transparent);
+  --selector-logo-bg: #3b3c40;
   --selector-button-bg: transparent;
-  --selector-button-selected-bg: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  --selector-button-selected-bg: color-mix(in srgb, #8a1f2d 24%, transparent);
+  --selector-button-hover-bg: color-mix(in srgb, #ffffff 4%, transparent);
+  --selector-text-strong: #f4f1ec;
+  --selector-text-muted: color-mix(in srgb, #f4f1ec 70%, #1d2330 30%);
+  --selector-action-bg: color-mix(in srgb, #8a1f2d 42%, transparent);
+  --selector-action-color: #f7d7dc;
   --selector-skeleton-bg: linear-gradient(90deg, #e6ebf1 0%, #f8fafc 50%, #e6ebf1 100%);
   --selector-launcher-card-bg: color-mix(in srgb, #ffffff 82%, var(--color-primary) 18%);
   --selector-launcher-card-border: color-mix(in srgb, var(--color-primary) 18%, #c8d5e2);
@@ -26,11 +32,17 @@
 
 body[data-theme="dark"] {
   --selector-kicker-bg: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  --selector-group-bg: color-mix(in srgb, var(--color-bg) 92%, #17120f 8%);
-  --selector-group-open-bg: color-mix(in srgb, var(--color-primary) 6%, var(--selector-group-bg));
-  --selector-logo-bg: color-mix(in srgb, var(--color-surface-elevated) 88%, #ffffff 12%);
+  --selector-group-bg: #181818;
+  --selector-group-open-bg: #261d1e;
+  --selector-card-divider: color-mix(in srgb, #ffffff 12%, transparent);
+  --selector-logo-bg: #35363a;
   --selector-button-bg: transparent;
-  --selector-button-selected-bg: color-mix(in srgb, var(--color-primary) 16%, transparent);
+  --selector-button-selected-bg: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  --selector-button-hover-bg: color-mix(in srgb, #ffffff 5%, transparent);
+  --selector-text-strong: #f5f3ef;
+  --selector-text-muted: color-mix(in srgb, #f5f3ef 70%, #20252f 30%);
+  --selector-action-bg: color-mix(in srgb, var(--color-primary) 36%, transparent);
+  --selector-action-color: #ffdbe0;
   --selector-skeleton-bg: linear-gradient(90deg, color-mix(in srgb, var(--color-surface-elevated) 78%, #d7e1ec 22%) 0%, color-mix(in srgb, var(--color-surface-elevated) 88%, #ffffff 12%) 50%, color-mix(in srgb, var(--color-surface-elevated) 78%, #d7e1ec 22%) 100%);
   --selector-launcher-card-bg: color-mix(in srgb, var(--color-bg-card) 38%, #ffffff 2%);
   --selector-launcher-card-border: color-mix(in srgb, var(--color-primary) 22%, var(--color-card-border));
@@ -99,8 +111,8 @@ body[data-theme="dark"] {
 }
 
 .team-selector-group {
-  border-radius: 22px;
-  border: 1px solid color-mix(in srgb, var(--color-card-border) 62%, transparent);
+  border-radius: 24px;
+  border: 1px solid color-mix(in srgb, #ffffff 10%, transparent);
   background: var(--selector-group-bg);
   box-shadow: none;
   overflow: hidden;
@@ -119,6 +131,7 @@ body[data-theme="dark"] {
   cursor: pointer;
   padding: 1rem 1rem 0.95rem;
   font-weight: 900;
+  color: var(--selector-text-strong);
   transition: background-color 220ms ease, transform 220ms ease, padding-bottom 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -136,7 +149,7 @@ body[data-theme="dark"] {
 
 .team-selector-group[open] .team-selector-group-summary {
   background: var(--selector-group-open-bg);
-  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-card-border) 48%, transparent);
+  box-shadow: inset 0 -1px 0 var(--selector-card-divider);
 }
 
 .team-selector-group-summary::-webkit-details-marker {
@@ -153,25 +166,25 @@ body[data-theme="dark"] {
 
 .team-selector-group-title {
   font-size: 1rem;
-  color: var(--color-text);
+  color: var(--selector-text-strong);
 }
 
 .team-selector-group-count {
   min-width: 2rem;
-  padding: 0.2rem 0.6rem;
+  padding: 0.2rem 0.75rem;
   border-radius: 999px;
   text-align: center;
   font-size: 0.82rem;
   font-weight: 900;
   color: var(--color-primary);
-  background: var(--selector-kicker-bg);
+  background: color-mix(in srgb, var(--color-primary) 22%, #fff0f2 78%);
 }
 
 .team-selector-group-caret {
   width: 0.72rem;
   height: 0.72rem;
-  border-right: 2px solid var(--color-fecha, var(--color-text));
-  border-bottom: 2px solid var(--color-fecha, var(--color-text));
+  border-right: 2px solid color-mix(in srgb, var(--selector-text-strong) 72%, transparent);
+  border-bottom: 2px solid color-mix(in srgb, var(--selector-text-strong) 72%, transparent);
   transform: rotate(45deg);
   transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
   flex: 0 0 auto;
@@ -183,7 +196,7 @@ body[data-theme="dark"] {
 }
 
 .team-selector-group-content {
-  padding: 0.35rem 1rem 0.9rem;
+  padding: 0.15rem 1rem 0.9rem;
   height: 0;
   opacity: 0;
   overflow: hidden;
@@ -191,19 +204,19 @@ body[data-theme="dark"] {
 
 .team-selector-grid {
   display: grid;
-  gap: 0.2rem;
+  gap: 0;
 }
 
 .team-selector-competition-card {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  padding: 0.95rem 0;
-  border-radius: 0;
-  border: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-card-border) 54%, transparent);
-  background: transparent;
-  box-shadow: none;
+  gap: 0.7rem;
+  padding: 1rem;
+  margin-top: 0.8rem;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, #ffffff 8%, transparent);
+  background: color-mix(in srgb, #ffffff 4%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 4%, transparent);
   animation: team-selector-fade-up 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -220,7 +233,7 @@ body[data-theme="dark"] {
 }
 
 .team-selector-competition-card:last-child {
-  border-bottom: 0;
+  margin-bottom: 0;
 }
 
 .team-selector-competition-head {
@@ -228,17 +241,16 @@ body[data-theme="dark"] {
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 0.8rem;
-  padding: 0 0.1rem;
 }
 
 .team-selector-competition-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
   object-fit: contain;
   background: var(--selector-logo-bg);
-  border: 1px solid color-mix(in srgb, var(--color-card-border) 56%, transparent);
-  padding: 0.3rem;
+  border: 0;
+  padding: 0.45rem;
   box-shadow: none;
 }
 
@@ -250,7 +262,8 @@ body[data-theme="dark"] {
   margin: 0;
   font-size: 1.05rem;
   line-height: 1.15;
-  color: var(--color-text);
+  color: var(--selector-text-strong);
+  text-transform: uppercase;
 }
 
 .team-selector-competition-meta {
@@ -261,22 +274,22 @@ body[data-theme="dark"] {
 
 .team-selector-team-list {
   display: grid;
-  gap: 0.28rem;
+  gap: 0;
+  padding: 0.2rem 0 0;
 }
 
 .team-selector-team-button {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.9rem;
   width: 100%;
   margin: 0;
-  padding: 0.8rem 0.1rem;
-  border-radius: 14px;
-  border: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-card-border) 36%, transparent);
-  background: var(--selector-button-bg);
-  color: var(--color-text);
+  padding: 0.95rem 0.9rem;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, #ffffff 8%, transparent);
+  background: color-mix(in srgb, #000000 14%, transparent);
+  color: var(--selector-text-strong);
   text-align: left;
   box-shadow: none;
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
@@ -284,8 +297,8 @@ body[data-theme="dark"] {
 
 .team-selector-team-button:hover,
 .team-selector-team-button:focus-visible {
-  transform: translateX(2px);
-  border-color: color-mix(in srgb, var(--color-primary) 48%, var(--color-card-border));
+  background: var(--selector-button-hover-bg);
+  border-color: color-mix(in srgb, var(--color-primary) 48%, transparent);
 }
 
 .team-selector-team-button.is-selected {
@@ -293,8 +306,9 @@ body[data-theme="dark"] {
   border-color: color-mix(in srgb, var(--color-primary) 54%, transparent);
 }
 
-.team-selector-team-list .team-selector-team-button:last-child {
-  border-bottom: 0;
+body[data-theme="light"] .team-selector-team-button,
+body:not([data-theme="dark"]) .team-selector-team-button {
+  background: color-mix(in srgb, #000000 10%, #ffffff 90%);
 }
 
 .team-selector-team-logo {
@@ -302,9 +316,9 @@ body[data-theme="dark"] {
   height: 42px;
   border-radius: 50%;
   object-fit: contain;
-  background: var(--selector-logo-bg);
-  border: 1px solid color-mix(in srgb, var(--color-card-border) 56%, transparent);
-  padding: 0.22rem;
+  background: #ffffff;
+  border: 0;
+  padding: 0.2rem;
   box-shadow: none;
 }
 
@@ -318,24 +332,26 @@ body[data-theme="dark"] {
 .team-selector-team-name {
   font-weight: 800;
   line-height: 1.12;
+  color: var(--selector-text-strong);
+  text-transform: uppercase;
 }
 
 .team-selector-team-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.9rem;
-  height: 1.9rem;
+  min-width: 2rem;
+  height: 2rem;
   border-radius: 999px;
   font-size: 1rem;
   font-weight: 900;
-  color: color-mix(in srgb, var(--color-primary) 82%, var(--color-text) 18%);
-  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--selector-action-color);
+  background: var(--selector-action-bg);
 }
 
 .team-selector-team-button.is-selected .team-selector-team-action {
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: #ffffff;
+  background: color-mix(in srgb, var(--color-primary) 76%, #ffffff 24%);
 }
 
 .team-selector-skeleton {
@@ -457,7 +473,7 @@ body[data-theme="dark"] {
   overflow-x: hidden;
   overflow-y: auto;
   border-radius: 24px 24px 0 0;
-  background: var(--color-bg);
+  background: var(--selector-group-bg);
   background-clip: padding-box;
   box-shadow: 0 -16px 40px color-mix(in srgb, var(--color-shadow) 50%, transparent);
   padding: var(--team-selector-sheet-padding-top) var(--team-selector-sheet-padding-x) calc(1.2rem + env(safe-area-inset-bottom, 0px));
@@ -480,7 +496,7 @@ body[data-theme="dark"] {
   gap: 0.75rem;
   margin: calc(-1 * var(--team-selector-sheet-padding-top)) calc(-1 * var(--team-selector-sheet-padding-x)) 0.8rem;
   padding: var(--team-selector-sheet-padding-top) var(--team-selector-sheet-padding-x) 0.9rem;
-  background: var(--color-bg);
+  background: var(--selector-group-bg);
   box-shadow: 0 10px 20px color-mix(in srgb, var(--color-shadow) 12%, transparent);
 }
 
@@ -497,6 +513,7 @@ body[data-theme="dark"] {
 .team-selector-overlay-title {
   margin: 0;
   font-size: 1.5rem;
+  color: var(--selector-text-strong);
 }
 
 .team-selector-overlay-close {
