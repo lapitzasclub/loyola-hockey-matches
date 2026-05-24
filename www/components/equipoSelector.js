@@ -157,15 +157,7 @@ export function renderEquipoSelector(container, options = {}) {
 
   const groups = groupCompetitions(catalog);
 
-  const heroHtml = mode === "onboarding"
-    ? `
-      <div class="team-selector-hero">
-        <span class="team-selector-kicker">${t("team_selector_first_time")}</span>
-        <h2 class="team-selector-title">${t("team_selector_title")}</h2>
-        <p class="team-selector-subtitle">${t("team_selector_subtitle")}</p>
-      </div>
-    `
-    : "";
+  const heroHtml = "";
 
   container.innerHTML = `
     <section class="team-selector team-selector-${mode} ${compact ? "team-selector-compact" : ""}">
