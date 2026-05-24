@@ -211,6 +211,12 @@ body[data-theme="dark"] {
   overflow: hidden;
 }
 
+.team-selector.is-loading .team-selector-group[open] .team-selector-group-content {
+  height: auto;
+  opacity: 1;
+  overflow: visible;
+}
+
 .team-selector-grid {
   display: grid;
   gap: 0;
