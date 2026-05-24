@@ -76,6 +76,26 @@
 - Se mejoró la tarjeta de partido alineando arriba los bloques del duelo y centrando horizontalmente escudo + nombre dentro de cada equipo.
 - La release objetivo pasó a ser `1.6.0`.
 
+## 2026-05-24
+
+- Se completó una fase importante de pulido visual del selector de equipo Loyola y de convergencia visual entre selector, clasificación y stats de jugador.
+- El selector dejó atrás enfoques tipo árbol o cards flotantes y se llevó a una composición más editorial e integrada con el fondo, con separadores más finos y menos sensación de caja.
+- El onboarding del selector pasó a usar el header principal con el título traducido `ELIGE TU EQUIPO` y una introducción específica i18n dentro del contenido.
+- Se rehízo el skeleton del selector para replicar el layout real del acordeón en vez de inventar una variante visual distinta durante loading.
+- Se desactivó el pull-to-refresh durante onboarding porque generaba una pantalla intermedia rota.
+- Se corrigió el launcher del side menu para que mantenga el hero/escudo Loyola incluso sin equipo seleccionado.
+- Se corrigió el flujo de onboarding para que `Elegir equipo` desde el side menu no abra un overlay encima de la pantalla inicial de selección.
+- Se dio una pasada amplia de tema claro/oscuro a detalle de equipo, detalle de partido y stats/ficha de jugador.
+- Se eliminó el acceso al detalle de técnicos/cuerpo técnico desde alineaciones, al seguir rota esa ficha.
+- Se extrajo `www/components/accordion.js` como base compartida y se unificó la lógica de acordeones en selector de equipo, stats de jugador y clasificación con `details/summary`.
+- Se aproximó la piel de clasificación y stats de jugador a la del selector: misma paleta crema/rojiza, mismo radio de cápsula y mismo espaciado general.
+- Se extrajeron tokens globales de acordeón a `www/styles/theme.css`, tanto de paleta como de geometría.
+- Se detectó y corrigió una regresión en modo día dentro de clasificación por scope incorrecto de variables visuales.
+- Se detectó y corrigió otra regresión similar en el modal de cambio de equipo, moviendo las variables del selector a scope explícito por tema.
+- Se hizo una pasada final de limpieza eliminando overrides legacy y variables ya sobrantes tras la unificación.
+- Se ajustó la separación vertical entre acordeones de clasificación para que use la misma lógica y el mismo token que el selector de equipo.
+- Se preparó la release `1.7.0` y se actualizó la memoria técnica de `.copilot`.
+
 ## 2026-05-23
 
 - Se continuó la fase visual Loyola tomando el mock del sidebar como base para claro y oscuro.

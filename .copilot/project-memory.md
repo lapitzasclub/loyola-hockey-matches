@@ -4,7 +4,7 @@
 
 Proyecto: `loyola-hockey-matches`
 
-Versión actual de trabajo: `1.6.0`
+Versión actual de trabajo: `1.7.0`
 
 Aplicación híbrida para seguir partidos, clasificaciones y detalle en vivo de los equipos de hockey patines del Loyola. La base sigue conviviendo con servicios legacy de la FVP, pero en esta fase ya tiene una arquitectura dual Android + web pública, con frontend compartido y backend web desplegable en Cloudflare Pages Functions.
 
@@ -217,6 +217,22 @@ La base está claramente más sana que al inicio de esta fase:
   - `5530e24` `Refactor Loyola visual styling cleanup`
   - `87d37d2` `Polish Loyola sidebar and standings integration`
   - `9eedd25` `Refine Loyola asset references and standings loading state`
+
+## Cambios recientes de la fase 1.7.0
+
+- Se rehízo la identidad visual del selector de equipo Loyola tanto en onboarding inicial como en overlay de cambio, buscando una composición más integrada con el fondo y menos dependiente de cards flotantes.
+- El onboarding pasó a usar el título en la cabecera principal (`ELIGE TU EQUIPO`) y una introducción traducida dentro del contenido, evitando duplicidad de hero.
+- El skeleton/loading del selector se alineó con la estructura real del acordeón, manteniendo el mismo layout y esqueletonizando solo count y tarjetas internas.
+- Se desactivó el pull-to-refresh durante el onboarding del selector para evitar estados intermedios rotos.
+- El launcher del side menu conserva siempre la identidad Loyola aunque no haya equipo seleccionado.
+- Durante onboarding, pulsar `Elegir equipo` desde el side menu ya no abre un overlay encima de la selección inicial, sino que cierra el menú y deja la vista ya visible.
+- Se hizo una pasada amplia de retheme claro/oscuro en detalle de equipo, detalle de partido y stats/ficha de jugador.
+- Se desactivó el acceso al detalle de cuerpo técnico en alineaciones porque esa ficha seguía rota.
+- Se unificó la lógica de acordeones sobre un componente compartido (`www/components/accordion.js`) y se migraron selector de equipo, stats de jugador y clasificación al patrón común basado en `details/summary`.
+- Clasificación y stats de jugador se acercaron visualmente a la piel del selector de equipo, compartiendo paleta, redondeo, spacing y comportamiento.
+- Se extrajeron tokens globales de acordeón en `www/styles/theme.css`, tanto de color como de geometría, para reducir duplicación entre selector, clasificación y stats.
+- Se detectaron y corrigieron dos bugs de scoping de tema claro: primero en clasificación y después en el selector de cambio de equipo, ambos causados por variables visuales definidas de forma demasiado global frente a `body[data-theme="light"]` / `body[data-theme="dark"]`.
+- Se hizo una limpieza conservadora final eliminando variables y overrides visuales ya redundantes tras la convergencia de acordeones.
 
 ## Recomendación de trabajo siguiente
 
