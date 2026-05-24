@@ -91,13 +91,17 @@ function renderCompetitionCard(competition, selectedValue) {
   return `
     <article class="team-selector-competition-card">
       <div class="team-selector-competition-head">
-        <img class="team-selector-competition-logo" src="${competition.logoCompeticionUrl}" alt="Logo de ${competition.nombreCompeticion}" loading="lazy" decoding="async">
+        <div class="team-selector-competition-logo-wrap">
+          <img class="team-selector-competition-logo" src="${competition.logoCompeticionUrl}" alt="Logo de ${competition.nombreCompeticion}" loading="lazy" decoding="async">
+        </div>
         <div class="team-selector-competition-copy">
           <h3 class="team-selector-competition-title">${competition.nombreCompeticion}</h3>
         </div>
       </div>
-      <div class="team-selector-team-list">
-        ${teamsHtml}
+      <div class="team-selector-team-list-wrap">
+        <div class="team-selector-team-list">
+          ${teamsHtml}
+        </div>
       </div>
     </article>
   `;
