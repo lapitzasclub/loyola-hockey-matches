@@ -3,7 +3,7 @@
    Selector reutilizable de equipo
    ======================= */
 
-:root {
+body[data-theme="light"] {
   --selector-kicker-bg: color-mix(in srgb, var(--color-primary) 14%, #ffffff);
   --selector-group-bg: var(--color-accordion-surface);
   --selector-group-open-bg: var(--color-accordion-surface-open);
@@ -51,6 +51,7 @@ body[data-theme="dark"] {
   --selector-launcher-button-bg: linear-gradient(180deg, color-mix(in srgb, var(--color-active-surface) 92%, white 8%) 0%, color-mix(in srgb, var(--color-active-surface) 78%, black 6%) 100%);
   --selector-launcher-button-bg-hover: linear-gradient(180deg, color-mix(in srgb, var(--color-active-surface) 96%, white 4%) 0%, color-mix(in srgb, var(--color-active-surface) 82%, black 4%) 100%);
   --selector-launcher-button-shadow: 0 12px 24px color-mix(in srgb, var(--color-shadow) 32%, transparent);
+  --selector-overlay-backdrop: var(--color-surface-overlay-strong);
   --selector-overlay-close-bg: var(--color-active-surface);
   --selector-overlay-close-bg-hover: color-mix(in srgb, var(--color-active-surface) 88%, white 12%);
   --selector-overlay-close-color: var(--color-on-active-surface);
