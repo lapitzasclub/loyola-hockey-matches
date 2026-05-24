@@ -239,7 +239,7 @@ body[data-theme="dark"] {
 }
 
 .team-selector-competition-card-skeleton {
-  gap: 0.4rem;
+  gap: 0.7rem;
 }
 
 .team-selector-competition-card:nth-child(2) {
@@ -320,6 +320,10 @@ body[data-theme="dark"] {
   border-radius: 0;
   background: transparent;
   overflow: visible;
+}
+
+.team-selector-competition-card-skeleton .team-selector-team-list {
+  gap: 0.55rem;
 }
 
 .team-selector-team-button {
@@ -439,6 +443,7 @@ body[data-theme="dark"] {
 
 .team-selector-skeleton-line-lg {
   width: 11rem;
+  display: block;
 }
 
 .team-selector-skeleton-line-sm {
@@ -448,7 +453,7 @@ body[data-theme="dark"] {
 
 .team-selector-skeleton-row {
   width: 100%;
-  height: 3.2rem;
+  height: 2.8rem;
   border-radius: 12px;
   background: var(--selector-skeleton-card-bg);
 }
