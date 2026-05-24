@@ -56,8 +56,12 @@ body[data-theme="dark"] {
   border: 1px solid var(--clas-border);
   background: var(--clas-surface);
   box-shadow: var(--clas-shadow);
-  margin-bottom: var(--color-accordion-gap);
+  margin-bottom: 0;
   clip-path: inset(0 round var(--color-accordion-radius));
+}
+
+.clas-accordion-item + .clas-accordion-item {
+  margin-top: var(--color-accordion-gap);
 }
 
 
