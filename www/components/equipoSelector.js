@@ -41,37 +41,44 @@ export function renderEquipoSelectorSkeleton(container, mode = "onboarding") {
     <section class="team-selector team-selector-${mode} is-loading ${mode === "onboarding" ? "team-selector-onboarding" : ""}">
       ${introHtml}
       <div class="team-selector-groups">
-        ${Array.from({ length: 2 }).map((_, index) => `
-          <details class="team-selector-group team-selector-group-skeleton" ${index === 0 ? "open" : ""}>
-            <summary class="team-selector-group-summary">
-              <span class="team-selector-group-summary-main">
-                <span class="team-selector-skeleton team-selector-skeleton-group-title"></span>
-                <span class="team-selector-skeleton team-selector-skeleton-group-count"></span>
-              </span>
-              <span class="team-selector-group-caret" aria-hidden="true"></span>
-            </summary>
-            <div class="team-selector-group-content">
-              <div class="team-selector-grid">
-                ${Array.from({ length: index === 0 ? 2 : 1 }).map(() => `
-                  <article class="team-selector-competition-card team-selector-competition-card-skeleton">
-                    <div class="team-selector-competition-head">
-                      <span class="team-selector-skeleton team-selector-skeleton-logo-wrap"><span class="team-selector-skeleton team-selector-skeleton-logo"></span></span>
-                      <div class="team-selector-competition-copy">
-                        <span class="team-selector-skeleton team-selector-skeleton-line team-selector-skeleton-line-lg"></span>
-                      </div>
+        <details class="team-selector-group" open>
+          <summary class="team-selector-group-summary">
+            <span class="team-selector-group-summary-main">
+              <span class="team-selector-group-title">${t("team_selector_group_leagues")}</span>
+              <span class="team-selector-skeleton team-selector-skeleton-group-count"></span>
+            </span>
+            <span class="team-selector-group-caret" aria-hidden="true"></span>
+          </summary>
+          <div class="team-selector-group-content">
+            <div class="team-selector-grid">
+              ${Array.from({ length: 2 }).map(() => `
+                <article class="team-selector-competition-card team-selector-competition-card-skeleton">
+                  <div class="team-selector-competition-head">
+                    <span class="team-selector-competition-logo-wrap team-selector-skeleton team-selector-skeleton-logo-wrap"><span class="team-selector-skeleton team-selector-skeleton-logo"></span></span>
+                    <div class="team-selector-competition-copy">
+                      <span class="team-selector-skeleton team-selector-skeleton-line team-selector-skeleton-line-lg"></span>
                     </div>
-                    <div class="team-selector-team-list-wrap">
-                      <div class="team-selector-team-list">
-                        <span class="team-selector-skeleton team-selector-skeleton-row"></span>
-                        <span class="team-selector-skeleton team-selector-skeleton-row"></span>
-                      </div>
+                  </div>
+                  <div class="team-selector-team-list-wrap">
+                    <div class="team-selector-team-list">
+                      <span class="team-selector-skeleton team-selector-skeleton-row"></span>
+                      <span class="team-selector-skeleton team-selector-skeleton-row"></span>
                     </div>
-                  </article>
-                `).join("")}
-              </div>
+                  </div>
+                </article>
+              `).join("")}
             </div>
-          </details>
-        `).join("")}
+          </div>
+        </details>
+        <details class="team-selector-group">
+          <summary class="team-selector-group-summary">
+            <span class="team-selector-group-summary-main">
+              <span class="team-selector-group-title">${t("team_selector_group_tournaments")}</span>
+              <span class="team-selector-skeleton team-selector-skeleton-group-count"></span>
+            </span>
+            <span class="team-selector-group-caret" aria-hidden="true"></span>
+          </summary>
+        </details>
       </div>
     </section>
   `;
