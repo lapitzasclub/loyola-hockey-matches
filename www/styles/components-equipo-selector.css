@@ -16,7 +16,8 @@
   --selector-text-muted: color-mix(in srgb, #241f1d 68%, #8a7566 32%);
   --selector-action-bg: color-mix(in srgb, var(--color-primary) 18%, transparent);
   --selector-action-color: var(--color-primary);
-  --selector-skeleton-bg: linear-gradient(90deg, #e6ebf1 0%, #f8fafc 50%, #e6ebf1 100%);
+  --selector-skeleton-bg: linear-gradient(90deg, #e8dfd3 0%, #f4ece2 50%, #e8dfd3 100%);
+  --selector-skeleton-card-bg: color-mix(in srgb, #f9f5ef 88%, #eadfce 12%);
   --selector-launcher-card-bg: color-mix(in srgb, #ffffff 82%, var(--color-primary) 18%);
   --selector-launcher-card-border: color-mix(in srgb, var(--color-primary) 18%, #c8d5e2);
   --selector-launcher-logo-bg: #ffffff;
@@ -44,6 +45,7 @@ body[data-theme="dark"] {
   --selector-action-bg: color-mix(in srgb, var(--color-primary) 36%, transparent);
   --selector-action-color: #ffdbe0;
   --selector-skeleton-bg: linear-gradient(90deg, color-mix(in srgb, var(--color-surface-elevated) 78%, #d7e1ec 22%) 0%, color-mix(in srgb, var(--color-surface-elevated) 88%, #ffffff 12%) 50%, color-mix(in srgb, var(--color-surface-elevated) 78%, #d7e1ec 22%) 100%);
+  --selector-skeleton-card-bg: color-mix(in srgb, var(--color-surface-elevated) 92%, #ffffff 8%);
   --selector-launcher-card-bg: color-mix(in srgb, var(--color-bg-card) 38%, #ffffff 2%);
   --selector-launcher-card-border: color-mix(in srgb, var(--color-primary) 22%, var(--color-card-border));
   --selector-launcher-logo-bg: var(--color-surface-elevated);
@@ -234,6 +236,10 @@ body[data-theme="dark"] {
   background: transparent;
   box-shadow: none;
   animation: team-selector-fade-up 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.team-selector-competition-card-skeleton {
+  gap: 0.4rem;
 }
 
 .team-selector-competition-card:nth-child(2) {
@@ -444,6 +450,7 @@ body[data-theme="dark"] {
   width: 100%;
   height: 3.2rem;
   border-radius: 12px;
+  background: var(--selector-skeleton-card-bg);
 }
 
 .team-selector-skeleton-pill {
