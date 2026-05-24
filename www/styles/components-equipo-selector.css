@@ -5,9 +5,9 @@
 
 :root {
   --selector-kicker-bg: color-mix(in srgb, var(--color-primary) 14%, #ffffff);
-  --selector-group-bg: #f6f1ea;
-  --selector-group-open-bg: #efe6de;
-  --selector-card-divider: color-mix(in srgb, #8d7766 24%, transparent);
+  --selector-group-bg: var(--color-accordion-surface);
+  --selector-group-open-bg: var(--color-accordion-surface-open);
+  --selector-card-divider: var(--color-accordion-divider);
   --selector-logo-bg: #ece6df;
   --selector-button-bg: transparent;
   --selector-button-selected-bg: color-mix(in srgb, var(--color-primary) 12%, transparent);
@@ -33,9 +33,9 @@
 
 body[data-theme="dark"] {
   --selector-kicker-bg: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  --selector-group-bg: #181818;
-  --selector-group-open-bg: #261d1e;
-  --selector-card-divider: color-mix(in srgb, #ffffff 12%, transparent);
+  --selector-group-bg: var(--color-accordion-surface);
+  --selector-group-open-bg: var(--color-accordion-surface-open);
+  --selector-card-divider: var(--color-accordion-divider);
   --selector-logo-bg: #35363a;
   --selector-button-bg: transparent;
   --selector-button-selected-bg: color-mix(in srgb, var(--color-primary) 18%, transparent);
