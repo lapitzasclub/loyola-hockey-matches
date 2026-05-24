@@ -19,7 +19,6 @@
   --selector-skeleton-bg: linear-gradient(90deg, #e8dfd3 0%, #f4ece2 50%, #e8dfd3 100%);
   --selector-skeleton-card-bg: color-mix(in srgb, #f9f5ef 88%, #eadfce 12%);
   --selector-launcher-card-bg: color-mix(in srgb, #ffffff 82%, var(--color-primary) 18%);
-  --selector-launcher-card-border: color-mix(in srgb, var(--color-primary) 18%, #c8d5e2);
   --selector-launcher-logo-bg: #ffffff;
   --selector-launcher-button-text: var(--color-text-header);
   --selector-launcher-button-bg: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 82%, #8ee7f1 18%) 0%, color-mix(in srgb, var(--color-primary) 92%, #000000 8%) 100%);
@@ -47,7 +46,6 @@ body[data-theme="dark"] {
   --selector-skeleton-bg: linear-gradient(90deg, color-mix(in srgb, var(--color-surface-elevated) 78%, #d7e1ec 22%) 0%, color-mix(in srgb, var(--color-surface-elevated) 88%, #ffffff 12%) 50%, color-mix(in srgb, var(--color-surface-elevated) 78%, #d7e1ec 22%) 100%);
   --selector-skeleton-card-bg: color-mix(in srgb, var(--color-surface-elevated) 92%, #ffffff 8%);
   --selector-launcher-card-bg: color-mix(in srgb, var(--color-bg-card) 38%, #ffffff 2%);
-  --selector-launcher-card-border: color-mix(in srgb, var(--color-primary) 22%, var(--color-card-border));
   --selector-launcher-logo-bg: var(--color-surface-elevated);
   --selector-launcher-button-text: var(--color-on-active-surface);
   --selector-launcher-button-bg: linear-gradient(180deg, color-mix(in srgb, var(--color-active-surface) 92%, white 8%) 0%, color-mix(in srgb, var(--color-active-surface) 78%, black 6%) 100%);

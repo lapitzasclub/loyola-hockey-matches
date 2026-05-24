@@ -700,6 +700,5 @@ body[data-theme="dark"] {
 }
 
 @media (max-width: 600px) {
-  .clas-acc-btn { font-size: 0.98rem; padding: 0.85em 0.9em; }
-  .clas-accordion-item { margin-bottom: 0.7em; }
+  .clas-acc-btn { font-size: 0.98rem; }
 }

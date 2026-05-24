@@ -1329,11 +1329,6 @@ body[data-theme="dark"] .partido-detalle-player-card-hero {
   margin-top: 0.15rem;
 }
 
-body[data-theme="dark"] .partido-detalle-player-competition[data-expanded="true"] .partido-detalle-player-competition-chevron {
-  border-right-color: var(--color-on-active-surface, #082028);
-  border-bottom-color: var(--color-on-active-surface, #082028);
-}
-
 .partido-detalle-player-competition[data-expanded="true"] .partido-detalle-player-competition-chevron {
   transform: rotate(225deg);
 }
