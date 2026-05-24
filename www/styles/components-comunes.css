@@ -225,7 +225,7 @@ body[data-theme="light"] #pullToRefresh.pull-to-refresh {
 }
 
 body[data-theme="light"] #pullToRefresh.pull-to-refresh::before {
-  background: linear-gradient(180deg, rgba(73, 39, 25, 0.26) 0%, rgba(73, 39, 25, 0.08) 40%, transparent 100%);
+  background: linear-gradient(180deg, rgba(59, 33, 24, 0.38) 0%, rgba(59, 33, 24, 0.16) 38%, transparent 100%);
 }
 
 #pullToRefresh.pull-to-refresh::after {
@@ -235,7 +235,7 @@ body[data-theme="light"] #pullToRefresh.pull-to-refresh::before {
 }
 
 body[data-theme="light"] #pullToRefresh.pull-to-refresh::after {
-  background: linear-gradient(180deg, transparent 0%, rgba(92, 52, 36, 0.08) 44%, rgba(92, 52, 36, 0.16) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(92, 52, 36, 0.14) 42%, rgba(92, 52, 36, 0.24) 100%);
 }
 
 #pullToRefresh.active {
