@@ -53,19 +53,15 @@ export function renderEquipoSelectorLauncher(container, options = {}) {
 
   container.innerHTML = `
     <div class="team-selector-launcher team-selector-launcher-sidepanel">
-      ${selectedTeam ? `
-        <div class="team-selector-launcher-hero-shell">
-          <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-light" src="${LOYOLA_SHIELD_LIGHT_SRC}" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
-          <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-dark" src="${LOYOLA_SHIELD_DARK_SRC}" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
-          <div class="team-selector-launcher-copy team-selector-launcher-copy-hero">
-            <strong class="team-selector-launcher-team">${selectedTeam.nombreEquipo}</strong>
-            <span class="team-selector-launcher-underline" aria-hidden="true"></span>
-            <span class="team-selector-launcher-comp">${selectedTeam.nombreCompeticion}${selectedTeam.temporada ? ` · ${selectedTeam.temporada}` : ""}</span>
-          </div>
+      <div class="team-selector-launcher-hero-shell">
+        <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-light" src="${LOYOLA_SHIELD_LIGHT_SRC}" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
+        <img class="team-selector-launcher-logo team-selector-launcher-logo-hero team-selector-launcher-logo-hero-dark" src="${LOYOLA_SHIELD_DARK_SRC}" alt="Escudo de Loyola Indautxu" loading="lazy" decoding="async">
+        <div class="team-selector-launcher-copy team-selector-launcher-copy-hero">
+          <strong class="team-selector-launcher-team">${selectedTeam ? selectedTeam.nombreEquipo : "LOYOLA INDAUTXU"}</strong>
+          <span class="team-selector-launcher-underline" aria-hidden="true"></span>
+          <span class="team-selector-launcher-comp">${selectedTeam ? `${selectedTeam.nombreCompeticion}${selectedTeam.temporada ? ` · ${selectedTeam.temporada}` : ""}` : t("team_selector_onboarding_intro")}</span>
         </div>
-      ` : `
-        <p class="team-selector-launcher-empty">${t("team_selector_empty")}</p>
-      `}
+      </div>
       <button type="button" class="team-selector-launcher-button team-selector-launcher-button-loyola" id="openTeamSelectorButton">
         <span class="team-selector-launcher-button-icon" aria-hidden="true"></span>
         <span class="team-selector-launcher-button-text">${selectedTeam ? t("team_selector_change") : t("team_selector_title")}</span>
