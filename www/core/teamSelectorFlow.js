@@ -95,7 +95,7 @@ export async function mostrarSelectorInicial(mobileBackCoordinator, mostrarParti
   if (!screenContent) return;
 
   setOnboardingActive(true);
-  if (headerTitle) headerTitle.textContent = "";
+  if (headerTitle) headerTitle.textContent = t("select_team");
   setCompeticionHeader("");
   renderEquipoSelectorSkeleton(screenContent, "onboarding");
   await new Promise((resolve) => window.setTimeout(resolve, 180));
