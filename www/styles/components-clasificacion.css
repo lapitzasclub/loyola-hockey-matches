@@ -21,17 +21,17 @@
   --col-pts-w: 3.2ch;
   --col-num-w: 3ch;
 
-  --clas-surface: #fbf7f1;
-  --clas-surface-soft: #f7f2eb;
-  --clas-surface-alt: #f1e8dc;
-  --clas-header-bg: #f7f2eb;
+  --clas-surface: #f6f1ea;
+  --clas-surface-soft: #efe6de;
+  --clas-surface-alt: #f9f4ed;
+  --clas-header-bg: #efe6de;
   --clas-header-text: var(--color-text);
   --clas-accordion-title-weight: 800;
-  --clas-border: color-mix(in srgb, #bfa78e 38%, transparent);
+  --clas-border: color-mix(in srgb, #8d7766 24%, transparent);
   --clas-shadow: none;
   --clas-fav-bg: color-mix(in srgb, var(--color-warning) 24%, #fff4cc);
   --clas-fav-sticky-bg: color-mix(in srgb, var(--color-warning) 34%, #f7e1a3);
-  --clas-accordion-open-bg: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  --clas-accordion-open-bg: #efe6de;
   --clas-form-win: linear-gradient(180deg, color-mix(in srgb, var(--color-success) 90%, #7df0b3 10%) 0%, color-mix(in srgb, var(--color-success) 82%, #0f8f53 18%) 100%);
   --clas-form-draw: linear-gradient(180deg, color-mix(in srgb, var(--color-warning) 86%, #ffe08a 14%) 0%, color-mix(in srgb, var(--color-warning) 82%, #c89100 18%) 100%);
   --clas-form-draw-text: hsl(38 80% 16%);
@@ -39,17 +39,17 @@
 }
 
 body[data-theme="dark"] {
-  --clas-surface: #151515;
-  --clas-surface-soft: color-mix(in srgb, #1b1d22 92%, #000000 8%);
-  --clas-surface-alt: color-mix(in srgb, #25211e 88%, #000000 12%);
-  --clas-header-bg: color-mix(in srgb, #1b1d22 92%, #000000 8%);
+  --clas-surface: #181818;
+  --clas-surface-soft: #261d1e;
+  --clas-surface-alt: #211919;
+  --clas-header-bg: #261d1e;
   --clas-header-text: var(--color-text);
   --clas-accordion-title-weight: 700;
-  --clas-border: color-mix(in srgb, #8f7869 26%, transparent);
+  --clas-border: color-mix(in srgb, #ffffff 12%, transparent);
   --clas-shadow: none;
   --clas-fav-bg: color-mix(in srgb, var(--color-warning) 16%, transparent);
   --clas-fav-sticky-bg: color-mix(in srgb, var(--color-warning) 22%, var(--color-bg));
-  --clas-accordion-open-bg: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  --clas-accordion-open-bg: #261d1e;
 }
 
 /* ---- Bloque de clasificación desacoplado de la lista de partidos ---- */
@@ -233,7 +233,7 @@ body[data-theme="dark"] {
 .clas-table thead th {
   position: sticky;
   top: 0;
-  background: var(--clas-surface-soft);
+  background: color-mix(in srgb, var(--clas-surface-soft) 82%, var(--clas-surface) 18%);
   color: var(--color-text);
   text-transform: uppercase;
   letter-spacing: 0.01em;
@@ -251,7 +251,7 @@ body[data-theme="dark"] {
   font-size: 0.72rem;
   line-height: 1.18;
   border-bottom: 1px solid color-mix(in srgb, var(--clas-border) 84%, transparent);
-  background: var(--clas-surface);
+  background: var(--clas-surface-alt);
   vertical-align: middle;
 }
 
@@ -594,13 +594,13 @@ body[data-theme="dark"] {
   justify-content: space-between;
   gap: 0.8rem;
   width: 100%;
-  background: var(--clas-surface-soft);
+  background: var(--clas-surface);
   color: var(--color-text);
   border: none;
   outline: none;
   font-size: 0.98rem;
   font-weight: 700;
-  padding: 0.95rem 1rem;
+  padding: 0.92rem 1rem 0.88rem;
   margin: 0;
   text-align: left;
   cursor: pointer;
