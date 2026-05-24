@@ -67,10 +67,12 @@ body[data-theme="dark"] {
 }
 
 .team-selector-intro {
-  margin: 0 0.15rem 0.55rem;
+  margin: 0 0.6rem 0.75rem;
   color: var(--selector-text-muted);
   font-size: 0.92rem;
-  line-height: 1.38;
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: balance;
 }
 
 .team-selector-hero {

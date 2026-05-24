@@ -159,7 +159,7 @@ export function renderEquipoSelector(container, options = {}) {
 
   const heroHtml = mode === "onboarding"
     ? `
-      <div class="team-selector-intro">${t("team_selector_subtitle")}</div>
+      <div class="team-selector-intro">${t("team_selector_onboarding_intro")}</div>
     `
     : "";
 
