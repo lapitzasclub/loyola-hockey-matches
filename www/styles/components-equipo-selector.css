@@ -5,13 +5,11 @@
 
 :root {
   --selector-kicker-bg: color-mix(in srgb, var(--color-primary) 14%, #ffffff);
-  --selector-group-bg: #f4f7fa;
-  --selector-group-open-bg: #edf2f6;
-  --selector-card-bg: #ffffff;
-  --selector-card-shadow: 0 12px 28px color-mix(in srgb, #18354d 12%, transparent);
+  --selector-group-bg: color-mix(in srgb, var(--color-bg) 94%, #f4f0e8 6%);
+  --selector-group-open-bg: color-mix(in srgb, var(--color-primary) 4%, var(--selector-group-bg));
   --selector-logo-bg: #f5f7fa;
-  --selector-button-bg: #ffffff;
-  --selector-button-selected-bg: color-mix(in srgb, var(--color-primary) 12%, #ffffff);
+  --selector-button-bg: transparent;
+  --selector-button-selected-bg: color-mix(in srgb, var(--color-primary) 10%, transparent);
   --selector-skeleton-bg: linear-gradient(90deg, #e6ebf1 0%, #f8fafc 50%, #e6ebf1 100%);
   --selector-launcher-card-bg: color-mix(in srgb, #ffffff 82%, var(--color-primary) 18%);
   --selector-launcher-card-border: color-mix(in srgb, var(--color-primary) 18%, #c8d5e2);
@@ -28,13 +26,11 @@
 
 body[data-theme="dark"] {
   --selector-kicker-bg: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  --selector-group-bg: color-mix(in srgb, var(--color-bg-card) 96%, #ffffff 4%);
-  --selector-group-open-bg: color-mix(in srgb, var(--color-text) 5%, transparent);
-  --selector-card-bg: linear-gradient(180deg, color-mix(in srgb, var(--color-surface-elevated) 96%, #ffffff 4%) 0%, color-mix(in srgb, var(--color-surface-elevated) 92%, #dfe8f3 8%) 100%);
-  --selector-card-shadow: 0 12px 28px color-mix(in srgb, var(--color-shadow) 48%, transparent);
+  --selector-group-bg: color-mix(in srgb, var(--color-bg) 92%, #17120f 8%);
+  --selector-group-open-bg: color-mix(in srgb, var(--color-primary) 6%, var(--selector-group-bg));
   --selector-logo-bg: color-mix(in srgb, var(--color-surface-elevated) 88%, #ffffff 12%);
-  --selector-button-bg: color-mix(in srgb, var(--color-surface-elevated) 98%, transparent);
-  --selector-button-selected-bg: color-mix(in srgb, var(--color-primary) 16%, var(--color-surface-elevated));
+  --selector-button-bg: transparent;
+  --selector-button-selected-bg: color-mix(in srgb, var(--color-primary) 16%, transparent);
   --selector-skeleton-bg: linear-gradient(90deg, color-mix(in srgb, var(--color-surface-elevated) 78%, #d7e1ec 22%) 0%, color-mix(in srgb, var(--color-surface-elevated) 88%, #ffffff 12%) 50%, color-mix(in srgb, var(--color-surface-elevated) 78%, #d7e1ec 22%) 100%);
   --selector-launcher-card-bg: color-mix(in srgb, var(--color-bg-card) 38%, #ffffff 2%);
   --selector-launcher-card-border: color-mix(in srgb, var(--color-primary) 22%, var(--color-card-border));
@@ -103,15 +99,15 @@ body[data-theme="dark"] {
 }
 
 .team-selector-group {
-  border-radius: 20px;
-  border: 1px solid color-mix(in srgb, var(--color-card-border) 78%, transparent);
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--color-card-border) 62%, transparent);
   background: var(--selector-group-bg);
-  box-shadow: 0 10px 24px var(--color-shadow-soft);
+  box-shadow: none;
   overflow: hidden;
 }
 
 .team-selector-group.is-expanded {
-  box-shadow: 0 14px 30px color-mix(in srgb, var(--color-shadow) 28%, transparent);
+  box-shadow: none;
 }
 
 .team-selector-group-summary {
@@ -121,7 +117,7 @@ body[data-theme="dark"] {
   gap: 0.8rem;
   list-style: none;
   cursor: pointer;
-  padding: 1rem;
+  padding: 1rem 1rem 0.95rem;
   font-weight: 900;
   transition: background-color 220ms ease, transform 220ms ease, padding-bottom 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -140,6 +136,7 @@ body[data-theme="dark"] {
 
 .team-selector-group[open] .team-selector-group-summary {
   background: var(--selector-group-open-bg);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-card-border) 48%, transparent);
 }
 
 .team-selector-group-summary::-webkit-details-marker {
@@ -186,7 +183,7 @@ body[data-theme="dark"] {
 }
 
 .team-selector-group-content {
-  padding: 0.7rem 0.85rem 1rem;
+  padding: 0.35rem 1rem 0.9rem;
   height: 0;
   opacity: 0;
   overflow: hidden;
@@ -194,18 +191,19 @@ body[data-theme="dark"] {
 
 .team-selector-grid {
   display: grid;
-  gap: 0.95rem;
+  gap: 0.2rem;
 }
 
 .team-selector-competition-card {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding: 1rem;
-  border-radius: 20px;
-  border: 1px solid color-mix(in srgb, var(--color-card-border) 80%, transparent);
-  background: var(--selector-card-bg);
-  box-shadow: var(--selector-card-shadow);
+  gap: 0.55rem;
+  padding: 0.95rem 0;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-card-border) 54%, transparent);
+  background: transparent;
+  box-shadow: none;
   animation: team-selector-fade-up 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -221,36 +219,31 @@ body[data-theme="dark"] {
   animation-delay: 210ms;
 }
 
+.team-selector-competition-card:last-child {
+  border-bottom: 0;
+}
+
 .team-selector-competition-head {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.8rem;
+  padding: 0 0.1rem;
 }
 
 .team-selector-competition-logo {
-  width: 54px;
-  height: 54px;
-  border-radius: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   object-fit: contain;
   background: var(--selector-logo-bg);
-  border: 1px solid color-mix(in srgb, var(--color-card-border) 70%, transparent);
-  padding: 0.35rem;
-  box-shadow: 0 6px 14px color-mix(in srgb, var(--color-shadow) 35%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-card-border) 56%, transparent);
+  padding: 0.3rem;
+  box-shadow: none;
 }
 
 .team-selector-competition-copy {
   min-width: 0;
-}
-
-.team-selector-competition-badge {
-  display: inline-block;
-  margin-bottom: 0.3rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-primary);
 }
 
 .team-selector-competition-title {
@@ -268,36 +261,40 @@ body[data-theme="dark"] {
 
 .team-selector-team-list {
   display: grid;
-  gap: 0.65rem;
+  gap: 0.28rem;
 }
 
 .team-selector-team-button {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 0.75rem;
   width: 100%;
   margin: 0;
-  padding: 0.8rem 0.85rem;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--color-card-border) 72%, transparent);
+  padding: 0.8rem 0.1rem;
+  border-radius: 14px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-card-border) 36%, transparent);
   background: var(--selector-button-bg);
   color: var(--color-text);
   text-align: left;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-shadow) 22%, transparent);
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+  box-shadow: none;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
 }
 
 .team-selector-team-button:hover,
 .team-selector-team-button:focus-visible {
-  transform: translateY(-1px) scale(1.01);
+  transform: translateX(2px);
   border-color: color-mix(in srgb, var(--color-primary) 48%, var(--color-card-border));
-  box-shadow: 0 10px 20px color-mix(in srgb, var(--color-shadow) 28%, transparent);
 }
 
 .team-selector-team-button.is-selected {
   background: var(--selector-button-selected-bg);
   border-color: color-mix(in srgb, var(--color-primary) 54%, transparent);
+}
+
+.team-selector-team-list .team-selector-team-button:last-child {
+  border-bottom: 0;
 }
 
 .team-selector-team-logo {
@@ -306,15 +303,16 @@ body[data-theme="dark"] {
   border-radius: 50%;
   object-fit: contain;
   background: var(--selector-logo-bg);
-  border: 1px solid color-mix(in srgb, var(--color-card-border) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-card-border) 56%, transparent);
   padding: 0.22rem;
+  box-shadow: none;
 }
 
 .team-selector-team-texts {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.14rem;
+  gap: 0;
 }
 
 .team-selector-team-name {
@@ -322,9 +320,22 @@ body[data-theme="dark"] {
   line-height: 1.12;
 }
 
-.team-selector-team-meta {
-  font-size: 0.84rem;
-  color: var(--color-fecha, var(--color-text));
+.team-selector-team-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 900;
+  color: color-mix(in srgb, var(--color-primary) 82%, var(--color-text) 18%);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.team-selector-team-button.is-selected .team-selector-team-action {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
 .team-selector-skeleton {

@@ -69,7 +69,6 @@ export function renderEquipoSelectorSkeleton(container, mode = "onboarding") {
  * @returns {string} HTML de la tarjeta.
  */
 function renderCompetitionCard(competition, selectedValue) {
-  const badge = t("team_selector_competition_badge");
   const teamsHtml = competition.equipos.map((team) => {
     const value = `${team.idCompeticion}|${team.idEquipoComp}`;
     const isSelected = value === selectedValue;
@@ -78,13 +77,13 @@ function renderCompetitionCard(competition, selectedValue) {
         type="button"
         class="team-selector-team-button ${isSelected ? "is-selected" : ""}"
         data-team-value="${value}"
-        aria-label="${t("team_selector_choose_action")}: ${team.nombreEquipo}"
+        aria-label="${isSelected ? t("team_selector_selected") : t("team_selector_choose_action")}: ${team.nombreEquipo}"
       >
         <img class="team-selector-team-logo" src="${team.logoEquipoUrl}" alt="Escudo de ${team.nombreEquipo}" loading="lazy" decoding="async">
         <span class="team-selector-team-texts">
           <span class="team-selector-team-name">${team.nombreEquipo}</span>
-          <span class="team-selector-team-meta">${isSelected ? t("team_selector_selected") : t("team_selector_choose_action")}</span>
         </span>
+        <span class="team-selector-team-action" aria-hidden="true">${isSelected ? "✓" : "→"}</span>
       </button>
     `;
   }).join("");
@@ -94,9 +93,7 @@ function renderCompetitionCard(competition, selectedValue) {
       <div class="team-selector-competition-head">
         <img class="team-selector-competition-logo" src="${competition.logoCompeticionUrl}" alt="Logo de ${competition.nombreCompeticion}" loading="lazy" decoding="async">
         <div class="team-selector-competition-copy">
-          <span class="team-selector-competition-badge">${badge}</span>
           <h3 class="team-selector-competition-title">${competition.nombreCompeticion}</h3>
-          <p class="team-selector-competition-meta">${competition.temporada || ""}</p>
         </div>
       </div>
       <div class="team-selector-team-list">
