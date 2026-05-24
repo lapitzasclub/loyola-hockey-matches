@@ -20,22 +20,24 @@
   --col-pos-w: 2.1rem;
   --col-pts-w: 3.2ch;
   --col-num-w: 3ch;
+  --clas-accordion-title-weight: 800;
+  --clas-shadow: none;
+  --clas-form-win: linear-gradient(180deg, color-mix(in srgb, var(--color-success) 90%, #7df0b3 10%) 0%, color-mix(in srgb, var(--color-success) 82%, #0f8f53 18%) 100%);
+  --clas-form-draw: linear-gradient(180deg, color-mix(in srgb, var(--color-warning) 86%, #ffe08a 14%) 0%, color-mix(in srgb, var(--color-warning) 82%, #c89100 18%) 100%);
+  --clas-form-draw-text: hsl(38 80% 16%);
+  --clas-form-loss: linear-gradient(180deg, color-mix(in srgb, var(--color-danger) 88%, #ff9f92 12%) 0%, color-mix(in srgb, var(--color-danger) 82%, #bf3f35 18%) 100%);
+}
 
+body[data-theme="light"] {
   --clas-surface: var(--color-accordion-surface);
   --clas-surface-soft: var(--color-accordion-surface-open);
   --clas-surface-alt: var(--color-accordion-surface-alt);
   --clas-header-bg: var(--color-accordion-surface-open);
   --clas-header-text: var(--color-text);
-  --clas-accordion-title-weight: 800;
   --clas-border: var(--color-accordion-divider);
-  --clas-shadow: none;
   --clas-fav-bg: color-mix(in srgb, var(--color-warning) 24%, #fff4cc);
   --clas-fav-sticky-bg: color-mix(in srgb, var(--color-warning) 34%, #f7e1a3);
   --clas-accordion-open-bg: var(--color-accordion-surface-open);
-  --clas-form-win: linear-gradient(180deg, color-mix(in srgb, var(--color-success) 90%, #7df0b3 10%) 0%, color-mix(in srgb, var(--color-success) 82%, #0f8f53 18%) 100%);
-  --clas-form-draw: linear-gradient(180deg, color-mix(in srgb, var(--color-warning) 86%, #ffe08a 14%) 0%, color-mix(in srgb, var(--color-warning) 82%, #c89100 18%) 100%);
-  --clas-form-draw-text: hsl(38 80% 16%);
-  --clas-form-loss: linear-gradient(180deg, color-mix(in srgb, var(--color-danger) 88%, #ff9f92 12%) 0%, color-mix(in srgb, var(--color-danger) 82%, #bf3f35 18%) 100%);
 }
 
 body[data-theme="dark"] {
@@ -46,7 +48,6 @@ body[data-theme="dark"] {
   --clas-header-text: var(--color-text);
   --clas-accordion-title-weight: 700;
   --clas-border: var(--color-accordion-divider);
-  --clas-shadow: none;
   --clas-fav-bg: color-mix(in srgb, var(--color-warning) 16%, transparent);
   --clas-fav-sticky-bg: color-mix(in srgb, var(--color-warning) 22%, var(--color-bg));
   --clas-accordion-open-bg: var(--color-accordion-surface-open);
