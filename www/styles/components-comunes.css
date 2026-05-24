@@ -8,9 +8,9 @@
   --common-secondary-btn-bg: color-mix(in srgb, var(--color-bg) 82%, var(--color-bg-card));
   --common-pre-bg: color-mix(in srgb, var(--color-bg) 92%, black 8%);
   --common-ptr-bg: linear-gradient(180deg, color-mix(in srgb, #0e1b24 58%, var(--color-bg-card)) 0%, color-mix(in srgb, #142631 76%, var(--color-bg-card)) 42%, color-mix(in srgb, #0e1b24 62%, var(--color-bg-card)) 100%);
-  --common-ptr-bg-light: #7b8791;
+  --common-ptr-bg-light: linear-gradient(180deg, color-mix(in srgb, #b88f6a 42%, var(--color-bg-card)) 0%, color-mix(in srgb, #9e6f56 52%, var(--color-bg-card-soft)) 46%, color-mix(in srgb, #8a5a48 44%, var(--color-bg-card)) 100%);
   --common-ptr-text: color-mix(in srgb, var(--color-primary) 82%, #b8f6ff 18%);
-  --common-ptr-text-light: #e9fdff;
+  --common-ptr-text-light: #fff6ef;
   --common-logo-bg: var(--color-surface-elevated);
   --common-logo-border: var(--color-card-border);
   --common-competition-header-bg: var(--color-surface-muted);
@@ -225,7 +225,7 @@ body[data-theme="light"] #pullToRefresh.pull-to-refresh {
 }
 
 body[data-theme="light"] #pullToRefresh.pull-to-refresh::before {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0.12) 40%, transparent 100%);
+  background: linear-gradient(180deg, rgba(73, 39, 25, 0.26) 0%, rgba(73, 39, 25, 0.08) 40%, transparent 100%);
 }
 
 #pullToRefresh.pull-to-refresh::after {
@@ -235,7 +235,7 @@ body[data-theme="light"] #pullToRefresh.pull-to-refresh::before {
 }
 
 body[data-theme="light"] #pullToRefresh.pull-to-refresh::after {
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.1) 44%, rgba(0, 0, 0, 0.18) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(92, 52, 36, 0.08) 44%, rgba(92, 52, 36, 0.16) 100%);
 }
 
 #pullToRefresh.active {
