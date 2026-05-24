@@ -56,9 +56,9 @@ body[data-theme="dark"] {
 .clas-accordion-item {
   position: relative;
   padding: 0;
-  overflow: visible;
-  border-radius: 0;
-  border: 0;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid var(--clas-border);
   background: var(--clas-surface);
   box-shadow: var(--clas-shadow);
   margin-bottom: 0.9em;
@@ -594,7 +594,7 @@ body[data-theme="dark"] {
   justify-content: space-between;
   gap: 0.8rem;
   width: 100%;
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--clas-surface));
+  background: var(--clas-surface-soft);
   color: var(--color-text);
   border: none;
   outline: none;
@@ -607,13 +607,15 @@ body[data-theme="dark"] {
   transition: background-color 300ms ease, transform 300ms ease, box-shadow 300ms ease, color 220ms ease;
   border-bottom: 1px solid transparent;
   letter-spacing: 0.005em;
+  list-style: none;
 }
 
 .clas-acc-btn:active {
   transform: scale(0.992);
 }
 
-.clas-acc-btn[aria-expanded="true"] {
+.clas-accordion[data-expanded="true"] .clas-acc-btn,
+.clas-accordion[open] .clas-acc-btn {
   background: var(--clas-accordion-open-bg);
   box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
@@ -621,6 +623,10 @@ body[data-theme="dark"] {
 .clas-acc-btn:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;
+}
+
+.clas-acc-btn::-webkit-details-marker {
+  display: none;
 }
 
 .clas-acc-summary-main {
@@ -652,21 +658,17 @@ body[data-theme="dark"] {
   margin-top: 0.1rem;
 }
 
-.clas-acc-btn[aria-expanded="true"] .clas-acc-chevron {
+.clas-accordion[data-expanded="true"] .clas-acc-chevron,
+.clas-accordion[open] .clas-acc-chevron {
   transform: rotate(225deg);
 }
 
 
 .clas-acc-content {
-  max-height: 0;
+  height: 0;
+  opacity: 0;
   overflow: hidden;
   background: transparent;
-  transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
-}
-
-.clas-acc-content.open {
-  max-height: 1000px;
-  transition: max-height 0.5s cubic-bezier(.4,0,.2,1);
 }
 
 @keyframes clas-skeleton-shimmer {

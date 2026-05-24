@@ -87,6 +87,7 @@ export async function transitionDetalleView(bodyEl, mutateAndRender, direction =
     nextView.classList.add(direction === "back" ? "subview-enter-back" : "subview-enter");
   }
 }
+import { bindDetailsAccordion } from "./accordion.js";
 
 /**
  * Añade comportamiento animado a los acordeones de competiciones del jugador.
@@ -95,135 +96,13 @@ export async function transitionDetalleView(bodyEl, mutateAndRender, direction =
  * @returns {void}
  */
 export function bindPlayerAccordions(rootEl) {
-  const accordionItems = Array.from(rootEl.querySelectorAll(".partido-detalle-player-competition"));
-
-  function setExpandedState(detailsEl, expanded) {
-    detailsEl.dataset.expanded = expanded ? "true" : "false";
-  }
-
-  function animateOpen(detailsEl, contentEl, reduceMotion) {
-    detailsEl.dataset.animating = "true";
-    setExpandedState(detailsEl, true);
-    detailsEl.open = true;
-
-    if (reduceMotion) {
-      contentEl.style.height = "auto";
-      contentEl.style.opacity = "1";
-      contentEl.style.overflow = "visible";
-      detailsEl.dataset.animating = "false";
-      return;
-    }
-
-    const endHeight = `${contentEl.scrollHeight}px`;
-    contentEl.getAnimations().forEach((animation) => animation.cancel());
-    contentEl.style.overflow = "hidden";
-    contentEl.style.height = "0px";
-    contentEl.style.opacity = "0";
-
-    const animation = contentEl.animate(
-      [
-        { height: "0px", opacity: 0 },
-        { height: endHeight, opacity: 1 },
-      ],
-      {
-        duration: 300,
-        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-        fill: "forwards",
-      },
-    );
-
-    animation.onfinish = () => {
-      contentEl.style.height = "auto";
-      contentEl.style.opacity = "1";
-      contentEl.style.overflow = "visible";
-      detailsEl.dataset.animating = "false";
-    };
-    animation.oncancel = () => {
-      detailsEl.dataset.animating = "false";
-    };
-  }
-
-  function animateClose(detailsEl, contentEl, reduceMotion) {
-    detailsEl.dataset.animating = "true";
-    setExpandedState(detailsEl, false);
-
-    if (reduceMotion) {
-      detailsEl.open = false;
-      contentEl.style.height = "0px";
-      contentEl.style.opacity = "0";
-      contentEl.style.overflow = "hidden";
-      detailsEl.dataset.animating = "false";
-      return;
-    }
-
-    const startHeight = `${contentEl.offsetHeight || contentEl.scrollHeight}px`;
-    detailsEl.open = true;
-    contentEl.getAnimations().forEach((animation) => animation.cancel());
-    contentEl.style.overflow = "hidden";
-    contentEl.style.height = startHeight;
-    contentEl.style.opacity = "1";
-
-    const animation = contentEl.animate(
-      [
-        { height: startHeight, opacity: 1 },
-        { height: "0px", opacity: 0 },
-      ],
-      {
-        duration: 300,
-        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-        fill: "forwards",
-      },
-    );
-
-    animation.onfinish = () => {
-      detailsEl.open = false;
-      contentEl.style.height = "0px";
-      contentEl.style.opacity = "0";
-      contentEl.style.overflow = "hidden";
-      detailsEl.dataset.animating = "false";
-    };
-    animation.oncancel = () => {
-      detailsEl.dataset.animating = "false";
-    };
-  }
-
-  accordionItems.forEach((detailsEl) => {
-    if (detailsEl.dataset.accordionBound === "true") return;
-    detailsEl.dataset.accordionBound = "true";
-
-    const summaryEl = detailsEl.querySelector(".partido-detalle-player-competition-bar");
-    const contentEl = detailsEl.querySelector(".partido-detalle-player-history-list");
-    if (!summaryEl || !contentEl) return;
-
-    setExpandedState(detailsEl, detailsEl.open);
-    if (detailsEl.open) {
-      contentEl.style.height = "auto";
-      contentEl.style.opacity = "1";
-      contentEl.style.overflow = "visible";
-    } else {
-      contentEl.style.height = "0px";
-      contentEl.style.opacity = "0";
-      contentEl.style.overflow = "hidden";
-    }
-
-    summaryEl.addEventListener("click", (event) => {
-      event.preventDefault();
-      if (detailsEl.dataset.animating === "true") return;
-
-      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-      const isOpening = !detailsEl.open;
-
-      if (isOpening) {
-        accordionItems.forEach((item) => {
-          if (item === detailsEl) return;
-          const siblingContent = item.querySelector(".partido-detalle-player-history-list");
-          if (!siblingContent || !item.open) return;
-          animateClose(item, siblingContent, reduceMotion);
-        });
-        animateOpen(detailsEl, contentEl, reduceMotion);
-      } else {
-        animateClose(detailsEl, contentEl, reduceMotion);
-      }
-    });
+  bindDetailsAccordion(rootEl, {
+    itemSelector: ".partido-detalle-player-competition",
+    triggerSelector: ".partido-detalle-player-competition-bar",
+    contentSelector: ".partido-detalle-player-history-list",
+    stateAttribute: "expanded",
+    animationDurationOpen: 300,
+    animationDurationClose: 300,
+    exclusive: true,
   });
 }

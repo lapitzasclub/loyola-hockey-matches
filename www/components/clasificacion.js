@@ -9,6 +9,7 @@ import { comparePartidosByScheduledDate, decodeApiRaw, safeStr } from "../utils/
 import { renderClasificacionLoadingState, renderEmptyState, renderErrorState } from "./loadingStates.js";
 import { renderEquipoDetalleHeader, openEquipoSubview } from "./equipoDetalleSubview.js";
 import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
+import { bindDetailsAccordion } from "./accordion.js";
 
 const competitionLogoCache = new Map();
 let partidoDetalleModulePromise = null;
@@ -459,19 +460,16 @@ function renderClasificacionTable(grupo, equipos, selectedInfo, logoMap, formMap
  * @returns {void}
  */
 function renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo, logoMap, partidos) {
-  // Cada grupo se renderiza como bloque autónomo para no depender semánticamente
-  // de la lista de partidos, aunque comparta el mismo contenedor de pantalla.
   const openIdx = 0;
   for (let idx = 0; idx < gruposKeys.length; idx += 1) {
     const grupo = gruposKeys[idx];
-    const accLi = document.createElement("div");
-    accLi.className = "clas-accordion-item clas-accordion";
+    const item = document.createElement("details");
+    item.className = "clas-accordion-item clas-accordion";
+    if (idx === openIdx) item.open = true;
 
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "clas-acc-btn";
-    btn.setAttribute("aria-expanded", idx === openIdx ? "true" : "false");
-    btn.innerHTML = `
+    const summary = document.createElement("summary");
+    summary.className = "clas-acc-btn";
+    summary.innerHTML = `
       <span class="clas-acc-summary-main">
         <span class="clas-acc-title">${safeStr(grupo)}</span>
       </span>
@@ -479,11 +477,10 @@ function renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedI
         <span class="clas-acc-chevron" aria-hidden="true"></span>
       </span>
     `;
-    accLi.appendChild(btn);
+    item.appendChild(summary);
 
     const content = document.createElement("div");
     content.className = "clas-acc-content";
-    if (idx === openIdx) content.classList.add("open");
 
     const formMap = buildRecentFormMap(partidos, grupos[grupo]);
     const table = renderClasificacionTable(grupo, grupos[grupo], selectedInfo, logoMap, formMap);
@@ -491,28 +488,20 @@ function renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedI
     tableWrap.className = "clas-table-wrap";
     tableWrap.appendChild(table);
     content.appendChild(tableWrap);
-    accLi.appendChild(content);
+    item.appendChild(content);
 
-    btn.addEventListener("click", () => {
-      const allBtns = matchesList.querySelectorAll(".clas-acc-btn");
-      const allContents = matchesList.querySelectorAll(".clas-acc-content");
-      for (const otherBtn of allBtns) {
-        if (otherBtn !== btn) otherBtn.setAttribute("aria-expanded", "false");
-      }
-      for (const otherContent of allContents) {
-        if (otherContent !== content) otherContent.classList.remove("open");
-      }
-      const expanded = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", expanded ? "false" : "true");
-      if (expanded) {
-        content.classList.remove("open");
-      } else {
-        content.classList.add("open");
-      }
-    });
-
-    matchesList.appendChild(accLi);
+    matchesList.appendChild(item);
   }
+
+  bindDetailsAccordion(matchesList, {
+    itemSelector: ".clas-accordion",
+    triggerSelector: ".clas-acc-btn",
+    contentSelector: ".clas-acc-content",
+    stateAttribute: "expanded",
+    animationDurationOpen: 300,
+    animationDurationClose: 300,
+    exclusive: true,
+  });
 }
 
 /**
