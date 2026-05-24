@@ -243,9 +243,8 @@ body[data-theme="dark"] {
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 0.95rem;
-  padding: 0.05rem 0.15rem 0.45rem;
+  padding: 0.05rem 0.15rem 0.18rem;
   margin-bottom: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--selector-card-divider) 65%, transparent);
 }
 
 .team-selector-competition-logo-wrap {
@@ -309,7 +308,7 @@ body[data-theme="dark"] {
   gap: 0.85rem;
   width: 100%;
   margin: 0;
-  padding: 0.9rem 0.35rem 0.9rem 3.55rem;
+  padding: 0.7rem 0.35rem 0.7rem 2.95rem;
   border-radius: 0;
   border: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--selector-card-divider) 78%, transparent);
