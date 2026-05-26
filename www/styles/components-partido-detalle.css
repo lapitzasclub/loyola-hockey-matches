@@ -189,6 +189,11 @@
   box-shadow: 0 8px 18px color-mix(in srgb, var(--color-shadow) 10%, transparent);
 }
 
+.team-detail-summary-card.is-active {
+  border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border-soft));
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+
 .team-detail-summary-label {
   font-size: 0.82rem;
   font-weight: 700;
@@ -214,6 +219,75 @@ body[data-theme="dark"] .team-detail-summary-label {
 
 body[data-theme="dark"] .team-detail-summary-value {
   color: var(--color-text-header);
+}
+
+.team-detail-tabs {
+  display: flex;
+  gap: 0.55rem;
+  padding: 0.2rem;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface-muted) 86%, transparent);
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.team-detail-tab-btn {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.6rem 0.9rem;
+  white-space: nowrap;
+}
+
+.team-detail-tab-btn.is-active {
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-bg-card));
+  color: var(--color-primary);
+}
+
+.team-detail-filter-chips {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding-bottom: 0.1rem;
+}
+
+.team-detail-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 999px;
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  padding: 0.62rem 0.82rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.team-detail-filter-chip.is-active {
+  border-color: color-mix(in srgb, var(--color-primary) 48%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card));
+  color: var(--color-primary);
+}
+
+.team-detail-filter-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.38rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  color: inherit;
+  font-size: 0.76rem;
+  font-weight: 800;
 }
 
 .team-detail-match-list {

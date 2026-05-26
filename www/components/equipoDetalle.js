@@ -93,7 +93,92 @@ export function computeTeamAggregateStats(equipo, partidos) {
   return computed;
 }
 
-export function renderEquipoDetalleSummary(equipo, partidos = []) {
+function isPlayedMatch(partido) {
+  return partido?.EstadoPartido == 2 && partido?.GolesLocal != null && partido?.GolesVisit != null;
+}
+
+function getTeamPerspective(partido, equipo) {
+  const normalized = normalizarEquipoClasificacion(equipo);
+  if (!normalized || !partido) return null;
+
+  const teamIds = new Set([normalized.idEquipo, normalized.idEquipoComp].filter(Boolean).map(String));
+  const isLocal = teamIds.has(String(partido?.IdEquipoLocal || ""));
+  const isVisit = teamIds.has(String(partido?.IdEquipoVisit || ""));
+  if (!isLocal && !isVisit) return null;
+
+  const gf = Number(isLocal ? partido.GolesLocal : partido.GolesVisit);
+  const gc = Number(isLocal ? partido.GolesVisit : partido.GolesLocal);
+  const played = isPlayedMatch(partido);
+
+  return {
+    isLocal,
+    isVisit,
+    played,
+    gf: Number.isNaN(gf) ? null : gf,
+    gc: Number.isNaN(gc) ? null : gc,
+  };
+}
+
+export function filterTeamMatches(partidos, equipo, filter = "all") {
+  if (!Array.isArray(partidos) || !partidos.length) return [];
+  if (!filter || filter === "all") return partidos;
+
+  return partidos.filter((partido) => {
+    const perspective = getTeamPerspective(partido, equipo);
+    if (!perspective) return false;
+
+    switch (filter) {
+      case "played":
+        return perspective.played;
+      case "pending":
+        return !perspective.played;
+      case "won":
+        return perspective.played && perspective.gf > perspective.gc;
+      case "drawn":
+        return perspective.played && perspective.gf === perspective.gc;
+      case "lost":
+        return perspective.played && perspective.gf < perspective.gc;
+      default:
+        return true;
+    }
+  });
+}
+
+export function getTeamFilterOptions(equipo, partidos = []) {
+  const aggregate = computeTeamAggregateStats(equipo, partidos) || {};
+  const pendingCount = Array.isArray(partidos) ? partidos.filter((partido) => !isPlayedMatch(partido)).length : 0;
+
+  return [
+    { key: "all", label: t("team_detail_filter_all"), value: Array.isArray(partidos) ? partidos.length : 0 },
+    { key: "played", label: t("team_detail_played"), value: aggregate.partidosJugados || 0 },
+    { key: "won", label: t("team_detail_won"), value: aggregate.partidosGanados || 0 },
+    { key: "drawn", label: t("team_detail_drawn"), value: aggregate.partidosEmpatados || 0 },
+    { key: "lost", label: t("team_detail_lost"), value: aggregate.partidosPerdidos || 0 },
+    { key: "pending", label: t("team_detail_filter_pending"), value: pendingCount },
+  ];
+}
+
+function renderTeamDetailTabs(activeTab = "resumen") {
+  const tabs = [
+    ["resumen", t("team_detail_tab_summary")],
+    ["partidos", t("team_detail_tab_matches")],
+  ];
+
+  return `
+    <div class="team-detail-tabs" role="tablist" aria-label="${escapeHtml(t("team_detail_title"))}">
+      ${tabs.map(([key, label]) => `
+        <button
+          type="button"
+          class="team-detail-tab-btn${activeTab === key ? " is-active" : ""}"
+          data-team-tab="${escapeHtml(key)}"
+          aria-selected="${activeTab === key ? "true" : "false"}"
+        >${escapeHtml(label)}</button>
+      `).join("")}
+    </div>
+  `;
+}
+
+export function renderEquipoDetalleSummary(equipo, partidos = [], activeFilter = "all") {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized) return "";
 
@@ -102,25 +187,40 @@ export function renderEquipoDetalleSummary(equipo, partidos = []) {
 
   const goalDiffText = aggregate.diferenciaGoles > 0 ? `+${aggregate.diferenciaGoles}` : String(aggregate.diferenciaGoles);
   const summaryItems = [
-    [t("team_detail_points"), aggregate.puntos],
-    [t("team_detail_played"), aggregate.partidosJugados],
-    [t("team_detail_won"), aggregate.partidosGanados],
-    [t("team_detail_drawn"), aggregate.partidosEmpatados],
-    [t("team_detail_lost"), aggregate.partidosPerdidos],
-    [t("team_detail_goals_for"), aggregate.golesAFavor],
-    [t("team_detail_goals_against"), aggregate.golesEnContra],
-    [t("team_detail_goal_difference"), goalDiffText],
+    ["points", t("team_detail_points"), aggregate.puntos],
+    ["played", t("team_detail_played"), aggregate.partidosJugados],
+    ["won", t("team_detail_won"), aggregate.partidosGanados],
+    ["drawn", t("team_detail_drawn"), aggregate.partidosEmpatados],
+    ["lost", t("team_detail_lost"), aggregate.partidosPerdidos],
+    ["goals_for", t("team_detail_goals_for"), aggregate.golesAFavor],
+    ["goals_against", t("team_detail_goals_against"), aggregate.golesEnContra],
+    ["goal_difference", t("team_detail_goal_difference"), goalDiffText],
   ];
+
+  const filterOptions = getTeamFilterOptions(normalized, partidos);
 
   return `
     <section class="team-detail-section">
       <div class="team-detail-section-title">${escapeHtml(t("team_detail_summary"))}</div>
       <div class="team-detail-summary-grid">
-        ${summaryItems.map(([label, value]) => `
-          <article class="team-detail-summary-card">
+        ${summaryItems.map(([key, label, value]) => `
+          <article class="team-detail-summary-card${activeFilter === key ? " is-active" : ""}">
             <div class="team-detail-summary-label">${escapeHtml(label)}</div>
             <div class="team-detail-summary-value">${escapeHtml(value)}</div>
           </article>
+        `).join("")}
+      </div>
+      <div class="team-detail-filter-chips" role="toolbar" aria-label="${escapeHtml(t("team_detail_filter_toolbar"))}">
+        ${filterOptions.map((option) => `
+          <button
+            type="button"
+            class="team-detail-filter-chip${activeFilter === option.key ? " is-active" : ""}"
+            data-team-filter="${escapeHtml(option.key)}"
+            aria-pressed="${activeFilter === option.key ? "true" : "false"}"
+          >
+            <span>${escapeHtml(option.label)}</span>
+            <span class="team-detail-filter-chip-count">${escapeHtml(option.value)}</span>
+          </button>
         `).join("")}
       </div>
     </section>
@@ -134,12 +234,14 @@ export function renderEquipoDetalleSummary(equipo, partidos = []) {
  * @param {string} equipoNombre Nombre completo del equipo destacado.
  * @returns {string} HTML de la lista.
  */
-export function renderEquipoDetalleMatches(partidos, equipoNombre) {
+export function renderEquipoDetalleMatches(partidos, equipoNombre, activeFilter = "all") {
   if (!Array.isArray(partidos) || partidos.length === 0) {
     return `
       <section class="team-detail-section">
         <div class="team-detail-section-title">${escapeHtml(t("team_detail_matches"))}</div>
-        <div class="team-detail-empty">${escapeHtml(t("team_detail_no_matches"))}</div>
+        <div class="team-detail-empty">${escapeHtml(
+          activeFilter === "all" ? t("team_detail_no_matches") : t("team_detail_no_matches_for_filter"),
+        )}</div>
       </section>
     `;
   }
@@ -176,5 +278,21 @@ export function renderEquipoDetalleMatches(partidos, equipoNombre) {
         }).join("")}
       </div>
     </section>
+  `;
+}
+
+export function renderEquipoDetalleView(equipo, partidos = [], options = {}) {
+  const { activeTab = "resumen", activeFilter = "all", isLoading = false } = options;
+  const filteredMatches = filterTeamMatches(partidos, equipo, activeFilter);
+
+  return `
+    <div class="team-detail-view subview-enter">
+      ${renderTeamDetailTabs(activeTab)}
+      ${activeTab === "resumen"
+        ? renderEquipoDetalleSummary(equipo, partidos, activeFilter)
+        : (isLoading
+          ? `<div class="team-detail-loading">${escapeHtml(t("team_detail_loading"))}</div>`
+          : renderEquipoDetalleMatches(filteredMatches, equipo?.nombreEquipo || "", activeFilter))}
+    </div>
   `;
 }

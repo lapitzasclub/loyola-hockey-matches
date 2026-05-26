@@ -1,7 +1,6 @@
-import { t } from "../i18n.js";
 import { nextFrame, syncMobileBackState, transitionDetalleView } from "./partidoDetalleNavigation.js";
 import { getCurrentView, logoUrl, normalizarEquipoClasificacion, pushView, setCurrentView } from "./partidoDetalleUtils.js";
-import { loadEquipoDetalleMatches, renderEquipoDetalleMatches, renderEquipoDetalleSummary } from "./equipoDetalle.js";
+import { loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
 
 export function renderEquipoDetalleHeader(equipo, competitionName = "") {
   const logoSrc = logoUrl(equipo?.idEntidadEquipo || "sinescudo");
@@ -21,14 +20,11 @@ export function renderEquipoSubview(state) {
   const equipo = state.selectedEquipo;
   if (!equipo) return "";
 
-  return `
-    <div class="team-detail-view subview-enter">
-      ${renderEquipoDetalleSummary(equipo, state.teamMatches || [])}
-      ${state.loadingTeam
-        ? `<div class="team-detail-loading">${t("team_detail_loading")}</div>`
-        : renderEquipoDetalleMatches(state.teamMatches || [], equipo.nombreEquipo || "")}
-    </div>
-  `;
+  return renderEquipoDetalleView(equipo, state.teamMatches || [], {
+    activeTab: state.teamFilters?.tab || "resumen",
+    activeFilter: state.teamFilters?.matchFilter || "all",
+    isLoading: state.loadingTeam,
+  });
 }
 
 export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, renderAll) {
@@ -42,6 +38,10 @@ export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, 
   state.teamCompetitionName = equipo?.nombreGrupo || equipoPayload?.NombreGrupo || equipoPayload?.nombreGrupo || state.teamCompetitionName || "";
   state.loadingTeam = true;
   state.teamMatches = [];
+  state.teamFilters = {
+    tab: "resumen",
+    matchFilter: "all",
+  };
 
   if (!isInitialOpen) {
     state.parentView = previousView;
@@ -76,6 +76,25 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       }
       if (!partido?.IdPartido) return;
       await openMatchInSharedModal(state, partido, headerEl, bodyEl, renderAll);
+    };
+  });
+
+  rootEl.querySelectorAll("[data-team-tab]").forEach((node) => {
+    node.onclick = () => {
+      const tab = node.getAttribute("data-team-tab") || "resumen";
+      if (!state.teamFilters) state.teamFilters = { tab: "resumen", matchFilter: "all" };
+      state.teamFilters.tab = tab;
+      renderAll(state, headerEl, bodyEl);
+    };
+  });
+
+  rootEl.querySelectorAll("[data-team-filter]").forEach((node) => {
+    node.onclick = () => {
+      const filter = node.getAttribute("data-team-filter") || "all";
+      if (!state.teamFilters) state.teamFilters = { tab: "resumen", matchFilter: "all" };
+      state.teamFilters.matchFilter = filter;
+      state.teamFilters.tab = "partidos";
+      renderAll(state, headerEl, bodyEl);
     };
   });
 }

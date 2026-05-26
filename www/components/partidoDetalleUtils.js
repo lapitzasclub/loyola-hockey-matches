@@ -159,6 +159,10 @@ export function createDetalleState(idPartido) {
     selectedEquipo: null,
     teamMatches: [],
     loadingTeam: false,
+    teamFilters: {
+      tab: "resumen",
+      matchFilter: "all",
+    },
     parentView: null,
     teamCompetitionName: "",
     navigation: {
