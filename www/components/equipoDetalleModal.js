@@ -79,6 +79,7 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
       activeTab: viewState.tab,
       activeFilter: viewState.filter,
       isLoading: viewState.loading,
+      showRoster: false,
     });
 
     bodyEl.querySelectorAll("[data-team-tab]").forEach((node) => {

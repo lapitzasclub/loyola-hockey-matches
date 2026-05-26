@@ -24,6 +24,7 @@ export function renderEquipoSubview(state) {
     activeTab: state.teamFilters?.tab || "resumen",
     activeFilter: state.teamFilters?.matchFilter || "all",
     isLoading: state.loadingTeam,
+    showRoster: false,
   });
 }
 
