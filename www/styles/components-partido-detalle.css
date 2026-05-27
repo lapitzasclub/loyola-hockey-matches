@@ -746,12 +746,24 @@ body[data-theme="dark"] .team-roster-item-action {
   background: #4f46e5;
 }
 
+.team-chart-legend-swatch-fouls-against {
+  background: #d97706;
+}
+
 .team-chart-legend-swatch-blue {
   background: #1d4ed8;
 }
 
 .team-chart-legend-swatch-red {
   background: #dc2626;
+}
+
+.team-chart-legend-swatch-blue-against {
+  background: #60a5fa;
+}
+
+.team-chart-legend-swatch-red-against {
+  background: #f87171;
 }
 
 .team-chart-legend-swatch-penalty {
@@ -764,6 +776,32 @@ body[data-theme="dark"] .team-roster-item-action {
 
 .team-chart-legend-discipline {
   margin-top: 0.7rem;
+}
+
+.team-detail-section-head-wrap {
+  flex-wrap: wrap;
+}
+
+.team-stats-range-controls {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.team-stats-range-btn {
+  border: 1px solid color-mix(in srgb, var(--color-border-soft) 88%, transparent);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-muted);
+  border-radius: 999px;
+  padding: 0.36rem 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.team-stats-range-btn.is-active {
+  border-color: color-mix(in srgb, var(--color-primary) 34%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-elevated));
+  color: var(--color-primary);
 }
 
 .team-chart-card {

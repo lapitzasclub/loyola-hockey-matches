@@ -19,14 +19,15 @@ Chart.register(LineController, BarController, CategoryScale, LinearScale, PointE
 
 const TEAM_STATS_CACHE = new Map();
 const TEAM_CHARTS = new WeakMap();
-const TEAM_STATS_DEBUG = true;
-
-function isPlayedMatch(partido) {
-  return partido?.EstadoPartido == 2 && partido?.GolesLocal != null && partido?.GolesVisit != null;
-}
+const TEAM_STATS_DEBUG = false;
+const TEAM_STATS_RANGE_OPTIONS = ["all", 8, 5];
 
 function pickStat(stats, type, side) {
   return stats.find((item) => item?.IdTipoEvento === type && Number(item?.LocalVisit) === side)?.Total ?? 0;
+}
+
+function sumLineupField(lineup = [], field) {
+  return emptyArray(lineup).reduce((acc, item) => acc + (Number(item?.[field]) || 0), 0);
 }
 
 function collectTeamIdentity(equipo) {
@@ -95,63 +96,18 @@ function buildBaseStats(equipo, partidos = []) {
   if (!normalized) return null;
   const identity = collectTeamIdentity(equipo);
   const played = [];
-
-  if (TEAM_STATS_DEBUG) {
-    console.groupCollapsed("[team-stats] buildBaseStats", normalized.nombreEquipo || "equipo");
-    console.log("normalized", normalized);
-    console.log("identity", {
-      teamIds: Array.from(identity.teamIds),
-      teamCompIds: Array.from(identity.teamCompIds),
-    });
-  }
   const home = { won: 0, drawn: 0, lost: 0 };
   const away = { won: 0, drawn: 0, lost: 0 };
-  let gf = 0;
-  let gc = 0;
 
   for (const partido of partidos) {
     if (partido?.EstadoPartido != 2) continue;
-    const perspectiveByIds = getMatchTeamPerspective(partido, identity);
-    const perspectiveByName = getFallbackPerspectiveFromNames(partido, normalized);
-    const perspective = perspectiveByIds || perspectiveByName;
-    if (!perspective) {
-      if (TEAM_STATS_DEBUG) {
-        console.warn("[team-stats] partido sin perspectiva", {
-          idPartido: partido?.IdPartido,
-          equipo: normalized.nombreEquipo,
-          local: partido?.EquipoLocal,
-          visit: partido?.EquipoVisit,
-          idEquipoLocal: partido?.IdEquipoLocal,
-          idEquipoVisit: partido?.IdEquipoVisit,
-          idEquipoCompLocal: partido?.IdEquipoCompLocal,
-          idEquipoCompVisit: partido?.IdEquipoCompVisit,
-        });
-      }
-      continue;
-    }
+    const perspective = getMatchTeamPerspective(partido, identity) || getFallbackPerspectiveFromNames(partido, normalized);
+    if (!perspective) continue;
 
     const isLocal = perspective === "local";
     const scoreFor = Number(isLocal ? partido.GolesLocal : partido.GolesVisit) || 0;
     const scoreAgainst = Number(isLocal ? partido.GolesVisit : partido.GolesLocal) || 0;
     const result = scoreFor > scoreAgainst ? "won" : scoreFor === scoreAgainst ? "drawn" : "lost";
-
-    if (TEAM_STATS_DEBUG) {
-      console.log("[team-stats] partido", {
-        idPartido: partido?.IdPartido,
-        jornada: partido?.NombreJornada,
-        local: partido?.EquipoLocal,
-        visit: partido?.EquipoVisit,
-        marcador: `${partido?.GolesLocal ?? "-"}-${partido?.GolesVisit ?? "-"}`,
-        perspectiveByIds,
-        perspectiveByName,
-        perspective,
-        result,
-        idEquipoLocal: partido?.IdEquipoLocal,
-        idEquipoVisit: partido?.IdEquipoVisit,
-        idEquipoCompLocal: partido?.IdEquipoCompLocal,
-        idEquipoCompVisit: partido?.IdEquipoCompVisit,
-      });
-    }
 
     played.push({ ...partido, result, goalsFor: 0, goalsAgainst: 0, isLocal, perspective });
     (isLocal ? home : away)[result] += 1;
@@ -163,7 +119,7 @@ function buildBaseStats(equipo, partidos = []) {
   const lostCount = played.filter((item) => item.result === "lost").length;
   const playedCount = played.length;
 
-  const resultStats = {
+  return {
     playedCount,
     wonCount,
     drawnCount,
@@ -177,51 +133,65 @@ function buildBaseStats(equipo, partidos = []) {
       goalsFor: item.goalsFor,
       goalsAgainst: item.goalsAgainst,
       result: item.result,
-      fouls: 0,
-      blueCards: 0,
-      redCards: 0,
+      foulsFor: 0,
+      foulsAgainst: 0,
+      blueCardsFor: 0,
+      blueCardsAgainst: 0,
+      redCardsFor: 0,
+      redCardsAgainst: 0,
+      penaltiesFor: 0,
+      penaltiesAgainst: 0,
+      penaltiesScoredFor: 0,
+      penaltiesScoredAgainst: 0,
+      penaltiesMissedFor: 0,
+      penaltiesMissedAgainst: 0,
+      directFoulsFor: 0,
+      directFoulsAgainst: 0,
+      directFoulsScoredFor: 0,
+      directFoulsScoredAgainst: 0,
+      directFoulsMissedFor: 0,
+      directFoulsMissedAgainst: 0,
       venue: item.isLocal ? "home" : "away",
       opponent: item.isLocal ? item.EquipoVisit || "" : item.EquipoLocal || "",
       rawLocalGoals: Number(item.GolesLocal) || 0,
       rawVisitGoals: Number(item.GolesVisit) || 0,
     })),
-    goalsForTotal: gf,
-    goalsAgainstTotal: gc,
-    goalDifference: gf - gc,
+    goalsForTotal: 0,
+    goalsAgainstTotal: 0,
+    goalDifference: 0,
     cleanSheets: 0,
     scorelessMatches: 0,
     scoringGames: 0,
-    avgGoalsFor: playedCount ? (gf / playedCount) : 0,
-    avgGoalsAgainst: playedCount ? (gc / playedCount) : 0,
+    avgGoalsFor: 0,
+    avgGoalsAgainst: 0,
     winRate: playedCount ? ((wonCount / playedCount) * 100) : 0,
     venueAverages: {
       home: { goalsFor: 0, goalsAgainst: 0, matches: home.won + home.drawn + home.lost },
       away: { goalsFor: 0, goalsAgainst: 0, matches: away.won + away.drawn + away.lost },
     },
     disciplineTotals: {
-      fouls: 0,
-      blueCards: 0,
-      redCards: 0,
+      foulsFor: 0,
+      foulsAgainst: 0,
+      blueCardsFor: 0,
+      blueCardsAgainst: 0,
+      redCardsFor: 0,
+      redCardsAgainst: 0,
+    },
+    setPieces: {
+      penaltiesFor: 0,
+      penaltiesAgainst: 0,
+      penaltiesScoredFor: 0,
+      penaltiesScoredAgainst: 0,
+      penaltiesMissedFor: 0,
+      penaltiesMissedAgainst: 0,
+      directFoulsFor: 0,
+      directFoulsAgainst: 0,
+      directFoulsScoredFor: 0,
+      directFoulsScoredAgainst: 0,
+      directFoulsMissedFor: 0,
+      directFoulsMissedAgainst: 0,
     },
   };
-
-  if (TEAM_STATS_DEBUG) {
-    const timelineDump = resultStats.timeline.map((item) => ({
-      index: item.index,
-      idPartido: item.idPartido,
-      opponent: item.opponent,
-      venue: item.venue,
-      goalsFor: item.goalsFor,
-      goalsAgainst: item.goalsAgainst,
-      rawLocalGoals: item.rawLocalGoals,
-      rawVisitGoals: item.rawVisitGoals,
-    }));
-    console.log("[team-stats] timeline", timelineDump);
-    console.log("[team-stats] last8", timelineDump.slice(-8));
-    console.groupEnd();
-  }
-
-  return resultStats;
 }
 
 export function computeTeamBaseStats(equipo, partidos = []) {
@@ -243,25 +213,70 @@ export async function loadTeamAdvancedStats(equipo, partidos = []) {
     try {
       const raw = await getEstadisticaPartido(item.idPartido);
       const parsed = parseApiArrayResponse(raw);
-      const stats = Array.isArray(parsed?.[0]?.stats) ? parsed[0].stats : Array.isArray(parsed?.stats) ? parsed.stats : [];
+      const payload = Array.isArray(parsed) ? parsed[0] : parsed;
+      const stats = Array.isArray(payload?.stats) ? payload.stats : [];
       const side = getTeamSide(partidosById.get(String(item.idPartido)), equipo);
-      if (!side || !stats.length) return item;
+      if (!side) return item;
+
+      const rivalSide = side === 1 ? 2 : 1;
+      const localLineup = payload?.alinLocal || payload?.JugLocal || payload?.localLineup || [];
+      const visitLineup = payload?.alinVisit || payload?.JugVisit || payload?.visitLineup || [];
+      const localKeepers = payload?.portLocal || payload?.PortLocal || [];
+      const visitKeepers = payload?.portVisit || payload?.PortVisit || [];
+
+      const teamLineup = side === 1 ? localLineup : visitLineup;
+      const rivalLineup = side === 1 ? visitLineup : localLineup;
+      const teamKeepers = side === 1 ? localKeepers : visitKeepers;
+      const rivalKeepers = side === 1 ? visitKeepers : localKeepers;
 
       const goalsFor = Number(pickStat(stats, "gol", side) || 0);
-      const goalsAgainst = Number(pickStat(stats, "gol", side === 1 ? 2 : 1) || 0);
-      const fouls = Number(pickStat(stats, "falta", side) || pickStat(stats, "faltahl", side) || 0);
-      const blueCards = Number(pickStat(stats, "tarjetaazul", side) || 0);
-      const redCards = Number(pickStat(stats, "tarjetaroja", side) || 0);
+      const goalsAgainst = Number(pickStat(stats, "gol", rivalSide) || 0);
+      const foulsFor = Number(pickStat(stats, "falta", side) || pickStat(stats, "faltahl", side) || 0);
+      const foulsAgainst = Number(pickStat(stats, "falta", rivalSide) || pickStat(stats, "faltahl", rivalSide) || 0);
+      const blueCardsFor = sumLineupField(teamLineup, "Azules") + sumLineupField(teamKeepers, "Azules");
+      const blueCardsAgainst = sumLineupField(rivalLineup, "Azules") + sumLineupField(rivalKeepers, "Azules");
+      const redCardsFor = sumLineupField(teamLineup, "Rojas") + sumLineupField(teamKeepers, "Rojas");
+      const redCardsAgainst = sumLineupField(rivalLineup, "Rojas") + sumLineupField(rivalKeepers, "Rojas");
       const penaltiesFor = Number(pickStat(stats, "penalti", side) || 0);
-      const penaltiesAgainst = Number(pickStat(stats, "penalti", side === 1 ? 2 : 1) || 0);
+      const penaltiesAgainst = Number(pickStat(stats, "penalti", rivalSide) || 0);
+      const penaltiesScoredFor = sumLineupField(teamLineup, "GolPenalti");
+      const penaltiesScoredAgainst = sumLineupField(rivalLineup, "GolPenalti");
+      const penaltiesMissedFor = Math.max(0, penaltiesFor - penaltiesScoredFor);
+      const penaltiesMissedAgainst = Math.max(0, penaltiesAgainst - penaltiesScoredAgainst);
       const directFoulsFor = Number(pickStat(stats, "faltadirecta", side) || 0);
-      const directFoulsAgainst = Number(pickStat(stats, "faltadirecta", side === 1 ? 2 : 1) || 0);
+      const directFoulsAgainst = Number(pickStat(stats, "faltadirecta", rivalSide) || 0);
+      const directFoulsScoredFor = sumLineupField(teamLineup, "GolFD");
+      const directFoulsScoredAgainst = sumLineupField(rivalLineup, "GolFD");
+      const directFoulsMissedFor = Math.max(0, directFoulsFor - directFoulsScoredFor);
+      const directFoulsMissedAgainst = Math.max(0, directFoulsAgainst - directFoulsScoredAgainst);
 
       if (TEAM_STATS_DEBUG) {
-        console.log(`[team-stats-real-goals] partido=${item.idPartido} side=${side} gf=${goalsFor} gc=${goalsAgainst} fouls=${fouls} blue=${blueCards} red=${redCards} penFor=${penaltiesFor} penAgainst=${penaltiesAgainst} fdFor=${directFoulsFor} fdAgainst=${directFoulsAgainst}`);
+        console.log(`[team-stats] partido=${item.idPartido} gf=${goalsFor} gc=${goalsAgainst} foulsFor=${foulsFor} foulsAgainst=${foulsAgainst} penFor=${penaltiesFor} penAgainst=${penaltiesAgainst}`);
       }
 
-      return { ...item, goalsFor, goalsAgainst, fouls, blueCards, redCards, penaltiesFor, penaltiesAgainst, directFoulsFor, directFoulsAgainst };
+      return {
+        ...item,
+        goalsFor,
+        goalsAgainst,
+        foulsFor,
+        foulsAgainst,
+        blueCardsFor,
+        blueCardsAgainst,
+        redCardsFor,
+        redCardsAgainst,
+        penaltiesFor,
+        penaltiesAgainst,
+        penaltiesScoredFor,
+        penaltiesScoredAgainst,
+        penaltiesMissedFor,
+        penaltiesMissedAgainst,
+        directFoulsFor,
+        directFoulsAgainst,
+        directFoulsScoredFor,
+        directFoulsScoredAgainst,
+        directFoulsMissedFor,
+        directFoulsMissedAgainst,
+      };
     } catch {
       return item;
     }
@@ -270,9 +285,12 @@ export async function loadTeamAdvancedStats(equipo, partidos = []) {
   const totals = timeline.reduce((acc, item) => ({
     goalsFor: acc.goalsFor + (Number(item.goalsFor) || 0),
     goalsAgainst: acc.goalsAgainst + (Number(item.goalsAgainst) || 0),
-    fouls: acc.fouls + (Number(item.fouls) || 0),
-    blueCards: acc.blueCards + (Number(item.blueCards) || 0),
-    redCards: acc.redCards + (Number(item.redCards) || 0),
+    foulsFor: acc.foulsFor + (Number(item.foulsFor) || 0),
+    foulsAgainst: acc.foulsAgainst + (Number(item.foulsAgainst) || 0),
+    blueCardsFor: acc.blueCardsFor + (Number(item.blueCardsFor) || 0),
+    blueCardsAgainst: acc.blueCardsAgainst + (Number(item.blueCardsAgainst) || 0),
+    redCardsFor: acc.redCardsFor + (Number(item.redCardsFor) || 0),
+    redCardsAgainst: acc.redCardsAgainst + (Number(item.redCardsAgainst) || 0),
     cleanSheets: acc.cleanSheets + ((Number(item.goalsAgainst) || 0) === 0 ? 1 : 0),
     scorelessMatches: acc.scorelessMatches + ((Number(item.goalsFor) || 0) === 0 ? 1 : 0),
     scoringGames: acc.scoringGames + ((Number(item.goalsFor) || 0) > 0 ? 1 : 0),
@@ -282,14 +300,25 @@ export async function loadTeamAdvancedStats(equipo, partidos = []) {
     awayGoalsAgainst: acc.awayGoalsAgainst + (item.venue === "away" ? (Number(item.goalsAgainst) || 0) : 0),
     penaltiesFor: acc.penaltiesFor + (Number(item.penaltiesFor) || 0),
     penaltiesAgainst: acc.penaltiesAgainst + (Number(item.penaltiesAgainst) || 0),
+    penaltiesScoredFor: acc.penaltiesScoredFor + (Number(item.penaltiesScoredFor) || 0),
+    penaltiesScoredAgainst: acc.penaltiesScoredAgainst + (Number(item.penaltiesScoredAgainst) || 0),
+    penaltiesMissedFor: acc.penaltiesMissedFor + (Number(item.penaltiesMissedFor) || 0),
+    penaltiesMissedAgainst: acc.penaltiesMissedAgainst + (Number(item.penaltiesMissedAgainst) || 0),
     directFoulsFor: acc.directFoulsFor + (Number(item.directFoulsFor) || 0),
     directFoulsAgainst: acc.directFoulsAgainst + (Number(item.directFoulsAgainst) || 0),
+    directFoulsScoredFor: acc.directFoulsScoredFor + (Number(item.directFoulsScoredFor) || 0),
+    directFoulsScoredAgainst: acc.directFoulsScoredAgainst + (Number(item.directFoulsScoredAgainst) || 0),
+    directFoulsMissedFor: acc.directFoulsMissedFor + (Number(item.directFoulsMissedFor) || 0),
+    directFoulsMissedAgainst: acc.directFoulsMissedAgainst + (Number(item.directFoulsMissedAgainst) || 0),
   }), {
     goalsFor: 0,
     goalsAgainst: 0,
-    fouls: 0,
-    blueCards: 0,
-    redCards: 0,
+    foulsFor: 0,
+    foulsAgainst: 0,
+    blueCardsFor: 0,
+    blueCardsAgainst: 0,
+    redCardsFor: 0,
+    redCardsAgainst: 0,
     cleanSheets: 0,
     scorelessMatches: 0,
     scoringGames: 0,
@@ -299,8 +328,16 @@ export async function loadTeamAdvancedStats(equipo, partidos = []) {
     awayGoalsAgainst: 0,
     penaltiesFor: 0,
     penaltiesAgainst: 0,
+    penaltiesScoredFor: 0,
+    penaltiesScoredAgainst: 0,
+    penaltiesMissedFor: 0,
+    penaltiesMissedAgainst: 0,
     directFoulsFor: 0,
     directFoulsAgainst: 0,
+    directFoulsScoredFor: 0,
+    directFoulsScoredAgainst: 0,
+    directFoulsMissedFor: 0,
+    directFoulsMissedAgainst: 0,
   });
 
   const playedCount = timeline.length;
@@ -332,18 +369,36 @@ export async function loadTeamAdvancedStats(equipo, partidos = []) {
     setPieces: {
       penaltiesFor: totals.penaltiesFor,
       penaltiesAgainst: totals.penaltiesAgainst,
+      penaltiesScoredFor: totals.penaltiesScoredFor,
+      penaltiesScoredAgainst: totals.penaltiesScoredAgainst,
+      penaltiesMissedFor: totals.penaltiesMissedFor,
+      penaltiesMissedAgainst: totals.penaltiesMissedAgainst,
       directFoulsFor: totals.directFoulsFor,
       directFoulsAgainst: totals.directFoulsAgainst,
+      directFoulsScoredFor: totals.directFoulsScoredFor,
+      directFoulsScoredAgainst: totals.directFoulsScoredAgainst,
+      directFoulsMissedFor: totals.directFoulsMissedFor,
+      directFoulsMissedAgainst: totals.directFoulsMissedAgainst,
     },
     disciplineTotals: {
-      fouls: totals.fouls,
-      blueCards: totals.blueCards,
-      redCards: totals.redCards,
+      foulsFor: totals.foulsFor,
+      foulsAgainst: totals.foulsAgainst,
+      blueCardsFor: totals.blueCardsFor,
+      blueCardsAgainst: totals.blueCardsAgainst,
+      redCardsFor: totals.redCardsFor,
+      redCardsAgainst: totals.redCardsAgainst,
     },
   };
 
   TEAM_STATS_CACHE.set(cacheKey, enriched);
   return enriched;
+}
+
+function getRangeSlice(stats, range) {
+  if (!stats?.timeline?.length) return [];
+  if (range === "all") return stats.timeline;
+  const count = Number(range) || stats.timeline.length;
+  return stats.timeline.slice(-count);
 }
 
 function renderTeamFormPills(form) {
@@ -358,7 +413,7 @@ function renderTeamFormPills(form) {
 function destroyTeamCharts(root) {
   const current = TEAM_CHARTS.get(root);
   if (!current) return;
-  current.forEach((chart) => chart?.destroy?.());
+  current.charts?.forEach((chart) => chart?.destroy?.());
   TEAM_CHARTS.delete(root);
 }
 
@@ -378,10 +433,11 @@ function chartPalette() {
     redSoft: "rgba(239, 68, 68, 0.16)",
     indigo: "#4f46e5",
     indigoSoft: "rgba(79, 70, 229, 0.18)",
+    amber: "#d97706",
+    amberSoft: "rgba(217, 119, 6, 0.18)",
     text: "#2c3444",
     muted: "rgba(92, 102, 119, 0.88)",
     grid: "rgba(148, 163, 184, 0.18)",
-    border: "rgba(148, 163, 184, 0.28)",
   };
 }
 
@@ -440,8 +496,7 @@ function createBaseChart(canvas, config) {
   });
 }
 
-function buildGoalsChart(root, mount, stats) {
-  const items = stats.timeline.slice(-8);
+function buildGoalsChart(mount, items) {
   if (!mount || !items.length) return null;
   const canvas = ensureCanvas(mount);
   if (!canvas) return null;
@@ -451,16 +506,6 @@ function buildGoalsChart(root, mount, stats) {
   const goalsAgainst = items.map((item) => item.goalsAgainst);
   const maxY = Math.max(1, ...goalsFor, ...goalsAgainst) + 1;
   const colors = chartPalette();
-
-  if (TEAM_STATS_DEBUG) {
-    const teamName = root?.querySelector?.('.team-detail-modal-title')?.textContent?.trim() || "equipo";
-    const trace = items.map((item, idx) => {
-      const label = labels[idx];
-      const venue = item.venue === "home" ? "H" : "A";
-      return `${label}:${venue}:${item.opponent}:${item.rawLocalGoals}-${item.rawVisitGoals}:GF${item.goalsFor}:GC${item.goalsAgainst}`;
-    }).join(" | ");
-    console.log(`[team-stats-goals] ${teamName} || GF=[${goalsFor.join(",")}] || GC=[${goalsAgainst.join(",")}] || ${trace}`);
-  }
 
   return createBaseChart(canvas, {
     data: {
@@ -506,18 +551,12 @@ function buildGoalsChart(root, mount, stats) {
           const prefix = item.venue === "home" ? "Casa" : "Fuera";
           return `${prefix} · ${item.opponent || `Partido ${item.index}`}`;
         },
-        afterTitle(itemsCtx) {
-          const idx = itemsCtx?.[0]?.dataIndex ?? 0;
-          const item = items[idx];
-          if (!item) return "";
-          return `Marcador real: ${item.rawLocalGoals}-${item.rawVisitGoals}`;
-        },
       },
     },
   });
 }
 
-function buildVenueComparisonChart(root, mount, stats) {
+function buildVenueComparisonChart(mount, stats) {
   if (!mount || !stats?.venueAverages) return null;
   const canvas = ensureCanvas(mount);
   if (!canvas) return null;
@@ -590,15 +629,15 @@ function buildVenueComparisonChart(root, mount, stats) {
   });
 }
 
-function buildDisciplineChart(root, mount, stats) {
-  const items = stats.timeline.slice(-8);
+function buildDisciplineChart(mount, items) {
   if (!mount || !items.length) return null;
   const canvas = ensureCanvas(mount);
   if (!canvas) return null;
 
   const labels = items.map((item) => String(item.index));
-  const fouls = items.map((item) => item.fouls || 0);
-  const maxY = Math.max(1, ...fouls) + 1;
+  const foulsFor = items.map((item) => item.foulsFor || 0);
+  const foulsAgainst = items.map((item) => item.foulsAgainst || 0);
+  const maxY = Math.max(1, ...foulsFor, ...foulsAgainst) + 1;
   const colors = chartPalette();
 
   return new Chart(canvas, {
@@ -607,10 +646,20 @@ function buildDisciplineChart(root, mount, stats) {
       labels,
       datasets: [
         {
-          label: t("detail_fouls"),
-          data: fouls,
+          label: t("team_detail_stats_fouls_for"),
+          data: foulsFor,
           backgroundColor: colors.indigoSoft,
           borderColor: colors.indigo,
+          borderWidth: 2,
+          borderRadius: 999,
+          borderSkipped: false,
+          maxBarThickness: 22,
+        },
+        {
+          label: t("team_detail_stats_fouls_against"),
+          data: foulsAgainst,
+          backgroundColor: colors.amberSoft,
+          borderColor: colors.amber,
           borderWidth: 2,
           borderRadius: 999,
           borderSkipped: false,
@@ -673,11 +722,12 @@ function buildDisciplineSummary(mount, stats) {
   if (!mount) return;
   mount.insertAdjacentHTML("beforeend", `
     <div class="team-chart-legend team-chart-legend-discipline">
-      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-fouls"></span>${escapeHtml(t("detail_fouls"))}: <strong>${escapeHtml(stats.disciplineTotals.fouls)}</strong></span>
-      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-blue"></span>${escapeHtml(t("detail_blue_cards"))}: <strong>${escapeHtml(stats.disciplineTotals.blueCards)}</strong></span>
-      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-red"></span>${escapeHtml(t("detail_red_cards"))}: <strong>${escapeHtml(stats.disciplineTotals.redCards)}</strong></span>
-      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-penalty"></span>${escapeHtml(t("team_detail_stats_penalties"))}: <strong>${escapeHtml(stats.setPieces.penaltiesFor)}</strong></span>
-      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-direct"></span>${escapeHtml(t("team_detail_stats_direct_fouls"))}: <strong>${escapeHtml(stats.setPieces.directFoulsFor)}</strong></span>
+      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-fouls"></span>${escapeHtml(t("team_detail_stats_fouls_for"))}: <strong>${escapeHtml(stats.disciplineTotals.foulsFor)}</strong></span>
+      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-fouls-against"></span>${escapeHtml(t("team_detail_stats_fouls_against"))}: <strong>${escapeHtml(stats.disciplineTotals.foulsAgainst)}</strong></span>
+      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-blue"></span>${escapeHtml(t("team_detail_stats_blue_cards_for"))}: <strong>${escapeHtml(stats.disciplineTotals.blueCardsFor)}</strong></span>
+      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-blue-against"></span>${escapeHtml(t("team_detail_stats_blue_cards_against"))}: <strong>${escapeHtml(stats.disciplineTotals.blueCardsAgainst)}</strong></span>
+      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-red"></span>${escapeHtml(t("team_detail_stats_red_cards_for"))}: <strong>${escapeHtml(stats.disciplineTotals.redCardsFor)}</strong></span>
+      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-red-against"></span>${escapeHtml(t("team_detail_stats_red_cards_against"))}: <strong>${escapeHtml(stats.disciplineTotals.redCardsAgainst)}</strong></span>
     </div>
   `);
 }
@@ -700,9 +750,28 @@ function buildResultsBars(mount, stats) {
   return null;
 }
 
+function getSelectedRange(root) {
+  return root?.dataset?.teamStatsRange || "all";
+}
+
+function renderRangeControls(root, selectedRange) {
+  const controls = root.querySelector('[data-team-stats-range-controls]');
+  if (!(controls instanceof HTMLElement)) return;
+  controls.innerHTML = TEAM_STATS_RANGE_OPTIONS.map((range) => {
+    const key = String(range);
+    const active = key === String(selectedRange);
+    const label = range === "all" ? t("team_detail_stats_range_all") : String(range);
+    return `<button type="button" class="team-stats-range-btn${active ? " is-active" : ""}" data-team-stats-range="${escapeHtml(key)}">${escapeHtml(label)}</button>`;
+  }).join("");
+}
+
 export function mountTeamStatsCharts(root, stats) {
   if (!(root instanceof HTMLElement) || !stats?.timeline?.length) return;
   destroyTeamCharts(root);
+
+  const selectedRange = getSelectedRange(root);
+  const rangeItems = getRangeSlice(stats, selectedRange);
+  renderRangeControls(root, selectedRange);
 
   const charts = [];
   const goalsMount = root.querySelector('[data-team-chart="goals"]');
@@ -712,25 +781,34 @@ export function mountTeamStatsCharts(root, stats) {
 
   if (goalsMount instanceof HTMLElement) {
     goalsMount.innerHTML = "";
-    const chart = buildGoalsChart(root, goalsMount, stats);
+    const chart = buildGoalsChart(goalsMount, rangeItems);
     if (chart) charts.push(chart);
   }
   if (disciplineMount instanceof HTMLElement) {
     disciplineMount.innerHTML = "";
-    const chart = buildDisciplineChart(root, disciplineMount, stats);
+    const chart = buildDisciplineChart(disciplineMount, rangeItems);
     if (chart) charts.push(chart);
     buildDisciplineSummary(disciplineMount, stats);
   }
   if (venueMount instanceof HTMLElement) {
     venueMount.innerHTML = "";
-    const chart = buildVenueComparisonChart(root, venueMount, stats);
+    const chart = buildVenueComparisonChart(venueMount, stats);
     if (chart) charts.push(chart);
   }
   if (resultsMount instanceof HTMLElement) {
     buildResultsBars(resultsMount, stats);
   }
 
-  TEAM_CHARTS.set(root, charts);
+  root.querySelectorAll('[data-team-stats-range]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const nextRange = button.getAttribute('data-team-stats-range') || 'all';
+      if (root.dataset.teamStatsRange === nextRange) return;
+      root.dataset.teamStatsRange = nextRange;
+      mountTeamStatsCharts(root, stats);
+    }, { once: true });
+  });
+
+  TEAM_CHARTS.set(root, { charts });
 }
 
 export function unmountTeamStatsCharts(root) {
@@ -768,9 +846,27 @@ export function renderTeamStatsView(stats, options = {}) {
     [t("team_detail_stats_win_rate"), `${stats.winRate.toFixed(0)}%`],
     [t("team_detail_stats_clean_sheets"), stats.cleanSheets],
     [t("team_detail_stats_scoreless"), stats.scorelessMatches],
-    [t("detail_fouls"), stats.disciplineTotals.fouls],
-    [t("detail_blue_cards"), stats.disciplineTotals.blueCards],
-    [t("detail_red_cards"), stats.disciplineTotals.redCards],
+    [t("team_detail_stats_fouls_for"), stats.disciplineTotals.foulsFor],
+    [t("team_detail_stats_fouls_against"), stats.disciplineTotals.foulsAgainst],
+    [t("team_detail_stats_blue_cards_for"), stats.disciplineTotals.blueCardsFor],
+    [t("team_detail_stats_blue_cards_against"), stats.disciplineTotals.blueCardsAgainst],
+    [t("team_detail_stats_red_cards_for"), stats.disciplineTotals.redCardsFor],
+    [t("team_detail_stats_red_cards_against"), stats.disciplineTotals.redCardsAgainst],
+  ];
+
+  const setPieceCards = [
+    [t("team_detail_stats_penalties_for"), stats.setPieces.penaltiesFor],
+    [t("team_detail_stats_penalties_against"), stats.setPieces.penaltiesAgainst],
+    [t("team_detail_stats_penalties_scored_for"), stats.setPieces.penaltiesScoredFor],
+    [t("team_detail_stats_penalties_scored_against"), stats.setPieces.penaltiesScoredAgainst],
+    [t("team_detail_stats_penalties_missed_for"), stats.setPieces.penaltiesMissedFor],
+    [t("team_detail_stats_penalties_missed_against"), stats.setPieces.penaltiesMissedAgainst],
+    [t("team_detail_stats_direct_fouls_for"), stats.setPieces.directFoulsFor],
+    [t("team_detail_stats_direct_fouls_against"), stats.setPieces.directFoulsAgainst],
+    [t("team_detail_stats_direct_fouls_scored_for"), stats.setPieces.directFoulsScoredFor],
+    [t("team_detail_stats_direct_fouls_scored_against"), stats.setPieces.directFoulsScoredAgainst],
+    [t("team_detail_stats_direct_fouls_missed_for"), stats.setPieces.directFoulsMissedFor],
+    [t("team_detail_stats_direct_fouls_missed_against"), stats.setPieces.directFoulsMissedAgainst],
   ];
 
   return `
@@ -783,6 +879,17 @@ export function renderTeamStatsView(stats, options = {}) {
         <div class="team-detail-section-title">${escapeHtml(t("team_detail_stats_overview"))}</div>
         <div class="team-detail-summary-grid team-detail-summary-grid-mobile">
           ${cards.map(([label, value]) => `
+            <article class="team-detail-summary-card">
+              <div class="team-detail-summary-label">${escapeHtml(label)}</div>
+              <div class="team-detail-summary-value">${escapeHtml(value)}</div>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+      <section class="team-detail-section">
+        <div class="team-detail-section-title">${escapeHtml(t("team_detail_stats_set_pieces"))}</div>
+        <div class="team-detail-summary-grid team-detail-summary-grid-mobile">
+          ${setPieceCards.map(([label, value]) => `
             <article class="team-detail-summary-card">
               <div class="team-detail-summary-label">${escapeHtml(label)}</div>
               <div class="team-detail-summary-value">${escapeHtml(value)}</div>
@@ -804,9 +911,9 @@ export function renderTeamStatsView(stats, options = {}) {
         </div>
       </section>
       <section class="team-detail-section">
-        <div class="team-detail-section-head">
+        <div class="team-detail-section-head team-detail-section-head-wrap">
           <div class="team-detail-section-title">${escapeHtml(t("team_detail_stats_goals_timeline"))}</div>
-          <div class="team-detail-section-meta">${escapeHtml(t("team_detail_stats_last_matches", Math.min(stats.timeline.length, 8)))}</div>
+          <div class="team-stats-range-controls" data-team-stats-range-controls></div>
         </div>
         <div class="team-chart-card team-chart-card-goals">
           <div class="team-chart-mount" data-team-chart="goals"></div>
