@@ -631,15 +631,8 @@ body[data-theme="dark"] .team-roster-item-action {
   color: var(--color-text);
 }
 
-.team-chart-card {
-  padding: 0.85rem 0.7rem 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--color-border-soft) 88%, transparent);
-  border-radius: 1rem;
-  background: linear-gradient(180deg, var(--color-surface-elevated) 0%, var(--color-surface-elevated-soft) 100%);
-  box-shadow: 0 8px 18px color-mix(in srgb, var(--color-shadow) 5%, transparent);
-}
-
 .team-chart-mount {
+  position: relative;
   width: 100%;
   min-height: 236px;
   overflow: hidden;
@@ -674,60 +667,8 @@ body[data-theme="dark"] .team-roster-item-action {
   background: #d64545;
 }
 
-.team-chart-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
 .team-detail-section-meta {
   font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--color-text-muted);
-}
-
-.team-bars-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--team-bars-count), minmax(0, 1fr));
-  gap: 0.45rem;
-  align-items: end;
-}
-
-.team-bars-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.42rem;
-  min-width: 0;
-}
-
-.team-bars-pair {
-  width: 100%;
-  min-height: 132px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: end;
-  gap: 0.16rem;
-  padding: 0 0.05rem;
-}
-
-.team-bar {
-  width: 100%;
-  height: calc((var(--team-bar-value) / var(--team-bars-max)) * 132px);
-  min-height: 2px;
-  border-radius: 0.45rem 0.45rem 0.18rem 0.18rem;
-}
-
-.team-bar-for {
-  background: linear-gradient(180deg, color-mix(in srgb, #1f9d55 82%, white) 0%, #1f9d55 100%);
-}
-
-.team-bar-against {
-  background: linear-gradient(180deg, color-mix(in srgb, #d64545 82%, white) 0%, #d64545 100%);
-}
-
-.team-bars-label {
-  font-size: 0.72rem;
   font-weight: 700;
   color: var(--color-text-muted);
 }
@@ -794,65 +735,14 @@ body[data-theme="dark"] .team-roster-item-action {
   overflow: hidden;
 }
 
-.team-chart-card .uplot {
-  width: 100% !important;
-  max-width: 100%;
-}
-
-.team-chart-card .uplot canvas {
-  width: 100% !important;
-}
-
-.team-chart-card .u-over,
-.team-chart-card .u-under {
-  overflow: visible;
-}
-
-.team-chart-card .u-axis {
-  font-size: 0.74rem;
-  color: var(--color-text-muted);
-}
-
-.team-chart-card-donut {
-  display: grid;
-  grid-template-columns: minmax(0, 104px) minmax(0, 1fr);
-  gap: 0.95rem;
-  align-items: center;
-}
-
-.team-stats-donut {
-  width: 100%;
-  height: auto;
+.team-chart-canvas {
   display: block;
+  width: 100% !important;
+  height: 236px !important;
 }
 
-.team-donut-track,
-.team-donut-segment {
-  fill: none;
-  stroke-width: 10;
-  stroke-linecap: round;
-}
-
-.team-donut-track {
-  stroke: color-mix(in srgb, var(--color-border-soft) 80%, transparent);
-}
-
-.team-donut-segment-won {
-  stroke: #1f9d55;
-}
-
-.team-donut-segment-drawn {
-  stroke: #d1a000;
-}
-
-.team-donut-hole {
-  fill: var(--color-bg-card);
-}
-
-.team-donut-center-label {
-  fill: var(--color-text);
-  font-size: 1rem;
-  font-weight: 900;
+.team-chart-legend-goals {
+  margin-top: 0.75rem;
 }
 
 .team-donut-legend {

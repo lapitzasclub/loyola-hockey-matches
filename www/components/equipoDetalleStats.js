@@ -1,9 +1,19 @@
-import uPlot from "uplot";
-import "uplot/dist/uPlot.min.css";
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Tooltip,
+  Filler,
+} from "chart.js";
 import { getEstadisticaPartido } from "../services.js";
 import { t } from "../i18n.js";
 import { comparePartidosByScheduledDate } from "../utils/helpers.js";
 import { emptyArray, escapeHtml, normalizarEquipoClasificacion, parseApiArrayResponse } from "./partidoDetalleUtils.js";
+
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Filler);
 
 const TEAM_STATS_CACHE = new Map();
 const TEAM_CHARTS = new WeakMap();
@@ -16,14 +26,34 @@ function pickStat(stats, type, side) {
   return stats.find((item) => item?.IdTipoEvento === type && Number(item?.LocalVisit) === side)?.Total ?? 0;
 }
 
-function getTeamSide(partido, equipo) {
+function collectTeamIds(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
-  if (!normalized || !partido) return null;
-  const teamIds = new Set([normalized.idEquipo, normalized.idEquipoComp].filter(Boolean).map(String));
-  const isLocal = teamIds.has(String(partido?.IdEquipoLocal || ""));
-  const isVisit = teamIds.has(String(partido?.IdEquipoVisit || ""));
-  if (isLocal) return 1;
-  if (isVisit) return 2;
+  if (!normalized) return new Set();
+  return new Set([
+    normalized.idEquipo,
+    normalized.idEquipoComp,
+    equipo?.IdEquipo,
+    equipo?.IdEquipoComp,
+    equipo?.idEquipo,
+    equipo?.idEquipoComp,
+  ].filter(Boolean).map(String));
+}
+
+function getMatchTeamPerspective(partido, teamIds) {
+  if (!partido || !teamIds?.size) return null;
+  const localIds = [partido?.IdEquipoLocal, partido?.IdEquipoCompLocal].filter(Boolean).map(String);
+  const visitIds = [partido?.IdEquipoVisit, partido?.IdEquipoCompVisit].filter(Boolean).map(String);
+  const isLocal = localIds.some((id) => teamIds.has(id));
+  const isVisit = visitIds.some((id) => teamIds.has(id));
+  if (isLocal && !isVisit) return "local";
+  if (isVisit && !isLocal) return "visit";
+  return null;
+}
+
+function getTeamSide(partido, equipo) {
+  const perspective = getMatchTeamPerspective(partido, collectTeamIds(equipo));
+  if (perspective === "local") return 1;
+  if (perspective === "visit") return 2;
   return null;
 }
 
@@ -36,7 +66,7 @@ function getCacheKey(equipo, partidos) {
 function buildBaseStats(equipo, partidos = []) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized) return null;
-  const teamIds = new Set([normalized.idEquipo, normalized.idEquipoComp].filter(Boolean).map(String));
+  const teamIds = collectTeamIds(equipo);
   const played = [];
   const home = { won: 0, drawn: 0, lost: 0 };
   const away = { won: 0, drawn: 0, lost: 0 };
@@ -45,17 +75,17 @@ function buildBaseStats(equipo, partidos = []) {
 
   for (const partido of partidos) {
     if (!isPlayedMatch(partido)) continue;
-    const isLocal = teamIds.has(String(partido?.IdEquipoLocal || ""));
-    const isVisit = teamIds.has(String(partido?.IdEquipoVisit || ""));
-    if (!isLocal && !isVisit) continue;
+    const perspective = getMatchTeamPerspective(partido, teamIds);
+    if (!perspective) continue;
 
+    const isLocal = perspective === "local";
     const goalsFor = Number(isLocal ? partido.GolesLocal : partido.GolesVisit) || 0;
     const goalsAgainst = Number(isLocal ? partido.GolesVisit : partido.GolesLocal) || 0;
     const result = goalsFor > goalsAgainst ? "won" : goalsFor === goalsAgainst ? "drawn" : "lost";
 
     gf += goalsFor;
     gc += goalsAgainst;
-    played.push({ ...partido, result, goalsFor, goalsAgainst, isLocal });
+    played.push({ ...partido, result, goalsFor, goalsAgainst, isLocal, perspective });
     (isLocal ? home : away)[result] += 1;
   }
 
@@ -82,6 +112,10 @@ function buildBaseStats(equipo, partidos = []) {
       fouls: 0,
       blueCards: 0,
       redCards: 0,
+      venue: item.isLocal ? "home" : "away",
+      opponent: item.isLocal ? item.EquipoVisit || "" : item.EquipoLocal || "",
+      rawLocalGoals: Number(item.GolesLocal) || 0,
+      rawVisitGoals: Number(item.GolesVisit) || 0,
     })),
     avgGoalsFor: playedCount ? (gf / playedCount) : 0,
     avgGoalsAgainst: playedCount ? (gc / playedCount) : 0,
@@ -156,96 +190,228 @@ function destroyTeamCharts(root) {
   TEAM_CHARTS.delete(root);
 }
 
-function getChartWidth(mount) {
-  if (!(mount instanceof HTMLElement)) return 280;
-  const parentWidth = mount.parentElement?.clientWidth || 0;
-  return Math.max(260, mount.clientWidth || parentWidth || 280);
+function ensureCanvas(mount, className = "team-chart-canvas") {
+  if (!(mount instanceof HTMLElement)) return null;
+  const canvas = document.createElement("canvas");
+  canvas.className = className;
+  mount.appendChild(canvas);
+  return canvas;
 }
 
-function buildChartOptions({ width, height = 236, maxY = 1, xValues = [] } = {}) {
+function chartPalette() {
   return {
-    width,
-    height,
-    padding: [18, 12, 30, 36],
-    legend: { show: false },
-    cursor: {
-      drag: { x: false, y: false },
-      points: { show: false },
-      focus: { prox: 24 },
-    },
-    scales: {
-      x: { time: false },
-      y: { auto: false, range: () => [0, Math.max(1, maxY)] },
-    },
-    axes: [
-      {
-        stroke: "rgba(125, 133, 150, 0.72)",
-        grid: { show: false },
-        ticks: { stroke: "rgba(125, 133, 150, 0.24)", size: 6 },
-        size: 24,
-        values: () => xValues.map((v) => String(v)),
-      },
-      {
-        stroke: "rgba(125, 133, 150, 0.72)",
-        size: 34,
-        ticks: { stroke: "rgba(125, 133, 150, 0.24)", size: 6 },
-        grid: { stroke: "rgba(120, 130, 150, 0.12)", width: 1 },
-        values: (_u, vals) => vals.map((v) => String(v)),
-      },
-    ],
+    green: "#16a34a",
+    greenSoft: "rgba(22, 163, 74, 0.18)",
+    red: "#ef4444",
+    redSoft: "rgba(239, 68, 68, 0.16)",
+    indigo: "#4f46e5",
+    indigoSoft: "rgba(79, 70, 229, 0.18)",
+    text: "#2c3444",
+    muted: "rgba(92, 102, 119, 0.88)",
+    grid: "rgba(148, 163, 184, 0.18)",
+    border: "rgba(148, 163, 184, 0.28)",
   };
+}
+
+function createBaseChart(canvas, config) {
+  return new Chart(canvas, {
+    type: "line",
+    data: config.data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: {
+        mode: "index",
+        intersect: false,
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "rgba(23, 27, 35, 0.92)",
+          padding: 10,
+          cornerRadius: 12,
+          titleColor: "#ffffff",
+          bodyColor: "rgba(255,255,255,0.92)",
+          displayColors: true,
+          boxPadding: 4,
+          ...config.tooltip,
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false, drawBorder: false },
+          border: { display: false },
+          ticks: {
+            color: chartPalette().muted,
+            font: { size: 11, weight: 700 },
+          },
+        },
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: chartPalette().grid,
+            drawBorder: false,
+          },
+          border: { display: false },
+          ticks: {
+            precision: 0,
+            stepSize: 1,
+            color: chartPalette().muted,
+            font: { size: 11, weight: 700 },
+          },
+          suggestedMax: config.suggestedMax,
+        },
+      },
+      ...config.options,
+    },
+  });
 }
 
 function buildGoalsChart(root, mount, stats) {
   const items = stats.timeline.slice(-8);
   if (!mount || !items.length) return null;
-  const x = items.map((item) => item.index);
-  const yFor = items.map((item) => item.goalsFor);
-  const yAgainst = items.map((item) => item.goalsAgainst);
-  const width = getChartWidth(mount);
-  const maxY = Math.max(1, ...yFor, ...yAgainst) + 1;
-  return new uPlot({
-    ...buildChartOptions({ width, maxY, xValues: x }),
-    series: [
-      {},
-      {
-        label: t("team_detail_goals_for"),
-        stroke: "#16a34a",
-        width: 3,
-        spanGaps: true,
-        points: { show: true, size: 7, width: 2, stroke: "#ffffff", fill: "#16a34a" },
+  const canvas = ensureCanvas(mount);
+  if (!canvas) return null;
+
+  const labels = items.map((item) => String(item.index));
+  const goalsFor = items.map((item) => item.goalsFor);
+  const goalsAgainst = items.map((item) => item.goalsAgainst);
+  const maxY = Math.max(1, ...goalsFor, ...goalsAgainst) + 1;
+  const colors = chartPalette();
+
+  return createBaseChart(canvas, {
+    data: {
+      labels,
+      datasets: [
+        {
+          label: t("team_detail_goals_for"),
+          data: goalsFor,
+          borderColor: colors.green,
+          backgroundColor: colors.greenSoft,
+          pointBackgroundColor: colors.green,
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 5,
+          borderWidth: 3,
+          fill: true,
+          tension: 0.34,
+        },
+        {
+          label: t("team_detail_goals_against"),
+          data: goalsAgainst,
+          borderColor: colors.red,
+          backgroundColor: colors.redSoft,
+          pointBackgroundColor: colors.red,
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 5,
+          borderWidth: 3,
+          fill: true,
+          tension: 0.34,
+        },
+      ],
+    },
+    suggestedMax: maxY,
+    tooltip: {
+      callbacks: {
+        title(itemsCtx) {
+          const idx = itemsCtx?.[0]?.dataIndex ?? 0;
+          const item = items[idx];
+          if (!item) return "";
+          const prefix = item.venue === "home" ? "Casa" : "Fuera";
+          return `${prefix} · ${item.opponent || `Partido ${item.index}`}`;
+        },
+        afterTitle(itemsCtx) {
+          const idx = itemsCtx?.[0]?.dataIndex ?? 0;
+          const item = items[idx];
+          if (!item) return "";
+          return `Marcador real: ${item.rawLocalGoals}-${item.rawVisitGoals}`;
+        },
       },
-      {
-        label: t("team_detail_goals_against"),
-        stroke: "#ef4444",
-        width: 3,
-        spanGaps: true,
-        points: { show: true, size: 7, width: 2, stroke: "#ffffff", fill: "#ef4444" },
-      },
-    ],
-  }, [x, yFor, yAgainst], mount);
+    },
+  });
 }
 
 function buildDisciplineChart(root, mount, stats) {
   const items = stats.timeline.slice(-8);
   if (!mount || !items.length) return null;
-  const x = items.map((item) => item.index);
+  const canvas = ensureCanvas(mount);
+  if (!canvas) return null;
+
+  const labels = items.map((item) => String(item.index));
   const fouls = items.map((item) => item.fouls || 0);
-  const width = getChartWidth(mount);
   const maxY = Math.max(1, ...fouls) + 1;
-  return new uPlot({
-    ...buildChartOptions({ width, maxY, xValues: x }),
-    series: [
-      {},
-      {
-        label: t("detail_fouls"),
-        stroke: "#4f46e5",
-        width: 3,
-        spanGaps: true,
-        points: { show: true, size: 6, width: 2, stroke: "#ffffff", fill: "#4f46e5" },
+  const colors = chartPalette();
+
+  return new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: t("detail_fouls"),
+          data: fouls,
+          backgroundColor: colors.indigoSoft,
+          borderColor: colors.indigo,
+          borderWidth: 2,
+          borderRadius: 999,
+          borderSkipped: false,
+          maxBarThickness: 22,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "rgba(23, 27, 35, 0.92)",
+          padding: 10,
+          cornerRadius: 12,
+          titleColor: "#ffffff",
+          bodyColor: "rgba(255,255,255,0.92)",
+          callbacks: {
+            title(itemsCtx) {
+              const idx = itemsCtx?.[0]?.dataIndex ?? 0;
+              const item = items[idx];
+              if (!item) return "";
+              return `${item.venue === "home" ? "Casa" : "Fuera"} · ${item.opponent || `Partido ${item.index}`}`;
+            },
+          },
+        },
       },
-    ],
-  }, [x, fouls], mount);
+      scales: {
+        x: {
+          grid: { display: false, drawBorder: false },
+          border: { display: false },
+          ticks: {
+            color: colors.muted,
+            font: { size: 11, weight: 700 },
+          },
+        },
+        y: {
+          beginAtZero: true,
+          suggestedMax: maxY,
+          grid: {
+            color: colors.grid,
+            drawBorder: false,
+          },
+          border: { display: false },
+          ticks: {
+            precision: 0,
+            stepSize: 1,
+            color: colors.muted,
+            font: { size: 11, weight: 700 },
+          },
+        },
+      },
+    },
+  });
 }
 
 function buildDisciplineSummary(mount, stats) {
@@ -371,11 +537,15 @@ export function renderTeamStatsView(stats, options = {}) {
       </section>
       <section class="team-detail-section">
         <div class="team-detail-section-head">
-          <div class="team-detail-section-title">${escapeHtml(t("team_detail_stats_charts_title"))}</div>
+          <div class="team-detail-section-title">${escapeHtml(t("team_detail_stats_goals_timeline"))}</div>
           <div class="team-detail-section-meta">${escapeHtml(t("team_detail_stats_last_matches", Math.min(stats.timeline.length, 8)))}</div>
         </div>
-        <div class="team-chart-card">
+        <div class="team-chart-card team-chart-card-goals">
           <div class="team-chart-mount" data-team-chart="goals"></div>
+          <div class="team-chart-legend team-chart-legend-goals">
+            <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-for"></span>${escapeHtml(t("team_detail_goals_for"))}</span>
+            <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-against"></span>${escapeHtml(t("team_detail_goals_against"))}</span>
+          </div>
         </div>
       </section>
       <section class="team-detail-section">
