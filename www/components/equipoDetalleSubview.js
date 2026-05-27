@@ -1,6 +1,7 @@
 import { nextFrame, syncMobileBackState, transitionDetalleView } from "./partidoDetalleNavigation.js";
 import { getCurrentView, logoUrl, normalizarEquipoClasificacion, pushView, setCurrentView } from "./partidoDetalleUtils.js";
-import { loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
+import { ensureTeamCompetitionClasificacion, hydrateEquipoDetalleRosterMatches, loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
+import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
 
 export function renderEquipoDetalleHeader(equipo, competitionName = "") {
   const logoSrc = logoUrl(equipo?.idEntidadEquipo || "sinescudo");
@@ -24,7 +25,11 @@ export function renderEquipoSubview(state) {
     activeTab: state.teamFilters?.tab || "resumen",
     activeFilter: state.teamFilters?.matchFilter || "all",
     isLoading: state.loadingTeam,
-    showRoster: false,
+    isLoadingRoster: state.loadingRoster,
+    showRoster: true,
+    showStats: true,
+    teamStats: state.teamStats || null,
+    loadingStats: state.loadingStats || false,
   });
 }
 
@@ -38,11 +43,14 @@ export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, 
   state.selectedEquipo = equipo;
   state.teamCompetitionName = equipo?.nombreGrupo || equipoPayload?.NombreGrupo || equipoPayload?.nombreGrupo || state.teamCompetitionName || "";
   state.loadingTeam = true;
+  state.loadingRoster = true;
   state.teamMatches = [];
   state.teamFilters = {
     tab: "resumen",
     matchFilter: "all",
   };
+  state.teamStats = null;
+  state.loadingStats = false;
 
   if (!isInitialOpen) {
     state.parentView = previousView;
@@ -61,12 +69,29 @@ export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, 
     renderAll(state, headerEl, bodyEl);
   }
 
+  await ensureTeamCompetitionClasificacion(equipo);
   state.teamMatches = await loadEquipoDetalleMatches(equipo);
   state.loadingTeam = false;
   renderAll(state, headerEl, bodyEl);
+
+  hydrateEquipoDetalleRosterMatches(equipo, state.teamMatches)
+    .then(() => {
+      state.loadingRoster = false;
+      renderAll(state, headerEl, bodyEl);
+    })
+    .catch(() => {
+      state.loadingRoster = false;
+      renderAll(state, headerEl, bodyEl);
+    });
 }
 
 export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll, openMatchInSharedModal) {
+  if (bodyEl instanceof HTMLElement) {
+    unmountTeamStatsCharts(bodyEl);
+    if (state.teamFilters?.tab === "estadisticas" && state.teamStats && !state.loadingStats) {
+      requestAnimationFrame(() => mountTeamStatsCharts(bodyEl, state.teamStats));
+    }
+  }
   rootEl.querySelectorAll("[data-team-match]").forEach((node) => {
     node.onclick = async () => {
       let partido;
@@ -86,6 +111,20 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       if (!state.teamFilters) state.teamFilters = { tab: "resumen", matchFilter: "all" };
       state.teamFilters.tab = tab;
       renderAll(state, headerEl, bodyEl);
+      if (tab === "estadisticas" && !state.teamStats && !state.loadingStats) {
+        state.loadingStats = true;
+        renderAll(state, headerEl, bodyEl);
+        loadTeamAdvancedStats(state.selectedEquipo, state.teamMatches)
+          .then((stats) => {
+            state.teamStats = stats;
+            state.loadingStats = false;
+            renderAll(state, headerEl, bodyEl);
+          })
+          .catch(() => {
+            state.loadingStats = false;
+            renderAll(state, headerEl, bodyEl);
+          });
+      }
     };
   });
 

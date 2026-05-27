@@ -159,6 +159,7 @@ export function createDetalleState(idPartido) {
     selectedEquipo: null,
     teamMatches: [],
     loadingTeam: false,
+    loadingRoster: false,
     teamFilters: {
       tab: "resumen",
       matchFilter: "all",
@@ -264,8 +265,8 @@ export function normalizarEquipoClasificacion(equipo) {
     return 0;
   };
 
-  const idEquipo = equipo.IdEquipo ?? equipo.IdEquipoComp ?? equipo.idEquipo ?? equipo.idEquipoComp ?? null;
-  const idEquipoComp = equipo.IdEquipoComp ?? equipo.IdEquipo ?? equipo.idEquipoComp ?? equipo.idEquipo ?? null;
+  const idEquipo = equipo.IdEquipo ?? equipo.idEquipo ?? null;
+  const idEquipoComp = equipo.IdEquipoComp ?? equipo.idEquipoComp ?? null;
   const goalDifference = pickNumber(equipo.DiferenciaGoles, equipo.diferenciaGoles);
 
   return {

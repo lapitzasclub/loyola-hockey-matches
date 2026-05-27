@@ -1,8 +1,15 @@
-import { getCalendarioLoyola } from "../services.js";
+import { getCalendarioLoyola, getClasificacionLiga } from "../services.js";
 import { t } from "../i18n.js";
-import { comparePartidosByScheduledDate, extractPartidos } from "../utils/helpers.js";
+import { comparePartidosByScheduledDate, decodeApiRaw, extractPartidos } from "../utils/helpers.js";
 import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml } from "../utils/partidosHelpers.js";
 import { escapeHtml, formatHora, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
+import { buildRosterFromMatches, renderEquipoDetalleRoster } from "./equipoDetalleRoster.js";
+import { renderTeamStatsView } from "./equipoDetalleStats.js";
+import { renderPillTabs } from "./uiTabs.js";
+import { hydrateMatchesWithHubLineups } from "./equipoDetalleLineupsHub.js";
+import { groupClasificacionData } from "../utils/clasificacionHelpers.js";
+
+const TEAM_SUMMARY_DEBUG = false;
 
 export async function loadEquipoDetalleMatches(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
@@ -12,71 +19,128 @@ export async function loadEquipoDetalleMatches(equipo) {
   return Array.isArray(partidos) ? partidos.slice().sort(comparePartidosByScheduledDate) : [];
 }
 
+export async function hydrateEquipoDetalleRosterMatches(equipo, partidos) {
+  const normalized = normalizarEquipoClasificacion(equipo);
+  if (!normalized || !Array.isArray(partidos) || !partidos.length) return partidos || [];
+  await hydrateMatchesWithHubLineups(partidos, normalized.modalidad || "hp", 12);
+  return partidos;
+}
+
+export async function ensureTeamCompetitionClasificacion(equipo) {
+  const normalized = normalizarEquipoClasificacion(equipo);
+  if (!normalized?.idCompeticion) return [];
+
+  const current = Array.isArray(globalThis.window?._clasificacionLoyola) ? globalThis.window._clasificacionLoyola : [];
+  const hasCompetitionLoaded = current.some((row) => String(row?.IdCompeticion || "") === String(normalized.idCompeticion));
+  if (hasCompetitionLoaded) {
+    return current;
+  }
+
+  try {
+    const raw = await getClasificacionLiga(normalized.idCompeticion);
+    const parsed = decodeApiRaw(raw);
+    const data = Array.isArray(parsed) ? parsed : [];
+    globalThis.window._clasificacionLoyola = data;
+    return data;
+  } catch {
+    return current;
+  }
+}
+
+function normalizeTextKey(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function getClasificacionMatch(equipo) {
+  const normalized = normalizarEquipoClasificacion(equipo);
+  const clasData = Array.isArray(globalThis.window?._clasificacionLoyola) ? globalThis.window._clasificacionLoyola : [];
+  if (!normalized || !clasData.length) return null;
+
+  const candidateIds = new Set([normalized.idEquipoComp, normalized.idEquipo].filter(Boolean).map(String));
+  const competitionId = String(normalized.idCompeticion || "");
+  const targetName = normalizeTextKey(normalized.nombreEquipo);
+  const targetGroup = normalizeTextKey(normalized.nombreGrupo);
+
+  const sameCompetitionRows = clasData.filter((row) => !competitionId || String(row?.IdCompeticion || "") === competitionId);
+
+  const byIds = sameCompetitionRows.find((row) => {
+    const rowIds = [row?.IdEquipoComp, row?.IdEquipo].filter(Boolean).map(String);
+    return rowIds.some((id) => candidateIds.has(id));
+  });
+  if (byIds) return byIds;
+
+  const byNameAndGroup = sameCompetitionRows.find((row) => {
+    const rowName = normalizeTextKey(row?.NombreEquipo || row?.Eq || row?.Equipo);
+    const rowGroup = normalizeTextKey(row?.NombreGrupo || row?.DenoComp);
+    return rowName && rowName === targetName && (!targetGroup || rowGroup === targetGroup);
+  });
+  if (byNameAndGroup) return byNameAndGroup;
+
+  return sameCompetitionRows.find((row) => {
+    const rowName = normalizeTextKey(row?.NombreEquipo || row?.Eq || row?.Equipo);
+    return rowName && rowName === targetName;
+  }) || null;
+}
+
+function debugTeamSummary(equipo, aggregate, positions) {
+  if (!TEAM_SUMMARY_DEBUG) return;
+  const normalized = normalizarEquipoClasificacion(equipo);
+  const clasData = Array.isArray(globalThis.window?._clasificacionLoyola) ? globalThis.window._clasificacionLoyola : [];
+  const competitionRows = clasData.filter((row) => String(row?.IdCompeticion || "") === String(normalized?.idCompeticion || ""));
+  const match = getClasificacionMatch(equipo);
+  const previewRows = competitionRows.slice(0, 12).map((row) => ({
+    idEquipo: row?.IdEquipo ?? null,
+    idEquipoComp: row?.IdEquipoComp ?? null,
+    nombre: row?.NombreEquipo || row?.Eq || row?.Equipo || "",
+    grupo: row?.NombreGrupo || row?.DenoComp || "",
+    posicion: row?.Posicion ?? null,
+    pj: row?.PartidosJugados ?? null,
+    pg: row?.PartidosGanados ?? null,
+    pe: row?.PartidosEmpatados ?? null,
+    pp: row?.PartidosPerdidos ?? null,
+  }));
+  console.log(`[team-summary] equipo=${JSON.stringify({
+    idCompeticion: normalized?.idCompeticion ?? null,
+    idEquipo: normalized?.idEquipo ?? null,
+    idEquipoComp: normalized?.idEquipoComp ?? null,
+    nombreEquipo: normalized?.nombreEquipo ?? "",
+    nombreGrupo: normalized?.nombreGrupo ?? "",
+  })} match=${JSON.stringify(match ? {
+    idEquipo: match?.IdEquipo ?? null,
+    idEquipoComp: match?.IdEquipoComp ?? null,
+    nombre: match?.NombreEquipo || match?.Eq || match?.Equipo || "",
+    grupo: match?.NombreGrupo || match?.DenoComp || "",
+    posicion: match?.Posicion ?? null,
+    pj: match?.PartidosJugados ?? null,
+    pg: match?.PartidosGanados ?? null,
+    pe: match?.PartidosEmpatados ?? null,
+    pp: match?.PartidosPerdidos ?? null,
+  } : null)} aggregate=${JSON.stringify(aggregate)} positions=${JSON.stringify(positions)} rows=${JSON.stringify(previewRows)}`);
+}
+
 export function computeTeamAggregateStats(equipo, partidos) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized) return null;
 
-  const teamIds = new Set([normalized.idEquipo, normalized.idEquipoComp].filter(Boolean).map(String));
-  const stats = {
-    puntos: normalized.puntos,
-    partidosJugados: normalized.partidosJugados,
-    partidosGanados: normalized.partidosGanados,
-    partidosEmpatados: normalized.partidosEmpatados,
-    partidosPerdidos: normalized.partidosPerdidos,
-    golesAFavor: normalized.golesAFavor,
-    golesEnContra: normalized.golesEnContra,
-    diferenciaGoles: normalized.diferenciaGoles,
+  const clasMatch = getClasificacionMatch(equipo);
+  const source = clasMatch || equipo;
+  const resolved = normalizarEquipoClasificacion(source);
+
+  return {
+    puntos: resolved?.puntos ?? 0,
+    partidosJugados: resolved?.partidosJugados ?? 0,
+    partidosGanados: resolved?.partidosGanados ?? 0,
+    partidosEmpatados: resolved?.partidosEmpatados ?? 0,
+    partidosPerdidos: resolved?.partidosPerdidos ?? 0,
+    golesAFavor: resolved?.golesAFavor ?? 0,
+    golesEnContra: resolved?.golesEnContra ?? 0,
+    diferenciaGoles: resolved?.diferenciaGoles ?? 0,
   };
-
-  const hasExistingStats = [
-    stats.puntos,
-    stats.partidosJugados,
-    stats.partidosGanados,
-    stats.partidosEmpatados,
-    stats.partidosPerdidos,
-    stats.golesAFavor,
-    stats.golesEnContra,
-  ].some((value) => Number(value) !== 0);
-
-  if (hasExistingStats || !Array.isArray(partidos) || !partidos.length) return stats;
-
-  const computed = {
-    puntos: 0,
-    partidosJugados: 0,
-    partidosGanados: 0,
-    partidosEmpatados: 0,
-    partidosPerdidos: 0,
-    golesAFavor: 0,
-    golesEnContra: 0,
-    diferenciaGoles: 0,
-  };
-
-  for (const partido of partidos) {
-    if (partido?.EstadoPartido != 2 || partido?.GolesLocal == null || partido?.GolesVisit == null) continue;
-    const isLocal = teamIds.has(String(partido?.IdEquipoLocal || ""));
-    const isVisit = teamIds.has(String(partido?.IdEquipoVisit || ""));
-    if (!isLocal && !isVisit) continue;
-
-    const gf = Number(isLocal ? partido.GolesLocal : partido.GolesVisit) || 0;
-    const gc = Number(isLocal ? partido.GolesVisit : partido.GolesLocal) || 0;
-
-    computed.partidosJugados += 1;
-    computed.golesAFavor += gf;
-    computed.golesEnContra += gc;
-
-    if (gf > gc) {
-      computed.partidosGanados += 1;
-      computed.puntos += 3;
-    } else if (gf === gc) {
-      computed.partidosEmpatados += 1;
-      computed.puntos += 1;
-    } else {
-      computed.partidosPerdidos += 1;
-    }
-  }
-
-  computed.diferenciaGoles = computed.golesAFavor - computed.golesEnContra;
-  return computed;
 }
 
 function isPlayedMatch(partido) {
@@ -137,25 +201,24 @@ function getTeamDetailTabs(options = {}) {
   if (options?.showRoster) {
     tabs.push(["plantilla", t("team_detail_tab_roster")]);
   }
+  if (options?.showStats) {
+    tabs.push(["estadisticas", t("team_detail_tab_stats")]);
+  }
 
   return tabs;
 }
 
 function renderTeamDetailTabs(activeTab = "resumen", options = {}) {
   const tabs = getTeamDetailTabs(options);
-
-  return `
-    <div class="team-detail-tabs" role="tablist" aria-label="${escapeHtml(t("team_detail_title"))}">
-      ${tabs.map(([key, label]) => `
-        <button
-          type="button"
-          class="team-detail-tab-btn${activeTab === key ? " is-active" : ""}"
-          data-team-tab="${escapeHtml(key)}"
-          aria-selected="${activeTab === key ? "true" : "false"}"
-        >${escapeHtml(label)}</button>
-      `).join("")}
-    </div>
-  `;
+  return renderPillTabs({
+    className: `team-detail-tabs ui-pill-tabs ${tabs.length > 3 ? "ui-pill-tabs-2col" : "ui-pill-tabs-3col"}`,
+    buttonClassName: "team-detail-tab-btn tab-btn ui-pill-tab-btn",
+    activeClassName: "active",
+    dataAttr: "team-tab",
+    ariaLabel: t("team_detail_title"),
+    activeTab,
+    tabs,
+  });
 }
 
 function renderFilterIcon() {
@@ -182,7 +245,9 @@ function renderClearFilterIcon() {
 
 function getSummaryCards(aggregate, partidos = []) {
   const pendingCount = Array.isArray(partidos) ? partidos.filter((partido) => !isPlayedMatch(partido)).length : 0;
-  const goalDiffText = aggregate.diferenciaGoles > 0 ? `+${aggregate.diferenciaGoles}` : String(aggregate.diferenciaGoles);
+  if (!aggregate) return [
+    { key: "pending", label: t("team_detail_filter_pending"), value: pendingCount, filter: "pending" },
+  ];
 
   return [
     { key: "played", label: t("team_detail_played"), value: aggregate.partidosJugados, filter: "played" },
@@ -190,11 +255,33 @@ function getSummaryCards(aggregate, partidos = []) {
     { key: "drawn", label: t("team_detail_drawn"), value: aggregate.partidosEmpatados, filter: "drawn" },
     { key: "lost", label: t("team_detail_lost"), value: aggregate.partidosPerdidos, filter: "lost" },
     { key: "pending", label: t("team_detail_filter_pending"), value: pendingCount, filter: "pending" },
-    { key: "points", label: t("team_detail_points"), value: aggregate.puntos, filter: null },
-    { key: "goals_for", label: t("team_detail_goals_for"), value: aggregate.golesAFavor, filter: null },
-    { key: "goals_against", label: t("team_detail_goals_against"), value: aggregate.golesEnContra, filter: null },
-    { key: "goal_difference", label: t("team_detail_goal_difference"), value: goalDiffText, filter: null },
   ];
+}
+
+function getTeamPositions(equipo) {
+  const normalized = normalizarEquipoClasificacion(equipo);
+  const clasData = Array.isArray(globalThis.window?._clasificacionLoyola) ? globalThis.window._clasificacionLoyola : [];
+  if (!normalized || !clasData.length) return [];
+
+  const competitionRows = clasData.filter((row) => String(row?.IdCompeticion || "") === String(normalized.idCompeticion || ""));
+  const grouped = groupClasificacionData(competitionRows);
+  const targetName = normalizeTextKey(normalized.nombreEquipo);
+  const targetIds = new Set([normalized.idEquipoComp, normalized.idEquipo].filter(Boolean).map(String));
+
+  return Object.entries(grouped).map(([groupName, equipos]) => {
+    const match = equipos.find((row) => {
+      const rowIds = [row?.IdEquipoComp, row?.IdEquipo].filter(Boolean).map(String);
+      if (rowIds.some((id) => targetIds.has(id))) return true;
+      const rowName = normalizeTextKey(row?.NombreEquipo || row?.Eq || row?.Equipo);
+      return rowName && rowName === targetName;
+    });
+    return {
+      name: groupName,
+      position: match?.Posicion != null ? Number(match.Posicion) : null,
+      totalTeams: Array.isArray(equipos) ? equipos.length : 0,
+      current: normalizeTextKey(groupName) === normalizeTextKey(normalized.nombreGrupo),
+    };
+  }).filter((item) => item.position != null);
 }
 
 export function renderEquipoDetalleSummary(equipo, partidos = [], activeFilter = "all") {
@@ -202,13 +289,23 @@ export function renderEquipoDetalleSummary(equipo, partidos = [], activeFilter =
   if (!normalized) return "";
 
   const aggregate = computeTeamAggregateStats(normalized, partidos);
-  if (!aggregate) return "";
-
+  const positions = getTeamPositions(normalized);
+  debugTeamSummary(normalized, aggregate, positions);
   const cards = getSummaryCards(aggregate, partidos);
 
   return `
     <section class="team-detail-section">
       <div class="team-detail-section-title">${escapeHtml(t("team_detail_summary"))}</div>
+      ${positions.length ? `
+        <div class="team-position-list">
+          ${positions.map((item) => `
+            <article class="team-position-card${item.current ? " is-current" : ""}">
+              <div class="team-position-card-title">${escapeHtml(item.name)}</div>
+              <div class="team-position-card-value">${item.position != null ? `${escapeHtml(item.position)} / ${escapeHtml(item.totalTeams || "-")}` : `- / ${escapeHtml(item.totalTeams || "-")}`}</div>
+            </article>
+          `).join("")}
+        </div>
+      ` : ""}
       <div class="team-detail-summary-grid team-detail-summary-grid-mobile">
         <button
           type="button"
@@ -320,18 +417,47 @@ export function renderEquipoDetalleMatches(partidos, equipoNombre, activeFilter 
   `;
 }
 
-function renderEquipoDetallePlaceholder(title, message) {
+function renderRosterSkeletonBlock(title, rows = 3) {
   return `
-    <section class="team-detail-section">
-      <div class="team-detail-section-title">${escapeHtml(title)}</div>
-      <div class="team-detail-empty">${escapeHtml(message)}</div>
+    <section class="team-detail-section team-roster-block">
+      <div class="team-detail-section-head">
+        <div class="team-detail-section-title">${escapeHtml(title)}</div>
+        <span class="partido-detalle-skeleton team-roster-block-count-skeleton"></span>
+      </div>
+      <div class="team-roster-list">
+        ${Array.from({ length: rows }).map(() => `
+          <article class="team-roster-item team-roster-item-skeleton">
+            <div class="team-roster-item-main">
+              <span class="partido-detalle-skeleton team-roster-skeleton-marker"></span>
+              <div class="team-roster-item-info team-roster-item-info-skeleton">
+                <span class="partido-detalle-skeleton skeleton-line team-roster-skeleton-name"></span>
+                <span class="partido-detalle-skeleton skeleton-line team-roster-skeleton-meta"></span>
+              </div>
+              <span class="partido-detalle-skeleton team-roster-skeleton-action"></span>
+            </div>
+          </article>
+        `).join("")}
+      </div>
     </section>
   `;
 }
 
+
+function renderRosterSkeleton() {
+  return `
+    <div class="team-roster-view">
+      <div class="team-detail-inline-note">${escapeHtml(t("team_detail_roster_loading"))}</div>
+      ${renderRosterSkeletonBlock(t("detail_players"), 4)}
+      ${renderRosterSkeletonBlock(t("detail_goalkeepers"), 2)}
+      ${renderRosterSkeletonBlock(t("detail_staff"), 2)}
+    </div>
+  `;
+}
+
 export function renderEquipoDetalleView(equipo, partidos = [], options = {}) {
-  const { activeTab = "resumen", activeFilter = "all", isLoading = false, showRoster = false } = options;
+  const { activeTab = "resumen", activeFilter = "all", isLoading = false, isLoadingRoster = false, showRoster = false, showStats = false, teamStats = null, loadingStats = false } = options;
   const filteredMatches = filterTeamMatches(partidos, equipo, activeFilter);
+  const roster = showRoster ? buildRosterFromMatches(partidos, equipo) : null;
 
   let content = "";
   if (activeTab === "resumen") {
@@ -341,12 +467,14 @@ export function renderEquipoDetalleView(equipo, partidos = [], options = {}) {
       ? `<div class="team-detail-loading">${escapeHtml(t("team_detail_loading"))}</div>`
       : renderEquipoDetalleMatches(filteredMatches, equipo?.nombreEquipo || "", activeFilter);
   } else if (activeTab === "plantilla") {
-    content = renderEquipoDetallePlaceholder(t("team_detail_tab_roster"), t("team_detail_roster_unavailable"));
+    content = isLoadingRoster ? renderRosterSkeleton() : renderEquipoDetalleRoster(roster);
+  } else if (activeTab === "estadisticas") {
+    content = renderTeamStatsView(teamStats, { isLoading: loadingStats });
   }
 
   return `
     <div class="team-detail-view subview-enter">
-      ${renderTeamDetailTabs(activeTab, { showRoster })}
+      ${renderTeamDetailTabs(activeTab, { showRoster, showStats })}
       ${content}
     </div>
   `;

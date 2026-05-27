@@ -1,5 +1,7 @@
 import {
   Chart,
+  LineController,
+  BarController,
   CategoryScale,
   LinearScale,
   PointElement,
@@ -13,10 +15,11 @@ import { t } from "../i18n.js";
 import { comparePartidosByScheduledDate } from "../utils/helpers.js";
 import { emptyArray, escapeHtml, normalizarEquipoClasificacion, parseApiArrayResponse } from "./partidoDetalleUtils.js";
 
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Filler);
+Chart.register(LineController, BarController, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Filler);
 
 const TEAM_STATS_CACHE = new Map();
 const TEAM_CHARTS = new WeakMap();
+const TEAM_STATS_DEBUG = true;
 
 function isPlayedMatch(partido) {
   return partido?.EstadoPartido == 2 && partido?.GolesLocal != null && partido?.GolesVisit != null;
@@ -26,32 +29,56 @@ function pickStat(stats, type, side) {
   return stats.find((item) => item?.IdTipoEvento === type && Number(item?.LocalVisit) === side)?.Total ?? 0;
 }
 
-function collectTeamIds(equipo) {
+function collectTeamIdentity(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
-  if (!normalized) return new Set();
-  return new Set([
-    normalized.idEquipo,
-    normalized.idEquipoComp,
-    equipo?.IdEquipo,
-    equipo?.IdEquipoComp,
-    equipo?.idEquipo,
-    equipo?.idEquipoComp,
-  ].filter(Boolean).map(String));
+  if (!normalized) return { teamIds: new Set(), teamCompIds: new Set() };
+
+  return {
+    teamIds: new Set([
+      normalized.idEquipo,
+      equipo?.IdEquipo,
+      equipo?.idEquipo,
+    ].filter(Boolean).map(String)),
+    teamCompIds: new Set([
+      normalized.idEquipoComp,
+      equipo?.IdEquipoComp,
+      equipo?.idEquipoComp,
+    ].filter(Boolean).map(String)),
+  };
 }
 
-function getMatchTeamPerspective(partido, teamIds) {
-  if (!partido || !teamIds?.size) return null;
-  const localIds = [partido?.IdEquipoLocal, partido?.IdEquipoCompLocal].filter(Boolean).map(String);
-  const visitIds = [partido?.IdEquipoVisit, partido?.IdEquipoCompVisit].filter(Boolean).map(String);
-  const isLocal = localIds.some((id) => teamIds.has(id));
-  const isVisit = visitIds.some((id) => teamIds.has(id));
-  if (isLocal && !isVisit) return "local";
-  if (isVisit && !isLocal) return "visit";
+function getMatchTeamPerspective(partido, identity) {
+  if (!partido || !identity) return null;
+  const localTeamIds = [partido?.IdEquipoLocal].filter(Boolean).map(String);
+  const visitTeamIds = [partido?.IdEquipoVisit].filter(Boolean).map(String);
+  const localCompIds = [partido?.IdEquipoCompLocal].filter(Boolean).map(String);
+  const visitCompIds = [partido?.IdEquipoCompVisit].filter(Boolean).map(String);
+
+  const isLocalByTeam = localTeamIds.some((id) => identity.teamIds.has(id));
+  const isVisitByTeam = visitTeamIds.some((id) => identity.teamIds.has(id));
+  if (isLocalByTeam && !isVisitByTeam) return "local";
+  if (isVisitByTeam && !isLocalByTeam) return "visit";
+
+  const isLocalByComp = localCompIds.some((id) => identity.teamCompIds.has(id));
+  const isVisitByComp = visitCompIds.some((id) => identity.teamCompIds.has(id));
+  if (isLocalByComp && !isVisitByComp) return "local";
+  if (isVisitByComp && !isLocalByComp) return "visit";
+
+  return null;
+}
+
+function getFallbackPerspectiveFromNames(partido, equipo) {
+  const teamName = String(equipo?.nombreEquipo || equipo?.NombreEquipo || equipo?.Equipo || "").trim().toLowerCase();
+  if (!teamName) return null;
+  const localName = String(partido?.EquipoLocal || "").trim().toLowerCase();
+  const visitName = String(partido?.EquipoVisit || "").trim().toLowerCase();
+  if (localName && localName === teamName && visitName !== teamName) return "local";
+  if (visitName && visitName === teamName && localName !== teamName) return "visit";
   return null;
 }
 
 function getTeamSide(partido, equipo) {
-  const perspective = getMatchTeamPerspective(partido, collectTeamIds(equipo));
+  const perspective = getMatchTeamPerspective(partido, collectTeamIdentity(equipo)) || getFallbackPerspectiveFromNames(partido, equipo);
   if (perspective === "local") return 1;
   if (perspective === "visit") return 2;
   return null;
@@ -66,26 +93,67 @@ function getCacheKey(equipo, partidos) {
 function buildBaseStats(equipo, partidos = []) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized) return null;
-  const teamIds = collectTeamIds(equipo);
+  const identity = collectTeamIdentity(equipo);
   const played = [];
+
+  if (TEAM_STATS_DEBUG) {
+    console.groupCollapsed("[team-stats] buildBaseStats", normalized.nombreEquipo || "equipo");
+    console.log("normalized", normalized);
+    console.log("identity", {
+      teamIds: Array.from(identity.teamIds),
+      teamCompIds: Array.from(identity.teamCompIds),
+    });
+  }
   const home = { won: 0, drawn: 0, lost: 0 };
   const away = { won: 0, drawn: 0, lost: 0 };
   let gf = 0;
   let gc = 0;
 
   for (const partido of partidos) {
-    if (!isPlayedMatch(partido)) continue;
-    const perspective = getMatchTeamPerspective(partido, teamIds);
-    if (!perspective) continue;
+    if (partido?.EstadoPartido != 2) continue;
+    const perspectiveByIds = getMatchTeamPerspective(partido, identity);
+    const perspectiveByName = getFallbackPerspectiveFromNames(partido, normalized);
+    const perspective = perspectiveByIds || perspectiveByName;
+    if (!perspective) {
+      if (TEAM_STATS_DEBUG) {
+        console.warn("[team-stats] partido sin perspectiva", {
+          idPartido: partido?.IdPartido,
+          equipo: normalized.nombreEquipo,
+          local: partido?.EquipoLocal,
+          visit: partido?.EquipoVisit,
+          idEquipoLocal: partido?.IdEquipoLocal,
+          idEquipoVisit: partido?.IdEquipoVisit,
+          idEquipoCompLocal: partido?.IdEquipoCompLocal,
+          idEquipoCompVisit: partido?.IdEquipoCompVisit,
+        });
+      }
+      continue;
+    }
 
     const isLocal = perspective === "local";
-    const goalsFor = Number(isLocal ? partido.GolesLocal : partido.GolesVisit) || 0;
-    const goalsAgainst = Number(isLocal ? partido.GolesVisit : partido.GolesLocal) || 0;
-    const result = goalsFor > goalsAgainst ? "won" : goalsFor === goalsAgainst ? "drawn" : "lost";
+    const scoreFor = Number(isLocal ? partido.GolesLocal : partido.GolesVisit) || 0;
+    const scoreAgainst = Number(isLocal ? partido.GolesVisit : partido.GolesLocal) || 0;
+    const result = scoreFor > scoreAgainst ? "won" : scoreFor === scoreAgainst ? "drawn" : "lost";
 
-    gf += goalsFor;
-    gc += goalsAgainst;
-    played.push({ ...partido, result, goalsFor, goalsAgainst, isLocal, perspective });
+    if (TEAM_STATS_DEBUG) {
+      console.log("[team-stats] partido", {
+        idPartido: partido?.IdPartido,
+        jornada: partido?.NombreJornada,
+        local: partido?.EquipoLocal,
+        visit: partido?.EquipoVisit,
+        marcador: `${partido?.GolesLocal ?? "-"}-${partido?.GolesVisit ?? "-"}`,
+        perspectiveByIds,
+        perspectiveByName,
+        perspective,
+        result,
+        idEquipoLocal: partido?.IdEquipoLocal,
+        idEquipoVisit: partido?.IdEquipoVisit,
+        idEquipoCompLocal: partido?.IdEquipoCompLocal,
+        idEquipoCompVisit: partido?.IdEquipoCompVisit,
+      });
+    }
+
+    played.push({ ...partido, result, goalsFor: 0, goalsAgainst: 0, isLocal, perspective });
     (isLocal ? home : away)[result] += 1;
   }
 
@@ -95,7 +163,7 @@ function buildBaseStats(equipo, partidos = []) {
   const lostCount = played.filter((item) => item.result === "lost").length;
   const playedCount = played.length;
 
-  return {
+  const resultStats = {
     playedCount,
     wonCount,
     drawnCount,
@@ -117,15 +185,43 @@ function buildBaseStats(equipo, partidos = []) {
       rawLocalGoals: Number(item.GolesLocal) || 0,
       rawVisitGoals: Number(item.GolesVisit) || 0,
     })),
+    goalsForTotal: gf,
+    goalsAgainstTotal: gc,
+    goalDifference: gf - gc,
+    cleanSheets: 0,
+    scorelessMatches: 0,
+    scoringGames: 0,
     avgGoalsFor: playedCount ? (gf / playedCount) : 0,
     avgGoalsAgainst: playedCount ? (gc / playedCount) : 0,
     winRate: playedCount ? ((wonCount / playedCount) * 100) : 0,
+    venueAverages: {
+      home: { goalsFor: 0, goalsAgainst: 0, matches: home.won + home.drawn + home.lost },
+      away: { goalsFor: 0, goalsAgainst: 0, matches: away.won + away.drawn + away.lost },
+    },
     disciplineTotals: {
       fouls: 0,
       blueCards: 0,
       redCards: 0,
     },
   };
+
+  if (TEAM_STATS_DEBUG) {
+    const timelineDump = resultStats.timeline.map((item) => ({
+      index: item.index,
+      idPartido: item.idPartido,
+      opponent: item.opponent,
+      venue: item.venue,
+      goalsFor: item.goalsFor,
+      goalsAgainst: item.goalsAgainst,
+      rawLocalGoals: item.rawLocalGoals,
+      rawVisitGoals: item.rawVisitGoals,
+    }));
+    console.log("[team-stats] timeline", timelineDump);
+    console.log("[team-stats] last8", timelineDump.slice(-8));
+    console.groupEnd();
+  }
+
+  return resultStats;
 }
 
 export function computeTeamBaseStats(equipo, partidos = []) {
@@ -151,23 +247,99 @@ export async function loadTeamAdvancedStats(equipo, partidos = []) {
       const side = getTeamSide(partidosById.get(String(item.idPartido)), equipo);
       if (!side || !stats.length) return item;
 
+      const goalsFor = Number(pickStat(stats, "gol", side) || 0);
+      const goalsAgainst = Number(pickStat(stats, "gol", side === 1 ? 2 : 1) || 0);
       const fouls = Number(pickStat(stats, "falta", side) || pickStat(stats, "faltahl", side) || 0);
       const blueCards = Number(pickStat(stats, "tarjetaazul", side) || 0);
       const redCards = Number(pickStat(stats, "tarjetaroja", side) || 0);
-      return { ...item, fouls, blueCards, redCards };
+      const penaltiesFor = Number(pickStat(stats, "penalti", side) || 0);
+      const penaltiesAgainst = Number(pickStat(stats, "penalti", side === 1 ? 2 : 1) || 0);
+      const directFoulsFor = Number(pickStat(stats, "faltadirecta", side) || 0);
+      const directFoulsAgainst = Number(pickStat(stats, "faltadirecta", side === 1 ? 2 : 1) || 0);
+
+      if (TEAM_STATS_DEBUG) {
+        console.log(`[team-stats-real-goals] partido=${item.idPartido} side=${side} gf=${goalsFor} gc=${goalsAgainst} fouls=${fouls} blue=${blueCards} red=${redCards} penFor=${penaltiesFor} penAgainst=${penaltiesAgainst} fdFor=${directFoulsFor} fdAgainst=${directFoulsAgainst}`);
+      }
+
+      return { ...item, goalsFor, goalsAgainst, fouls, blueCards, redCards, penaltiesFor, penaltiesAgainst, directFoulsFor, directFoulsAgainst };
     } catch {
       return item;
     }
   }));
 
+  const totals = timeline.reduce((acc, item) => ({
+    goalsFor: acc.goalsFor + (Number(item.goalsFor) || 0),
+    goalsAgainst: acc.goalsAgainst + (Number(item.goalsAgainst) || 0),
+    fouls: acc.fouls + (Number(item.fouls) || 0),
+    blueCards: acc.blueCards + (Number(item.blueCards) || 0),
+    redCards: acc.redCards + (Number(item.redCards) || 0),
+    cleanSheets: acc.cleanSheets + ((Number(item.goalsAgainst) || 0) === 0 ? 1 : 0),
+    scorelessMatches: acc.scorelessMatches + ((Number(item.goalsFor) || 0) === 0 ? 1 : 0),
+    scoringGames: acc.scoringGames + ((Number(item.goalsFor) || 0) > 0 ? 1 : 0),
+    homeGoalsFor: acc.homeGoalsFor + (item.venue === "home" ? (Number(item.goalsFor) || 0) : 0),
+    homeGoalsAgainst: acc.homeGoalsAgainst + (item.venue === "home" ? (Number(item.goalsAgainst) || 0) : 0),
+    awayGoalsFor: acc.awayGoalsFor + (item.venue === "away" ? (Number(item.goalsFor) || 0) : 0),
+    awayGoalsAgainst: acc.awayGoalsAgainst + (item.venue === "away" ? (Number(item.goalsAgainst) || 0) : 0),
+    penaltiesFor: acc.penaltiesFor + (Number(item.penaltiesFor) || 0),
+    penaltiesAgainst: acc.penaltiesAgainst + (Number(item.penaltiesAgainst) || 0),
+    directFoulsFor: acc.directFoulsFor + (Number(item.directFoulsFor) || 0),
+    directFoulsAgainst: acc.directFoulsAgainst + (Number(item.directFoulsAgainst) || 0),
+  }), {
+    goalsFor: 0,
+    goalsAgainst: 0,
+    fouls: 0,
+    blueCards: 0,
+    redCards: 0,
+    cleanSheets: 0,
+    scorelessMatches: 0,
+    scoringGames: 0,
+    homeGoalsFor: 0,
+    homeGoalsAgainst: 0,
+    awayGoalsFor: 0,
+    awayGoalsAgainst: 0,
+    penaltiesFor: 0,
+    penaltiesAgainst: 0,
+    directFoulsFor: 0,
+    directFoulsAgainst: 0,
+  });
+
+  const playedCount = timeline.length;
+  const homeMatches = timeline.filter((item) => item.venue === "home").length;
+  const awayMatches = timeline.filter((item) => item.venue === "away").length;
   const enriched = {
     ...base,
     timeline,
-    disciplineTotals: timeline.reduce((acc, item) => ({
-      fouls: acc.fouls + (Number(item.fouls) || 0),
-      blueCards: acc.blueCards + (Number(item.blueCards) || 0),
-      redCards: acc.redCards + (Number(item.redCards) || 0),
-    }), { fouls: 0, blueCards: 0, redCards: 0 }),
+    goalsForTotal: totals.goalsFor,
+    goalsAgainstTotal: totals.goalsAgainst,
+    goalDifference: totals.goalsFor - totals.goalsAgainst,
+    cleanSheets: totals.cleanSheets,
+    scorelessMatches: totals.scorelessMatches,
+    scoringGames: totals.scoringGames,
+    avgGoalsFor: playedCount ? (totals.goalsFor / playedCount) : 0,
+    avgGoalsAgainst: playedCount ? (totals.goalsAgainst / playedCount) : 0,
+    venueAverages: {
+      home: {
+        goalsFor: homeMatches ? (totals.homeGoalsFor / homeMatches) : 0,
+        goalsAgainst: homeMatches ? (totals.homeGoalsAgainst / homeMatches) : 0,
+        matches: homeMatches,
+      },
+      away: {
+        goalsFor: awayMatches ? (totals.awayGoalsFor / awayMatches) : 0,
+        goalsAgainst: awayMatches ? (totals.awayGoalsAgainst / awayMatches) : 0,
+        matches: awayMatches,
+      },
+    },
+    setPieces: {
+      penaltiesFor: totals.penaltiesFor,
+      penaltiesAgainst: totals.penaltiesAgainst,
+      directFoulsFor: totals.directFoulsFor,
+      directFoulsAgainst: totals.directFoulsAgainst,
+    },
+    disciplineTotals: {
+      fouls: totals.fouls,
+      blueCards: totals.blueCards,
+      redCards: totals.redCards,
+    },
   };
 
   TEAM_STATS_CACHE.set(cacheKey, enriched);
@@ -280,6 +452,16 @@ function buildGoalsChart(root, mount, stats) {
   const maxY = Math.max(1, ...goalsFor, ...goalsAgainst) + 1;
   const colors = chartPalette();
 
+  if (TEAM_STATS_DEBUG) {
+    const teamName = root?.querySelector?.('.team-detail-modal-title')?.textContent?.trim() || "equipo";
+    const trace = items.map((item, idx) => {
+      const label = labels[idx];
+      const venue = item.venue === "home" ? "H" : "A";
+      return `${label}:${venue}:${item.opponent}:${item.rawLocalGoals}-${item.rawVisitGoals}:GF${item.goalsFor}:GC${item.goalsAgainst}`;
+    }).join(" | ");
+    console.log(`[team-stats-goals] ${teamName} || GF=[${goalsFor.join(",")}] || GC=[${goalsAgainst.join(",")}] || ${trace}`);
+  }
+
   return createBaseChart(canvas, {
     data: {
       labels,
@@ -329,6 +511,79 @@ function buildGoalsChart(root, mount, stats) {
           const item = items[idx];
           if (!item) return "";
           return `Marcador real: ${item.rawLocalGoals}-${item.rawVisitGoals}`;
+        },
+      },
+    },
+  });
+}
+
+function buildVenueComparisonChart(root, mount, stats) {
+  if (!mount || !stats?.venueAverages) return null;
+  const canvas = ensureCanvas(mount);
+  if (!canvas) return null;
+
+  const colors = chartPalette();
+  return new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: [t("team_detail_stats_home"), t("team_detail_stats_away")],
+      datasets: [
+        {
+          label: t("team_detail_goals_for"),
+          data: [stats.venueAverages.home.goalsFor, stats.venueAverages.away.goalsFor],
+          backgroundColor: colors.greenSoft,
+          borderColor: colors.green,
+          borderWidth: 2,
+          borderRadius: 999,
+          borderSkipped: false,
+          maxBarThickness: 26,
+        },
+        {
+          label: t("team_detail_goals_against"),
+          data: [stats.venueAverages.home.goalsAgainst, stats.venueAverages.away.goalsAgainst],
+          backgroundColor: colors.redSoft,
+          borderColor: colors.red,
+          borderWidth: 2,
+          borderRadius: 999,
+          borderSkipped: false,
+          maxBarThickness: 26,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "rgba(23, 27, 35, 0.92)",
+          padding: 10,
+          cornerRadius: 12,
+          titleColor: "#ffffff",
+          bodyColor: "rgba(255,255,255,0.92)",
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false, drawBorder: false },
+          border: { display: false },
+          ticks: {
+            color: colors.muted,
+            font: { size: 11, weight: 700 },
+          },
+        },
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: colors.grid,
+            drawBorder: false,
+          },
+          border: { display: false },
+          ticks: {
+            color: colors.muted,
+            font: { size: 11, weight: 700 },
+          },
         },
       },
     },
@@ -421,6 +676,8 @@ function buildDisciplineSummary(mount, stats) {
       <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-fouls"></span>${escapeHtml(t("detail_fouls"))}: <strong>${escapeHtml(stats.disciplineTotals.fouls)}</strong></span>
       <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-blue"></span>${escapeHtml(t("detail_blue_cards"))}: <strong>${escapeHtml(stats.disciplineTotals.blueCards)}</strong></span>
       <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-red"></span>${escapeHtml(t("detail_red_cards"))}: <strong>${escapeHtml(stats.disciplineTotals.redCards)}</strong></span>
+      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-penalty"></span>${escapeHtml(t("team_detail_stats_penalties"))}: <strong>${escapeHtml(stats.setPieces.penaltiesFor)}</strong></span>
+      <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-direct"></span>${escapeHtml(t("team_detail_stats_direct_fouls"))}: <strong>${escapeHtml(stats.setPieces.directFoulsFor)}</strong></span>
     </div>
   `);
 }
@@ -450,6 +707,7 @@ export function mountTeamStatsCharts(root, stats) {
   const charts = [];
   const goalsMount = root.querySelector('[data-team-chart="goals"]');
   const disciplineMount = root.querySelector('[data-team-chart="discipline"]');
+  const venueMount = root.querySelector('[data-team-chart="venue-comparison"]');
   const resultsMount = root.querySelector('[data-team-chart="results"]');
 
   if (goalsMount instanceof HTMLElement) {
@@ -462,6 +720,11 @@ export function mountTeamStatsCharts(root, stats) {
     const chart = buildDisciplineChart(root, disciplineMount, stats);
     if (chart) charts.push(chart);
     buildDisciplineSummary(disciplineMount, stats);
+  }
+  if (venueMount instanceof HTMLElement) {
+    venueMount.innerHTML = "";
+    const chart = buildVenueComparisonChart(root, venueMount, stats);
+    if (chart) charts.push(chart);
   }
   if (resultsMount instanceof HTMLElement) {
     buildResultsBars(resultsMount, stats);
@@ -495,11 +758,16 @@ export function renderTeamStatsView(stats, options = {}) {
     `;
   }
 
+  const goalDiffText = stats.goalDifference > 0 ? `+${stats.goalDifference}` : String(stats.goalDifference);
   const cards = [
+    [t("team_detail_goals_for"), stats.goalsForTotal],
+    [t("team_detail_goals_against"), stats.goalsAgainstTotal],
+    [t("team_detail_goal_difference"), goalDiffText],
     [t("team_detail_stats_avg_for"), stats.avgGoalsFor.toFixed(2)],
     [t("team_detail_stats_avg_against"), stats.avgGoalsAgainst.toFixed(2)],
     [t("team_detail_stats_win_rate"), `${stats.winRate.toFixed(0)}%`],
-    [t("team_detail_played"), stats.playedCount],
+    [t("team_detail_stats_clean_sheets"), stats.cleanSheets],
+    [t("team_detail_stats_scoreless"), stats.scorelessMatches],
     [t("detail_fouls"), stats.disciplineTotals.fouls],
     [t("detail_blue_cards"), stats.disciplineTotals.blueCards],
     [t("detail_red_cards"), stats.disciplineTotals.redCards],
@@ -552,6 +820,16 @@ export function renderTeamStatsView(stats, options = {}) {
         <div class="team-detail-section-title">${escapeHtml(t("team_detail_stats_discipline_chart"))}</div>
         <div class="team-chart-card">
           <div class="team-chart-mount" data-team-chart="discipline"></div>
+        </div>
+      </section>
+      <section class="team-detail-section">
+        <div class="team-detail-section-title">${escapeHtml(t("team_detail_stats_home_away_chart"))}</div>
+        <div class="team-chart-card">
+          <div class="team-chart-mount" data-team-chart="venue-comparison"></div>
+          <div class="team-chart-legend team-chart-legend-goals">
+            <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-for"></span>${escapeHtml(t("team_detail_goals_for"))}</span>
+            <span class="team-chart-legend-item"><span class="team-chart-legend-swatch team-chart-legend-swatch-against"></span>${escapeHtml(t("team_detail_goals_against"))}</span>
+          </div>
         </div>
       </section>
       <section class="team-detail-section">

@@ -199,6 +199,38 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.team-position-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 0.95rem;
+}
+
+.team-position-card {
+  padding: 0.9rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-soft) 88%, transparent);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, var(--color-surface-elevated) 0%, var(--color-surface-elevated-soft) 100%);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--color-shadow) 5%, transparent);
+}
+
+.team-position-card.is-current {
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border-soft));
+}
+
+.team-position-card-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.team-position-card-value {
+  margin-top: 0.3rem;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--color-text);
+}
+
 .team-detail-summary-card {
   position: relative;
   min-height: 5.5rem;
@@ -720,6 +752,14 @@ body[data-theme="dark"] .team-roster-item-action {
 
 .team-chart-legend-swatch-red {
   background: #dc2626;
+}
+
+.team-chart-legend-swatch-penalty {
+  background: #ea580c;
+}
+
+.team-chart-legend-swatch-direct {
+  background: #7c3aed;
 }
 
 .team-chart-legend-discipline {
