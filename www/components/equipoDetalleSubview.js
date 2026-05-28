@@ -217,9 +217,8 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
         if (!state.teamFilters) state.teamFilters = { tab: 'resumen', matchFilter: 'all' };
         state.teamFilters.matchFilter = filter;
         state.teamFilters.tab = 'partidos';
-        const contentEl = rootEl.querySelector('[data-team-tab-content]') || bodyEl.querySelector('[data-team-tab-content]');
         animatePillTabSelection(rootEl, '[data-team-tab]', 'partidos', 'team-tab', 'active');
-        animateTabContentSwap(contentEl, () => renderTeamContentOnly());
+        renderTeamContentOnly();
       };
     });
   };
