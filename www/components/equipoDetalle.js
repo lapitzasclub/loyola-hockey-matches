@@ -56,7 +56,7 @@ function normalizeTextKey(value) {
     .toLowerCase();
 }
 
-function getClasificacionMatch(equipo) {
+export function getClasificacionMatch(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
   const clasData = Array.isArray(globalThis.window?._clasificacionLoyola) ? globalThis.window._clasificacionLoyola : [];
   if (!normalized || !clasData.length) return null;

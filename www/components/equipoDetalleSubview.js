@@ -1,6 +1,6 @@
 import { nextFrame, syncMobileBackState, transitionDetalleView } from "./partidoDetalleNavigation.js";
 import { getCurrentView, logoUrl, normalizarEquipoClasificacion, pushView, setCurrentView } from "./partidoDetalleUtils.js";
-import { ensureTeamCompetitionClasificacion, hydrateEquipoDetalleRosterMatches, loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
+import { ensureTeamCompetitionClasificacion, getClasificacionMatch, hydrateEquipoDetalleRosterMatches, loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
 
 export function renderEquipoDetalleHeader(equipo, competitionName = "") {
@@ -34,8 +34,18 @@ export function renderEquipoSubview(state) {
 }
 
 export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, renderAll) {
-  const equipo = normalizarEquipoClasificacion(equipoPayload);
+  let equipo = normalizarEquipoClasificacion(equipoPayload);
   if (!equipo) return;
+
+  await ensureTeamCompetitionClasificacion(equipo);
+  const clasMatch = getClasificacionMatch(equipoPayload) || getClasificacionMatch(equipo);
+  if (clasMatch) {
+    equipo = {
+      ...equipo,
+      ...normalizarEquipoClasificacion(clasMatch),
+      nombreGrupo: equipo.nombreGrupo || clasMatch.NombreGrupo || clasMatch.DenoComp || "",
+    };
+  }
 
   const previousView = getCurrentView(state);
   const isInitialOpen = previousView === "equipo" && !state.teamMatches.length && state.loadingTeam;
@@ -69,7 +79,6 @@ export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, 
     renderAll(state, headerEl, bodyEl);
   }
 
-  await ensureTeamCompetitionClasificacion(equipo);
   state.teamMatches = await loadEquipoDetalleMatches(equipo);
   state.loadingTeam = false;
   renderAll(state, headerEl, bodyEl);
