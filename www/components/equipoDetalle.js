@@ -13,10 +13,28 @@ const TEAM_SUMMARY_DEBUG = false;
 
 export async function loadEquipoDetalleMatches(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
-  if (!normalized?.idEquipoComp || !normalized?.idCompeticion) return [];
-  const raw = await getCalendarioLoyola(normalized.idEquipoComp, normalized.idCompeticion);
-  const { partidos } = extractPartidos(raw);
-  return Array.isArray(partidos) ? partidos.slice().sort(comparePartidosByScheduledDate) : [];
+  if (!normalized?.idCompeticion) return [];
+
+  const candidateTeamCompIds = [
+    normalized.idEquipoComp,
+    normalized.idEquipo,
+    equipo?.IdEquipoComp,
+    equipo?.idEquipoComp,
+    equipo?.IdEquipo,
+    equipo?.idEquipo,
+  ].filter(Boolean).map(String);
+
+  for (const teamCompId of candidateTeamCompIds) {
+    try {
+      const raw = await getCalendarioLoyola(teamCompId, normalized.idCompeticion);
+      const { partidos } = extractPartidos(raw);
+      if (Array.isArray(partidos) && partidos.length) {
+        return partidos.slice().sort(comparePartidosByScheduledDate);
+      }
+    } catch {}
+  }
+
+  return [];
 }
 
 export async function hydrateEquipoDetalleRosterMatches(equipo, partidos) {

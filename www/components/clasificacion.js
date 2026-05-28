@@ -64,11 +64,11 @@ function getEntityLogoUrl(entityId) {
  * @returns {string} Identificador utilizable o cadena vacía.
  */
 function getStableTeamId(equipo) {
-  if (typeof equipo?.IdEquipoComp === "number" || (typeof equipo?.IdEquipoComp === "string" && equipo.IdEquipoComp !== "")) {
-    return String(equipo.IdEquipoComp);
-  }
   if (typeof equipo?.IdEquipo === "number" || (typeof equipo?.IdEquipo === "string" && equipo.IdEquipo !== "")) {
     return String(equipo.IdEquipo);
+  }
+  if (typeof equipo?.IdEquipoComp === "number" || (typeof equipo?.IdEquipoComp === "string" && equipo.IdEquipoComp !== "")) {
+    return String(equipo.IdEquipoComp);
   }
   return "";
 }
