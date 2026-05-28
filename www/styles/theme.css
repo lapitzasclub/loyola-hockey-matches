@@ -110,8 +110,8 @@
     --color-text-soft: hsl(220 8% 58%);
     --color-text-contrast: hsl(0 0% 100%);
     --color-bg: hsl(0 0% 8%);
-    --color-bg-card: hsl(220 10% 12%);
-    --color-bg-card-soft: hsl(220 8% 15%);
+    --color-bg-card: hsl(0 0% 8%);
+    --color-bg-card-soft: hsl(0 0% 11%);
     --color-bg-header: hsl(0 0% 8%);
     --color-bg-header-alt: hsl(0 0% 6%);
     --color-text-header: var(--color-text-contrast);
@@ -277,8 +277,8 @@ body[data-theme="dark"] {
   --color-text-soft: hsl(220 8% 58%);
   --color-text-contrast: hsl(0 0% 100%);
   --color-bg: #151515;
-  --color-bg-card: hsl(0 0% 16.5%);
-  --color-bg-card-soft: hsl(0 0% 14.5%);
+  --color-bg-card: #151515;
+  --color-bg-card-soft: hsl(0 0% 11.5%);
   --color-text-header: var(--color-text-contrast);
   --color-bg-header: #151515;
   --color-bg-header-alt: #151515;

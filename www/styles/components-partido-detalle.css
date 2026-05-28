@@ -1356,15 +1356,16 @@ body[data-theme="dark"] .ui-pill-tabs {
 }
 
 body[data-theme="dark"] .tab-btn {
-  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-bg-card));
-  color: color-mix(in srgb, var(--color-text) 86%, var(--color-primary) 14%);
+  border-color: color-mix(in srgb, #ffffff 10%, transparent);
+  background: color-mix(in srgb, #ffffff 6%, var(--color-bg-card));
+  color: color-mix(in srgb, var(--color-text) 88%, #b9b0a6 12%);
 }
 
 body[data-theme="dark"] .tab-btn.active {
-  background: var(--color-active-surface, var(--color-primary));
-  color: var(--color-on-active-surface, #082028);
-  border-color: color-mix(in srgb, var(--color-active-surface, var(--color-primary)) 52%, white 18%);
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-active-surface, var(--color-primary)) 28%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 90%, white 10%) 0%, var(--color-primary-strong) 100%);
+  color: var(--color-text-contrast);
+  border-color: color-mix(in srgb, var(--color-primary) 52%, white 18%);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-primary) 28%, transparent);
 }
 
 .team-detail-tabs.ui-pill-tabs {
