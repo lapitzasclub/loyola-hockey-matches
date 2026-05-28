@@ -124,7 +124,7 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
         viewState.filter = node.getAttribute("data-team-filter") || "all";
         viewState.tab = "partidos";
         animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active");
-        renderContent();
+        requestAnimationFrame(() => renderContent());
       };
     });
 

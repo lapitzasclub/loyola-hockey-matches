@@ -218,7 +218,7 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
         state.teamFilters.matchFilter = filter;
         state.teamFilters.tab = 'partidos';
         animatePillTabSelection(rootEl, '[data-team-tab]', 'partidos', 'team-tab', 'active');
-        renderTeamContentOnly();
+        requestAnimationFrame(() => renderTeamContentOnly());
       };
     });
   };
