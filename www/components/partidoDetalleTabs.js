@@ -1,6 +1,7 @@
 import { t } from "../i18n.js";
-import { escapeHtml, getCurrentTab, setCurrentTab } from "./partidoDetalleUtils.js";
+import { getCurrentTab, setCurrentTab } from "./partidoDetalleUtils.js";
 import { updateTabVisibility } from "./partidoDetalleRender.js";
+import { animatePillTabSelection, renderPillTabs } from "./uiTabs.js";
 
 /**
  * Renderiza la estructura base de pestañas de la vista principal del partido.
@@ -11,12 +12,20 @@ import { updateTabVisibility } from "./partidoDetalleRender.js";
  */
 export function ensureBaseLayout(bodyEl, state) {
   bodyEl.innerHTML = `
-    <div class="partido-detalle-tabs" role="tablist" aria-label="Secciones del partido">
-      <button class="tab-btn" data-tab="resumen">${escapeHtml(t("detail_summary"))}</button>
-      <button class="tab-btn" data-tab="alineaciones">${escapeHtml(t("detail_lineups"))}</button>
-      <button class="tab-btn" data-tab="eventos">${escapeHtml(t("detail_events"))}</button>
-      <button class="tab-btn" data-tab="penaltis">${escapeHtml(t("detail_penalties"))}</button>
-    </div>
+    ${renderPillTabs({
+      className: "partido-detalle-tabs ui-pill-tabs ui-pill-tabs-2col",
+      buttonClassName: "tab-btn ui-pill-tab-btn",
+      activeClassName: "active",
+      dataAttr: "tab",
+      ariaLabel: "Secciones del partido",
+      activeTab: getCurrentTab(state),
+      tabs: [
+        ["resumen", t("detail_summary")],
+        ["alineaciones", t("detail_lineups")],
+        ["eventos", t("detail_events")],
+        ["penaltis", t("detail_penalties")],
+      ],
+    })}
     <section class="tab-content" id="tab-resumen"></section>
     <section class="tab-content" id="tab-alineaciones" hidden></section>
     <section class="tab-content" id="tab-eventos" hidden></section>
@@ -26,6 +35,7 @@ export function ensureBaseLayout(bodyEl, state) {
   bodyEl.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.onclick = () => {
       setCurrentTab(state, btn.dataset.tab);
+      animatePillTabSelection(bodyEl, ".tab-btn", getCurrentTab(state), "tab", "active");
       updateTabVisibility(bodyEl, getCurrentTab(state));
     };
   });

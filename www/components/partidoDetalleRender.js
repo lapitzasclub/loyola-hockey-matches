@@ -1,5 +1,6 @@
 import { t } from "../i18n.js";
 import { escapeHtml, formatFecha, formatHora, getCurrentTab, logoUrl } from "./partidoDetalleUtils.js";
+import { animatePillTabSelection } from "./uiTabs.js";
 
 /**
  * Renderiza la cabecera skeleton del detalle de partido durante la primera carga.
@@ -81,11 +82,25 @@ export function renderDetalleSkeleton(bodyEl) {
  * @returns {void}
  */
 export function updateTabVisibility(bodyEl, activeTab) {
-  bodyEl.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.tab === activeTab);
-  });
+  animatePillTabSelection(bodyEl, ".tab-btn", activeTab, "tab", "active");
+
   bodyEl.querySelectorAll(".tab-content").forEach((panel) => {
-    panel.hidden = panel.id !== `tab-${activeTab}`;
+    const isActive = panel.id === `tab-${activeTab}`;
+    panel.classList.remove("is-entering", "is-leaving");
+
+    if (isActive) {
+      panel.hidden = false;
+      void panel.offsetWidth;
+      panel.classList.add("is-entering");
+      return;
+    }
+
+    if (panel.hidden) return;
+    panel.classList.add("is-leaving");
+    window.setTimeout(() => {
+      panel.hidden = true;
+      panel.classList.remove("is-leaving");
+    }, 180);
   });
 }
 
