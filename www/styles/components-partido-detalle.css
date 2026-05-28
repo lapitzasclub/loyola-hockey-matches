@@ -2,6 +2,12 @@
 
 :root {
   --detalle-overlay-bg: color-mix(in srgb, var(--color-bg) 55%, rgba(0, 0, 0, 0.45));
+}
+
+.team-detail-modal,
+.partido-detalle-modal,
+.team-detail-view,
+.tab-content {
   --detalle-shell-bg: linear-gradient(180deg, var(--color-bg-card-soft) 0%, var(--color-bg-card) 100%);
   --detalle-header-bg: linear-gradient(180deg, var(--color-bg-card) 0%, var(--color-bg-card-soft) 100%);
   --detalle-surface-elevated-bg: linear-gradient(180deg, var(--color-surface-elevated) 0%, var(--color-surface-elevated-soft) 100%);
@@ -18,7 +24,10 @@
   --detalle-section-title-fg: color-mix(in srgb, var(--color-text) 70%, var(--color-primary) 30%);
 }
 
-body[data-theme="dark"] {
+body[data-theme="dark"] .team-detail-modal,
+body[data-theme="dark"] .partido-detalle-modal,
+body[data-theme="dark"] .team-detail-view,
+body[data-theme="dark"] .tab-content {
   --detalle-shell-bg: linear-gradient(180deg, var(--color-bg-card-soft) 0%, var(--color-bg-card) 100%);
   --detalle-header-bg: linear-gradient(180deg, var(--color-bg-card-soft) 0%, var(--color-bg-card) 100%);
   --detalle-surface-elevated-bg: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-card) 88%, var(--color-bg)) 0%, color-mix(in srgb, var(--color-bg-card-soft) 92%, var(--color-bg)) 100%);
