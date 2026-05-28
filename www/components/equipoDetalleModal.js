@@ -1,6 +1,11 @@
 import { syncMobileBackState } from "./partidoDetalleNavigation.js";
 import { normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
-import { hydrateEquipoDetalleRosterMatches, loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
+import {
+  hydrateEquipoDetalleRosterMatches,
+  loadEquipoDetalleMatches,
+  renderEquipoDetalleTabContent,
+  renderEquipoDetalleView,
+} from "./equipoDetalle.js";
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
 import { createModalHandoffCover, removeModalHandoffCover } from "./modalHandoff.js";
 import { mountDetalleModalShell } from "./detalleModalShell.js";
@@ -78,10 +83,13 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
     teamStats: null,
   };
 
-  const renderBody = () => {
+  const renderContent = () => {
     if (!(bodyEl instanceof HTMLElement)) return;
+    const contentEl = bodyEl.querySelector("[data-team-tab-content]");
+    if (!(contentEl instanceof HTMLElement)) return;
+
     unmountTeamStatsCharts(bodyEl);
-    bodyEl.innerHTML = renderEquipoDetalleView(equipo, viewState.partidos, {
+    contentEl.innerHTML = renderEquipoDetalleTabContent(equipo, viewState.partidos, {
       activeTab: viewState.tab,
       activeFilter: viewState.filter,
       isLoading: viewState.loading,
@@ -92,41 +100,12 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
       loadingStats: viewState.loadingStats,
     });
 
-    const viewEl = bodyEl.querySelector('.team-detail-view') || bodyEl;
-    animatePillTabSelection(viewEl, "[data-team-tab]", viewState.tab, "team-tab", "active", { animate: false });
-
-    bodyEl.querySelectorAll("[data-team-tab]").forEach((node) => {
-      node.addEventListener("click", () => {
-        const nextTab = node.getAttribute("data-team-tab") || "resumen";
-        if (nextTab === viewState.tab) return;
-        viewState.tab = nextTab;
-        animateTabContentSwap(bodyEl, () => {
-          renderBody();
-          const nextViewEl = bodyEl.querySelector('.team-detail-view') || bodyEl;
-          animatePillTabSelection(nextViewEl, "[data-team-tab]", viewState.tab, "team-tab", "active", { animate: true });
-          if (viewState.tab === "estadisticas" && !viewState.teamStats && !viewState.loadingStats) {
-            viewState.loadingStats = true;
-            renderBody();
-            loadTeamAdvancedStats(equipo, viewState.partidos)
-              .then((stats) => {
-                viewState.teamStats = stats;
-                viewState.loadingStats = false;
-                renderBody();
-              })
-              .catch(() => {
-                viewState.loadingStats = false;
-                renderBody();
-              });
-          }
-        }, (root) => root.querySelector('[data-team-tab-content]'));
-      });
-    });
-
     bodyEl.querySelectorAll("[data-team-filter]").forEach((node) => {
       node.addEventListener("click", () => {
         viewState.filter = node.getAttribute("data-team-filter") || "all";
         viewState.tab = "partidos";
-        animateTabContentSwap(bodyEl, () => renderBody(), (root) => root.querySelector('[data-team-tab-content]'));
+        animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active");
+        animateTabContentSwap(bodyEl, () => renderContent(), (root) => root.querySelector("[data-team-tab-content]"));
       });
     });
 
@@ -143,9 +122,7 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
           partido = null;
         }
         if (!partido?.IdPartido) return;
-        window.__teamDetailReturnContext = {
-          equipo,
-        };
+        window.__teamDetailReturnContext = { equipo };
         const cover = createModalHandoffCover();
         const currentModal = document.querySelector(".team-detail-modal");
         const { openPartidoDetalle } = await import("./partidoDetalle.js");
@@ -160,25 +137,66 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
     });
   };
 
+  const bindTabs = () => {
+    bodyEl.querySelectorAll("[data-team-tab]").forEach((node) => {
+      node.addEventListener("click", () => {
+        const nextTab = node.getAttribute("data-team-tab") || "resumen";
+        if (nextTab === viewState.tab) return;
+        viewState.tab = nextTab;
+        animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active");
+        animateTabContentSwap(bodyEl, () => {
+          renderContent();
+          if (viewState.tab === "estadisticas" && !viewState.teamStats && !viewState.loadingStats) {
+            viewState.loadingStats = true;
+            renderContent();
+            loadTeamAdvancedStats(equipo, viewState.partidos)
+              .then((stats) => {
+                viewState.teamStats = stats;
+                viewState.loadingStats = false;
+                renderContent();
+              })
+              .catch(() => {
+                viewState.loadingStats = false;
+                renderContent();
+              });
+          }
+        }, (root) => root.querySelector("[data-team-tab-content]"));
+      });
+    });
+  };
+
   if (headerEl instanceof HTMLElement) {
     headerEl.innerHTML = renderEquipoDetalleHeader(equipo);
   }
-  renderBody();
+
+  bodyEl.innerHTML = renderEquipoDetalleView(equipo, viewState.partidos, {
+    activeTab: viewState.tab,
+    activeFilter: viewState.filter,
+    isLoading: viewState.loading,
+    isLoadingRoster: viewState.loadingRoster,
+    showRoster: true,
+    showStats: true,
+    teamStats: viewState.teamStats,
+    loadingStats: viewState.loadingStats,
+  });
+
+  bindTabs();
+  renderContent();
 
   modal.addEventListener("click", closeOnBackdrop);
   closeBtn?.addEventListener("click", () => closeEquipoDetalle());
 
   viewState.partidos = await loadEquipoDetalleMatches(equipo);
   viewState.loading = false;
-  renderBody();
+  renderContent();
 
   hydrateEquipoDetalleRosterMatches(equipo, viewState.partidos)
     .then(() => {
       viewState.loadingRoster = false;
-      renderBody();
+      renderContent();
     })
     .catch(() => {
       viewState.loadingRoster = false;
-      renderBody();
+      renderContent();
     });
 }

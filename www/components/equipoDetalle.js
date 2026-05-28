@@ -303,7 +303,7 @@ function getTeamDetailTabs(options = {}) {
   return tabs;
 }
 
-function renderTeamDetailTabs(activeTab = "resumen", options = {}) {
+export function renderTeamDetailTabs(activeTab = "resumen", options = {}) {
   const tabs = getTeamDetailTabs(options);
   return renderPillTabs({
     className: `team-detail-tabs ui-pill-tabs ${tabs.length > 3 ? "ui-pill-tabs-2col" : "ui-pill-tabs-3col"}`,
@@ -549,29 +549,36 @@ function renderRosterSkeleton() {
   `;
 }
 
-export function renderEquipoDetalleView(equipo, partidos = [], options = {}) {
-  const { activeTab = "resumen", activeFilter = "all", isLoading = false, isLoadingRoster = false, showRoster = false, showStats = false, teamStats = null, loadingStats = false } = options;
+export function renderEquipoDetalleTabContent(equipo, partidos = [], options = {}) {
+  const { activeTab = "resumen", activeFilter = "all", isLoading = false, isLoadingRoster = false, showRoster = false, teamStats = null, loadingStats = false } = options;
   const filteredMatches = filterTeamMatches(partidos, equipo, activeFilter);
   const roster = showRoster ? buildRosterFromMatches(partidos, equipo) : null;
 
-  let content = "";
   if (activeTab === "resumen") {
-    content = renderEquipoDetalleSummary(equipo, partidos, activeFilter);
-  } else if (activeTab === "partidos") {
-    content = isLoading
+    return renderEquipoDetalleSummary(equipo, partidos, activeFilter);
+  }
+  if (activeTab === "partidos") {
+    return isLoading
       ? `<div class="team-detail-loading">${escapeHtml(t("team_detail_loading"))}</div>`
       : renderEquipoDetalleMatches(filteredMatches, equipo?.nombreEquipo || "", activeFilter);
-  } else if (activeTab === "plantilla") {
-    content = isLoadingRoster ? renderRosterSkeleton() : renderEquipoDetalleRoster(roster);
-  } else if (activeTab === "estadisticas") {
-    content = renderTeamStatsView(teamStats, { isLoading: loadingStats });
+  }
+  if (activeTab === "plantilla") {
+    return isLoadingRoster ? renderRosterSkeleton() : renderEquipoDetalleRoster(roster);
+  }
+  if (activeTab === "estadisticas") {
+    return renderTeamStatsView(teamStats, { isLoading: loadingStats });
   }
 
+  return "";
+}
+
+export function renderEquipoDetalleView(equipo, partidos = [], options = {}) {
+  const { activeTab = "resumen", showRoster = false, showStats = false } = options;
   return `
     <div class="team-detail-view">
       ${renderTeamDetailTabs(activeTab, { showRoster, showStats })}
       <div class="team-tab-content" data-team-tab-content>
-        ${content}
+        ${renderEquipoDetalleTabContent(equipo, partidos, options)}
       </div>
     </div>
   `;

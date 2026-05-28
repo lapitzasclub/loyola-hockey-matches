@@ -1,6 +1,13 @@
 import { nextFrame, syncMobileBackState, transitionDetalleView } from "./partidoDetalleNavigation.js";
 import { getCurrentView, logoUrl, normalizarEquipoClasificacion, pushView, setCurrentView } from "./partidoDetalleUtils.js";
-import { ensureTeamCompetitionClasificacion, getClasificacionMatch, hydrateEquipoDetalleRosterMatches, loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
+import {
+  ensureTeamCompetitionClasificacion,
+  getClasificacionMatch,
+  hydrateEquipoDetalleRosterMatches,
+  loadEquipoDetalleMatches,
+  renderEquipoDetalleTabContent,
+  renderEquipoDetalleView,
+} from "./equipoDetalle.js";
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
 import { animatePillTabSelection, animateTabContentSwap } from "./uiTabs.js";
 
@@ -152,44 +159,78 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
     };
   });
 
-  const viewEl = rootEl.querySelector('.team-detail-view') || rootEl;
-  animatePillTabSelection(viewEl, "[data-team-tab]", state.teamFilters?.tab || "resumen", "team-tab", "active", { animate: false });
+  const renderTeamContentOnly = () => {
+    const contentEl = rootEl.querySelector('[data-team-tab-content]') || bodyEl.querySelector('[data-team-tab-content]');
+    if (!(contentEl instanceof HTMLElement)) return;
 
-  rootEl.querySelectorAll("[data-team-tab]").forEach((node) => {
+    unmountTeamStatsCharts(bodyEl);
+    contentEl.innerHTML = renderEquipoDetalleTabContent(state.selectedEquipo, state.teamMatches || [], {
+      activeTab: state.teamFilters?.tab || 'resumen',
+      activeFilter: state.teamFilters?.matchFilter || 'all',
+      isLoading: state.loadingTeam,
+      isLoadingRoster: state.loadingRoster,
+      showRoster: true,
+      showStats: true,
+      teamStats: state.teamStats || null,
+      loadingStats: state.loadingStats || false,
+    });
+
+    if (state.teamFilters?.tab === 'estadisticas' && state.teamStats && !state.loadingStats) {
+      requestAnimationFrame(() => mountTeamStatsCharts(bodyEl, state.teamStats));
+    }
+
+    rootEl.querySelectorAll('[data-team-match]').forEach((node) => {
+      node.onclick = async () => {
+        let partido;
+        try {
+          partido = JSON.parse(node.getAttribute('data-team-match') || 'null');
+        } catch {
+          partido = null;
+        }
+        if (!partido?.IdPartido) return;
+        await openMatchInSharedModal(state, partido, headerEl, bodyEl, renderAll);
+      };
+    });
+
+    rootEl.querySelectorAll('[data-team-filter]').forEach((node) => {
+      node.onclick = () => {
+        const filter = node.getAttribute('data-team-filter') || 'all';
+        if (!state.teamFilters) state.teamFilters = { tab: 'resumen', matchFilter: 'all' };
+        state.teamFilters.matchFilter = filter;
+        state.teamFilters.tab = 'partidos';
+        animatePillTabSelection(rootEl, '[data-team-tab]', 'partidos', 'team-tab', 'active');
+        animateTabContentSwap(rootEl, () => renderTeamContentOnly(), (root) => root.querySelector('[data-team-tab-content]'));
+      };
+    });
+  };
+
+  const viewEl = rootEl.querySelector('.team-detail-view') || rootEl;
+  animatePillTabSelection(viewEl, '[data-team-tab]', state.teamFilters?.tab || 'resumen', 'team-tab', 'active', { animate: false });
+
+  rootEl.querySelectorAll('[data-team-tab]').forEach((node) => {
     node.onclick = () => {
-      const tab = node.getAttribute("data-team-tab") || "resumen";
-      if (!state.teamFilters) state.teamFilters = { tab: "resumen", matchFilter: "all" };
+      const tab = node.getAttribute('data-team-tab') || 'resumen';
+      if (!state.teamFilters) state.teamFilters = { tab: 'resumen', matchFilter: 'all' };
       if (state.teamFilters.tab === tab) return;
       state.teamFilters.tab = tab;
-      animateTabContentSwap(bodyEl, () => {
-        renderAll(state, headerEl, bodyEl);
-        const nextViewEl = bodyEl.querySelector('.team-detail-view') || rootEl.querySelector('.team-detail-view') || bodyEl;
-        animatePillTabSelection(nextViewEl, "[data-team-tab]", state.teamFilters?.tab || "resumen", "team-tab", "active", { animate: true });
-        if (tab === "estadisticas" && !state.teamStats && !state.loadingStats) {
+      animatePillTabSelection(viewEl, '[data-team-tab]', tab, 'team-tab', 'active');
+      animateTabContentSwap(rootEl, () => {
+        renderTeamContentOnly();
+        if (tab === 'estadisticas' && !state.teamStats && !state.loadingStats) {
           state.loadingStats = true;
-          renderAll(state, headerEl, bodyEl);
+          renderTeamContentOnly();
           loadTeamAdvancedStats(state.selectedEquipo, state.teamMatches)
             .then((stats) => {
               state.teamStats = stats;
               state.loadingStats = false;
-              renderAll(state, headerEl, bodyEl);
+              renderTeamContentOnly();
             })
             .catch(() => {
               state.loadingStats = false;
-              renderAll(state, headerEl, bodyEl);
+              renderTeamContentOnly();
             });
         }
       }, (root) => root.querySelector('[data-team-tab-content]'));
-    };
-  });
-
-  rootEl.querySelectorAll("[data-team-filter]").forEach((node) => {
-    node.onclick = () => {
-      const filter = node.getAttribute("data-team-filter") || "all";
-      if (!state.teamFilters) state.teamFilters = { tab: "resumen", matchFilter: "all" };
-      state.teamFilters.matchFilter = filter;
-      state.teamFilters.tab = "partidos";
-      animateTabContentSwap(bodyEl, () => renderAll(state, headerEl, bodyEl), (root) => root.querySelector('[data-team-tab-content]'));
     };
   });
 }
