@@ -307,7 +307,7 @@ function renderTeamDetailTabs(activeTab = "resumen", options = {}) {
   const tabs = getTeamDetailTabs(options);
   return renderPillTabs({
     className: `team-detail-tabs ui-pill-tabs ${tabs.length > 3 ? "ui-pill-tabs-2col" : "ui-pill-tabs-3col"}`,
-    buttonClassName: "team-detail-tab-btn tab-btn ui-pill-tab-btn",
+    buttonClassName: "tab-btn ui-pill-tab-btn",
     activeClassName: "active",
     dataAttr: "team-tab",
     ariaLabel: t("team_detail_title"),
