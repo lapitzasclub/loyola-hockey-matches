@@ -123,10 +123,9 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
       node.onclick = () => {
         viewState.filter = node.getAttribute("data-team-filter") || "all";
         viewState.tab = "partidos";
-        animateTabContentSwap(bodyEl, () => {
-          renderContent();
-          animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active");
-        }, (root) => root.querySelector("[data-team-tab-content]"));
+        const contentEl = bodyEl.querySelector("[data-team-tab-content]");
+        animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active");
+        animateTabContentSwap(contentEl, () => renderContent());
       };
     });
 
