@@ -99,7 +99,8 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
         const nextTab = node.getAttribute("data-team-tab") || "resumen";
         if (nextTab === viewState.tab) return;
         viewState.tab = nextTab;
-        animateTabContentSwap(bodyEl, () => {
+        const contentEl = bodyEl.querySelector('[data-team-tab-content]') || bodyEl;
+        animateTabContentSwap(contentEl, () => {
           renderBody();
           if (viewState.tab === "estadisticas" && !viewState.teamStats && !viewState.loadingStats) {
             viewState.loadingStats = true;
@@ -123,7 +124,8 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
       node.addEventListener("click", () => {
         viewState.filter = node.getAttribute("data-team-filter") || "all";
         viewState.tab = "partidos";
-        renderBody();
+        const contentEl = bodyEl.querySelector('[data-team-tab-content]') || bodyEl;
+        animateTabContentSwap(contentEl, () => renderBody());
       });
     });
 

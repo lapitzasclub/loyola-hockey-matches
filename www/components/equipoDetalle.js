@@ -570,7 +570,9 @@ export function renderEquipoDetalleView(equipo, partidos = [], options = {}) {
   return `
     <div class="team-detail-view subview-enter">
       ${renderTeamDetailTabs(activeTab, { showRoster, showStats })}
-      ${content}
+      <div class="team-tab-content" data-team-tab-content>
+        ${content}
+      </div>
     </div>
   `;
 }
