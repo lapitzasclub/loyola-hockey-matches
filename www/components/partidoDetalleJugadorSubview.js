@@ -57,6 +57,7 @@ export function renderJugadorSubview(state) {
     : "";
   const timeline = renderJugadorTimeline(jugador.eventos);
   const partidoChips = renderPartidoJugadorChips(partidoStats);
+  const showMatchBlock = jugador.source !== "team-roster";
 
   return `
     <div class="partido-detalle-player-sheet subview-enter">
@@ -83,13 +84,15 @@ export function renderJugadorSubview(state) {
         </div>
         ${jugador.error ? `<div class="partido-detalle-empty small cardish">${escapeHtml(jugador.error)}</div>` : ""}
       </section>
-      <section class="partido-detalle-section partido-detalle-player-events-card">
-        <div class="partido-detalle-section-title">${escapeHtml(t("detail_match"))}</div>
-        <div class="partido-detalle-player-section-body">
-          ${partidoChips ? `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact">${partidoChips}</div>` : `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact"><span class="partido-detalle-skeleton skeleton-chip"></span><span class="partido-detalle-skeleton skeleton-chip"></span></div>`}
-          <div class="partido-detalle-player-events-list">${timeline}</div>
-        </div>
-      </section>
+      ${showMatchBlock ? `
+        <section class="partido-detalle-section partido-detalle-player-events-card">
+          <div class="partido-detalle-section-title">${escapeHtml(t("detail_match"))}</div>
+          <div class="partido-detalle-player-section-body">
+            ${partidoChips ? `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact">${partidoChips}</div>` : `<div class="alineacion-chips partido-detalle-player-chips partido-detalle-player-chips-compact"><span class="partido-detalle-skeleton skeleton-chip"></span><span class="partido-detalle-skeleton skeleton-chip"></span></div>`}
+            <div class="partido-detalle-player-events-list">${timeline}</div>
+          </div>
+        </section>
+      ` : ""}
       <section class="partido-detalle-section partido-detalle-player-events-card">
         <div class="partido-detalle-section-title">${escapeHtml(t("detail_player_statistics"))}</div>
         <div class="partido-detalle-player-block ${hasGlobales ? "is-ready" : "is-loading"}">

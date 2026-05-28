@@ -85,11 +85,12 @@ export function registerPartidoHubHandlers(handlers = {}) {
  * @returns {any} Resultado devuelto por el proxy o undefined si no existe el método.
  */
 export function callPartidoHubServerMethod(method, ...args) {
-  if (!globalThis.signalR?.enDirecto?.server?.[method]) {
+  const server = globalThis.hubProxy?.server || globalThis.signalR?.enDirecto?.server;
+  if (!server?.[method]) {
     console.error("Método del servidor no disponible:", method);
     return;
   }
-  return globalThis.signalR.enDirecto.server[method](...args);
+  return server[method](...args);
 }
 
 /**

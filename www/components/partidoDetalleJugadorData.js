@@ -46,6 +46,7 @@ export function resolveJugadorDetalle(state, payload) {
 
   return {
     ...payload,
+    source: payload?.source || "partido",
     role: match ? matchedGroup.role : payload.role,
     licenciaTipo: payload.licenciaTipo || matchedGroup?.licenciaTipo || "j",
     idLicencia: match?.IdLicencia ?? payload?.idLicencia ?? null,
@@ -53,12 +54,14 @@ export function resolveJugadorDetalle(state, payload) {
     teamLogo: teamType === "local" ? state.partido?.logoLocal : teamType === "visitante" ? state.partido?.logoVisit : null,
     nombre: match?.ApellidosNombre || match?.NombreApellidos || payload.nombre,
     dorsal: match?.Dorsal ?? payload.dorsal,
-    partidoStats: match || null,
-    eventos: getJugadorEventos(state.eventos, {
-      dorsal: match?.Dorsal ?? dorsal,
-      nombre: match?.ApellidosNombre || match?.NombreApellidos || nombre,
-      teamType,
-    }),
+    partidoStats: payload?.source === "team-roster" ? null : (match || null),
+    eventos: payload?.source === "team-roster"
+      ? []
+      : getJugadorEventos(state.eventos, {
+          dorsal: match?.Dorsal ?? dorsal,
+          nombre: match?.ApellidosNombre || match?.NombreApellidos || nombre,
+          teamType,
+        }),
     statsGlobales: null,
     loading: false,
     error: "",
