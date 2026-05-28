@@ -99,8 +99,7 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
         const nextTab = node.getAttribute("data-team-tab") || "resumen";
         if (nextTab === viewState.tab) return;
         viewState.tab = nextTab;
-        const contentEl = bodyEl.querySelector('[data-team-tab-content]') || bodyEl;
-        animateTabContentSwap(contentEl, () => {
+        animateTabContentSwap(bodyEl, () => {
           renderBody();
           if (viewState.tab === "estadisticas" && !viewState.teamStats && !viewState.loadingStats) {
             viewState.loadingStats = true;
@@ -116,7 +115,7 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
                 renderBody();
               });
           }
-        });
+        }, (root) => root.querySelector('[data-team-tab-content]'));
       });
     });
 
@@ -124,8 +123,7 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
       node.addEventListener("click", () => {
         viewState.filter = node.getAttribute("data-team-filter") || "all";
         viewState.tab = "partidos";
-        const contentEl = bodyEl.querySelector('[data-team-tab-content]') || bodyEl;
-        animateTabContentSwap(contentEl, () => renderBody());
+        animateTabContentSwap(bodyEl, () => renderBody(), (root) => root.querySelector('[data-team-tab-content]'));
       });
     });
 

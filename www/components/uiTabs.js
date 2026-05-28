@@ -70,21 +70,24 @@ export function animatePillTabSelection(root, buttonSelector, activeKey, dataAtt
  * @param {() => void} renderNext Callback que aplica el siguiente render.
  * @returns {void}
  */
-export function animateTabContentSwap(container, renderNext) {
+export function animateTabContentSwap(container, renderNext, resolveAnimatedNode = null) {
   if (!(container instanceof HTMLElement)) {
     renderNext();
     return;
   }
 
-  container.classList.remove("is-entering", "is-leaving");
-  void container.offsetWidth;
-  container.classList.add("is-leaving");
+  const leavingNode = typeof resolveAnimatedNode === "function" ? (resolveAnimatedNode(container) || container) : container;
+  leavingNode.classList.remove("is-entering", "is-leaving");
+  void leavingNode.offsetWidth;
+  leavingNode.classList.add("is-leaving");
 
   window.setTimeout(() => {
     renderNext();
-    container.classList.remove("is-leaving");
-    void container.offsetWidth;
-    container.classList.add("is-entering");
-    window.setTimeout(() => container.classList.remove("is-entering"), TAB_CONTENT_MS);
+    const enteringNode = typeof resolveAnimatedNode === "function" ? (resolveAnimatedNode(container) || container) : container;
+    leavingNode.classList.remove("is-leaving");
+    enteringNode.classList.remove("is-entering", "is-leaving");
+    void enteringNode.offsetWidth;
+    enteringNode.classList.add("is-entering");
+    window.setTimeout(() => enteringNode.classList.remove("is-entering"), TAB_CONTENT_MS);
   }, TAB_CONTENT_MS);
 }

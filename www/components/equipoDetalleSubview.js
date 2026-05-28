@@ -160,8 +160,7 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       if (!state.teamFilters) state.teamFilters = { tab: "resumen", matchFilter: "all" };
       if (state.teamFilters.tab === tab) return;
       state.teamFilters.tab = tab;
-      const contentEl = rootEl.querySelector('[data-team-tab-content]') || bodyEl;
-      animateTabContentSwap(contentEl, () => {
+      animateTabContentSwap(bodyEl, () => {
         renderAll(state, headerEl, bodyEl);
         if (tab === "estadisticas" && !state.teamStats && !state.loadingStats) {
           state.loadingStats = true;
@@ -177,7 +176,7 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
               renderAll(state, headerEl, bodyEl);
             });
         }
-      });
+      }, (root) => root.querySelector('[data-team-tab-content]'));
     };
   });
 
@@ -187,8 +186,7 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       if (!state.teamFilters) state.teamFilters = { tab: "resumen", matchFilter: "all" };
       state.teamFilters.matchFilter = filter;
       state.teamFilters.tab = "partidos";
-      const contentEl = rootEl.querySelector('[data-team-tab-content]') || bodyEl;
-      animateTabContentSwap(contentEl, () => renderAll(state, headerEl, bodyEl));
+      animateTabContentSwap(bodyEl, () => renderAll(state, headerEl, bodyEl), (root) => root.querySelector('[data-team-tab-content]'));
     };
   });
 }
