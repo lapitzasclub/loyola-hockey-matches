@@ -1,6 +1,6 @@
 import { escapeHtml } from "./partidoDetalleUtils.js";
 
-const TAB_ACTIVATE_MS = 220;
+const TAB_ACTIVATE_MS = 260;
 const TAB_CONTENT_MS = 180;
 
 /**
@@ -55,7 +55,12 @@ export function animatePillTabSelection(root, buttonSelector, activeKey, dataAtt
     btn.classList.toggle(activeClassName, isActive);
     btn.setAttribute("aria-selected", isActive ? "true" : "false");
     btn.classList.remove("is-activating");
+    btn.style.removeProperty("--tab-ripple-x");
+    btn.style.removeProperty("--tab-ripple-y");
+
     if (isActive) {
+      btn.style.setProperty("--tab-ripple-x", "50%");
+      btn.style.setProperty("--tab-ripple-y", "50%");
       void btn.offsetWidth;
       btn.classList.add("is-activating");
       window.setTimeout(() => btn.classList.remove("is-activating"), TAB_ACTIVATE_MS);
