@@ -215,16 +215,29 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       node.onclick = () => {
         const filter = node.getAttribute('data-team-filter') || 'all';
         if (!state.teamFilters) state.teamFilters = { tab: 'resumen', matchFilter: 'all' };
+        console.log('[team-detail-subview] summary filter click', {
+          nextFilter: filter,
+          beforeTab: state.teamFilters.tab,
+          beforeFilter: state.teamFilters.matchFilter,
+          hasContent: !!(rootEl.querySelector('[data-team-tab-content]') || bodyEl.querySelector('[data-team-tab-content]')),
+        });
         state.teamFilters.matchFilter = filter;
         state.teamFilters.tab = 'partidos';
         animatePillTabSelection(rootEl, '[data-team-tab]', 'partidos', 'team-tab', 'active');
-        requestAnimationFrame(() => renderTeamContentOnly());
+        requestAnimationFrame(() => {
+          console.log('[team-detail-subview] rendering filtered matches', {
+            activeTab: state.teamFilters.tab,
+            activeFilter: state.teamFilters.matchFilter,
+          });
+          renderTeamContentOnly();
+        });
       };
     });
   };
 
   const viewEl = rootEl.querySelector('.team-detail-view') || rootEl;
   animatePillTabSelection(viewEl, '[data-team-tab]', state.teamFilters?.tab || 'resumen', 'team-tab', 'active', { animate: false });
+  renderTeamContentOnly();
 
   rootEl.querySelectorAll('[data-team-tab]').forEach((node) => {
     node.onclick = () => {
