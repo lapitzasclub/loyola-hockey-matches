@@ -1407,8 +1407,8 @@ body[data-theme="dark"] .tab-btn.active {
 .tab-content,
 .team-tab-content {
   opacity: 1;
-  transform: translateY(0) scale(1);
-  transform-origin: top center;
+  transform: translate3d(0, 0, 0);
+  transform-origin: center center;
 }
 
 .tab-content.is-entering,
@@ -1423,35 +1423,35 @@ body[data-theme="dark"] .tab-btn.active {
 
 @keyframes tab-pill-activate {
   0% {
-    transform: scale(0.96);
+    transform: translateY(0) scale(0.97);
   }
   55% {
-    transform: scale(1.03);
+    transform: translateY(0) scale(1.02);
   }
   100% {
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes tab-content-enter {
   0% {
     opacity: 0;
-    transform: translateY(8px) scale(0.992);
+    transform: translate3d(0, 6px, 0);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes tab-content-leave {
   0% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
   100% {
     opacity: 0;
-    transform: translateY(4px) scale(0.996);
+    transform: translate3d(0, 3px, 0);
   }
 }
 

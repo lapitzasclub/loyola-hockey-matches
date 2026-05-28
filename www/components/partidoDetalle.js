@@ -38,20 +38,16 @@ import { mountDetalleModalShell } from "./detalleModalShell.js";
 import { bindEquipoMatchLinks, renderEquipoDetalleHeader, renderEquipoSubview } from "./equipoDetalleSubview.js";
 
 /**
- * Actualiza el contenido HTML de la cabecera del modal y deja una traza de depuración.
+ * Actualiza el contenido HTML de la cabecera del modal.
  *
  * @param {HTMLElement} headerEl Contenedor de cabecera del modal.
  * @param {string} html HTML ya renderizado de la cabecera.
- * @param {string} [reason=""] Motivo opcional para depuración.
+ * @param {string} [reason=""] Motivo opcional reservado para futuras trazas.
  * @returns {void}
  */
 function setHeaderContent(headerEl, html, reason = "") {
+  void reason;
   headerEl.innerHTML = html;
-  console.log("[Detalle] Header actualizado", {
-    reason,
-    html,
-    text: headerEl.textContent,
-  });
 }
 
 /**
