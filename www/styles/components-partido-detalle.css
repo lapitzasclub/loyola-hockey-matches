@@ -743,27 +743,27 @@ body[data-theme="dark"] .team-roster-item-action {
 }
 
 .team-chart-legend-swatch-fouls {
-  background: #4f46e5;
+  background: rgba(180, 83, 9, 0.92);
 }
 
 .team-chart-legend-swatch-fouls-against {
-  background: rgba(79, 70, 229, 0.52);
+  background: rgba(217, 119, 6, 0.2);
 }
 
 .team-chart-legend-swatch-blue {
-  background: #2563eb;
+  background: rgba(14, 116, 144, 0.92);
 }
 
 .team-chart-legend-swatch-red {
-  background: #e11d48;
+  background: rgba(190, 24, 93, 0.92);
 }
 
 .team-chart-legend-swatch-blue-against {
-  background: rgba(37, 99, 235, 0.5);
+  background: rgba(8, 145, 178, 0.2);
 }
 
 .team-chart-legend-swatch-red-against {
-  background: rgba(225, 29, 72, 0.5);
+  background: rgba(225, 29, 72, 0.2);
 }
 
 .team-chart-legend-swatch-penalty {
