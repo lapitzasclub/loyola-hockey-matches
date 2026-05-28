@@ -64,11 +64,11 @@ function getEntityLogoUrl(entityId) {
  * @returns {string} Identificador utilizable o cadena vacía.
  */
 function getStableTeamId(equipo) {
-  if (typeof equipo?.IdEquipo === "number" || (typeof equipo?.IdEquipo === "string" && equipo.IdEquipo !== "")) {
-    return String(equipo.IdEquipo);
-  }
   if (typeof equipo?.IdEquipoComp === "number" || (typeof equipo?.IdEquipoComp === "string" && equipo.IdEquipoComp !== "")) {
     return String(equipo.IdEquipoComp);
+  }
+  if (typeof equipo?.IdEquipo === "number" || (typeof equipo?.IdEquipo === "string" && equipo.IdEquipo !== "")) {
+    return String(equipo.IdEquipo);
   }
   return "";
 }
@@ -541,12 +541,19 @@ function bindClasificacionTeamButtons(rootEl) {
         equipo = null;
       }
       if (!equipo) return;
+
+      const stableId = getStableTeamId(equipo);
+      const clasData = Array.isArray(window._clasificacionLoyola) ? window._clasificacionLoyola : [];
+      const resolvedEquipo = clasData.find((row) => getStableTeamId(row) === stableId)
+        || clasData.find((row) => String(row?.IdEquipo || "") === String(equipo?.IdEquipo || equipo?.idEquipo || ""))
+        || equipo;
+
       const payload = {
-        ...equipo,
-        IdCompeticion: equipo.IdCompeticion ?? competitionId,
-        IdEquipo: equipo.IdEquipo ?? equipo.idEquipo ?? null,
-        IdEquipoComp: equipo.IdEquipoComp ?? equipo.idEquipoComp ?? equipo.IdEquipo ?? equipo.idEquipo ?? null,
-        NombreGrupo: equipo.NombreGrupo || equipo.DenoComp || equipo.nombreGrupo || equipo.nombreCompeticion || equipo.NombreCompeticion || "",
+        ...resolvedEquipo,
+        IdCompeticion: resolvedEquipo.IdCompeticion ?? equipo.IdCompeticion ?? competitionId,
+        IdEquipo: resolvedEquipo.IdEquipo ?? resolvedEquipo.idEquipo ?? equipo.IdEquipo ?? equipo.idEquipo ?? null,
+        IdEquipoComp: resolvedEquipo.IdEquipoComp ?? resolvedEquipo.idEquipoComp ?? equipo.IdEquipoComp ?? equipo.idEquipoComp ?? resolvedEquipo.IdEquipo ?? equipo.IdEquipo ?? null,
+        NombreGrupo: resolvedEquipo.NombreGrupo || resolvedEquipo.DenoComp || resolvedEquipo.nombreGrupo || resolvedEquipo.nombreCompeticion || resolvedEquipo.NombreCompeticion || equipo.NombreGrupo || equipo.DenoComp || "",
       };
       const initialState = createDetalleState("team-detail-entry");
       initialState.selectedEquipo = normalizarEquipoClasificacion(payload);
