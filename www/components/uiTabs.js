@@ -1,6 +1,6 @@
 import { escapeHtml } from "./partidoDetalleUtils.js";
 
-const TAB_ACTIVATE_MS = 260;
+const TAB_ACTIVATE_MS = 400;
 const TAB_CONTENT_MS = 180;
 
 /**
