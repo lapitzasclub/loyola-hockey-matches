@@ -92,7 +92,8 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
       loadingStats: viewState.loadingStats,
     });
 
-    animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active", { animate: false });
+    const viewEl = bodyEl.querySelector('.team-detail-view') || bodyEl;
+    animatePillTabSelection(viewEl, "[data-team-tab]", viewState.tab, "team-tab", "active", { animate: false });
 
     bodyEl.querySelectorAll("[data-team-tab]").forEach((node) => {
       node.addEventListener("click", () => {
@@ -101,7 +102,8 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
         viewState.tab = nextTab;
         animateTabContentSwap(bodyEl, () => {
           renderBody();
-          animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active", { animate: true });
+          const nextViewEl = bodyEl.querySelector('.team-detail-view') || bodyEl;
+          animatePillTabSelection(nextViewEl, "[data-team-tab]", viewState.tab, "team-tab", "active", { animate: true });
           if (viewState.tab === "estadisticas" && !viewState.teamStats && !viewState.loadingStats) {
             viewState.loadingStats = true;
             renderBody();
