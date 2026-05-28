@@ -152,8 +152,10 @@ function getTeamPerspective(partido, equipo) {
   if (!normalized || !partido) return null;
 
   const teamIds = new Set([normalized.idEquipo, normalized.idEquipoComp].filter(Boolean).map(String));
-  const isLocal = teamIds.has(String(partido?.IdEquipoLocal || ""));
-  const isVisit = teamIds.has(String(partido?.IdEquipoVisit || ""));
+  const localIds = [partido?.IdEquipoLocal, partido?.IdEquipoCompLocal].filter(Boolean).map(String);
+  const visitIds = [partido?.IdEquipoVisit, partido?.IdEquipoCompVisit].filter(Boolean).map(String);
+  const isLocal = localIds.some((id) => teamIds.has(id));
+  const isVisit = visitIds.some((id) => teamIds.has(id));
   if (!isLocal && !isVisit) return null;
 
   const gf = Number(isLocal ? partido.GolesLocal : partido.GolesVisit);

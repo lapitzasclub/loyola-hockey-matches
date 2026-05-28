@@ -544,6 +544,8 @@ function bindClasificacionTeamButtons(rootEl) {
       const payload = {
         ...equipo,
         IdCompeticion: equipo.IdCompeticion ?? competitionId,
+        IdEquipo: equipo.IdEquipo ?? equipo.idEquipo ?? null,
+        IdEquipoComp: equipo.IdEquipoComp ?? equipo.idEquipoComp ?? equipo.IdEquipo ?? equipo.idEquipo ?? null,
         NombreGrupo: equipo.NombreGrupo || equipo.DenoComp || equipo.nombreGrupo || equipo.nombreCompeticion || equipo.NombreCompeticion || "",
       };
       const initialState = createDetalleState("team-detail-entry");
