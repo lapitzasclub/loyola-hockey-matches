@@ -11,6 +11,25 @@ import { createModalHandoffCover, removeModalHandoffCover } from "./modalHandoff
 import { mountDetalleModalShell } from "./detalleModalShell.js";
 import { animatePillTabSelection, animateTabContentSwap } from "./uiTabs.js";
 
+function isTeamStatsTabPending(viewState, tab) {
+  return tab === "estadisticas" && !viewState.teamStats && !viewState.loadingStats;
+}
+
+function loadStandaloneTeamStats(equipo, viewState, renderContent) {
+  viewState.loadingStats = true;
+  renderContent();
+  loadTeamAdvancedStats(equipo, viewState.partidos)
+    .then((stats) => {
+      viewState.teamStats = stats;
+      viewState.loadingStats = false;
+      renderContent();
+    })
+    .catch(() => {
+      viewState.loadingStats = false;
+      renderContent();
+    });
+}
+
 function renderEquipoDetalleHeader(equipo) {
   return `
     <div class="team-detail-modal-topline">
@@ -146,19 +165,8 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
         animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active");
         animateTabContentSwap(bodyEl, () => {
           renderContent();
-          if (viewState.tab === "estadisticas" && !viewState.teamStats && !viewState.loadingStats) {
-            viewState.loadingStats = true;
-            renderContent();
-            loadTeamAdvancedStats(equipo, viewState.partidos)
-              .then((stats) => {
-                viewState.teamStats = stats;
-                viewState.loadingStats = false;
-                renderContent();
-              })
-              .catch(() => {
-                viewState.loadingStats = false;
-                renderContent();
-              });
+          if (isTeamStatsTabPending(viewState, viewState.tab)) {
+            loadStandaloneTeamStats(equipo, viewState, renderContent);
           }
         }, (root) => root.querySelector("[data-team-tab-content]"));
       });

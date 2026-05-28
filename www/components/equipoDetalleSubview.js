@@ -11,6 +11,25 @@ import {
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
 import { animatePillTabSelection, animateTabContentSwap } from "./uiTabs.js";
 
+function isTeamStatsTabPending(state, tab) {
+  return tab === "estadisticas" && !state.teamStats && !state.loadingStats;
+}
+
+function loadSubviewTeamStats(state, renderContent) {
+  state.loadingStats = true;
+  renderContent();
+  loadTeamAdvancedStats(state.selectedEquipo, state.teamMatches)
+    .then((stats) => {
+      state.teamStats = stats;
+      state.loadingStats = false;
+      renderContent();
+    })
+    .catch(() => {
+      state.loadingStats = false;
+      renderContent();
+    });
+}
+
 /**
  * Renderiza la cabecera compacta del subview de equipo dentro del modal compartido.
  *
@@ -216,19 +235,8 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       animatePillTabSelection(viewEl, '[data-team-tab]', tab, 'team-tab', 'active');
       animateTabContentSwap(rootEl, () => {
         renderTeamContentOnly();
-        if (tab === 'estadisticas' && !state.teamStats && !state.loadingStats) {
-          state.loadingStats = true;
-          renderTeamContentOnly();
-          loadTeamAdvancedStats(state.selectedEquipo, state.teamMatches)
-            .then((stats) => {
-              state.teamStats = stats;
-              state.loadingStats = false;
-              renderTeamContentOnly();
-            })
-            .catch(() => {
-              state.loadingStats = false;
-              renderTeamContentOnly();
-            });
+        if (isTeamStatsTabPending(state, tab)) {
+          loadSubviewTeamStats(state, renderTeamContentOnly);
         }
       }, (root) => root.querySelector('[data-team-tab-content]'));
     };

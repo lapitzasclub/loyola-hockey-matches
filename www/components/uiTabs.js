@@ -1,7 +1,7 @@
 import { escapeHtml } from "./partidoDetalleUtils.js";
 
-const TAB_ACTIVATE_MS = 400;
-const TAB_CONTENT_MS = 180;
+export const TAB_ACTIVATE_MS = 400;
+export const TAB_CONTENT_MS = 180;
 
 /**
  * Renderiza un grupo reutilizable de pestañas tipo pill.
@@ -47,6 +47,7 @@ export function renderPillTabs({
  * @param {string} activeKey Clave de tab activa.
  * @param {string} dataAttr Nombre del data-attribute sin prefijo `data-`.
  * @param {string} [activeClassName="active"] Clase del estado activo.
+ * @param {{ animate?: boolean }} [options={}] Opciones de animación.
  * @returns {void}
  */
 export function animatePillTabSelection(root, buttonSelector, activeKey, dataAttr, activeClassName = "active", options = {}) {
@@ -68,8 +69,9 @@ export function animatePillTabSelection(root, buttonSelector, activeKey, dataAtt
 /**
  * Ejecuta una transición común de contenido al cambiar de tab.
  *
- * @param {HTMLElement} container Contenedor del contenido actual.
+ * @param {HTMLElement} container Contenedor raíz desde el que resolver el nodo animado.
  * @param {() => void} renderNext Callback que aplica el siguiente render.
+ * @param {(container: HTMLElement) => HTMLElement | null} [resolveAnimatedNode=null] Resolver opcional del nodo que recibe las clases `is-entering/is-leaving`.
  * @returns {void}
  */
 export function animateTabContentSwap(container, renderNext, resolveAnimatedNode = null) {

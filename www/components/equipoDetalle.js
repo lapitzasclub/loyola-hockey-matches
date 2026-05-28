@@ -549,6 +549,17 @@ function renderRosterSkeleton() {
   `;
 }
 
+/**
+ * Renderiza únicamente el panel de contenido activo del detalle de equipo.
+ *
+ * Se usa tanto en el modal standalone como en el subview compartido para poder
+ * mantener la botonera de tabs estable y limitar los rerenders al panel activo.
+ *
+ * @param {object|null|undefined} equipo Equipo actual.
+ * @param {object[]} [partidos=[]] Partidos cargados del equipo.
+ * @param {object} [options={}] Estado de render de la vista.
+ * @returns {string} HTML del panel activo.
+ */
 export function renderEquipoDetalleTabContent(equipo, partidos = [], options = {}) {
   const { activeTab = "resumen", activeFilter = "all", isLoading = false, isLoadingRoster = false, showRoster = false, teamStats = null, loadingStats = false } = options;
   const filteredMatches = filterTeamMatches(partidos, equipo, activeFilter);
@@ -572,6 +583,14 @@ export function renderEquipoDetalleTabContent(equipo, partidos = [], options = {
   return "";
 }
 
+/**
+ * Renderiza el armazón completo del detalle de equipo con tabs persistentes.
+ *
+ * @param {object|null|undefined} equipo Equipo actual.
+ * @param {object[]} [partidos=[]] Partidos cargados del equipo.
+ * @param {object} [options={}] Estado de render inicial.
+ * @returns {string} HTML base de la vista.
+ */
 export function renderEquipoDetalleView(equipo, partidos = [], options = {}) {
   const { activeTab = "resumen", showRoster = false, showStats = false } = options;
   return `
