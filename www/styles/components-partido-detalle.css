@@ -1362,9 +1362,12 @@ body[data-theme="dark"] .ui-pill-tabs {
   color: var(--color-primary);
   font-size: 0.95rem;
   font-weight: 700;
+  line-height: 1.2;
   white-space: nowrap;
   text-align: center;
   transform: translateZ(0);
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
   transition: color 220ms ease, border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
 }
 
@@ -1420,6 +1423,10 @@ body[data-theme="dark"] .tab-btn.active {
   padding-top: 0;
   border-bottom: 0;
   background: transparent;
+}
+
+.team-detail-view .ui-pill-tabs {
+  margin-bottom: 0.25rem;
 }
 
 .tab-content,
