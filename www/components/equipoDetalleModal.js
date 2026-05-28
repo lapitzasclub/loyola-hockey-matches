@@ -1,8 +1,10 @@
 import { syncMobileBackState } from "./partidoDetalleNavigation.js";
 import { normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
-import { loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
+import { hydrateEquipoDetalleRosterMatches, loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
+import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
 import { createModalHandoffCover, removeModalHandoffCover } from "./modalHandoff.js";
 import { mountDetalleModalShell } from "./detalleModalShell.js";
+import { animatePillTabSelection, animateTabContentSwap } from "./uiTabs.js";
 
 function renderEquipoDetalleHeader(equipo) {
   return `
@@ -71,21 +73,49 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
     filter: "all",
     partidos: [],
     loading: true,
+    loadingRoster: true,
+    loadingStats: false,
+    teamStats: null,
   };
 
   const renderBody = () => {
     if (!(bodyEl instanceof HTMLElement)) return;
+    unmountTeamStatsCharts(bodyEl);
     bodyEl.innerHTML = renderEquipoDetalleView(equipo, viewState.partidos, {
       activeTab: viewState.tab,
       activeFilter: viewState.filter,
       isLoading: viewState.loading,
-      showRoster: false,
+      isLoadingRoster: viewState.loadingRoster,
+      showRoster: true,
+      showStats: true,
+      teamStats: viewState.teamStats,
+      loadingStats: viewState.loadingStats,
     });
+
+    animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active");
 
     bodyEl.querySelectorAll("[data-team-tab]").forEach((node) => {
       node.addEventListener("click", () => {
-        viewState.tab = node.getAttribute("data-team-tab") || "resumen";
-        renderBody();
+        const nextTab = node.getAttribute("data-team-tab") || "resumen";
+        if (nextTab === viewState.tab) return;
+        viewState.tab = nextTab;
+        animateTabContentSwap(bodyEl, () => {
+          renderBody();
+          if (viewState.tab === "estadisticas" && !viewState.teamStats && !viewState.loadingStats) {
+            viewState.loadingStats = true;
+            renderBody();
+            loadTeamAdvancedStats(equipo, viewState.partidos)
+              .then((stats) => {
+                viewState.teamStats = stats;
+                viewState.loadingStats = false;
+                renderBody();
+              })
+              .catch(() => {
+                viewState.loadingStats = false;
+                renderBody();
+              });
+          }
+        });
       });
     });
 
@@ -96,6 +126,10 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
         renderBody();
       });
     });
+
+    if (viewState.tab === "estadisticas" && viewState.teamStats && !viewState.loadingStats) {
+      requestAnimationFrame(() => mountTeamStatsCharts(bodyEl, viewState.teamStats));
+    }
 
     bodyEl.querySelectorAll("[data-team-match]").forEach((node) => {
       node.addEventListener("click", async () => {
@@ -134,4 +168,14 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
   viewState.partidos = await loadEquipoDetalleMatches(equipo);
   viewState.loading = false;
   renderBody();
+
+  hydrateEquipoDetalleRosterMatches(equipo, viewState.partidos)
+    .then(() => {
+      viewState.loadingRoster = false;
+      renderBody();
+    })
+    .catch(() => {
+      viewState.loadingRoster = false;
+      renderBody();
+    });
 }

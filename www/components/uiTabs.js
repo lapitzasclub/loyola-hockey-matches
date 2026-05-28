@@ -1,6 +1,7 @@
 import { escapeHtml } from "./partidoDetalleUtils.js";
 
-const TAB_ANIMATION_MS = 220;
+const TAB_ACTIVATE_MS = 220;
+const TAB_CONTENT_MS = 180;
 
 /**
  * Renderiza un grupo reutilizable de pestañas tipo pill.
@@ -57,7 +58,33 @@ export function animatePillTabSelection(root, buttonSelector, activeKey, dataAtt
     if (isActive) {
       void btn.offsetWidth;
       btn.classList.add("is-activating");
-      window.setTimeout(() => btn.classList.remove("is-activating"), TAB_ANIMATION_MS);
+      window.setTimeout(() => btn.classList.remove("is-activating"), TAB_ACTIVATE_MS);
     }
   });
+}
+
+/**
+ * Ejecuta una transición común de contenido al cambiar de tab.
+ *
+ * @param {HTMLElement} container Contenedor del contenido actual.
+ * @param {() => void} renderNext Callback que aplica el siguiente render.
+ * @returns {void}
+ */
+export function animateTabContentSwap(container, renderNext) {
+  if (!(container instanceof HTMLElement)) {
+    renderNext();
+    return;
+  }
+
+  container.classList.remove("is-entering", "is-leaving");
+  void container.offsetWidth;
+  container.classList.add("is-leaving");
+
+  window.setTimeout(() => {
+    renderNext();
+    container.classList.remove("is-leaving");
+    void container.offsetWidth;
+    container.classList.add("is-entering");
+    window.setTimeout(() => container.classList.remove("is-entering"), TAB_CONTENT_MS);
+  }, TAB_CONTENT_MS);
 }

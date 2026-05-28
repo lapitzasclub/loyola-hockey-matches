@@ -2,6 +2,7 @@ import { nextFrame, syncMobileBackState, transitionDetalleView } from "./partido
 import { getCurrentView, logoUrl, normalizarEquipoClasificacion, pushView, setCurrentView } from "./partidoDetalleUtils.js";
 import { ensureTeamCompetitionClasificacion, getClasificacionMatch, hydrateEquipoDetalleRosterMatches, loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
+import { animatePillTabSelection, animateTabContentSwap } from "./uiTabs.js";
 
 /**
  * Renderiza la cabecera compacta del subview de equipo dentro del modal compartido.
@@ -151,26 +152,31 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
     };
   });
 
+  animatePillTabSelection(rootEl, "[data-team-tab]", state.teamFilters?.tab || "resumen", "team-tab", "active");
+
   rootEl.querySelectorAll("[data-team-tab]").forEach((node) => {
     node.onclick = () => {
       const tab = node.getAttribute("data-team-tab") || "resumen";
       if (!state.teamFilters) state.teamFilters = { tab: "resumen", matchFilter: "all" };
+      if (state.teamFilters.tab === tab) return;
       state.teamFilters.tab = tab;
-      renderAll(state, headerEl, bodyEl);
-      if (tab === "estadisticas" && !state.teamStats && !state.loadingStats) {
-        state.loadingStats = true;
+      animateTabContentSwap(bodyEl, () => {
         renderAll(state, headerEl, bodyEl);
-        loadTeamAdvancedStats(state.selectedEquipo, state.teamMatches)
-          .then((stats) => {
-            state.teamStats = stats;
-            state.loadingStats = false;
-            renderAll(state, headerEl, bodyEl);
-          })
-          .catch(() => {
-            state.loadingStats = false;
-            renderAll(state, headerEl, bodyEl);
-          });
-      }
+        if (tab === "estadisticas" && !state.teamStats && !state.loadingStats) {
+          state.loadingStats = true;
+          renderAll(state, headerEl, bodyEl);
+          loadTeamAdvancedStats(state.selectedEquipo, state.teamMatches)
+            .then((stats) => {
+              state.teamStats = stats;
+              state.loadingStats = false;
+              renderAll(state, headerEl, bodyEl);
+            })
+            .catch(() => {
+              state.loadingStats = false;
+              renderAll(state, headerEl, bodyEl);
+            });
+        }
+      });
     };
   });
 
@@ -180,7 +186,7 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       if (!state.teamFilters) state.teamFilters = { tab: "resumen", matchFilter: "all" };
       state.teamFilters.matchFilter = filter;
       state.teamFilters.tab = "partidos";
-      renderAll(state, headerEl, bodyEl);
+      animateTabContentSwap(bodyEl, () => renderAll(state, headerEl, bodyEl));
     };
   });
 }
