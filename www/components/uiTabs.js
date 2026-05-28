@@ -49,18 +49,15 @@ export function renderPillTabs({
  * @param {string} [activeClassName="active"] Clase del estado activo.
  * @returns {void}
  */
-export function animatePillTabSelection(root, buttonSelector, activeKey, dataAttr, activeClassName = "active") {
+export function animatePillTabSelection(root, buttonSelector, activeKey, dataAttr, activeClassName = "active", options = {}) {
+  const { animate = true } = options;
   root.querySelectorAll(buttonSelector).forEach((btn) => {
     const isActive = btn.getAttribute(`data-${dataAttr}`) === activeKey;
     btn.classList.toggle(activeClassName, isActive);
     btn.setAttribute("aria-selected", isActive ? "true" : "false");
     btn.classList.remove("is-activating");
-    btn.style.removeProperty("--tab-ripple-x");
-    btn.style.removeProperty("--tab-ripple-y");
 
-    if (isActive) {
-      btn.style.setProperty("--tab-ripple-x", "50%");
-      btn.style.setProperty("--tab-ripple-y", "50%");
+    if (isActive && animate) {
       void btn.offsetWidth;
       btn.classList.add("is-activating");
       window.setTimeout(() => btn.classList.remove("is-activating"), TAB_ACTIVATE_MS);

@@ -152,7 +152,7 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
     };
   });
 
-  animatePillTabSelection(rootEl, "[data-team-tab]", state.teamFilters?.tab || "resumen", "team-tab", "active");
+  animatePillTabSelection(rootEl, "[data-team-tab]", state.teamFilters?.tab || "resumen", "team-tab", "active", { animate: false });
 
   rootEl.querySelectorAll("[data-team-tab]").forEach((node) => {
     node.onclick = () => {
@@ -162,6 +162,7 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       state.teamFilters.tab = tab;
       animateTabContentSwap(bodyEl, () => {
         renderAll(state, headerEl, bodyEl);
+        animatePillTabSelection(bodyEl, "[data-team-tab]", state.teamFilters?.tab || "resumen", "team-tab", "active", { animate: true });
         if (tab === "estadisticas" && !state.teamStats && !state.loadingStats) {
           state.loadingStats = true;
           renderAll(state, headerEl, bodyEl);
