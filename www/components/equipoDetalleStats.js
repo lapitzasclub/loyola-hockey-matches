@@ -2,11 +2,13 @@ import {
   Chart,
   LineController,
   BarController,
+  DoughnutController,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
   Tooltip,
   Filler,
 } from "chart.js";
@@ -15,7 +17,7 @@ import { t } from "../i18n.js";
 import { comparePartidosByScheduledDate } from "../utils/helpers.js";
 import { emptyArray, escapeHtml, normalizarEquipoClasificacion, parseApiArrayResponse } from "./partidoDetalleUtils.js";
 
-Chart.register(LineController, BarController, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Filler);
+Chart.register(LineController, BarController, DoughnutController, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Filler);
 
 const TEAM_STATS_CACHE = new Map();
 const TEAM_CHARTS = new WeakMap();
@@ -124,7 +126,7 @@ function buildBaseStats(equipo, partidos = []) {
     wonCount,
     drawnCount,
     lostCount,
-    recentForm: sortedPlayed.slice(-5).reverse().map((partido) => partido.result),
+    recentForm: sortedPlayed.slice(-5).map((partido) => partido.result),
     home,
     away,
     timeline: sortedPlayed.map((item, index) => ({
@@ -233,10 +235,10 @@ export async function loadTeamAdvancedStats(equipo, partidos = []) {
       const goalsAgainst = Number(pickStat(stats, "gol", rivalSide) || 0);
       const foulsFor = Number(pickStat(stats, "falta", side) || pickStat(stats, "faltahl", side) || 0);
       const foulsAgainst = Number(pickStat(stats, "falta", rivalSide) || pickStat(stats, "faltahl", rivalSide) || 0);
-      const blueCardsFor = sumLineupField(teamLineup, "Azules") + sumLineupField(teamKeepers, "Azules");
-      const blueCardsAgainst = sumLineupField(rivalLineup, "Azules") + sumLineupField(rivalKeepers, "Azules");
-      const redCardsFor = sumLineupField(teamLineup, "Rojas") + sumLineupField(teamKeepers, "Rojas");
-      const redCardsAgainst = sumLineupField(rivalLineup, "Rojas") + sumLineupField(rivalKeepers, "Rojas");
+      const blueCardsFor = Number(pickStat(stats, "tarjetaazul", side) || 0) || (sumLineupField(teamLineup, "Azules") + sumLineupField(teamKeepers, "Azules"));
+      const blueCardsAgainst = Number(pickStat(stats, "tarjetaazul", rivalSide) || 0) || (sumLineupField(rivalLineup, "Azules") + sumLineupField(rivalKeepers, "Azules"));
+      const redCardsFor = Number(pickStat(stats, "tarjetaroja", side) || 0) || (sumLineupField(teamLineup, "Rojas") + sumLineupField(teamKeepers, "Rojas"));
+      const redCardsAgainst = Number(pickStat(stats, "tarjetaroja", rivalSide) || 0) || (sumLineupField(rivalLineup, "Rojas") + sumLineupField(rivalKeepers, "Rojas"));
       const penaltiesFor = Number(pickStat(stats, "penalti", side) || 0);
       const penaltiesAgainst = Number(pickStat(stats, "penalti", rivalSide) || 0);
       const penaltiesScoredFor = sumLineupField(teamLineup, "GolPenalti");
@@ -433,8 +435,13 @@ function chartPalette() {
     redSoft: "rgba(239, 68, 68, 0.16)",
     indigo: "#4f46e5",
     indigoSoft: "rgba(79, 70, 229, 0.18)",
-    amber: "#d97706",
-    amberSoft: "rgba(217, 119, 6, 0.18)",
+    indigoMuted: "rgba(79, 70, 229, 0.52)",
+    blue: "#2563eb",
+    blueSoft: "rgba(37, 99, 235, 0.18)",
+    blueMuted: "rgba(37, 99, 235, 0.5)",
+    rose: "#e11d48",
+    roseSoft: "rgba(225, 29, 72, 0.18)",
+    roseMuted: "rgba(225, 29, 72, 0.5)",
     text: "#2c3444",
     muted: "rgba(92, 102, 119, 0.88)",
     grid: "rgba(148, 163, 184, 0.18)",
@@ -637,7 +644,11 @@ function buildDisciplineChart(mount, items) {
   const labels = items.map((item) => String(item.index));
   const foulsFor = items.map((item) => item.foulsFor || 0);
   const foulsAgainst = items.map((item) => item.foulsAgainst || 0);
-  const maxY = Math.max(1, ...foulsFor, ...foulsAgainst) + 1;
+  const blueCardsFor = items.map((item) => item.blueCardsFor || 0);
+  const blueCardsAgainst = items.map((item) => item.blueCardsAgainst || 0);
+  const redCardsFor = items.map((item) => item.redCardsFor || 0);
+  const redCardsAgainst = items.map((item) => item.redCardsAgainst || 0);
+  const maxY = Math.max(1, ...foulsFor, ...foulsAgainst, ...blueCardsFor, ...blueCardsAgainst, ...redCardsFor, ...redCardsAgainst) + 1;
   const colors = chartPalette();
 
   return new Chart(canvas, {
@@ -653,17 +664,57 @@ function buildDisciplineChart(mount, items) {
           borderWidth: 2,
           borderRadius: 999,
           borderSkipped: false,
-          maxBarThickness: 22,
+          maxBarThickness: 16,
         },
         {
           label: t("team_detail_stats_fouls_against"),
           data: foulsAgainst,
-          backgroundColor: colors.amberSoft,
-          borderColor: colors.amber,
+          backgroundColor: colors.indigoMuted,
+          borderColor: colors.indigo,
           borderWidth: 2,
           borderRadius: 999,
           borderSkipped: false,
-          maxBarThickness: 22,
+          maxBarThickness: 16,
+        },
+        {
+          label: t("team_detail_stats_blue_cards_for"),
+          data: blueCardsFor,
+          backgroundColor: colors.blueSoft,
+          borderColor: colors.blue,
+          borderWidth: 2,
+          borderRadius: 999,
+          borderSkipped: false,
+          maxBarThickness: 16,
+        },
+        {
+          label: t("team_detail_stats_blue_cards_against"),
+          data: blueCardsAgainst,
+          backgroundColor: colors.blueMuted,
+          borderColor: colors.blue,
+          borderWidth: 2,
+          borderRadius: 999,
+          borderSkipped: false,
+          maxBarThickness: 16,
+        },
+        {
+          label: t("team_detail_stats_red_cards_for"),
+          data: redCardsFor,
+          backgroundColor: colors.roseSoft,
+          borderColor: colors.rose,
+          borderWidth: 2,
+          borderRadius: 999,
+          borderSkipped: false,
+          maxBarThickness: 16,
+        },
+        {
+          label: t("team_detail_stats_red_cards_against"),
+          data: redCardsAgainst,
+          backgroundColor: colors.roseMuted,
+          borderColor: colors.rose,
+          borderWidth: 2,
+          borderRadius: 999,
+          borderSkipped: false,
+          maxBarThickness: 16,
         },
       ],
     },
@@ -691,6 +742,7 @@ function buildDisciplineChart(mount, items) {
       },
       scales: {
         x: {
+          stacked: false,
           grid: { display: false, drawBorder: false },
           border: { display: false },
           ticks: {
@@ -734,20 +786,51 @@ function buildDisciplineSummary(mount, stats) {
 
 function buildResultsBars(mount, stats) {
   if (!mount) return null;
-  const total = Math.max(stats.playedCount || 0, 1);
   mount.innerHTML = `
-    <div class="team-results-stack" role="img" aria-label="${escapeHtml(t("team_detail_stats_results_distribution"))}">
-      <span class="team-results-stack-segment is-won" style="width:${(stats.wonCount / total) * 100}%"></span>
-      <span class="team-results-stack-segment is-drawn" style="width:${(stats.drawnCount / total) * 100}%"></span>
-      <span class="team-results-stack-segment is-lost" style="width:${(stats.lostCount / total) * 100}%"></span>
-    </div>
-    <div class="team-donut-legend">
-      <div class="team-donut-legend-row"><span class="team-chart-legend-swatch team-chart-legend-swatch-won"></span><span>${escapeHtml(t("team_detail_won"))}</span><strong>${escapeHtml(stats.wonCount)}</strong></div>
-      <div class="team-donut-legend-row"><span class="team-chart-legend-swatch team-chart-legend-swatch-drawn"></span><span>${escapeHtml(t("team_detail_drawn"))}</span><strong>${escapeHtml(stats.drawnCount)}</strong></div>
-      <div class="team-donut-legend-row"><span class="team-chart-legend-swatch team-chart-legend-swatch-lost"></span><span>${escapeHtml(t("team_detail_lost"))}</span><strong>${escapeHtml(stats.lostCount)}</strong></div>
+    <div class="team-results-donut-wrap">
+      <div class="team-results-donut-canvas"></div>
+      <div class="team-donut-legend">
+        <div class="team-donut-legend-row"><span class="team-chart-legend-swatch team-chart-legend-swatch-won"></span><span>${escapeHtml(t("team_detail_won"))}</span><strong>${escapeHtml(stats.wonCount)}</strong></div>
+        <div class="team-donut-legend-row"><span class="team-chart-legend-swatch team-chart-legend-swatch-drawn"></span><span>${escapeHtml(t("team_detail_drawn"))}</span><strong>${escapeHtml(stats.drawnCount)}</strong></div>
+        <div class="team-donut-legend-row"><span class="team-chart-legend-swatch team-chart-legend-swatch-lost"></span><span>${escapeHtml(t("team_detail_lost"))}</span><strong>${escapeHtml(stats.lostCount)}</strong></div>
+      </div>
     </div>
   `;
-  return null;
+
+  const canvasMount = mount.querySelector('.team-results-donut-canvas');
+  if (!(canvasMount instanceof HTMLElement)) return null;
+  const canvas = ensureCanvas(canvasMount, 'team-chart-canvas team-chart-canvas-donut');
+  if (!canvas) return null;
+  const colors = chartPalette();
+  return new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: [t("team_detail_won"), t("team_detail_drawn"), t("team_detail_lost")],
+      datasets: [{
+        data: [stats.wonCount || 0, stats.drawnCount || 0, stats.lostCount || 0],
+        backgroundColor: [colors.green, '#d1a000', colors.red],
+        borderColor: ['#ffffff', '#ffffff', '#ffffff'],
+        borderWidth: 3,
+        hoverOffset: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      cutout: '62%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(23, 27, 35, 0.92)',
+          padding: 10,
+          cornerRadius: 12,
+          titleColor: '#ffffff',
+          bodyColor: 'rgba(255,255,255,0.92)',
+        },
+      },
+    },
+  });
 }
 
 function getSelectedRange(root) {
@@ -796,7 +879,9 @@ export function mountTeamStatsCharts(root, stats) {
     if (chart) charts.push(chart);
   }
   if (resultsMount instanceof HTMLElement) {
-    buildResultsBars(resultsMount, stats);
+    resultsMount.innerHTML = "";
+    const chart = buildResultsBars(resultsMount, stats);
+    if (chart) charts.push(chart);
   }
 
   root.querySelectorAll('[data-team-stats-range]').forEach((button) => {

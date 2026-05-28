@@ -747,23 +747,23 @@ body[data-theme="dark"] .team-roster-item-action {
 }
 
 .team-chart-legend-swatch-fouls-against {
-  background: #d97706;
+  background: rgba(79, 70, 229, 0.52);
 }
 
 .team-chart-legend-swatch-blue {
-  background: #1d4ed8;
+  background: #2563eb;
 }
 
 .team-chart-legend-swatch-red {
-  background: #dc2626;
+  background: #e11d48;
 }
 
 .team-chart-legend-swatch-blue-against {
-  background: #60a5fa;
+  background: rgba(37, 99, 235, 0.5);
 }
 
 .team-chart-legend-swatch-red-against {
-  background: #f87171;
+  background: rgba(225, 29, 72, 0.5);
 }
 
 .team-chart-legend-swatch-penalty {
@@ -821,6 +821,22 @@ body[data-theme="dark"] .team-roster-item-action {
 
 .team-chart-legend-goals {
   margin-top: 0.75rem;
+}
+
+.team-results-donut-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 180px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.team-results-donut-canvas {
+  position: relative;
+  min-height: 180px;
+}
+
+.team-chart-canvas-donut {
+  height: 180px !important;
 }
 
 .team-donut-legend {
@@ -1359,6 +1375,16 @@ body[data-theme="dark"] .partido-detalle-section {
   background: linear-gradient(180deg, color-mix(in srgb, var(--color-bg-card) 88%, var(--color-bg)) 0%, color-mix(in srgb, var(--color-bg-card-soft) 92%, var(--color-bg)) 100%);
   border: 1px solid var(--color-border-soft);
   box-shadow: none;
+}
+
+@media (max-width: 640px) {
+  .team-results-donut-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .team-results-donut-canvas {
+    min-height: 160px;
+  }
 }
 
 .partido-detalle-section-title,
