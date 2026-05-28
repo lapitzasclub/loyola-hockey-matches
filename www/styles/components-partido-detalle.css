@@ -676,6 +676,21 @@ body[data-theme="dark"] .team-roster-item-action {
   color: #9d2626;
 }
 
+body[data-theme="dark"] .team-form-pill-won {
+  background: color-mix(in srgb, #22c55e 28%, transparent);
+  color: #86efac;
+}
+
+body[data-theme="dark"] .team-form-pill-drawn {
+  background: color-mix(in srgb, #eab308 24%, transparent);
+  color: #fde047;
+}
+
+body[data-theme="dark"] .team-form-pill-lost {
+  background: color-mix(in srgb, #ef4444 28%, transparent);
+  color: #fca5a5;
+}
+
 .team-split-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1311,7 +1326,7 @@ body[data-theme="dark"] .partido-detalle-close:focus-visible {
   display: grid;
   gap: 0.55rem;
   padding: 0.6rem 0.85rem 0.68rem;
-  background: linear-gradient(180deg, var(--color-bg-card) 0%, var(--color-bg-card-soft) 100%);
+  background: transparent;
   border-bottom: 1px solid var(--color-border-soft);
 }
 
@@ -1330,8 +1345,8 @@ body[data-theme="dark"] .partido-detalle-close:focus-visible {
 }
 
 body[data-theme="dark"] .ui-pill-tabs {
-  background: linear-gradient(180deg, var(--color-bg-card-soft) 0%, var(--color-bg-card) 100%);
-  border-bottom: 1px solid var(--color-border-soft);
+  background: transparent;
+  border-bottom: 1px solid color-mix(in srgb, #ffffff 8%, transparent);
 }
 
 .tab-btn {
@@ -1357,15 +1372,16 @@ body[data-theme="dark"] .ui-pill-tabs {
 
 body[data-theme="dark"] .tab-btn {
   border-color: color-mix(in srgb, #ffffff 10%, transparent);
-  background: color-mix(in srgb, #ffffff 6%, var(--color-bg-card));
-  color: color-mix(in srgb, var(--color-text) 88%, #b9b0a6 12%);
+  background: color-mix(in srgb, #ffffff 4%, transparent);
+  color: color-mix(in srgb, var(--color-text) 86%, #b9b0a6 14%);
+  box-shadow: none;
 }
 
 body[data-theme="dark"] .tab-btn.active {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 90%, white 10%) 0%, var(--color-primary-strong) 100%);
+  background: var(--color-primary);
   color: var(--color-text-contrast);
-  border-color: color-mix(in srgb, var(--color-primary) 52%, white 18%);
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-primary) 28%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary) 68%, white 12%);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 22%, transparent);
 }
 
 .team-detail-tabs.ui-pill-tabs {
