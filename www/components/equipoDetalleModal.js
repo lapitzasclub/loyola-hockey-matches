@@ -120,12 +120,14 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
     });
 
     bodyEl.querySelectorAll("[data-team-filter]").forEach((node) => {
-      node.addEventListener("click", () => {
+      node.onclick = () => {
         viewState.filter = node.getAttribute("data-team-filter") || "all";
         viewState.tab = "partidos";
-        animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active");
-        animateTabContentSwap(bodyEl, () => renderContent(), (root) => root.querySelector("[data-team-tab-content]"));
-      });
+        animateTabContentSwap(bodyEl, () => {
+          renderContent();
+          animatePillTabSelection(bodyEl, "[data-team-tab]", viewState.tab, "team-tab", "active");
+        }, (root) => root.querySelector("[data-team-tab-content]"));
+      };
     });
 
     if (viewState.tab === "estadisticas" && viewState.teamStats && !viewState.loadingStats) {
