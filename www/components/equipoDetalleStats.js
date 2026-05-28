@@ -24,6 +24,14 @@ const TEAM_CHARTS = new WeakMap();
 const TEAM_STATS_DEBUG = false;
 const TEAM_STATS_RANGE_OPTIONS = ["all", 8, 5];
 
+/**
+ * Lee un contador agregado del payload de estadísticas de partido.
+ *
+ * @param {object[]} stats Lista de estadísticas crudas.
+ * @param {string} type Tipo de evento.
+ * @param {number} side 1 local, 2 visitante.
+ * @returns {number} Total encontrado o 0.
+ */
 function pickStat(stats, type, side) {
   return stats.find((item) => item?.IdTipoEvento === type && Number(item?.LocalVisit) === side)?.Total ?? 0;
 }
@@ -32,6 +40,12 @@ function sumLineupField(lineup = [], field) {
   return emptyArray(lineup).reduce((acc, item) => acc + (Number(item?.[field]) || 0), 0);
 }
 
+/**
+ * Reúne todos los ids útiles del equipo para poder casar partidos de fuentes heterogéneas.
+ *
+ * @param {object|null|undefined} equipo Equipo origen.
+ * @returns {{teamIds: Set<string>, teamCompIds: Set<string>}} Identidad expandida.
+ */
 function collectTeamIdentity(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized) return { teamIds: new Set(), teamCompIds: new Set() };
@@ -80,6 +94,13 @@ function getFallbackPerspectiveFromNames(partido, equipo) {
   return null;
 }
 
+/**
+ * Devuelve el lado del partido correspondiente al equipo activo.
+ *
+ * @param {object|null|undefined} partido Partido de referencia.
+ * @param {object|null|undefined} equipo Equipo activo.
+ * @returns {1|2|null} 1 local, 2 visitante o null si no se pudo resolver.
+ */
 function getTeamSide(partido, equipo) {
   const perspective = getMatchTeamPerspective(partido, collectTeamIdentity(equipo)) || getFallbackPerspectiveFromNames(partido, equipo);
   if (perspective === "local") return 1;
@@ -93,6 +114,13 @@ function getCacheKey(equipo, partidos) {
   return `${normalized?.idEquipoComp || normalized?.idEquipo || "team"}:${ids}`;
 }
 
+/**
+ * Construye la base estadística derivable solo del calendario y marcadores.
+ *
+ * @param {object|null|undefined} equipo Equipo activo.
+ * @param {object[]} [partidos=[]] Partidos del equipo.
+ * @returns {object|null} Estructura base para enriquecer luego con estadísticas por partido.
+ */
 function buildBaseStats(equipo, partidos = []) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized) return null;
@@ -200,6 +228,14 @@ export function computeTeamBaseStats(equipo, partidos = []) {
   return buildBaseStats(equipo, partidos);
 }
 
+/**
+ * Carga y compone las estadísticas avanzadas del equipo a partir del calendario
+ * y del detalle de cada partido.
+ *
+ * @param {object|null|undefined} equipo Equipo activo.
+ * @param {object[]} [partidos=[]] Partidos ya cargados.
+ * @returns {Promise<object|null>} Estadísticas avanzadas listas para render.
+ */
 export async function loadTeamAdvancedStats(equipo, partidos = []) {
   const cacheKey = getCacheKey(equipo, partidos);
   if (TEAM_STATS_CACHE.has(cacheKey)) return TEAM_STATS_CACHE.get(cacheKey);
@@ -427,6 +463,11 @@ function ensureCanvas(mount, className = "team-chart-canvas") {
   return canvas;
 }
 
+/**
+ * Paleta semántica compartida por todas las gráficas del detalle de equipo.
+ *
+ * @returns {Record<string, string>} Tokens de color reutilizables.
+ */
 function chartPalette() {
   return {
     green: "#16a34a",
@@ -848,6 +889,13 @@ function renderRangeControls(root, selectedRange) {
   }).join("");
 }
 
+/**
+ * Monta o remonta todas las gráficas de estadísticas del detalle de equipo.
+ *
+ * @param {HTMLElement} root Nodo raíz de la vista de estadísticas.
+ * @param {object} stats Estadísticas ya calculadas.
+ * @returns {void}
+ */
 export function mountTeamStatsCharts(root, stats) {
   if (!(root instanceof HTMLElement) || !stats?.timeline?.length) return;
   destroyTeamCharts(root);
@@ -896,11 +944,24 @@ export function mountTeamStatsCharts(root, stats) {
   TEAM_CHARTS.set(root, { charts });
 }
 
+/**
+ * Desmonta las instancias Chart.js asociadas a la vista actual.
+ *
+ * @param {HTMLElement} root Nodo raíz de la vista.
+ * @returns {void}
+ */
 export function unmountTeamStatsCharts(root) {
   if (!(root instanceof HTMLElement)) return;
   destroyTeamCharts(root);
 }
 
+/**
+ * Renderiza el HTML de la pestaña de estadísticas del detalle de equipo.
+ *
+ * @param {object|null} stats Estadísticas avanzadas ya calculadas.
+ * @param {{isLoading?: boolean}} [options={}] Estado de carga visual.
+ * @returns {string} HTML resultante.
+ */
 export function renderTeamStatsView(stats, options = {}) {
   const { isLoading = false } = options;
   if (isLoading) {

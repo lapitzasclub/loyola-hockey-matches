@@ -11,32 +11,61 @@ import { groupClasificacionData } from "../utils/clasificacionHelpers.js";
 
 const TEAM_SUMMARY_DEBUG = false;
 
-export async function loadEquipoDetalleMatches(equipo) {
+/**
+ * Devuelve una lista de identificadores candidatos para resolver el calendario
+ * del equipo. En algunos flujos el payload llega con `IdEquipoComp` real y en
+ * otros solo con `IdEquipo`, así que probamos ambos sin asumir demasiado.
+ *
+ * @param {object|null|undefined} equipo Payload crudo o normalizado del equipo.
+ * @returns {string[]} Lista de ids candidatos, sin duplicados ni valores vacíos.
+ */
+function getCandidateTeamIds(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
-  if (!normalized?.idCompeticion) return [];
-
-  const candidateTeamCompIds = [
-    normalized.idEquipoComp,
-    normalized.idEquipo,
+  return [...new Set([
+    normalized?.idEquipoComp,
+    normalized?.idEquipo,
     equipo?.IdEquipoComp,
     equipo?.idEquipoComp,
     equipo?.IdEquipo,
     equipo?.idEquipo,
-  ].filter(Boolean).map(String);
+  ].filter(Boolean).map(String))];
+}
 
-  for (const teamCompId of candidateTeamCompIds) {
+/**
+ * Carga el calendario del equipo en su competición actual.
+ *
+ * Tolera payloads incompletos probando varios ids candidatos hasta encontrar
+ * uno que realmente devuelva partidos.
+ *
+ * @param {object|null|undefined} equipo Equipo origen.
+ * @returns {Promise<object[]>} Lista de partidos ordenada por fecha.
+ */
+export async function loadEquipoDetalleMatches(equipo) {
+  const normalized = normalizarEquipoClasificacion(equipo);
+  if (!normalized?.idCompeticion) return [];
+
+  for (const teamCompId of getCandidateTeamIds(equipo)) {
     try {
       const raw = await getCalendarioLoyola(teamCompId, normalized.idCompeticion);
       const { partidos } = extractPartidos(raw);
       if (Array.isArray(partidos) && partidos.length) {
         return partidos.slice().sort(comparePartidosByScheduledDate);
       }
-    } catch {}
+    } catch {
+      // Seguimos con el siguiente candidato: el flujo mezcla IdEquipo e IdEquipoComp.
+    }
   }
 
   return [];
 }
 
+/**
+ * Enriquece la colección de partidos con alineaciones cargadas desde el hub.
+ *
+ * @param {object|null|undefined} equipo Equipo activo.
+ * @param {object[]|null|undefined} partidos Partidos ya cargados.
+ * @returns {Promise<object[]>} La misma lista, hidratada cuando ha sido posible.
+ */
 export async function hydrateEquipoDetalleRosterMatches(equipo, partidos) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized || !Array.isArray(partidos) || !partidos.length) return partidos || [];
@@ -44,6 +73,13 @@ export async function hydrateEquipoDetalleRosterMatches(equipo, partidos) {
   return partidos;
 }
 
+/**
+ * Garantiza que la clasificación de la competición del equipo está disponible
+ * en caché global para reutilizar posiciones, agregados y resolución de ids.
+ *
+ * @param {object|null|undefined} equipo Equipo activo.
+ * @returns {Promise<object[]>} Filas de clasificación actualmente disponibles.
+ */
 export async function ensureTeamCompetitionClasificacion(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized?.idCompeticion) return [];
@@ -65,6 +101,12 @@ export async function ensureTeamCompetitionClasificacion(equipo) {
   }
 }
 
+/**
+ * Normaliza un texto para comparaciones laxas entre nombres de equipo o grupo.
+ *
+ * @param {unknown} value Valor textual original.
+ * @returns {string} Clave normalizada para matching.
+ */
 function normalizeTextKey(value) {
   return String(value || "")
     .normalize("NFD")
@@ -74,6 +116,15 @@ function normalizeTextKey(value) {
     .toLowerCase();
 }
 
+/**
+ * Busca la fila de clasificación que mejor representa al equipo indicado.
+ *
+ * Prioriza ids de competición/equipo y luego cae a nombre y grupo, porque la
+ * fuente del payload cambia según se abra desde clasificación o desde partido.
+ *
+ * @param {object|null|undefined} equipo Equipo de referencia.
+ * @returns {object|null} Fila de clasificación asociada o null.
+ */
 export function getClasificacionMatch(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
   const clasData = Array.isArray(globalThis.window?._clasificacionLoyola) ? globalThis.window._clasificacionLoyola : [];
@@ -161,10 +212,26 @@ export function computeTeamAggregateStats(equipo, partidos) {
   };
 }
 
+/**
+ * Indica si un partido puede tratarse como jugado a efectos de filtros y resumen.
+ *
+ * @param {object|null|undefined} partido Partido a evaluar.
+ * @returns {boolean} True cuando tiene resultado final.
+ */
 function isPlayedMatch(partido) {
   return partido?.EstadoPartido == 2 && partido?.GolesLocal != null && partido?.GolesVisit != null;
 }
 
+/**
+ * Resuelve la perspectiva del equipo dentro de un partido concreto.
+ *
+ * Acepta tanto ids de equipo como ids de equipo-en-competición porque el
+ * calendario y la clasificación no son consistentes entre endpoints.
+ *
+ * @param {object|null|undefined} partido Partido a inspeccionar.
+ * @param {object|null|undefined} equipo Equipo activo.
+ * @returns {{played: boolean, gf: number|null, gc: number|null}|null} Perspectiva resuelta.
+ */
 function getTeamPerspective(partido, equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized || !partido) return null;
@@ -187,6 +254,14 @@ function getTeamPerspective(partido, equipo) {
   };
 }
 
+/**
+ * Filtra los partidos del equipo por estado o resultado.
+ *
+ * @param {object[]|null|undefined} partidos Lista base de partidos.
+ * @param {object|null|undefined} equipo Equipo activo.
+ * @param {string} [filter="all"] Filtro lógico a aplicar.
+ * @returns {object[]} Partidos filtrados.
+ */
 export function filterTeamMatches(partidos, equipo, filter = "all") {
   if (!Array.isArray(partidos) || !partidos.length) return [];
   if (!filter || filter === "all") return partidos;

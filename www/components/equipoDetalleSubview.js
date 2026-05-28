@@ -3,6 +3,13 @@ import { getCurrentView, logoUrl, normalizarEquipoClasificacion, pushView, setCu
 import { ensureTeamCompetitionClasificacion, getClasificacionMatch, hydrateEquipoDetalleRosterMatches, loadEquipoDetalleMatches, renderEquipoDetalleView } from "./equipoDetalle.js";
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
 
+/**
+ * Renderiza la cabecera compacta del subview de equipo dentro del modal compartido.
+ *
+ * @param {object|null|undefined} equipo Equipo activo.
+ * @param {string} [competitionName=""] Nombre de competición o grupo de apoyo.
+ * @returns {string} HTML de cabecera.
+ */
 export function renderEquipoDetalleHeader(equipo, competitionName = "") {
   const logoSrc = logoUrl(equipo?.idEntidadEquipo || "sinescudo");
   const subtitle = equipo?.nombreGrupo || competitionName || "";
@@ -17,6 +24,12 @@ export function renderEquipoDetalleHeader(equipo, competitionName = "") {
   `;
 }
 
+/**
+ * Renderiza el subview completo del detalle de equipo para el modal compartido.
+ *
+ * @param {object} state Estado global del detalle compartido.
+ * @returns {string} HTML de la vista de equipo.
+ */
 export function renderEquipoSubview(state) {
   const equipo = state.selectedEquipo;
   if (!equipo) return "";
@@ -33,6 +46,19 @@ export function renderEquipoSubview(state) {
   });
 }
 
+/**
+ * Abre el subview de equipo dentro del modal compartido del detalle de partido.
+ *
+ * Primero rehidrata el payload con la fila real de clasificación si existe,
+ * luego carga partidos, plantilla derivada y estadísticas bajo demanda.
+ *
+ * @param {object} state Estado global del detalle.
+ * @param {object} equipoPayload Payload de entrada del equipo.
+ * @param {HTMLElement} headerEl Nodo de cabecera.
+ * @param {HTMLElement} bodyEl Nodo de cuerpo.
+ * @param {Function} renderAll Callback de rerender total.
+ * @returns {Promise<void>}
+ */
 export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, renderAll) {
   let equipo = normalizarEquipoClasificacion(equipoPayload);
   if (!equipo) return;
@@ -94,6 +120,17 @@ export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, 
     });
 }
 
+/**
+ * Vincula interacciones del subview de equipo dentro del modal compartido.
+ *
+ * @param {HTMLElement} rootEl Nodo raíz renderizado.
+ * @param {object} state Estado global del detalle.
+ * @param {HTMLElement} headerEl Nodo de cabecera.
+ * @param {HTMLElement} bodyEl Nodo de cuerpo.
+ * @param {Function} renderAll Callback de rerender total.
+ * @param {Function} openMatchInSharedModal Navegación al detalle de partido.
+ * @returns {void}
+ */
 export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll, openMatchInSharedModal) {
   if (bodyEl instanceof HTMLElement) {
     unmountTeamStatsCharts(bodyEl);
