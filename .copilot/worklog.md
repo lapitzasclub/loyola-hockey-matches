@@ -1,4 +1,6 @@
-# Worklog
+# Worklog (archivo histórico)
+
+> Este fichero es un registro histórico. La memoria activa está en Claude Code. No es necesario actualizarlo.
 
 ## 2026-05-09
 
