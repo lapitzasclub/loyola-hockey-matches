@@ -240,7 +240,6 @@ function delay(ms) {
  * @returns {Promise<void>} Promesa resuelta cuando `window.hubProxy` está disponible.
  */
 async function waitForSignalRProxy(timeout = 4000) {
-  console.log("[SignalR] Esperando disponibilidad de window.hubProxy...");
   const start = Date.now();
   while (!window.hubProxy) {
     if (Date.now() - start > timeout) {
@@ -248,7 +247,6 @@ async function waitForSignalRProxy(timeout = 4000) {
     }
     await delay(50);
   }
-  console.log("[SignalR] hubProxy disponible:", window.hubProxy);
 }
 
 /**
@@ -345,9 +343,7 @@ async function openMatchInSharedModal(state, partido, headerEl, bodyEl, renderAl
 
 async function cargarDetallePartido(idPartido, stateOverride = null, headerOverride = null, bodyOverride = null) {
   await waitForSignalRProxy();
-  console.log("[SignalR] Esperando conexión activa del hub...");
   await waitForSignalRConnected();
-  console.log("[SignalR] Hub conectado:", $.connection.hub);
 
   const headerEl = headerOverride || document.getElementById("partido-detalle-header-content");
   const bodyEl = bodyOverride || document.getElementById("partido-detalle-body");
@@ -364,9 +360,7 @@ async function cargarDetallePartido(idPartido, stateOverride = null, headerOverr
   renderAll(state, headerEl, bodyEl);
 
   const partidoRes = await getPartido(idPartido);
-  console.log("[API] getPartido", partidoRes);
   const partidoData = parseApiArrayResponse(partidoRes);
-  console.log("[API] getPartido parsed", partidoData);
   if (Array.isArray(partidoData) && partidoData.length > 0) {
     updatePartido(state, partidoData[0]);
     state.loadingMatch = false;
@@ -383,7 +377,6 @@ async function cargarDetallePartido(idPartido, stateOverride = null, headerOverr
   }
 
   const estadistica = await getEstadisticaPartido(idPartido);
-  console.log("[API] getEstadisticaPartido", estadistica);
   updateEstadisticaPayload(state, estadistica);
   state.loadingStats = false;
   if (state.partido) {

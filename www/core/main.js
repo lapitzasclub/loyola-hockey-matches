@@ -93,13 +93,6 @@ function getSelectedModalidad() {
 function joinSelectedModalidad() {
   const modalidad = getSelectedModalidad();
   const hubProxy = getHubProxy();
-  console.log("[SignalR] Intentando unirse a modalidad", {
-    modalidad,
-    hasHubProxy: !!hubProxy,
-    hasServer: !!hubProxy?.server,
-    hasJoinGroup: !!hubProxy?.server?.joinGroup,
-    state: $.connection?.hub?.state,
-  });
   if (!hubProxy?.server?.joinGroup) {
     console.warn("[SignalR] joinGroup no disponible en hubProxy.server");
     return;
@@ -151,10 +144,7 @@ async function initSignalR() {
     return;
   }
   SIGNALR_EVENT_NAMES.forEach((eventName) => {
-    client[eventName] = (payload, idpartido) => {
-      console.log(`[SignalR] EVENT global: ${eventName} para partido ${idpartido}`, payload);
-      emitPartidoHubEvent(eventName, payload, idpartido);
-    };
+    client[eventName] = (payload, idpartido) => emitPartidoHubEvent(eventName, payload, idpartido);
   });
 
   let reconnectTimer = null;

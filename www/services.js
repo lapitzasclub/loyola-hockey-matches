@@ -112,16 +112,11 @@ function getServiceUrl(endpoint) {
 }
 
 /**
- * Normaliza un path API para web pública y desarrollo, evitando URLs absolutas externas en frontend.
- *
- * @param {string} path Ruta relativa de API que empieza por '/'.
- * @returns {string} Ruta final consumible por el cliente.
- */
-/**
  * Ejecuta una llamada estándar a un endpoint legacy ASMX capturando errores en formato uniforme.
  *
  * @param {string} endpoint Nombre del método remoto.
  * @param {object} payload Cuerpo JSON del POST.
+ * @param {number} [ttl] TTL de caché en ms. Si se omite usa el valor por defecto del sistema.
  * @returns {Promise<any>} Respuesta válida o un objeto `{ error, message }`.
  */
 async function callLegacyService(endpoint, payload, ttl) {
@@ -158,12 +153,11 @@ function callCompetitionService(endpoint, idCompeticion, extraPayload = {}, ttl)
  * @param {string} endpoint Nombre del método remoto.
  * @param {string} fieldName Nombre del campo principal del payload.
  * @param {string|number} value Valor a serializar.
+ * @param {number} [ttl] TTL de caché en ms. Si se omite usa el valor por defecto del sistema.
  * @returns {Promise<any>} Respuesta de la API legacy.
  */
-function callEntityService(endpoint, fieldName, value) {
-  return callLegacyService(endpoint, {
-    [fieldName]: String(value),
-  });
+function callEntityService(endpoint, fieldName, value, ttl) {
+  return callLegacyService(endpoint, { [fieldName]: String(value) }, ttl);
 }
 
 /**

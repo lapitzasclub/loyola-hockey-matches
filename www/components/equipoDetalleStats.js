@@ -36,6 +36,13 @@ function pickStat(stats, type, side) {
   return stats.find((item) => item?.IdTipoEvento === type && Number(item?.LocalVisit) === side)?.Total ?? 0;
 }
 
+/**
+ * Suma el valor numérico de un campo en todos los registros de una alineación.
+ *
+ * @param {object[]} [lineup=[]] Alineación (jugadores o porteros).
+ * @param {string} field Nombre del campo a sumar (p.ej. `GolPenalti`, `Azules`).
+ * @returns {number} Suma total del campo en la alineación.
+ */
 function sumLineupField(lineup = [], field) {
   return emptyArray(lineup).reduce((acc, item) => acc + (Number(item?.[field]) || 0), 0);
 }
