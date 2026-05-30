@@ -250,11 +250,12 @@ main,
   letter-spacing: 0;
   margin: 0;
   padding: 0;
-  line-height: 1;
-  display: block;
-  white-space: nowrap;
+  line-height: 1.15;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
   max-width: min(70vw, 28rem);
   padding-top: 0;
 }

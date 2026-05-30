@@ -26,6 +26,18 @@ function getEntityLogoUrl(entityId) {
   return `${ENTITY_LOGO_BASE_URL}/${entityId || "sinescudo"}.png`;
 }
 
+const COMPETITION_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/logocompeticion/400x400";
+
+/**
+ * Construye la URL pública del logo de una competición.
+ *
+ * @param {string|number} idCompeticion Identificador de la competición.
+ * @returns {string} URL del logo de competición.
+ */
+function getCompeticionLogoUrl(idCompeticion) {
+  return `${COMPETITION_LOGO_BASE_URL}/${idCompeticion}.jpg`;
+}
+
 /**
  * Devuelve true si un equipo pertenece al universo Loyola mostrado por la app.
  *
@@ -152,10 +164,10 @@ export async function getLoyolaCompetitionCatalog() {
         nombreCompeticionAbrev: comp.DenoAbrevComp || comp.DenoComp,
         temporada: comp.Temporada || competitionData?.Temporada || "",
         modalidad: comp.IdModalidadComp || competitionData?.IdModalidadComp || "hp",
-        tieneLogoComp: !!competitionData?.LogoComp,
-        logoCompeticionUrl: competitionData?.LogoComp && competitionData?.IdEntidad
-          ? getEntityLogoUrl(competitionData.IdEntidad)
-          : getEntityLogoUrl("sinescudo"),
+        tieneLogoComp: !!comp.LogoComp,
+        logoCompeticionUrl: comp.LogoComp
+          ? getCompeticionLogoUrl(comp.IdCompeticion)
+          : getEntityLogoUrl(comp.IdEntidad),
         equipos: equiposLoyola,
       });
     }
