@@ -312,7 +312,8 @@ function renderSubviewHeader(state) {
 
 function bindTeamInteractions(rootEl, state, headerEl, bodyEl, renderAllFn) {
   if (getCurrentView(state) === "equipo") {
-    bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAllFn, openMatchInSharedModal);
+    const rebindPlayerLinks = () => bindPlayerLinks(bodyEl, state, headerEl, renderAllFn, hydrateJugadorStats);
+    bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAllFn, openMatchInSharedModal, rebindPlayerLinks);
   }
 }
 

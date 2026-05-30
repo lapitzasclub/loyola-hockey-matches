@@ -156,9 +156,10 @@ export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, 
  * @param {HTMLElement} bodyEl Nodo de cuerpo.
  * @param {Function} renderAll Callback de rerender total.
  * @param {Function} openMatchInSharedModal Navegación al detalle de partido.
+ * @param {Function} [rebindPlayerLinks] Callback para re-vincular enlaces de jugador tras rerenders parciales del panel de tabs.
  * @returns {void}
  */
-export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll, openMatchInSharedModal) {
+export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll, openMatchInSharedModal, rebindPlayerLinks) {
   if (bodyEl instanceof HTMLElement) {
     unmountTeamStatsCharts(bodyEl);
     if (state.teamFilters?.tab === "estadisticas" && state.teamStats && !state.loadingStats) {
@@ -223,6 +224,8 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
         });
       };
     });
+
+    rebindPlayerLinks?.();
   };
 
   const viewEl = rootEl.querySelector('.team-detail-view') || rootEl;

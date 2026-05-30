@@ -1,6 +1,6 @@
 // partidos.js
 // Renderizado y lógica de partidos extraída de ui.js
-import { getEquipoLabel, getEquipoNombreCompleto } from "../equipo.js";
+import { getEquipoLabel } from "../equipo.js";
 import { getLang, t } from "../i18n.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { getParametrosCompeticion } from "../services.js";
@@ -52,6 +52,16 @@ function getSelectedCompetitionId() {
   if (!selected) return "";
   const [idCompeticion] = selected.split("|");
   return idCompeticion || "";
+}
+
+function getSelectedEquipoNombre() {
+  const selected = getEquipoSeleccionado();
+  if (!selected) return "";
+  const [idCompeticion, idEquipoComp] = selected.split("|");
+  const found = getEquiposLoyola().find(
+    (eq) => String(eq.idCompeticion) === idCompeticion && String(eq.idEquipoComp) === idEquipoComp,
+  );
+  return found?.nombreEquipo || "";
 }
 
 /**
@@ -158,7 +168,7 @@ export async function renderPartidos(matchesList, raw) {
   void preloadPartidoDetalleModule();
 
   const renderContext = {
-    equipoSel: getEquipoNombreCompleto(),
+    equipoSel: getSelectedEquipoNombre(),
     lang: getLang() === "eu" ? "eu" : "es",
     proximoIdx: getProximoPartidoIdx(partidosOrdenados, new Date()),
     logoMap: await getCompetitionLogoMap(),
