@@ -4,6 +4,12 @@ import { emitPartidoHubEvent } from "../services.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { getSignalRMode } from "../config/runtime.js";
 
+/** Ruta base del proxy SignalR tanto en desarrollo local como en producción web. */
+const SIGNALR_PROXY_PATH = "/signalr";
+
+/** Tiempo de espera antes de reintentar la conexión SignalR tras una desconexión. */
+const SIGNALR_RECONNECT_DELAY_MS = 5_000;
+
 const SIGNALR_EVENT_NAMES = [
   "marcadorPartido",
   "eventosPartido",
@@ -25,15 +31,6 @@ function getHubProxy() {
   return globalThis.hubProxy || null;
 }
 
-/**
- * Indica si la app se está ejecutando en desarrollo local web.
- *
- * @returns {boolean} True cuando el host es localhost o loopback.
- */
-function isLocalDev() {
-  const host = globalThis.location?.hostname;
-  return host === "localhost" || host === "127.0.0.1";
-}
 
 /**
  * Resuelve la URL base de SignalR según el entorno actual.
@@ -44,10 +41,7 @@ function getSignalRBaseUrl() {
   if (getSignalRMode() === "direct") {
     return "https://digitalsport.online/signalr";
   }
-  if (isLocalDev()) {
-    return "/signalr";
-  }
-  return "/signalr";
+  return SIGNALR_PROXY_PATH;
 }
 
 /**
@@ -194,7 +188,7 @@ async function initSignalR() {
     reconnectTimer = setTimeout(() => {
       reconnectTimer = null;
       iniciarConexion();
-    }, 5000);
+    }, SIGNALR_RECONNECT_DELAY_MS);
   }
 
   $.connection.hub.disconnected(() => {

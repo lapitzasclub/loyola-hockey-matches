@@ -36,9 +36,13 @@ function setExpandedState(detailsEl, contentEl, expanded, options = {}) {
 }
 
 /**
- * Anima la apertura/cierre de un acordeón details reutilizable.
+ * Anima la apertura/cierre de un acordeón `<details>` reutilizable.
  *
- * @param {HTMLElement} rootEl
+ * Cada elemento `<details>` recibe la propiedad `_accordionAnimation` para rastrear
+ * la animación en curso y cancelarla si el usuario invierte la dirección antes de que
+ * termine. Esta propiedad no es un atributo del DOM: vive solo en el objeto JS.
+ *
+ * @param {HTMLElement} rootEl Nodo raíz donde buscar los ítems del acordeón.
  * @param {{
  *  itemSelector: string,
  *  triggerSelector: string,

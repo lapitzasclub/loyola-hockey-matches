@@ -1,3 +1,8 @@
+/** Puntos otorgados al ganador de un partido. */
+const POINTS_WIN  = 3;
+/** Puntos otorgados a cada equipo en caso de empate. */
+const POINTS_DRAW = 1;
+
 /**
  * Agrupa los equipos de la clasificación por grupo o denominación.
  *
@@ -136,17 +141,17 @@ export function calcularPosicionesPrevias(equipos, partidos) {
     stats[eqVis].gc += Number(partido.GolesLocal);
 
     if (Number(partido.GolesLocal) > Number(partido.GolesVisit)) {
-      stats[eqLoc].pts += 3;
+      stats[eqLoc].pts += POINTS_WIN;
       stats[eqLoc].g += 1;
       stats[eqVis].p += 1;
     } else if (Number(partido.GolesLocal) < Number(partido.GolesVisit)) {
-      stats[eqVis].pts += 3;
+      stats[eqVis].pts += POINTS_WIN;
       stats[eqVis].g += 1;
       stats[eqLoc].p += 1;
     } else {
-      stats[eqLoc].pts += 1;
+      stats[eqLoc].pts += POINTS_DRAW;
       stats[eqLoc].e += 1;
-      stats[eqVis].pts += 1;
+      stats[eqVis].pts += POINTS_DRAW;
       stats[eqVis].e += 1;
     }
   }

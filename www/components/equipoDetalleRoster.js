@@ -21,9 +21,14 @@ function getBucketKey(persona, role) {
   return `${role}:fallback:${dorsal}:${nombre}`;
 }
 
+/**
+ * Etiquetas abreviadas para los roles del cuerpo técnico según IdPosicion de la API FVP.
+ * Valores: 3=Entrenador, 4=Segundo entrenador, 5=Delegado, 6=Auxiliar; resto → "TEC".
+ */
+const STAFF_ROLE_MAP = { 3: "ENT", 4: "ENT2", 5: "DEL", 6: "AUX" };
+
 function getStaffRoleLabel(entry) {
-  const posMap = { 3: "ENT", 4: "ENT2", 5: "DEL", 6: "AUX" };
-  return posMap[entry?.raw?.IdPosicion] || "TEC";
+  return STAFF_ROLE_MAP[entry?.raw?.IdPosicion] || "TEC";
 }
 
 function buildPlayerPayload(entry) {
@@ -39,6 +44,19 @@ function buildPlayerPayload(entry) {
   };
 }
 
+/**
+ * Fusiona los datos de una aparición de un jugador/técnico en un partido concreto
+ * sobre el bucket acumulado del mismo jugador. La primera aparición establece los
+ * datos base (nombre, dorsal); las siguientes incrementan `appearances` y añaden
+ * el partido al historial.
+ *
+ * @param {object} target Bucket acumulado del jugador (modificado in-place).
+ * @param {object} persona Objeto de la alineación de la API (IdLicencia, Dorsal, ApellidosNombre…).
+ * @param {string} role Rol del jugador: "jugador", "portero" o "tecnico".
+ * @param {string} teamType Lado del campo: "local" o "visitante".
+ * @param {object} partido Partido del que proviene la aparición.
+ * @returns {void}
+ */
 function mergeEntry(target, persona, role, teamType, partido) {
   target.role = role;
   target.teamType = target.teamType || teamType;

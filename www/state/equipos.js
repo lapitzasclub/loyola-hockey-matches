@@ -11,10 +11,8 @@ export function getEquiposLoyola() {
 }
 export function setEquiposLoyola(val) {
   _equiposLoyola = val;
-  // Hacer accesible globalmente para renderClasificacion
-  if (globalThis.window !== undefined) {
-    globalThis.window._equiposLoyola = val;
-  }
+  // Expuesto globalmente para que renderClasificacion pueda leerlo sin importación circular.
+  window._equiposLoyola = val;
 }
 export function getCompetitionCatalog() {
   return _competitionCatalog;
@@ -46,6 +44,14 @@ export function persistEquipoSeleccionado(value) {
   if (selector) selector.value = value;
 }
 
+/**
+ * Carga el catálogo de competiciones Loyola, rellena el `<select>` legacy del side-menu
+ * y restaura la selección guardada en localStorage.
+ *
+ * @param {() => Promise<void>} mostrarPartidosYClasificacion Callback que recarga partidos y clasificación tras un cambio de equipo.
+ * @param {(err: Error) => void} mostrarPantallaErrorGlobal Callback que muestra el estado de error global si la carga falla.
+ * @returns {Promise<void>}
+ */
 export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion, mostrarPantallaErrorGlobal) {
   const selector = document.getElementById("equipoLoyolaSelect");
   if (!selector) return;

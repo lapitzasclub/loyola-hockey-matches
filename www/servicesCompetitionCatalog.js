@@ -1,7 +1,7 @@
 import { getLegacyApiMode } from "./config/runtime.js";
 import { getParametrosCompeticion } from "./services.js";
 import { CACHE_TTL_LONG } from "./utils/apiCache.js";
-import { FVP_BASE_URL, HEADERS, ENTITY_LOGO_BASE_URL } from "./servicesShared.js";
+import { FVP_BASE_URL, HEADERS, getEntityLogoUrl, unwrapLegacyPayload } from "./servicesShared.js";
 
 const CATALOG_STORAGE_KEY = "loyola_competition_catalog_v1";
 
@@ -36,16 +36,7 @@ function getCompeticionesUrl() {
     : "/api/GetCompeticiones";
 }
 
-/**
- * Construye la URL pública de un logo de entidad o un fallback sin escudo.
- *
- * @param {string|number|null|undefined} entityId Identificador de entidad.
- * @returns {string} URL del recurso visual.
- */
-function getEntityLogoUrl(entityId) {
-  return `${ENTITY_LOGO_BASE_URL}/${entityId || "sinescudo"}.png`;
-}
-
+/** URL base de los logos de competición en S3 (formato .jpg, tamaño 400×400). */
 const COMPETITION_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/logocompeticion/400x400";
 
 /**
@@ -71,32 +62,6 @@ function isLoyolaTeam(equipo) {
   );
 }
 
-/**
- * Normaliza respuestas legacy ASMX que pueden venir como string JSON, como objeto con `d`
- * o ya directamente como payload final.
- *
- * @param {any} raw Respuesta cruda.
- * @returns {any} Payload normalizado.
- */
-function unwrapLegacyPayload(raw) {
-  if (raw == null) return raw;
-
-  if (typeof raw === "string") {
-    const first = JSON.parse(raw);
-    return typeof first?.d === "string" ? JSON.parse(first.d) : (first?.d ?? first);
-  }
-
-  if (typeof raw === "object") {
-    if (typeof raw.d === "string") {
-      return JSON.parse(raw.d);
-    }
-    if (raw.d !== undefined) {
-      return raw.d;
-    }
-  }
-
-  return raw;
-}
 
 /**
  * Obtiene y cachea el catálogo de competiciones con sus equipos Loyola y logos.

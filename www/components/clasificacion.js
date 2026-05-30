@@ -1,7 +1,8 @@
 // clasificacion.js — clasificación en tabla estilo BeSoccer
 
 import { getCalendarioTodosEquipos, getParametrosCompeticion } from "../services.js";
-import { ENTITY_LOGO_BASE_URL } from "../servicesShared.js";
+import { getEntityLogoUrl } from "../servicesShared.js";
+import { preloadPartidoDetalleModule } from "./partidos.js";
 import { getEquipoLabel } from "../equipo.js";
 import { t } from "../i18n.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
@@ -12,19 +13,6 @@ import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDeta
 import { bindDetailsAccordion } from "./accordion.js";
 
 const competitionLogoCache = new Map();
-let partidoDetalleModulePromise = null;
-
-/**
- * Precarga diferida del módulo de detalle de partido para mejorar la respuesta inicial.
- *
- * @returns {Promise<typeof import("./partidoDetalle.js")>} Módulo de detalle cargado bajo demanda.
- */
-function preloadPartidoDetalleModule() {
-  if (!partidoDetalleModulePromise) {
-    partidoDetalleModulePromise = import("./partidoDetalle.js");
-  }
-  return partidoDetalleModulePromise;
-}
 
 /**
  * Abre de forma diferida el detalle de partido reutilizando la precarga compartida.
@@ -47,15 +35,6 @@ function getClasificacionStorageKey(grupo) {
   return `clasificacion:${grupo}`;
 }
 
-/**
- * Obtiene una URL de escudo a partir del identificador de entidad.
- *
- * @param {string|number|null|undefined} entityId Identificador de entidad.
- * @returns {string} URL pública del escudo.
- */
-function getEntityLogoUrl(entityId) {
-  return `${ENTITY_LOGO_BASE_URL}/${entityId || "sinescudo"}.png`;
-}
 
 /**
  * Resuelve el identificador estable del equipo presente en clasificación y calendario.

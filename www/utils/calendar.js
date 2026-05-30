@@ -4,6 +4,15 @@
 import { safeStr, parseFecha } from "./helpers.js";
 import { t } from "../i18n.js";
 
+/** Hora de inicio por defecto cuando el partido no tiene hora confirmada. */
+const DEFAULT_EVENT_START_HOUR = 12;
+/** Hora de fin por defecto (duración estimada de 2 horas). */
+const DEFAULT_EVENT_END_HOUR = 14;
+/** Duración estándar de un partido en milisegundos (2 horas). */
+const DEFAULT_EVENT_DURATION_MS = 2 * 60 * 60 * 1000;
+/** Retardo para liberar la URL de objeto del ICS una vez iniciada la descarga. */
+const URL_REVOKE_DELAY_MS = 500;
+
 /**
  * Escapa caracteres especiales para el formato ICS de calendario.
  * @param {string} s - Cadena a escapar.
@@ -37,22 +46,8 @@ export function toGCalUTC(dt) {
 export function defaultRangeForDay(d) {
   if (!d || Number.isNaN(d.getTime()))
     return { startLocal: null, endLocal: null };
-  const startLocal = new Date(
-    d.getFullYear(),
-    d.getMonth(),
-    d.getDate(),
-    12,
-    0,
-    0
-  );
-  const endLocal = new Date(
-    d.getFullYear(),
-    d.getMonth(),
-    d.getDate(),
-    14,
-    0,
-    0
-  );
+  const startLocal = new Date(d.getFullYear(), d.getMonth(), d.getDate(), DEFAULT_EVENT_START_HOUR, 0, 0);
+  const endLocal   = new Date(d.getFullYear(), d.getMonth(), d.getDate(), DEFAULT_EVENT_END_HOUR,   0, 0);
   return { startLocal, endLocal };
 }
 
@@ -180,7 +175,7 @@ export function buildEventTimes(p) {
     hora.minutes,
     0
   );
-  const endLocal = new Date(startLocal.getTime() + 2 * 60 * 60 * 1000);
+  const endLocal = new Date(startLocal.getTime() + DEFAULT_EVENT_DURATION_MS);
   return { dateObj, startLocal, endLocal };
 }
 
@@ -232,8 +227,8 @@ export function downloadICS(title, startLocal, endLocal, desc, loc, dateObj) {
     const y = dateObj.getFullYear();
     const m = String(dateObj.getMonth() + 1).padStart(2, "0");
     const d = String(dateObj.getDate()).padStart(2, "0");
-    start = `${y}${m}${d}T120000`;
-    end = `${y}${m}${d}T140000`;
+    start = `${y}${m}${d}T${String(DEFAULT_EVENT_START_HOUR).padStart(2, "0")}0000`;
+    end   = `${y}${m}${d}T${String(DEFAULT_EVENT_END_HOUR).padStart(2, "0")}0000`;
   }
   const ics = [
     "BEGIN:VCALENDAR",
@@ -262,7 +257,7 @@ export function downloadICS(title, startLocal, endLocal, desc, loc, dateObj) {
   setTimeout(() => {
     a.remove();
     URL.revokeObjectURL(url);
-  }, 500);
+  }, URL_REVOKE_DELAY_MS);
 }
 
 /**

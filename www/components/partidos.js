@@ -4,6 +4,7 @@ import { getEquipoLabel } from "../equipo.js";
 import { getLang, t } from "../i18n.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { getParametrosCompeticion } from "../services.js";
+import { getEntityLogoUrl } from "../servicesShared.js";
 import { createCalendarButton } from "../utils/calendar.js";
 import { comparePartidosByScheduledDate, extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
 import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionActionHtml, makeInstalacionHtml, scrollToProximo } from "../utils/partidosHelpers.js";
@@ -11,7 +12,6 @@ import { renderEmptyState, renderErrorState } from "./loadingStates.js";
 import { renderEquipoDetalleHeader, openEquipoSubview } from "./equipoDetalleSubview.js";
 import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
 
-const ENTITY_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/entidad/200x200";
 const competitionLogoCache = new Map();
 let partidoDetalleModulePromise = null;
 
@@ -27,20 +27,18 @@ export function preloadPartidoDetalleModule() {
   return partidoDetalleModulePromise;
 }
 
+/**
+ * Abre el detalle de un partido de forma diferida, reutilizando la precarga del módulo.
+ *
+ * @param {string|number} idPartido Identificador del partido.
+ * @param {object} [options={}] Opciones de apertura del modal.
+ * @returns {Promise<void>}
+ */
 async function openPartidoDetalleLazy(idPartido, options = {}) {
   const { openPartidoDetalle } = await preloadPartidoDetalleModule();
   openPartidoDetalle(idPartido, options);
 }
 
-/**
- * Obtiene una URL de escudo a partir del identificador de entidad.
- *
- * @param {string|number|null|undefined} entityId Identificador de entidad.
- * @returns {string} URL pública del escudo.
- */
-function getEntityLogoUrl(entityId) {
-  return `${ENTITY_LOGO_BASE_URL}/${entityId || "sinescudo"}.png`;
-}
 
 /**
  * Carga y cachea el mapa de logos de la competición actualmente seleccionada.
@@ -254,11 +252,13 @@ function renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap) {
 }
 
 /**
- * Vincula interacciones ligeras de precarga y apertura de detalle sobre una tarjeta.
+ * Enriquece el payload mínimo de un equipo con datos ya disponibles en memoria,
+ * evitando peticiones extra. Consulta en orden: clasificación cacheada en
+ * `window._clasificacionLoyola` y luego el catálogo de competiciones.
  *
- * @param {HTMLLIElement} li Tarjeta del partido.
- * @param {object} partido Partido asociado.
- * @returns {void}
+ * @param {object} equipoPayload Payload básico del equipo (IdEquipo, IdCompeticion…).
+ * @param {{ competitionId?: string, competitionName?: string }} [context] Contexto adicional del punto de entrada.
+ * @returns {object} Payload enriquecido con campos normalizados (IdEntidadEquipo, NombreGrupo…).
  */
 function enrichTeamPayloadFromAvailableData(equipoPayload, context = {}) {
   const competitionId = String(equipoPayload?.IdCompeticion || context?.competitionId || "");
@@ -294,6 +294,12 @@ function enrichTeamPayloadFromAvailableData(equipoPayload, context = {}) {
   };
 }
 
+/**
+ * Resuelve el nombre de la competición desde el contexto o el catálogo en memoria.
+ *
+ * @param {{ competitionId?: string, competitionName?: string }} [context] Contexto del punto de entrada.
+ * @returns {string} Nombre de la competición o cadena vacía.
+ */
 function resolveCompetitionNameFromContext(context = {}) {
   if (context?.competitionName) return context.competitionName;
   const competitionId = String(context?.competitionId || "");

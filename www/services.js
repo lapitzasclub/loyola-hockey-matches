@@ -1,7 +1,7 @@
 import { getCachedApi, setCachedApi, CACHE_TTL_LONG } from "./utils/apiCache.js";
 import { getHttp } from "./utils/env.js";
 import { getLegacyApiMode, shouldPreferNativeHttp } from "./config/runtime.js";
-import { FVP_BASE_URL, HEADERS } from "./servicesShared.js";
+import { FVP_BASE_URL, HEADERS, unwrapLegacyPayload } from "./servicesShared.js";
 
 export { getEquiposLoyolaTodasCompeticiones, getLoyolaCompetitionCatalog } from "./servicesCompetitionCatalog.js";
 
@@ -11,27 +11,6 @@ const CERT_PATH_ERROR_HINTS = [
   "Trust anchor for certification path not found",
 ];
 
-/**
- * Normaliza respuestas legacy ASMX que pueden venir como string JSON, como objeto con `d`
- * o ya directamente como payload final.
- *
- * @param {any} raw Respuesta cruda.
- * @returns {any} Payload normalizado.
- */
-function unwrapLegacyPayload(raw) {
-  if (raw == null) return raw;
-
-  if (typeof raw === "string") {
-    const first = JSON.parse(raw);
-    return unwrapLegacyPayload(first);
-  }
-
-  if (typeof raw === "object" && raw.d !== undefined) {
-    return typeof raw.d === "string" ? JSON.parse(raw.d) : raw.d;
-  }
-
-  return raw;
-}
 
 /**
  * Emite un evento del hub de partido sobre el bus interno del cliente.
