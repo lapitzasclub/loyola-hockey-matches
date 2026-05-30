@@ -257,10 +257,13 @@ export async function loadTeamAdvancedStats(equipo, partidos = []) {
       if (!side) return item;
 
       const rivalSide = side === 1 ? 2 : 1;
-      const localLineup = payload?.alinLocal || payload?.JugLocal || payload?.localLineup || [];
-      const visitLineup = payload?.alinVisit || payload?.JugVisit || payload?.visitLineup || [];
-      const localKeepers = payload?.portLocal || payload?.PortLocal || [];
-      const visitKeepers = payload?.portVisit || payload?.PortVisit || [];
+      // GetEstadisticaPartido anida la alineación bajo payload.alineaciones[0].
+      // Los campos directos (alinLocal, JugLocal…) son un fallback por si la estructura varía.
+      const alinBlock = Array.isArray(payload?.alineaciones) ? payload.alineaciones[0] : null;
+      const localLineup  = alinBlock?.JugLocal  || payload?.alinLocal  || payload?.JugLocal  || [];
+      const visitLineup  = alinBlock?.JugVisit  || payload?.alinVisit  || payload?.JugVisit  || [];
+      const localKeepers = alinBlock?.PortLocal || payload?.portLocal || payload?.PortLocal || [];
+      const visitKeepers = alinBlock?.PortVisit || payload?.portVisit || payload?.PortVisit || [];
 
       const teamLineup = side === 1 ? localLineup : visitLineup;
       const rivalLineup = side === 1 ? visitLineup : localLineup;
