@@ -1,6 +1,6 @@
 {
   "name": "loyola-hockey-matches",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "App híbrida para mostrar partidos de Loyola Indautxu A (scrapping web FVP)",
   "scripts": {
     "start": "vite",
