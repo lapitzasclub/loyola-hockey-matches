@@ -1,5 +1,6 @@
 import { t } from "../i18n.js";
 import {
+  upgradeFinishedMatchCache,
   callPartidoHubServerMethod,
   getEstadisticaPartido,
   getPartido,
@@ -89,7 +90,8 @@ function bindPartidoDetalleModalControls(modal) {
       await mod.openEquipoDetalle(returnContext.equipo, { preserveBodyLock: true, skipCloseExisting: true });
       requestAnimationFrame(() => {
         currentModal?.remove();
-        if (window.signalR?.enDirecto?.server?.salirDePartido && window.__partidoDetalleId) {
+        const backState = window.__partidoDetalleState;
+        if (backState?.partido?.estadoPartido !== 2 && window.__partidoDetalleId && window.signalR?.enDirecto?.server?.salirDePartido) {
           callPartidoHubServerMethod("salirDePartido", window.__partidoDetalleId);
         }
         if (window.__partidoDetalleUnsub) {
@@ -188,7 +190,9 @@ export function closePartidoDetalle(options = {}) {
     if (!preserveBodyLock) {
       document.body.classList.remove("modal-abierto");
     }
-    if (window.signalR?.enDirecto?.server?.salirDePartido && window.__partidoDetalleId) {
+    const matchState = window.__partidoDetalleState;
+    const joined = matchState?.partido?.estadoPartido !== 2 && window.__partidoDetalleId;
+    if (joined && window.signalR?.enDirecto?.server?.salirDePartido) {
       callPartidoHubServerMethod("salirDePartido", window.__partidoDetalleId);
     }
     if (window.__partidoDetalleUnsub) {
@@ -387,10 +391,15 @@ async function cargarDetallePartido(idPartido, stateOverride = null, headerOverr
   }
   renderAll(state, headerEl, bodyEl);
 
-  console.log("[SignalR] Suscribiendo modal al bus global del hub...");
+  // Los partidos finalizados tienen todos sus datos en las respuestas REST.
+  // Promovemos su caché a TTL largo y no nos unimos al hub.
+  if (state.partido?.estadoPartido === 2) {
+    upgradeFinishedMatchCache(idPartido);
+    return;
+  }
+
   window.__partidoDetalleUnsub = subscribePartidoHubEvents(({ type, payload, idPartido: incomingId }) => {
     if (!incomingId || String(incomingId) !== String(idPartido)) return;
-    console.log(`[SignalR] EVENT modal desde bus: ${type} para partido ${incomingId}`, payload);
     switch (type) {
       case "marcadorPartido":
       case "recibirMarcadorPartido":
@@ -414,24 +423,18 @@ async function cargarDetallePartido(idPartido, stateOverride = null, headerOverr
     }
     renderAll(state, headerEl, bodyEl);
   });
-  console.log("[SignalR] Modal suscrito al bus global del hub.");
+
   if (window.hubProxy.server.unirseAPartido) {
     try {
-      console.log("[SignalR] Llamando a unirseAPartido en el hub:", idPartido);
       const modalidad = state.modalidad || "hp";
       window.hubProxy.server
         .unirseAPartido(idPartido, modalidad)
-        .done((eventosActuales) => {
-          console.log(`[SignalR] Unido al partido ${idPartido} con modalidad '${modalidad}'. Eventos actuales:`, eventosActuales);
-        })
         .fail((err) => {
           console.error("[SignalR] Error al unirse al partido:", err);
         });
     } catch (err) {
       console.error("[SignalR] Error llamando a unirseAPartido:", err);
     }
-  } else {
-    console.error("[SignalR] Método unirseAPartido no disponible en hubProxy.server.");
   }
 }
 

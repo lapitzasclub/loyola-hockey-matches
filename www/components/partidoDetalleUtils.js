@@ -133,6 +133,8 @@ export function normalizarPartido(input) {
     idEquipoLocal: p.IdEq1 || p.IdEquipoLocal || null,
     idEquipoVisit: p.IdEq2 || p.IdEquipoVisit || null,
     puntoBonus: p.PuntoBonus,
+    // 0 = no iniciado, 1 = en curso, 2 = finalizado
+    estadoPartido: Number(p.EstadoPartido) || 0,
   };
 }
 

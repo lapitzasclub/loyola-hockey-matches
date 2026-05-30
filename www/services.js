@@ -333,3 +333,24 @@ export async function getEstadisticaJugador(idLicencia) {
   return callEntityService("GetEstadisticasJugador", "idlicencia", idLicencia);
 }
 
+/**
+ * Promueve las entradas de caché de un partido finalizado a TTL largo (24 h).
+ *
+ * Los datos de un partido finalizado son inmutables. Llamar a esta función
+ * tras confirmar que `EstadoPartido === 2` evita re-fetches en visitas
+ * posteriores dentro del mismo día.
+ *
+ * @param {string|number} idPartido Identificador del partido.
+ * @returns {void}
+ */
+export function upgradeFinishedMatchCache(idPartido) {
+  const idStr = String(idPartido);
+  const endpoints = ["GetParametrosPartido", "GetEstadisticaPartido"];
+  for (const endpoint of endpoints) {
+    const url  = getServiceUrl(endpoint);
+    const body = JSON.stringify({ idpartido: idStr });
+    const cached = getCachedApi(url, body);
+    if (cached !== null) setCachedApi(url, body, cached, CACHE_TTL_LONG);
+  }
+}
+
