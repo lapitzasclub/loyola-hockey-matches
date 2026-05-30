@@ -1,9 +1,29 @@
 import { getLegacyApiMode } from "./config/runtime.js";
 import { getParametrosCompeticion } from "./services.js";
+import { CACHE_TTL_LONG } from "./utils/apiCache.js";
 import { FVP_BASE_URL, HEADERS, ENTITY_LOGO_BASE_URL } from "./servicesShared.js";
+
+const CATALOG_STORAGE_KEY = "loyola_competition_catalog_v1";
 
 const competitionCatalogCache = new Map();
 const competitionCatalogInflight = new Map();
+
+function loadCatalogFromStorage() {
+  try {
+    const stored = localStorage.getItem(CATALOG_STORAGE_KEY);
+    if (!stored) return null;
+    const { t, v } = JSON.parse(stored);
+    if (Date.now() - t < CACHE_TTL_LONG) return v;
+    localStorage.removeItem(CATALOG_STORAGE_KEY);
+  } catch {}
+  return null;
+}
+
+function saveCatalogToStorage(catalog) {
+  try {
+    localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify({ t: Date.now(), v: catalog }));
+  } catch {}
+}
 
 /**
  * Construye la URL del endpoint de competiciones según el runtime actual.
@@ -92,6 +112,12 @@ export async function getLoyolaCompetitionCatalog() {
     return competitionCatalogInflight.get(cacheKey);
   }
 
+  const stored = loadCatalogFromStorage();
+  if (stored) {
+    competitionCatalogCache.set(cacheKey, stored);
+    return stored;
+  }
+
   const requestPromise = (async () => {
     const compRes = await fetch(getCompeticionesUrl(), {
       method: "POST",
@@ -172,6 +198,7 @@ export async function getLoyolaCompetitionCatalog() {
       });
     }
 
+    saveCatalogToStorage(catalog);
     competitionCatalogCache.set(cacheKey, catalog);
     return catalog;
   })();

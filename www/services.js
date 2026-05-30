@@ -1,4 +1,4 @@
-import { getCachedApi, setCachedApi } from "./utils/apiCache.js";
+import { getCachedApi, setCachedApi, CACHE_TTL_LONG } from "./utils/apiCache.js";
 import { getHttp } from "./utils/env.js";
 import { getLegacyApiMode, shouldPreferNativeHttp } from "./config/runtime.js";
 import { FVP_BASE_URL, HEADERS } from "./servicesShared.js";
@@ -100,19 +100,22 @@ export function callPartidoHubServerMethod(method, ...args) {
  * @returns {Promise<Array>} Array de partidos únicos.
  */
 export async function getCalendarioTodosEquipos(idCompeticion, idsEquiposComp) {
-  const partidosMap = new Map();
-  for (const idEquipo of idsEquiposComp) {
-    try {
-      const raw = await getCalendarioLoyola(idEquipo, idCompeticion);
-      const parsed = unwrapLegacyPayload(raw);
-      if (Array.isArray(parsed) && parsed[0]?.Partidos) {
-        for (const p of parsed[0].Partidos) {
-          if (!partidosMap.has(p.IdPartido)) {
-            partidosMap.set(p.IdPartido, p);
-          }
-        }
+  const results = await Promise.all(
+    idsEquiposComp.map(async (idEquipo) => {
+      try {
+        const raw = await getCalendarioLoyola(idEquipo, idCompeticion);
+        const parsed = unwrapLegacyPayload(raw);
+        return Array.isArray(parsed) && parsed[0]?.Partidos ? parsed[0].Partidos : [];
+      } catch {
+        return [];
       }
-    } catch {}
+    }),
+  );
+  const partidosMap = new Map();
+  for (const partidos of results) {
+    for (const p of partidos) {
+      if (!partidosMap.has(p.IdPartido)) partidosMap.set(p.IdPartido, p);
+    }
   }
   return Array.from(partidosMap.values());
 }
@@ -142,12 +145,12 @@ function getServiceUrl(endpoint) {
  * @param {object} payload Cuerpo JSON del POST.
  * @returns {Promise<any>} Respuesta válida o un objeto `{ error, message }`.
  */
-async function callLegacyService(endpoint, payload) {
+async function callLegacyService(endpoint, payload, ttl) {
   const url = getServiceUrl(endpoint);
   const body = JSON.stringify(payload);
 
   try {
-    const raw = await post({ url, body, preferNative: true });
+    const raw = await post({ url, body, preferNative: true, ttl });
     return ensureJsonOrThrow(raw);
   } catch (error) {
     return { error: true, message: error.message };
@@ -160,13 +163,14 @@ async function callLegacyService(endpoint, payload) {
  * @param {string} endpoint Nombre del método remoto.
  * @param {string|number} idCompeticion Identificador de competición.
  * @param {object} [extraPayload={}] Campos adicionales del payload.
+ * @param {number} [ttl] TTL de caché en ms.
  * @returns {Promise<any>} Respuesta de la API legacy.
  */
-function callCompetitionService(endpoint, idCompeticion, extraPayload = {}) {
+function callCompetitionService(endpoint, idCompeticion, extraPayload = {}, ttl) {
   return callLegacyService(endpoint, {
     idcompeticion: String(idCompeticion),
     ...extraPayload,
-  });
+  }, ttl);
 }
 
 /**
@@ -246,7 +250,7 @@ async function postWithNativeHttp(url, body) {
  * @param {boolean} options.preferNative Indica si debe priorizar el plugin nativo HTTP.
  * @returns {Promise<unknown>} Respuesta cruda del endpoint.
  */
-async function post({ url, body, preferNative }) {
+async function post({ url, body, preferNative, ttl }) {
   const cached = getCachedApi(url, body);
   if (cached !== null) return cached;
 
@@ -266,7 +270,7 @@ async function post({ url, body, preferNative }) {
     result = await postWithFetch(url, body);
   }
 
-  setCachedApi(url, body, result);
+  setCachedApi(url, body, result, ttl);
   return result;
 }
 
@@ -316,7 +320,7 @@ export async function getCalendarioLoyola(equipoId, idCompeticion) {
  * @returns {Promise<any>} Respuesta de la API.
  */
 export async function getParametrosCompeticion(idCompeticion) {
-  return callCompetitionService("GetParametrosCompeticion", idCompeticion);
+  return callCompetitionService("GetParametrosCompeticion", idCompeticion, {}, CACHE_TTL_LONG);
 }
 
 

@@ -5,7 +5,17 @@ import { renderClasificacion } from "../components/ui.js";
 import { t } from "../i18n.js";
 import { renderClasificacionLoadingState } from "../components/loadingStates.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
-import { invalidateApiCache } from "../utils/apiCache.js";
+import { invalidateApiCacheFor } from "../utils/apiCache.js";
+
+// Endpoints que cambian durante el día; se excluyen GetParametrosCompeticion y GetCompeticiones
+// porque son estables durante la temporada y costosos de recargar (N+1 requests).
+const VOLATILE_ENDPOINTS = [
+  "GetCalendarioCompeticion",
+  "GetClasificacionCompeticion",
+  "GetParametrosPartido",
+  "GetEstadisticaPartido",
+  "GetEstadisticasJugador",
+];
 import { setCompeticionHeader } from "./header.js";
 import { isOnboardingActive } from "./layoutState.js";
 
@@ -206,7 +216,7 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
         if (ptr) ptr.classList.add("refreshing");
         setPtrIconState("loading");
         setPtrText(t("ptr_refreshing"));
-        invalidateApiCache();
+        invalidateApiCacheFor(VOLATILE_ENDPOINTS);
         const navClasEl = document.getElementById("navClas");
         const clasRefreshStarted = !!navClasEl?.classList.contains("active");
         try {
