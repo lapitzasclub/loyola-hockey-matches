@@ -224,48 +224,6 @@ export function closePartidoDetalle(options = {}) {
 }
 
 /**
- * Espera a que la conexión SignalR esté plenamente operativa.
- *
- * @param {number} [timeout=4000] Tiempo máximo de espera en milisegundos.
- * @returns {Promise<void>} Promesa resuelta cuando el hub está conectado.
- */
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * Espera a que el proxy global legacy de SignalR exista.
- *
- * @param {number} [timeout=4000] Tiempo máximo de espera en milisegundos.
- * @returns {Promise<void>} Promesa resuelta cuando `window.hubProxy` está disponible.
- */
-async function waitForSignalRProxy(timeout = 4000) {
-  const start = Date.now();
-  while (!window.hubProxy) {
-    if (Date.now() - start > timeout) {
-      throw new Error("SignalR hubProxy no disponible");
-    }
-    await delay(50);
-  }
-}
-
-/**
- * Espera a que la conexión SignalR esté plenamente operativa.
- *
- * @param {number} [timeout=4000] Tiempo máximo de espera en milisegundos.
- * @returns {Promise<void>} Promesa resuelta cuando el hub está conectado.
- */
-async function waitForSignalRConnected(timeout = 4000) {
-  const start = Date.now();
-  while ($.connection.hub.state !== $.signalR.connectionState.connected) {
-    if (Date.now() - start > timeout) {
-      throw new Error("SignalR hub no conectado");
-    }
-    await delay(50);
-  }
-}
-
-/**
  * Re-renderiza el estado completo del modal delegando en el coordinador de render.
  *
  * @param {object} state Estado interno del detalle de partido.
@@ -342,9 +300,6 @@ async function openMatchInSharedModal(state, partido, headerEl, bodyEl, renderAl
 }
 
 async function cargarDetallePartido(idPartido, stateOverride = null, headerOverride = null, bodyOverride = null) {
-  await waitForSignalRProxy();
-  await waitForSignalRConnected();
-
   const headerEl = headerOverride || document.getElementById("partido-detalle-header-content");
   const bodyEl = bodyOverride || document.getElementById("partido-detalle-body");
   const state = stateOverride || createDetalleState(idPartido);
@@ -417,17 +372,7 @@ async function cargarDetallePartido(idPartido, stateOverride = null, headerOverr
     renderAll(state, headerEl, bodyEl);
   });
 
-  if (window.hubProxy.server.unirseAPartido) {
-    try {
-      const modalidad = state.modalidad || "hp";
-      window.hubProxy.server
-        .unirseAPartido(idPartido, modalidad)
-        .fail((err) => {
-          console.error("[SignalR] Error al unirse al partido:", err);
-        });
-    } catch (err) {
-      console.error("[SignalR] Error llamando a unirseAPartido:", err);
-    }
-  }
+  const modalidad = state.modalidad || "hp";
+  callPartidoHubServerMethod("unirseAPartido", idPartido, modalidad);
 }
 

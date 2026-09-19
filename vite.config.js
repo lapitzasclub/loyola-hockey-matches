@@ -2,8 +2,7 @@ import { cpSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
-const LEGACY_API_TARGET = 'https://fvpatinaje.eus/webservices/WSCompeticiones.asmx';
-const SIGNALR_TARGET = 'https://digitalsport.online/signalr';
+const API_TARGET = 'https://fvpatinaje.eus';
 const LOYOLA_ASSETS_SRC = resolve(process.cwd(), 'www/assets/sidebar-loyola');
 
 function copyLoyolaSidebarAssets() {
@@ -29,19 +28,19 @@ export default defineConfig({
     port: 5173,
     open: true,
     proxy: {
+      // La plataforma nueva sirve la API en el mismo origen bajo /api.
       '/api': {
-        target: LEGACY_API_TARGET,
+        target: API_TARGET,
         changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, ''),
         secure: true,
       },
-      '/signalr': {
-        target: SIGNALR_TARGET,
+      // Centrifugo (tiempo real) para desarrollo local.
+      '/connection': {
+        target: API_TARGET,
         changeOrigin: true,
         ws: true,
-        rewrite: path => path.replace(/^\/signalr/, ''),
         secure: true,
-      }
+      },
     }
   },
 });

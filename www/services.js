@@ -1,19 +1,24 @@
+// services.js
+// Capa de datos: expone las funciones legacy que consumen los componentes, implementadas
+// contra la API nueva DigitalSport. Las respuestas se re-empaquetan en el sobre `{ d }`
+// para que los componentes sigan usando `decodeApiRaw`/`parseApiArrayResponse` sin cambios.
+
 import { getCachedApi, setCachedApi, CACHE_TTL_LONG } from "./utils/apiCache.js";
-import { getHttp } from "./utils/env.js";
-import { getLegacyApiMode, shouldPreferNativeHttp } from "./config/runtime.js";
-import { FVP_BASE_URL, HEADERS, unwrapLegacyPayload } from "./servicesShared.js";
+import { getApiBaseUrl } from "./servicesShared.js";
+import {
+  apiGet,
+  buildLegacyCalendar,
+  buildLegacyClasificacion,
+  buildLegacyEquipos,
+} from "./servicesFvp.js";
 
 export { getEquiposLoyolaTodasCompeticiones, getLoyolaCompetitionCatalog } from "./servicesCompetitionCatalog.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";
-const CERT_PATH_ERROR_HINTS = [
-  "CertPathValidatorException",
-  "Trust anchor for certification path not found",
-];
-
 
 /**
- * Emite un evento del hub de partido sobre el bus interno del cliente.
+ * Emite un evento de partido sobre el bus interno del cliente.
+ * El transporte en tiempo real (Centrifugo) publicará aquí cuando esté disponible.
  *
  * @param {string} type Tipo lógico del evento.
  * @param {unknown} payload Payload asociado al evento.
@@ -39,312 +44,226 @@ export function subscribePartidoHubEvents(handler) {
   globalThis.addEventListener(PARTIDO_HUB_BUS_EVENT, listener);
   return () => globalThis.removeEventListener(PARTIDO_HUB_BUS_EVENT, listener);
 }
+
 /**
- * Registra handlers legacy directamente sobre el cliente del hub enDirecto.
+ * Registra handlers de tiempo real. Reservado para la capa Centrifugo; hoy es no-op.
  *
  * @param {object} [handlers={}] Mapa parcial de callbacks por nombre de evento.
  * @returns {void}
  */
 export function registerPartidoHubHandlers(handlers = {}) {
-  if (!globalThis.signalR?.enDirecto?.client) {
-    console.error("SignalR hub proxy no disponible");
-    return;
-  }
-  if (handlers.marcadorPartido) globalThis.signalR.enDirecto.client.marcadorPartido = handlers.marcadorPartido;
-  if (handlers.eventosPartido) globalThis.signalR.enDirecto.client.eventosPartido = handlers.eventosPartido;
-  if (handlers.penaltisPartido) globalThis.signalR.enDirecto.client.penaltisPartido = handlers.penaltisPartido;
-  if (handlers.alineacionPartido) globalThis.signalR.enDirecto.client.alineacionPartido = handlers.alineacionPartido;
+  const realtime = globalThis.__fvpRealtime;
+  if (realtime?.registerHandlers) realtime.registerHandlers(handlers);
 }
 
 /**
- * Llama a un método del servidor del hub enDirecto.
+ * Invoca un método del servidor de tiempo real (unirse/salir de partido).
+ * Reservado para la capa Centrifugo; hoy es no-op seguro.
  *
- * @param {string} method Nombre del método remoto, por ejemplo `unirseAPartido`.
- * @param {...any} args Argumentos del método remoto.
- * @returns {any} Resultado devuelto por el proxy o undefined si no existe el método.
+ * @param {string} method Nombre del método remoto.
+ * @param {...any} args Argumentos del método.
+ * @returns {any} Resultado o undefined.
  */
 export function callPartidoHubServerMethod(method, ...args) {
-  const server = globalThis.hubProxy?.server || globalThis.signalR?.enDirecto?.server;
-  if (!server?.[method]) {
-    console.error("Método del servidor no disponible:", method);
-    return;
-  }
-  return server[method](...args);
+  const realtime = globalThis.__fvpRealtime;
+  if (realtime?.callServerMethod) return realtime.callServerMethod(method, ...args);
+  return undefined;
 }
 
 /**
- * Obtiene el calendario completo de una competición, fusionando los partidos de todos los equipos.
- * @param {string|number} idCompeticion - ID de la competición.
- * @param {Array<string|number>} idsEquiposComp - IDs de los equipos de la competición.
- * @returns {Promise<Array>} Array de partidos únicos.
- */
-export async function getCalendarioTodosEquipos(idCompeticion, idsEquiposComp) {
-  const results = await Promise.all(
-    idsEquiposComp.map(async (idEquipo) => {
-      try {
-        const raw = await getCalendarioLoyola(idEquipo, idCompeticion);
-        const parsed = unwrapLegacyPayload(raw);
-        return Array.isArray(parsed) && parsed[0]?.Partidos ? parsed[0].Partidos : [];
-      } catch {
-        return [];
-      }
-    }),
-  );
-  const partidosMap = new Map();
-  for (const partidos of results) {
-    for (const p of partidos) {
-      if (!partidosMap.has(p.IdPartido)) partidosMap.set(p.IdPartido, p);
-    }
-  }
-  return Array.from(partidosMap.values());
-}
-
-/**
- * Construye la URL efectiva de un endpoint legacy según si se ejecuta en nativo o web.
+ * Envuelve un valor en el sobre legacy `{ d: "<json>" }`.
  *
- * @param {string} endpoint Nombre del método ASMX, sin la barra inicial.
- * @returns {string} URL absoluta o ruta proxy equivalente.
+ * @param {any} value Valor serializable.
+ * @returns {{d: string}} Sobre compatible con los decodificadores legacy.
  */
-function getServiceUrl(endpoint) {
-  return getLegacyApiMode() === "direct"
-    ? `${FVP_BASE_URL}/${endpoint}`
-    : `/api/${endpoint}`;
+function wrapLegacy(value) {
+  return { d: JSON.stringify(value) };
 }
 
 /**
- * Ejecuta una llamada estándar a un endpoint legacy ASMX capturando errores en formato uniforme.
+ * Ejecuta un builder capturando errores en el formato uniforme `{ error, message }`.
  *
- * @param {string} endpoint Nombre del método remoto.
- * @param {object} payload Cuerpo JSON del POST.
- * @param {number} [ttl] TTL de caché en ms. Si se omite usa el valor por defecto del sistema.
- * @returns {Promise<any>} Respuesta válida o un objeto `{ error, message }`.
+ * @param {() => Promise<any>} builder Función que produce el payload.
+ * @returns {Promise<any>} Sobre `{ d }` o `{ error, message }`.
  */
-async function callLegacyService(endpoint, payload, ttl) {
-  const url = getServiceUrl(endpoint);
-  const body = JSON.stringify(payload);
-
+async function safeBuild(builder) {
   try {
-    const raw = await post({ url, body, preferNative: true, ttl });
-    return ensureJsonOrThrow(raw);
+    return wrapLegacy(await builder());
   } catch (error) {
-    return { error: true, message: error.message };
+    return { error: true, message: error?.message || String(error) };
   }
 }
 
 /**
- * Ejecuta un endpoint cuyo parámetro principal es `idcompeticion`.
+ * Obtiene el calendario completo de una competición fusionando los partidos de sus equipos.
+ * Se usa para el cálculo de racha/posiciones previas en la clasificación.
  *
- * @param {string} endpoint Nombre del método remoto.
- * @param {string|number} idCompeticion Identificador de competición.
- * @param {object} [extraPayload={}] Campos adicionales del payload.
- * @param {number} [ttl] TTL de caché en ms.
- * @returns {Promise<any>} Respuesta de la API legacy.
+ * @param {string} idCompeticion ID de la competición.
+ * @param {Array<string>} _idsEquiposComp IDs de los equipos (no requerido con la API nueva).
+ * @returns {Promise<Array>} Array de partidos legacy.
  */
-function callCompetitionService(endpoint, idCompeticion, extraPayload = {}, ttl) {
-  return callLegacyService(endpoint, {
-    idcompeticion: String(idCompeticion),
-    ...extraPayload,
-  }, ttl);
-}
-
-/**
- * Ejecuta un endpoint legacy cuyo payload contiene una sola entidad principal.
- *
- * @param {string} endpoint Nombre del método remoto.
- * @param {string} fieldName Nombre del campo principal del payload.
- * @param {string|number} value Valor a serializar.
- * @param {number} [ttl] TTL de caché en ms. Si se omite usa el valor por defecto del sistema.
- * @returns {Promise<any>} Respuesta de la API legacy.
- */
-function callEntityService(endpoint, fieldName, value, ttl) {
-  return callLegacyService(endpoint, { [fieldName]: String(value) }, ttl);
+export async function getCalendarioTodosEquipos(idCompeticion, _idsEquiposComp) {
+  try {
+    return await buildLegacyCalendar(idCompeticion);
+  } catch {
+    return [];
+  }
 }
 
 /**
  * Obtiene el calendario completo de una competición (todos los partidos).
  *
- * @param {string|number} idCompeticion ID de la competición.
- * @returns {Promise<any>} Respuesta de la API.
+ * @param {string} idCompeticion ID de la competición.
+ * @returns {Promise<any>} Sobre legacy `{ d }` con `[{ Partidos }]`.
  */
-export async function getCalendarioCompeticionCompleto(idCompeticion) {
-  return callCompetitionService("GetCalendarioCompeticion", idCompeticion);
+export function getCalendarioCompeticionCompleto(idCompeticion) {
+  return safeBuild(async () => [{ Partidos: await buildLegacyCalendar(idCompeticion) }]);
 }
 
 /**
- * Ejecuta una petición POST a la API real o al proxy, con caché local.
+ * Obtiene el calendario de un equipo concreto dentro de una competición.
  *
- * @param {object} options Opciones de petición.
- * @param {string} options.url URL absoluta o relativa del endpoint.
- * @param {string} options.body Cuerpo JSON serializado.
- * @param {boolean} options.preferNative Indica si debe priorizar el plugin nativo HTTP.
- * @returns {Promise<unknown>} Respuesta cruda del endpoint.
+ * @param {string} equipoId ID del equipo (inscripción) dentro de la competición.
+ * @param {string} idCompeticion ID de la competición.
+ * @returns {Promise<any>} Sobre legacy `{ d }` con `[{ Partidos }]` filtrado por el equipo.
  */
-function isCertificatePathError(error) {
-  const message = String(error?.message || error);
-  return CERT_PATH_ERROR_HINTS.some((hint) => message.includes(hint));
-}
-
-/**
- * Ejecuta la petición por `fetch` como ruta estándar y fallback universal.
- *
- * @param {string} url URL de destino.
- * @param {string} body Cuerpo JSON serializado.
- * @returns {Promise<string>} Texto crudo devuelto por el backend.
- */
-async function postWithFetch(url, body) {
-  const response = await fetch(url, { method: "POST", headers: HEADERS, body });
-  return response.text();
-}
-
-/**
- * Ejecuta la petición por el plugin HTTP nativo cuando está disponible.
- *
- * @param {string} url URL de destino.
- * @param {string} body Cuerpo JSON serializado.
- * @returns {Promise<unknown>} Payload devuelto por el transporte nativo.
- */
-async function postWithNativeHttp(url, body) {
-  const http = getHttp();
-  const response = await http.request({
-    method: "POST",
-    url,
-    headers: HEADERS,
-    data: body,
-  });
-  return response.data;
-}
-
-/**
- * Ejecuta una petición POST a la API real o al proxy, con caché local.
- *
- * @param {object} options Opciones de petición.
- * @param {string} options.url URL absoluta o relativa del endpoint.
- * @param {string} options.body Cuerpo JSON serializado.
- * @param {boolean} options.preferNative Indica si debe priorizar el plugin nativo HTTP.
- * @returns {Promise<unknown>} Respuesta cruda del endpoint.
- */
-async function post({ url, body, preferNative, ttl }) {
-  const cached = getCachedApi(url, body);
-  if (cached !== null) return cached;
-
-  const canUseNative = preferNative && shouldPreferNativeHttp() && getHttp();
-  let result;
-
-  if (canUseNative) {
-    try {
-      result = await postWithNativeHttp(url, body);
-    } catch (error) {
-      if (!isCertificatePathError(error)) {
-        throw error;
-      }
-      result = await postWithFetch(url, body);
-    }
-  } else {
-    result = await postWithFetch(url, body);
-  }
-
-  setCachedApi(url, body, result, ttl);
-  return result;
-}
-
-/**
- * Verifica que la respuesta no sea una página HTML de error camuflada como éxito.
- *
- * @param {unknown} raw Respuesta cruda del transporte.
- * @returns {unknown} La propia respuesta si parece válida.
- * @throws {Error} Si la respuesta parece HTML en vez de JSON.
- */
-function ensureJsonOrThrow(raw) {
-  if (typeof raw === "string" && raw.trim().startsWith("<")) {
-    throw new Error(
-      "La respuesta no es JSON, es HTML. Puede ser un error de CORS, login o endpoint."
-    );
-  }
-  return raw;
-}
-
-/**
- * Obtiene la clasificación de una competición.
- *
- * @param {string|number} idCompeticion ID de la competición.
- * @returns {Promise<any>} Respuesta de la API.
- */
-export async function getClasificacionLiga(idCompeticion) {
-  return callCompetitionService("GetClasificacionCompeticion", idCompeticion);
-}
-
-/**
- * Obtiene el calendario de un equipo concreto en una competición.
- *
- * @param {string|number} equipoId ID del equipo dentro de la competición.
- * @param {string|number} idCompeticion ID de la competición.
- * @returns {Promise<any>} Respuesta de la API.
- */
-export async function getCalendarioLoyola(equipoId, idCompeticion) {
-  return callCompetitionService("GetCalendarioCompeticion", idCompeticion, {
-    idequipocomp: String(equipoId),
+export function getCalendarioLoyola(equipoId, idCompeticion) {
+  return safeBuild(async () => {
+    const partidos = await buildLegacyCalendar(idCompeticion);
+    const idStr = String(equipoId || "");
+    const filtrados = idStr
+      ? partidos.filter((p) => String(p.IdEquipoLocal) === idStr || String(p.IdEquipoVisit) === idStr)
+      : partidos;
+    return [{ Partidos: filtrados }];
   });
 }
 
 /**
- * Obtiene los parámetros completos de una competición, incluyendo equipos y logos.
+ * Obtiene la clasificación de una competición (todas sus divisiones).
  *
- * @param {string|number} idCompeticion ID de la competición.
- * @returns {Promise<any>} Respuesta de la API.
+ * @param {string} idCompeticion ID de la competición.
+ * @returns {Promise<any>} Sobre legacy `{ d }` con las filas de clasificación.
  */
-export async function getParametrosCompeticion(idCompeticion) {
-  return callCompetitionService("GetParametrosCompeticion", idCompeticion, {}, CACHE_TTL_LONG);
-}
-
-
-/**
- * Obtiene el detalle completo de un partido (cabecera, equipos, árbitros, marcador, etc.).
- *
- * @param {string|number} idPartido ID del partido.
- * @returns {Promise<any>} Respuesta de la API.
- */
-export async function getPartido(idPartido) {
-  return callEntityService("GetParametrosPartido", "idpartido", idPartido);
+export function getClasificacionLiga(idCompeticion) {
+  return safeBuild(() => buildLegacyClasificacion(idCompeticion));
 }
 
 /**
- * Obtiene las estadísticas completas de un partido (goles, faltas, penaltis, tarjetas, etc.).
+ * Obtiene los parámetros de una competición: principalmente los equipos y sus escudos.
  *
- * @param {string|number} idPartido ID del partido.
- * @returns {Promise<any>} Respuesta de la API.
+ * @param {string} idCompeticion ID de la competición.
+ * @returns {Promise<any>} Sobre legacy `{ d }` con `[{ Equipos }]`.
  */
-export async function getEstadisticaPartido(idPartido) {
-  return callEntityService("GetEstadisticaPartido", "idpartido", idPartido);
+export function getParametrosCompeticion(idCompeticion) {
+  return safeBuild(async () => [{ Equipos: await buildLegacyEquipos(idCompeticion), IdModalidadComp: "hp" }]);
 }
 
 /**
- * Obtiene las estadísticas agregadas e histórico de un jugador.
+ * Traduce el estado textual del partido nuevo al código legacy (0/1/2).
  *
- * @param {string|number} idLicencia ID de licencia del jugador.
- * @returns {Promise<any>} Respuesta de la API.
+ * @param {string} estado Estado nuevo.
+ * @param {any} golesLocal Marcador local.
+ * @param {any} golesVisit Marcador visitante.
+ * @returns {0|1|2}
  */
-export async function getEstadisticaJugador(idLicencia) {
-  return callEntityService("GetEstadisticasJugador", "idlicencia", idLicencia);
+function estadoPartidoLegacy(estado, golesLocal, golesVisit) {
+  const e = String(estado || "").toUpperCase();
+  if (/FINAL|FINISH|JUGAD|CERRAD|PLAYED|ACTA/.test(e)) return 2;
+  if (/JUEGO|LIVE|CURSO|PLAYING|DIRECTO/.test(e)) return 1;
+  if (golesLocal != null && golesVisit != null) return 2;
+  return 0;
 }
 
 /**
- * Promueve las entradas de caché de un partido finalizado a TTL largo (24 h).
+ * Mapea el detalle de partido nuevo al shape legacy que consume `normalizarPartido`.
  *
- * Los datos de un partido finalizado son inmutables. Llamar a esta función
- * tras confirmar que `EstadoPartido === 2` evita re-fetches en visitas
- * posteriores dentro del mismo día.
+ * @param {object} d Detalle nuevo (`/public/partidos/{id}`).
+ * @returns {object} Partido legacy.
+ */
+function mapPartidoDetalle(d) {
+  const loc = d.local || {};
+  const vis = d.visitante || {};
+  return {
+    IdPartido: d.id,
+    IdModalidadComp: "hp",
+    DenoComp: d.competicionNombre || "",
+    NombreJornada: d.jornadaNombre || "",
+    Fecha: String(d.fechaInicio || "").slice(0, 10),
+    Hora: d.hora || "",
+    Instalacion: d.pista || "",
+    Periodo: d.periodo ?? "",
+    Estado: d.estado || "",
+    Eq1: loc.nombre || "",
+    Eq2: vis.nombre || "",
+    LocalAbrev: loc.nombreAbrev || "",
+    VisitAbrev: vis.nombreAbrev || "",
+    GolesLocal: loc.puntaje ?? null,
+    GolesVisit: vis.puntaje ?? null,
+    Arb1: d.arbitro1Nombre || "",
+    Arb2: d.arbitro2Nombre || "",
+    IdEntidadEq1: loc.logoUrl || "",
+    IdEntidadEq2: vis.logoUrl || "",
+    IdEq1: loc.inscripcionId || loc.equipoId || null,
+    IdEq2: vis.inscripcionId || vis.equipoId || null,
+    EstadoPartido: estadoPartidoLegacy(d.estado, loc.puntaje, vis.puntaje),
+  };
+}
+
+/**
+ * Obtiene el detalle de un partido (cabecera, equipos, árbitros, marcador).
  *
- * @param {string|number} idPartido Identificador del partido.
+ * @param {string} idPartido ID del partido.
+ * @returns {Promise<any>} Sobre legacy `{ d }` con `[partido]`.
+ */
+export function getPartido(idPartido) {
+  return safeBuild(async () => {
+    const d = await apiGet(`/public/partidos/${idPartido}`, CACHE_TTL_LONG);
+    return [mapPartidoDetalle(d)];
+  });
+}
+
+/**
+ * Obtiene las estadísticas de un partido (eventos, alineaciones).
+ *
+ * Nota: en la temporada recién iniciada estos datos aún están vacíos en la API nueva;
+ * el mapeo fino de incidencias/alineaciones se completará con partidos jugados.
+ *
+ * @param {string} idPartido ID del partido.
+ * @returns {Promise<any>} Sobre legacy `{ d }` con `[{ partido, stats, eventos, alineaciones }]`.
+ */
+export function getEstadisticaPartido(idPartido) {
+  return safeBuild(async () => {
+    const d = await apiGet(`/public/partidos/${idPartido}`, CACHE_TTL_LONG);
+    return [{
+      partido: [mapPartidoDetalle(d)],
+      stats: [],
+      eventos: Array.isArray(d.incidencias) ? d.incidencias : [],
+      alineaciones: [],
+    }];
+  });
+}
+
+/**
+ * Obtiene las estadísticas de un jugador.
+ *
+ * @param {string} idLicencia ID del jugador.
+ * @returns {Promise<any>} Sobre legacy `{ d }`.
+ */
+export function getEstadisticaJugador(idLicencia) {
+  return safeBuild(async () => {
+    const d = await apiGet(`/public/partidos/jugador/${idLicencia}/stats`, CACHE_TTL_LONG);
+    return Array.isArray(d) ? d : [d];
+  });
+}
+
+/**
+ * Promueve la caché de un partido finalizado a TTL largo (datos inmutables).
+ *
+ * @param {string} idPartido Identificador del partido.
  * @returns {void}
  */
 export function upgradeFinishedMatchCache(idPartido) {
-  const idStr = String(idPartido);
-  const endpoints = ["GetParametrosPartido", "GetEstadisticaPartido"];
-  for (const endpoint of endpoints) {
-    const url  = getServiceUrl(endpoint);
-    const body = JSON.stringify({ idpartido: idStr });
-    const cached = getCachedApi(url, body);
-    if (cached !== null) setCachedApi(url, body, cached, CACHE_TTL_LONG);
-  }
+  const url = `${getApiBaseUrl()}/public/partidos/${idPartido}`;
+  const cached = getCachedApi(url, "");
+  if (cached !== null) setCachedApi(url, "", cached, CACHE_TTL_LONG);
 }
-

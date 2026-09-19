@@ -7,14 +7,12 @@ import { renderClasificacionLoadingState } from "../components/loadingStates.js"
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { invalidateApiCacheFor } from "../utils/apiCache.js";
 
-// Endpoints que cambian durante el día; se excluyen GetParametrosCompeticion y GetCompeticiones
-// porque son estables durante la temporada y costosos de recargar (N+1 requests).
+// Fragmentos de URL de datos que cambian durante el día; se excluyen la estructura
+// (divisiones/fases) y la agenda de descubrimiento porque son estables durante la temporada.
 const VOLATILE_ENDPOINTS = [
-  "GetCalendarioCompeticion",
-  "GetClasificacionCompeticion",
-  "GetParametrosPartido",
-  "GetEstadisticaPartido",
-  "GetEstadisticasJugador",
+  "/tree",
+  "/clasificacion",
+  "/public/partidos",
 ];
 import { setCompeticionHeader } from "./header.js";
 import { isOnboardingActive } from "./layoutState.js";
