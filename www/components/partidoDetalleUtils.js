@@ -75,9 +75,10 @@ export function escapeHtml(value) {
  * @param {number} [size=200] Tamaño cuadrado del recurso.
  * @returns {string} URL absoluta del escudo.
  */
-export function logoUrl(id, size = 200) {
-  const key = normText(id) || "sinescudo";
-  return `https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/entidad/${size}x${size}/${key}.png`;
+export function logoUrl(id, _size = 200) {
+  const key = normText(id);
+  if (/^https?:\/\//i.test(key)) return key;
+  return "assets/sidebar-loyola/iconos_svg/icono_equipo_escudo_placeholder.svg";
 }
 
 /**

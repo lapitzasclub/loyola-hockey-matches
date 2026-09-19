@@ -1,9 +1,11 @@
-import { getLegacyApiMode } from "./config/runtime.js";
-import { getParametrosCompeticion } from "./services.js";
-import { CACHE_TTL_LONG } from "./utils/apiCache.js";
-import { FVP_BASE_URL, HEADERS, getEntityLogoUrl, unwrapLegacyPayload } from "./servicesShared.js";
+// servicesCompetitionCatalog.js
+// Catálogo de competiciones Loyola construido sobre la API nueva DigitalSport.
 
-const CATALOG_STORAGE_KEY = "loyola_competition_catalog_v1";
+import { CACHE_TTL_LONG } from "./utils/apiCache.js";
+import { getEntityLogoUrl } from "./servicesShared.js";
+import { discoverCompetitions, buildLegacyEquipos, isLoyolaName } from "./servicesFvp.js";
+
+const CATALOG_STORAGE_KEY = "loyola_competition_catalog_v2";
 
 const competitionCatalogCache = new Map();
 const competitionCatalogInflight = new Map();
@@ -26,56 +28,37 @@ function saveCatalogToStorage(catalog) {
 }
 
 /**
- * Construye la URL del endpoint de competiciones según el runtime actual.
+ * Mapea un equipo legacy (de `buildLegacyEquipos`) al shape de catálogo que consume la UI.
  *
- * @returns {string} URL final para `GetCompeticiones`.
+ * @param {object} equipo Equipo legacy.
+ * @param {{id:string, nombre:string, temporada:string}} comp Competición.
+ * @returns {object} Entrada de catálogo.
  */
-function getCompeticionesUrl() {
-  return getLegacyApiMode() === "direct"
-    ? `${FVP_BASE_URL}/GetCompeticiones`
-    : "/api/GetCompeticiones";
+function toCatalogTeam(equipo, comp) {
+  const logoUrl = equipo.IdEntidadEquipo || "";
+  return {
+    idCompeticion: comp.id,
+    nombreCompeticion: comp.nombre,
+    temporada: comp.temporada,
+    modalidad: "hp",
+    idEquipoComp: equipo.IdEquipoComp,
+    idEntidadEquipo: logoUrl,
+    nombreEquipo: equipo.NombreEquipo,
+    nombreEquipoAbrev: equipo.NombreEquipoAbrev,
+    tieneLogo: !!equipo.TieneLogo,
+    logoEquipoUrl: equipo.TieneLogo ? getEntityLogoUrl(logoUrl) : getEntityLogoUrl(""),
+  };
 }
 
-/** URL base de los logos de competición en S3 (formato .jpg, tamaño 400×400). */
-const COMPETITION_LOGO_BASE_URL = "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/logocompeticion/400x400";
-
 /**
- * Construye la URL pública del logo de una competición.
- *
- * @param {string|number} idCompeticion Identificador de la competición.
- * @returns {string} URL del logo de competición.
- */
-function getCompeticionLogoUrl(idCompeticion) {
-  return `${COMPETITION_LOGO_BASE_URL}/${idCompeticion}.jpg`;
-}
-
-/**
- * Devuelve true si un equipo pertenece al universo Loyola mostrado por la app.
- *
- * @param {object} equipo Equipo de competición.
- * @returns {boolean} True si debe incluirse en el selector propio.
- */
-function isLoyolaTeam(equipo) {
-  return (
-    equipo?.NombreEquipo?.toUpperCase().includes("LOYOLA") ||
-    equipo?.NombreEquipoAbrev?.toUpperCase().includes("LOY")
-  );
-}
-
-
-/**
- * Obtiene y cachea el catálogo de competiciones con sus equipos Loyola y logos.
+ * Obtiene y cachea el catálogo de competiciones con sus equipos Loyola.
  *
  * @returns {Promise<Array>} Catálogo visual agrupado por competición.
  */
 export async function getLoyolaCompetitionCatalog() {
-  const cacheKey = "hp:21";
-  if (competitionCatalogCache.has(cacheKey)) {
-    return competitionCatalogCache.get(cacheKey);
-  }
-  if (competitionCatalogInflight.has(cacheKey)) {
-    return competitionCatalogInflight.get(cacheKey);
-  }
+  const cacheKey = "hp";
+  if (competitionCatalogCache.has(cacheKey)) return competitionCatalogCache.get(cacheKey);
+  if (competitionCatalogInflight.has(cacheKey)) return competitionCatalogInflight.get(cacheKey);
 
   const stored = loadCatalogFromStorage();
   if (stored) {
@@ -84,81 +67,32 @@ export async function getLoyolaCompetitionCatalog() {
   }
 
   const requestPromise = (async () => {
-    const compRes = await fetch(getCompeticionesUrl(), {
-      method: "POST",
-      headers: HEADERS,
-      body: JSON.stringify({ modalidad: "hp", temporada: "21" }),
-    });
-
-    if (!compRes.ok) {
-      throw new Error(`Error cargando competiciones (${compRes.status})`);
-    }
-
-    let compJson;
-    try {
-      compJson = await compRes.json();
-    } catch (error) {
-      console.error("Error parseando JSON de competiciones:", error);
-      throw new Error("No se pudo interpretar la respuesta de competiciones", { cause: error });
-    }
-
-    if (compJson?.error) {
-      throw new Error(compJson.message || "Error remoto cargando competiciones");
-    }
-
-    let competiciones;
-    try {
-      competiciones = compJson.d ? JSON.parse(compJson.d) : [];
-    } catch (error) {
-      console.error("Error parseando compJson.d:", compJson.d, error);
-      throw new Error("Formato inválido en competiciones", { cause: error });
-    }
-
+    const competiciones = await discoverCompetitions();
     const catalog = [];
+
     for (const comp of competiciones) {
-      const rawParams = await getParametrosCompeticion(comp.IdCompeticion);
-      if (rawParams?.error) {
-        console.error("Error remoto cargando parametros de competición:", comp.IdCompeticion, rawParams.message);
-        continue;
-      }
-
-      let params;
+      let equipos;
       try {
-        params = unwrapLegacyPayload(rawParams);
+        equipos = await buildLegacyEquipos(comp.id);
       } catch (error) {
-        console.error("Error parseando parametros de competición:", comp.IdCompeticion, error);
+        console.error("Error cargando equipos de competición:", comp.id, error);
         continue;
       }
 
-      const competitionData = Array.isArray(params) ? params[0] : null;
-      const equipos = Array.isArray(competitionData?.Equipos) ? competitionData.Equipos : [];
       const equiposLoyola = equipos
-        .filter(isLoyolaTeam)
-        .map((equipo) => ({
-          idCompeticion: comp.IdCompeticion,
-          nombreCompeticion: comp.DenoComp,
-          temporada: comp.Temporada || competitionData?.Temporada || "",
-          modalidad: comp.IdModalidadComp || competitionData?.IdModalidadComp || "hp",
-          idEquipoComp: equipo.IdEquipoComp,
-          idEntidadEquipo: equipo.IdEntidadEquipo,
-          nombreEquipo: equipo.NombreEquipo,
-          nombreEquipoAbrev: equipo.NombreEquipoAbrev,
-          tieneLogo: !!equipo.TieneLogo,
-          logoEquipoUrl: equipo.TieneLogo ? getEntityLogoUrl(equipo.IdEntidadEquipo) : getEntityLogoUrl("sinescudo"),
-        }));
+        .filter((eq) => isLoyolaName(eq.NombreEquipo) || isLoyolaName(eq.NombreEquipoAbrev))
+        .map((eq) => toCatalogTeam(eq, comp));
 
       if (!equiposLoyola.length) continue;
 
       catalog.push({
-        idCompeticion: comp.IdCompeticion,
-        nombreCompeticion: comp.DenoComp,
-        nombreCompeticionAbrev: comp.DenoAbrevComp || comp.DenoComp,
-        temporada: comp.Temporada || competitionData?.Temporada || "",
-        modalidad: comp.IdModalidadComp || competitionData?.IdModalidadComp || "hp",
-        tieneLogoComp: !!comp.LogoComp,
-        logoCompeticionUrl: comp.LogoComp
-          ? getCompeticionLogoUrl(comp.IdCompeticion)
-          : getEntityLogoUrl(comp.IdEntidad),
+        idCompeticion: comp.id,
+        nombreCompeticion: comp.nombre,
+        nombreCompeticionAbrev: comp.nombre,
+        temporada: comp.temporada,
+        modalidad: "hp",
+        tieneLogoComp: false,
+        logoCompeticionUrl: getEntityLogoUrl(""),
         equipos: equiposLoyola,
       });
     }
