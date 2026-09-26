@@ -25,6 +25,8 @@ export function getJugadorFotoUrl(foto) {
   if (!rawKey || rawKey === "sinfoto") {
     return "https://s3.eu-west-3.amazonaws.com/digitalsport-public-images/licencias/foto/no_foto.png";
   }
+  // La API nueva ya devuelve la foto como URL absoluta (bucket Scaleway); úsala tal cual.
+  if (/^https?:\/\//i.test(rawKey)) return rawKey;
 
   const hasKnownExtension = /\.(jpe?g|png|webp|gif)$/i.test(rawKey);
   const normalizedKey = hasKnownExtension ? rawKey : `${rawKey}.jpg`;
