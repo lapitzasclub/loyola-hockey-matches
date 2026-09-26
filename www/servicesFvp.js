@@ -131,13 +131,44 @@ async function getCompetitionTrees(compId) {
 }
 
 /**
- * Construye el calendario legacy completo de una competición desde los árboles de división.
+ * Obtiene el marcador en vivo por partido. El árbol/jerarquía deja `estado` en PROGRAMADO y
+ * `puntaje` a null durante el directo; sólo `/public/partidos/marcadores` refleja los partidos
+ * en juego (y recién finalizados: `periodo === 30`). Se usa para superponer estado/goles reales.
+ *
+ * @returns {Promise<Map<string,{periodo:number, golesLocal:number|null, golesVisit:number|null}>>}
+ */
+async function getMarcadoresLive() {
+  try {
+    const data = await apiGet(`/public/partidos/marcadores?entidadId=${ENTIDAD_ID}`, 30 * 1000);
+    const map = new Map();
+    for (const comp of Array.isArray(data) ? data : []) {
+      for (const m of Array.isArray(comp?.matches) ? comp.matches : []) {
+        map.set(String(m.id), {
+          periodo: Number(m.periodo) || 0,
+          golesLocal: m.local?.goles ?? null,
+          golesVisit: m.visitante?.goles ?? null,
+        });
+      }
+    }
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
+/**
+ * Construye el calendario legacy completo de una competición desde los árboles de división,
+ * superponiendo el marcador/estado en vivo de los partidos en juego o recién finalizados.
  *
  * @param {string} compId UUID de la competición.
  * @returns {Promise<Array>} Partidos en shape legacy.
  */
 export async function buildLegacyCalendar(compId) {
-  const [{ nombre: nombreComp }, trees] = await Promise.all([getCompetitionMeta(compId), getCompetitionTrees(compId)]);
+  const [{ nombre: nombreComp }, trees, marcadores] = await Promise.all([
+    getCompetitionMeta(compId),
+    getCompetitionTrees(compId),
+    getMarcadoresLive(),
+  ]);
   const partidos = [];
   for (const { tree } of trees) {
     for (const fase of tree) {
@@ -168,6 +199,13 @@ export async function buildLegacyCalendar(compId) {
         }
       }
     }
+  }
+  for (const p of partidos) {
+    const live = marcadores.get(String(p.IdPartido));
+    if (!live) continue;
+    if (live.golesLocal != null) p.GolesLocal = live.golesLocal;
+    if (live.golesVisit != null) p.GolesVisit = live.golesVisit;
+    p.EstadoPartido = live.periodo === 30 ? 2 : 1;
   }
   return partidos;
 }
