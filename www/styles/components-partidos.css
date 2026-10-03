@@ -177,17 +177,14 @@ body[data-theme="dark"] #matches li.proximo-partido .partido-header::before {
   font-size: 0.92em;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 14%, #ffffff);
+  /* Chip neutro: el gris se deriva de --color-text, que ya se invierte por tema. */
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
   padding: 0.28em 0.8em;
   border-radius: 999px;
   display: inline-block;
   width: fit-content;
   max-width: 100%;
-}
-
-body[data-theme="dark"] .partido-jornada {
-  background: var(--badge-bg, var(--color-badge-bg));
 }
 
 .partido-fecha {
@@ -338,10 +335,11 @@ body[data-theme="dark"] .partido-vs {
 .partido-resultado-pendiente {
   min-width: 4.4em;
   font-size: 1.02em;
-  font-weight: 800;
+  /* Estado pendiente en gris apagado: no compite con el marcador ni con el nombre de Loyola. */
+  font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--color-primary);
-  background: var(--color-surface-interactive-soft);
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
   box-shadow: none;
   padding: 0.38em 0.7em;
 }

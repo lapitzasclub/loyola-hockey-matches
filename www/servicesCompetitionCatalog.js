@@ -7,8 +7,38 @@ import { discoverCompetitions, buildLegacyEquipos, isLoyolaName } from "./servic
 
 const CATALOG_STORAGE_KEY = "loyola_competition_catalog_v2";
 
+/** Competiciones resueltas a la vez al construir el catálogo. */
+const CATALOG_CONCURRENCY = 6;
+
 const competitionCatalogCache = new Map();
 const competitionCatalogInflight = new Map();
+
+/**
+ * Recorre una lista aplicando `fn` en paralelo pero con un tope de tareas simultáneas,
+ * conservando el orden original. Evita encadenar una petición por competición (arranque
+ * lento) sin llegar a lanzar decenas de peticiones a la vez desde el móvil.
+ *
+ * @template T, R
+ * @param {T[]} items Elementos a procesar.
+ * @param {number} limit Máximo de tareas concurrentes.
+ * @param {(item: T) => Promise<R>} fn Trabajo por elemento.
+ * @returns {Promise<R[]>} Resultados en el mismo orden que `items`.
+ */
+async function mapConConcurrencia(items, limit, fn) {
+  const lista = Array.isArray(items) ? items : [];
+  const resultados = new Array(lista.length);
+  let siguiente = 0;
+
+  const worker = async () => {
+    while (siguiente < lista.length) {
+      const indice = siguiente++;
+      resultados[indice] = await fn(lista[indice]);
+    }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(limit, lista.length) }, worker));
+  return resultados;
+}
 
 function loadCatalogFromStorage() {
   try {
@@ -68,24 +98,23 @@ export async function getLoyolaCompetitionCatalog() {
 
   const requestPromise = (async () => {
     const competiciones = await discoverCompetitions();
-    const catalog = [];
 
-    for (const comp of competiciones) {
+    const entradas = await mapConConcurrencia(competiciones, CATALOG_CONCURRENCY, async (comp) => {
       let equipos;
       try {
         equipos = await buildLegacyEquipos(comp.id);
       } catch (error) {
         console.error("Error cargando equipos de competición:", comp.id, error);
-        continue;
+        return null;
       }
 
       const equiposLoyola = equipos
         .filter((eq) => isLoyolaName(eq.NombreEquipo) || isLoyolaName(eq.NombreEquipoAbrev))
         .map((eq) => toCatalogTeam(eq, comp));
 
-      if (!equiposLoyola.length) continue;
+      if (!equiposLoyola.length) return null;
 
-      catalog.push({
+      return {
         idCompeticion: comp.id,
         nombreCompeticion: comp.nombre,
         nombreCompeticionAbrev: comp.nombre,
@@ -94,8 +123,9 @@ export async function getLoyolaCompetitionCatalog() {
         tieneLogoComp: false,
         logoCompeticionUrl: getEntityLogoUrl(""),
         equipos: equiposLoyola,
-      });
-    }
+      };
+    });
+    const catalog = entradas.filter(Boolean);
 
     saveCatalogToStorage(catalog);
     competitionCatalogCache.set(cacheKey, catalog);

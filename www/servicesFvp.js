@@ -85,7 +85,9 @@ export async function apiGet(path, ttl = CACHE_TTL_DEFAULT) {
  * @returns {Promise<{eventos: Array}>} Agenda cruda.
  */
 function getHpAgenda() {
-  return apiGet(`/public/agenda?entidadId=${ENTIDAD_ID}&deporte=${DEPORTE_HP}&dias=${AGENDA_DIAS}`, CACHE_TTL_DEFAULT);
+  // Esta agenda pesa ~490 KB y sólo se usa para descubrir las competiciones de la temporada,
+  // que no cambian de un día para otro: con TTL corto se re-descargaba cada 5 minutos.
+  return apiGet(`/public/agenda?entidadId=${ENTIDAD_ID}&deporte=${DEPORTE_HP}&dias=${AGENDA_DIAS}`, CACHE_TTL_LONG);
 }
 
 /**
@@ -124,12 +126,41 @@ async function getCompetitionMeta(compId) {
  */
 async function getCompetitionTrees(compId) {
   const divisiones = await apiGet(`/hierarchy/competicion/${compId}/divisiones`, CACHE_TTL_LONG);
-  const result = [];
-  for (const div of Array.isArray(divisiones) ? divisiones : []) {
-    const tree = await apiGet(`/hierarchy/division/${div.id}/tree`, CACHE_TTL_DEFAULT);
-    result.push({ divisionId: div.id, divisionNombre: div.nombreDisplay || div.categoriaNombre || "", tree: Array.isArray(tree) ? tree : [] });
-  }
-  return result;
+  return Promise.all(
+    (Array.isArray(divisiones) ? divisiones : []).map(async (div) => {
+      const tree = await apiGet(`/hierarchy/division/${div.id}/tree`, CACHE_TTL_DEFAULT);
+      return {
+        divisionId: div.id,
+        divisionNombre: div.nombreDisplay || div.categoriaNombre || "",
+        tree: Array.isArray(tree) ? tree : [],
+      };
+    }),
+  );
+}
+
+/**
+ * Obtiene, en paralelo, las filas de clasificación de todas las fases de una competición.
+ *
+ * Es además la fuente ligera de equipos: trae `inscripcionId` (la clave interna que comparten
+ * calendario y clasificación), nombre, abreviatura y logo, y pesa ~33 veces menos que el árbol
+ * de la división (≈7 KB frente a ≈222 KB).
+ *
+ * @param {string} compId UUID de la competición.
+ * @returns {Promise<Array<{div:object, filas:Array}>>} Filas agrupadas por división.
+ */
+async function getCompetitionClasificacion(compId) {
+  const divisiones = await apiGet(`/hierarchy/competicion/${compId}/divisiones`, CACHE_TTL_LONG);
+  return Promise.all(
+    (Array.isArray(divisiones) ? divisiones : []).map(async (div) => {
+      const fases = await apiGet(`/hierarchy/division/${div.id}/fases`, CACHE_TTL_LONG);
+      const clasificaciones = await Promise.all(
+        (Array.isArray(fases) ? fases : []).map((fase) =>
+          apiGet(`/hierarchy/fase/${fase.id}/clasificacion`, CACHE_TTL_DEFAULT).catch(() => []),
+        ),
+      );
+      return { div, filas: clasificaciones.flatMap((c) => (Array.isArray(c) ? c : [])) };
+    }),
+  );
 }
 
 /**
@@ -221,33 +252,29 @@ export async function buildLegacyCalendar(compId) {
  * @returns {Promise<Array>} Filas de clasificación en shape legacy.
  */
 export async function buildLegacyClasificacion(compId) {
-  const divisiones = await apiGet(`/hierarchy/competicion/${compId}/divisiones`, CACHE_TTL_LONG);
+  const porDivision = await getCompetitionClasificacion(compId);
   const rows = [];
-  for (const div of Array.isArray(divisiones) ? divisiones : []) {
-    const fases = await apiGet(`/hierarchy/division/${div.id}/fases`, CACHE_TTL_LONG);
-    for (const fase of Array.isArray(fases) ? fases : []) {
-      const clas = await apiGet(`/hierarchy/fase/${fase.id}/clasificacion`, CACHE_TTL_DEFAULT);
-      for (const row of Array.isArray(clas) ? clas : []) {
-        rows.push({
-          IdCompeticion: compId,
-          NombreGrupo: div.nombreDisplay || div.categoriaNombre || "Clasificación",
-          IdEquipo: row.inscripcionId,
-          IdEquipoComp: row.inscripcionId,
-          IdEntidadEquipo: row.clubLogoUrl || null,
-          TieneLogo: !!row.clubLogoUrl,
-          NombreEquipo: row.equipoNombre || "",
-          NombreEquipoAbrev: row.equipoNombreAbrev || "",
-          Posicion: row.puesto,
-          Puntos: row.pts,
-          PartidosJugados: row.pj,
-          PartidosGanados: row.pg,
-          PartidosEmpatados: row.pe,
-          PartidosPerdidos: row.pp,
-          GolesAFavor: row.gf,
-          GolesEnContra: row.gc,
-          DiferenciaGoles: row.dg,
-        });
-      }
+  for (const { div, filas } of porDivision) {
+    for (const row of filas) {
+      rows.push({
+        IdCompeticion: compId,
+        NombreGrupo: div.nombreDisplay || div.categoriaNombre || "Clasificación",
+        IdEquipo: row.inscripcionId,
+        IdEquipoComp: row.inscripcionId,
+        IdEntidadEquipo: row.clubLogoUrl || null,
+        TieneLogo: !!row.clubLogoUrl,
+        NombreEquipo: row.equipoNombre || "",
+        NombreEquipoAbrev: row.equipoNombreAbrev || "",
+        Posicion: row.puesto,
+        Puntos: row.pts,
+        PartidosJugados: row.pj,
+        PartidosGanados: row.pg,
+        PartidosEmpatados: row.pe,
+        PartidosPerdidos: row.pp,
+        GolesAFavor: row.gf,
+        GolesEnContra: row.gc,
+        DiferenciaGoles: row.dg,
+      });
     }
   }
   return rows;
@@ -261,6 +288,36 @@ export async function buildLegacyClasificacion(compId) {
  * @returns {Promise<Array>} Equipos en shape legacy (`IdEquipoComp`, `IdEntidadEquipo`, `TieneLogo`…).
  */
 export async function buildLegacyEquipos(compId) {
+  const porDivision = await getCompetitionClasificacion(compId);
+  const equipos = new Map();
+  for (const { filas } of porDivision) {
+    for (const row of filas) {
+      const id = row?.inscripcionId;
+      if (!id || equipos.has(id)) continue;
+      equipos.set(id, {
+        IdEquipoComp: id,
+        IdEquipo: id,
+        IdEntidadEquipo: row.clubLogoUrl || null,
+        TieneLogo: !!row.clubLogoUrl,
+        NombreEquipo: row.equipoNombre || "",
+        NombreEquipoAbrev: row.equipoNombreAbrev || "",
+      });
+    }
+  }
+  if (equipos.size) return Array.from(equipos.values());
+  // Formatos sin tabla (eliminatorias puras): se recurre al árbol, que es la otra fuente
+  // con `inscripcionId` aunque pese mucho más.
+  return buildLegacyEquiposDesdeArbol(compId);
+}
+
+/**
+ * Extrae los equipos desde el árbol de la competición. Reservado como respaldo de
+ * `buildLegacyEquipos` cuando la competición no expone clasificación.
+ *
+ * @param {string} compId UUID de la competición.
+ * @returns {Promise<Array>} Equipos en shape legacy.
+ */
+async function buildLegacyEquiposDesdeArbol(compId) {
   const trees = await getCompetitionTrees(compId);
   const equipos = new Map();
   for (const { tree } of trees) {
