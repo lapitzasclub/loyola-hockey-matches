@@ -44,8 +44,10 @@ function jornadaOrden(nombre) {
  */
 function estadoLegacy(estado, goles) {
   const e = String(estado || "").toUpperCase();
+  // La API mezcla vocabularios: la agenda devuelve FINALIZADO/EN_JUEGO/PROGRAMADO y el árbol
+  // de división FINISHED/SCHEDULED. Se cubren ambos, más IN_PROGRESS por si aparece en vivo.
   if (/FINAL|FINISH|JUGAD|CERRAD|PLAYED|ACTA/.test(e)) return 2;
-  if (/JUEGO|LIVE|CURSO|PLAYING|DIRECTO/.test(e)) return 1;
+  if (/JUEGO|LIVE|CURSO|PLAYING|PROGRESS|JUGANDO|DIRECTO/.test(e)) return 1;
   if (goles && goles.golesLocal != null && goles.golesVisit != null) return 2;
   return 0;
 }
@@ -202,7 +204,9 @@ export async function buildLegacyCalendar(compId) {
   }
   for (const p of partidos) {
     const live = marcadores.get(String(p.IdPartido));
-    if (!live) continue;
+    // `marcadores` también lista partidos aún no empezados (periodo 0, marcador 0-0):
+    // hay que ignorarlos o se pintarían como "en juego" con un falso 0-0.
+    if (!live || live.periodo <= 0) continue;
     if (live.golesLocal != null) p.GolesLocal = live.golesLocal;
     if (live.golesVisit != null) p.GolesVisit = live.golesVisit;
     p.EstadoPartido = live.periodo === 30 ? 2 : 1;

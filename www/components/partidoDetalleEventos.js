@@ -23,6 +23,12 @@ function renderEventoIcon(ev, golesLocal, golesVisit, faltasLocal, faltasVisit) 
       return '<div class="evento-icon-whistle">•</div>';
     case "tm":
       return '<div class="evento-icon-generic">TM</div>';
+    case "tarjetaazul":
+      return '<div class="evento-icon-generic">AZ</div>';
+    case "tarjetaamarilla":
+      return '<div class="evento-icon-generic">AM</div>';
+    case "tarjetaroja":
+      return '<div class="evento-icon-generic">RJ</div>';
     default:
       return `<div class="evento-icon-generic">${escapeHtml((ev.IdTipoEvento || "EV").slice(0, 3).toUpperCase())}</div>`;
   }
@@ -94,6 +100,15 @@ function renderEventoTexto(ev) {
       return `<div class="evento-title evento-title-fault">FALTA${dorsal1 ? ` · ${renderPlayerRef("", buildEventPlayerPayload(ev, 1))}` : ""}</div>${codigo || mins ? `<div class="evento-subtitle">${escapeHtml([codigo, mins ? `${mins} min.` : ""].filter(Boolean).join(" · "))}</div>` : ""}`;
     case "tm":
       return '<div class="evento-title">TIEMPO MUERTO</div>';
+    case "tarjetaazul":
+    case "tarjetaamarilla":
+    case "tarjetaroja": {
+      const etiqueta = ev.IdTipoEvento === "tarjetaazul"
+        ? "TARJETA AZUL"
+        : ev.IdTipoEvento === "tarjetaamarilla" ? "TARJETA AMARILLA" : "TARJETA ROJA";
+      const detalle = [codigo, mins ? `${mins} min.` : ""].filter(Boolean).join(" · ");
+      return `<div class="evento-title evento-title-fault">${etiqueta}${dorsal1 ? ` · ${renderPlayerRef("", buildEventPlayerPayload(ev, 1))}` : ""}</div>${detalle ? `<div class="evento-subtitle">${escapeHtml(detalle)}</div>` : ""}`;
+    }
     default:
       return `<div class="evento-title">${escapeHtml(ev.Descripcion || ev.IdTipoEvento || "Evento")}</div>`;
   }

@@ -163,12 +163,15 @@ export function getParametrosCompeticion(idCompeticion) {
 const EVENTO_TIPO_MAP = {
   GOL: "gol",
   FALTA: "falta",
+  "FALTA-HL": "falta-hl",
   FALTADIRECTA: "faltadirecta",
   PENALTI: "penalti",
   TM: "tm",
   TARJETAAZUL: "tarjetaazul",
+  TARJETAAMARILLA: "tarjetaamarilla",
+  TARJETAROJA: "tarjetaroja",
 };
-const ROL_TECNICO = { ENTRENADOR: 3, DELEGADO: 5, AUXILIAR: 6 };
+const ROL_TECNICO = { ENTRENADOR: 3, ENTRENADOR2: 4, DELEGADO: 5, AUXILIAR: 6 };
 
 /**
  * Determina el lado de una incidencia/persona: 1 = local, 2 = visitante, 0 = desconocido.
@@ -313,11 +316,13 @@ function statsPorJugador(d) {
   const get = (id) => {
     if (!id) return null;
     if (!map.has(id)) {
-      map.set(id, { Goles: 0, Asist: 0, FaltaReal: 0, FaltaRec: 0, Azules: 0, Paradas: 0, TirosPenalti: 0, GolPenalti: 0, TirosFD: 0, GolFD: 0 });
+      map.set(id, { Goles: 0, GolesEncajados: 0, Asist: 0, FaltaReal: 0, FaltaRec: 0, Azules: 0, Amarillas: 0, Rojas: 0, Paradas: 0, TirosPenalti: 0, GolPenalti: 0, TirosFD: 0, GolFD: 0 });
     }
     return map.get(id);
   };
-  const esGol = (i) => String(i.resultado || "").toUpperCase().includes("GOL");
+  // `resultado` sólo vale GOL, NO_GOL o PENDIENTE: hay que comparar exacto, porque
+  // "NO_GOL".includes("GOL") también es cierto y contaría los fallados como gol.
+  const esGol = (i) => String(i.resultado || "").toUpperCase() === "GOL";
   for (const i of Array.isArray(d.incidencias) ? d.incidencias : []) {
     const tipo = String(i.tipo || "").toUpperCase();
     const p = get(i.plantillaEquipoId);
@@ -325,7 +330,11 @@ function statsPorJugador(d) {
     if (tipo === "GOL") {
       if (p) p.Goles += 1;
       if (sec) sec.Asist += 1;
-    } else if (tipo === "FALTA" || tipo === "FALTADIRECTA") {
+      // Cada gol referencia al portero batido en `porteroId`: así se obtienen los goles
+      // encajados, que la UI de porteros usa para el chip GC y el % de paradas.
+      const portero = get(i.porteroId);
+      if (portero) portero.GolesEncajados += 1;
+    } else if (tipo === "FALTA" || tipo === "FALTA-HL" || tipo === "FALTADIRECTA") {
       if (p) p.FaltaReal += 1;
       if (sec) sec.FaltaRec += 1;
       if (tipo === "FALTADIRECTA" && p) {
@@ -336,6 +345,10 @@ function statsPorJugador(d) {
       if (p) p.Paradas += 1;
     } else if (tipo === "TARJETAAZUL") {
       if (p) p.Azules += 1;
+    } else if (tipo === "TARJETAAMARILLA") {
+      if (p) p.Amarillas += 1;
+    } else if (tipo === "TARJETAROJA") {
+      if (p) p.Rojas += 1;
     } else if (tipo === "PENALTI") {
       if (p) {
         p.TirosPenalti += 1;
@@ -355,6 +368,7 @@ function statsPorJugador(d) {
  */
 function personaAlineacion(a, stats) {
   const s = stats.get(a.plantillaEquipoId) || {};
+  const esPortero = String(a.rolPosicion || "").toUpperCase() === "PORTERO";
   return {
     Dorsal: a.dorsal ?? "",
     ApellidosNombre: a.nombre || "",
@@ -362,11 +376,16 @@ function personaAlineacion(a, stats) {
     Inicial: !!a.esInicial,
     Capitan: !!a.esCapitan,
     IdPosicion: ROL_TECNICO[String(a.rolPosicion || "").toUpperCase()] || null,
-    Goles: s.Goles || 0,
+    // En porteros la UI interpreta `Goles` como goles encajados (chip "GC" y % de paradas),
+    // no como goles marcados.
+    Goles: esPortero ? s.GolesEncajados || 0 : s.Goles || 0,
+    GolesRecibidos: s.GolesEncajados || 0,
     Asist: s.Asist || 0,
     FaltaReal: s.FaltaReal || 0,
     FaltaRec: s.FaltaRec || 0,
     Azules: s.Azules || 0,
+    Amarillas: s.Amarillas || 0,
+    Rojas: s.Rojas || 0,
     Paradas: s.Paradas || 0,
     TirosPenalti: s.TirosPenalti || 0,
     GolPenalti: s.GolPenalti || 0,
@@ -392,6 +411,9 @@ function mapAlineaciones(d) {
       const persona = personaAlineacion(a, stats);
       if (rol === "PORTERO") port.push(persona);
       else if (rol === "JUGADOR") jug.push(persona);
+      // Algunas fichas llegan sin `rolPosicion`: si traen dorsal son jugadores de pista,
+      // no cuerpo técnico (el staff viene siempre sin dorsal).
+      else if (!rol && String(a.dorsal || "").trim()) jug.push(persona);
       else tecn.push(persona);
     }
     return { jug, port, tecn };
@@ -401,6 +423,71 @@ function mapAlineaciones(d) {
   const total = L.jug.length + L.port.length + L.tecn.length + V.jug.length + V.port.length + V.tecn.length;
   if (!total) return null;
   return { JugLocal: L.jug, PortLocal: L.port, TecnLocal: L.tecn, JugVisit: V.jug, PortVisit: V.port, TecnVisit: V.tecn };
+}
+
+/**
+ * Agrega las incidencias en contadores por tipo y lado, en el shape que consumen
+ * `buildStatsSummary` (resumen del detalle) y `pickStat` (gráficas del detalle de equipo):
+ * `{IdTipoEvento, LocalVisit, Total}`.
+ *
+ * @param {object} d Detalle nuevo.
+ * @returns {Array<object>} Contadores agregados.
+ */
+function mapStatsResumen(d) {
+  const loc = d.local || {};
+  const vis = d.visitante || {};
+  const totales = new Map();
+  const suma = (tipo, lado) => {
+    const key = `${tipo}|${lado}`;
+    totales.set(key, (totales.get(key) || 0) + 1);
+  };
+  for (const i of Array.isArray(d.incidencias) ? d.incidencias : []) {
+    const tipo = EVENTO_TIPO_MAP[String(i.tipo || "").toUpperCase()];
+    if (!tipo) continue;
+    const lado = ladoDe(i.equipoId, loc, vis);
+    if (!lado) continue;
+    suma(tipo, lado);
+    // Los consumidores buscan "faltahl" (sin guion) como alternativa a "falta".
+    if (tipo === "falta-hl") suma("faltahl", lado);
+  }
+  return Array.from(totales, ([key, Total]) => {
+    const [IdTipoEvento, lado] = key.split("|");
+    return { IdTipoEvento, LocalVisit: Number(lado), Total };
+  });
+}
+
+/**
+ * Extrae la tanda/lanzamientos de penalti en el shape que consume `renderPenaltis`.
+ * `resultado` es `GOL | NO_GOL | PENDIENTE`, que se traduce a `Gol` true/false/null.
+ *
+ * @param {object} d Detalle nuevo.
+ * @returns {Array<object>} Penaltis legacy.
+ */
+function mapPenaltis(d) {
+  const loc = d.local || {};
+  const vis = d.visitante || {};
+  const golDe = (resultado) => {
+    const v = String(resultado || "").toUpperCase();
+    if (v === "GOL") return true;
+    if (v === "NO_GOL") return false;
+    return null;
+  };
+  return (Array.isArray(d.incidencias) ? d.incidencias : [])
+    .filter((i) => String(i.tipo || "").toUpperCase() === "PENALTI")
+    .sort(ordenCronologico)
+    .map((i) => {
+      const lado = ladoDe(i.equipoId, loc, vis);
+      // `IdEquipo` debe coincidir con localKey/visitKey, que son `IdEq1`/`IdEq2`.
+      const idEquipo = lado === 1
+        ? loc.inscripcionId || loc.equipoId
+        : lado === 2 ? vis.inscripcionId || vis.equipoId : null;
+      return {
+        IdEquipo: idEquipo ?? null,
+        Dorsal: i.dorsal ?? "",
+        NombreApellidos: i.nombre || "",
+        Gol: golDe(i.resultado),
+      };
+    });
 }
 
 /**
@@ -438,6 +525,11 @@ function mapPartidoDetalle(d) {
     IdEq1: loc.inscripcionId || loc.equipoId || null,
     IdEq2: vis.inscripcionId || vis.equipoId || null,
     EstadoPartido: estadoPartidoLegacy(d),
+    // El asterisco de punto bonus junto al marcador: la API nueva lo expresa como
+    // `ganoDesempate` en el equipo que se llevó el punto extra.
+    PuntoBonus: loc.ganoDesempate
+      ? loc.inscripcionId || loc.equipoId || null
+      : vis.ganoDesempate ? vis.inscripcionId || vis.equipoId || null : null,
   };
 }
 
@@ -463,16 +555,27 @@ export function getPartido(idPartido) {
  * @param {string} idPartido ID del partido.
  * @returns {Promise<any>} Sobre legacy `{ d }` con `[{ partido, stats, eventos, alineaciones }]`.
  */
+/**
+ * Construye el bloque legacy de estadísticas de un partido a partir del detalle nuevo.
+ *
+ * @param {object} d Detalle nuevo (`/public/partidos/{id}`).
+ * @returns {object} Bloque `{partido, stats, eventos, alineaciones, penaltis}`.
+ */
+function buildEstadisticaBlock(d) {
+  const alineaciones = mapAlineaciones(d);
+  return {
+    partido: [mapPartidoDetalle(d)],
+    stats: mapStatsResumen(d),
+    eventos: mapIncidenciasToEventos(d),
+    alineaciones: alineaciones ? [alineaciones] : [],
+    penaltis: mapPenaltis(d),
+  };
+}
+
 export function getEstadisticaPartido(idPartido) {
   return safeBuild(async () => {
     const d = await apiGet(`/public/partidos/${idPartido}`, CACHE_TTL_DEFAULT);
-    const alineaciones = mapAlineaciones(d);
-    return [{
-      partido: [mapPartidoDetalle(d)],
-      stats: [],
-      eventos: mapIncidenciasToEventos(d),
-      alineaciones: alineaciones ? [alineaciones] : [],
-    }];
+    return [buildEstadisticaBlock(d)];
   });
 }
 
@@ -488,10 +591,9 @@ export async function emitLivePartidoRefresh(idPartido) {
   try {
     invalidateApiCacheFor([`/public/partidos/${idPartido}`]);
     const d = await apiGet(`/public/partidos/${idPartido}`, CACHE_TTL_DEFAULT);
-    emitPartidoHubEvent("marcadorPartido", mapPartidoDetalle(d), idPartido);
-    emitPartidoHubEvent("eventosPartido", mapIncidenciasToEventos(d), idPartido);
-    const alineaciones = mapAlineaciones(d);
-    if (alineaciones) emitPartidoHubEvent("alineacionPartido", alineaciones, idPartido);
+    // Un único evento con el bloque completo: así el directo refresca también el resumen
+    // de estadísticas y los penaltis, no sólo marcador, eventos y alineaciones.
+    emitPartidoHubEvent("estadisticaPartido", [buildEstadisticaBlock(d)], idPartido);
   } catch (error) {
     console.warn("[Realtime] Refresco de partido falló:", error?.message || error);
   }

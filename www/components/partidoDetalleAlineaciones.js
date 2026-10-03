@@ -108,6 +108,7 @@ function renderJugadoresCards(jugadores, modalidad, teamType) {
       renderStatChip("F+", j.FaltaReal),
       renderStatChip("F-", j.FaltaRec),
       isHp ? renderStatChip("Az", j.Azules) : "",
+      isHp ? renderStatChip("Am", j.Amarillas) : "",
       isHp ? renderStatChip("Rj", j.Rojas) : "",
       renderStatChip("Min", j.Minutos),
     ].filter(Boolean).join("");
@@ -151,6 +152,7 @@ function renderPorterosCards(porteros, modalidad, teamType) {
       renderStatChip("F+", p.FaltaReal),
       renderStatChip("F-", p.FaltaRec),
       isHp ? renderStatChip("Az", p.Azules) : "",
+      isHp ? renderStatChip("Am", p.Amarillas) : "",
       isHp ? renderStatChip("Rj", p.Rojas) : "",
       renderStatChip("Min", p.Minutos),
     ].filter(Boolean).join("");
