@@ -64,6 +64,9 @@ export function updateEstadisticaPayload(state, payload) {
   if (Array.isArray(block.alineaciones) && block.alineaciones.length) {
     state.alineaciones = block.alineaciones[0];
   }
+  if (Array.isArray(block.penaltis)) {
+    state.penaltis = block.penaltis;
+  }
 }
 
 /**

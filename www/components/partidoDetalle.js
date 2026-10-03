@@ -349,6 +349,11 @@ async function cargarDetallePartido(idPartido, stateOverride = null, headerOverr
   window.__partidoDetalleUnsub = subscribePartidoHubEvents(({ type, payload, idPartido: incomingId }) => {
     if (!incomingId || String(incomingId) !== String(idPartido)) return;
     switch (type) {
+      // Refresco completo que emite la capa de tiempo real: marcador, estadísticas,
+      // eventos, alineaciones y penaltis de una vez.
+      case "estadisticaPartido":
+        updateEstadisticaPayload(state, payload);
+        break;
       case "marcadorPartido":
       case "recibirMarcadorPartido":
       case "cronoPartido":
