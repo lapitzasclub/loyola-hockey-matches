@@ -305,6 +305,7 @@ function mapJugadorEstadistica(j, div) {
     azules: j.tarjetasAzules || 0,
     amarillas: j.tarjetasAmarillas || 0,
     rojas: j.tarjetasRojas || 0,
+    faltas: j.faltas || 0,
     paradas: j.paradas || 0,
     golesEncajados: j.golesEncajados || 0,
     porcentajeParadas: j.porcentajeParadas || 0,

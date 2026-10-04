@@ -139,9 +139,14 @@ export const i18n = {
     team_detail_tab_stats: "Estadísticas",
     team_detail_tab_players: "Jugadores",
     players_ranking_title: "Estadísticas de jugadores",
-    players_scorers: "Goleadores",
-    players_goalkeepers: "Porteros",
+    players_scorers: "Máximos goleadores",
+    players_assists: "Máximos asistentes",
+    players_goalkeepers: "Mejores porteros",
+    players_cards: "Más sancionados",
     players_empty: "Todavía no hay estadísticas de jugadores.",
+    nav_stats: "Estadísticas",
+    stats_team_attack: "Equipos más goleadores",
+    stats_team_defense: "Equipos menos goleados",
     team_detail_filter_all: "Todos",
     team_detail_filter_pending: "Pendientes",
     team_detail_filter_toolbar: "Filtros de partidos del equipo",
@@ -336,9 +341,14 @@ export const i18n = {
     team_detail_tab_stats: "Estatistikak",
     team_detail_tab_players: "Jokalariak",
     players_ranking_title: "Jokalarien estatistikak",
-    players_scorers: "Golegileak",
-    players_goalkeepers: "Atezainak",
+    players_scorers: "Golegile nagusiak",
+    players_assists: "Asistentzia gehien",
+    players_goalkeepers: "Atezain onenak",
+    players_cards: "Zigortuenak",
     players_empty: "Oraindik ez dago jokalarien estatistikarik.",
+    nav_stats: "Estatistikak",
+    stats_team_attack: "Talde golegileenak",
+    stats_team_defense: "Gol gutxien jaso dituztenak",
     team_detail_stats_empty: "Oraindik ez dago nahikoa jokatutako partidarik estatistikak erakusteko.",
     team_detail_stats_form: "Azken bolada",
     team_detail_stats_overview: "Laburpen estatistikoa",
@@ -593,6 +603,7 @@ export function updateTexts() {
   setText('[data-i18n="select_theme"]', t("select_theme"));
   setBottomNavLabel('[data-i18n="nav_matches"]', t("nav_matches"));
   setBottomNavLabel('[data-i18n="nav_clas"]', t("nav_clas"));
+  setBottomNavLabel('[data-i18n="nav_stats"]', t("nav_stats"));
   setText('[data-i18n="app_short_name"]', t("app_short_name"));
   setText('[data-i18n="side_menu_title"]', t("side_menu_title"));
 

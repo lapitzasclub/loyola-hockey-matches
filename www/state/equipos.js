@@ -89,6 +89,8 @@ export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion,
       if (navPartidos && navClas) {
         navPartidos.classList.add("active");
         navClas.classList.remove("active");
+        document.getElementById("navStats")?.classList.remove("active");
+        document.querySelector(".bottom-nav")?.setAttribute("data-active-tab", "0");
       }
       await mostrarPartidosYClasificacion();
     });
