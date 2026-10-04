@@ -8,6 +8,7 @@ import { getApiBaseUrl } from "./servicesShared.js";
 import {
   apiGet,
   buildEstadisticasJugadores,
+  buildEstadisticasUltimaJornada,
   buildLegacyCalendar,
   buildLegacyClasificacion,
   buildLegacyEquipos,
@@ -152,6 +153,20 @@ export async function getEstadisticasJugadoresCompeticion(idCompeticion) {
     return await buildEstadisticasJugadores(idCompeticion);
   } catch {
     return [];
+  }
+}
+
+/**
+ * Obtiene las estadísticas de jugador de la última jornada jugada de una competición.
+ *
+ * @param {string} idCompeticion ID de la competición.
+ * @returns {Promise<{nombre:string, jugadores:Array<object>}>} Jornada y jugadores; vacío si falla.
+ */
+export async function getEstadisticasUltimaJornada(idCompeticion) {
+  try {
+    return await buildEstadisticasUltimaJornada(idCompeticion);
+  } catch {
+    return { nombre: "", jugadores: [] };
   }
 }
 

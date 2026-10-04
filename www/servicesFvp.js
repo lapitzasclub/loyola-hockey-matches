@@ -7,6 +7,7 @@ import { getCachedApi, setCachedApi, CACHE_TTL_DEFAULT, CACHE_TTL_LONG } from ".
 import { getHttp } from "./utils/env.js";
 import { shouldPreferNativeHttp } from "./config/runtime.js";
 import { getApiBaseUrl, ENTIDAD_ID, DEPORTE_HP, HEADERS } from "./servicesShared.js";
+import { statsPorJugador } from "./servicesPartidoMappers.js";
 
 const GET_HEADERS = { accept: HEADERS.accept };
 
@@ -331,6 +332,126 @@ export async function buildEstadisticasJugadores(compId) {
     }),
   );
   return porDivision.flat();
+}
+
+/**
+ * Localiza la última jornada con partidos ya jugados de una competición.
+ *
+ * @param {Array<{tree:Array}>} trees Árboles por división.
+ * @returns {{orden:number, nombre:string, partidos:string[]}|null}
+ */
+function ultimaJornadaJugada(trees) {
+  let mejor = null;
+  for (const { tree } of trees) {
+    for (const fase of tree) {
+      for (const jornada of fase?.jornadas || []) {
+        const jugados = (jornada?.enfrentamientos || [])
+          .filter((e) => /FINISH|FINAL/i.test(String(e?.estado || "")))
+          .map((e) => e.id)
+          .filter(Boolean);
+        if (!jugados.length) continue;
+
+        const orden = jornada.orden ?? jornadaOrden(jornada.nombre);
+        if (!mejor || orden > mejor.orden) {
+          mejor = { orden, nombre: jornada.nombre || "", partidos: [...jugados] };
+        } else if (orden === mejor.orden) {
+          // Varias divisiones comparten numeración de jornada: se acumulan sus partidos.
+          mejor.partidos.push(...jugados);
+        }
+      }
+    }
+  }
+  return mejor;
+}
+
+/**
+ * Agrega las estadísticas de los jugadores que participaron en los partidos indicados.
+ * Reutiliza el acumulador de incidencias del detalle de partido.
+ *
+ * @param {object[]} detalles Detalles de partido ya descargados.
+ * @returns {Array<object>} Jugadores normalizados, con el mismo shape que el ranking de temporada.
+ */
+function agregarJugadoresJornada(detalles) {
+  const acc = new Map();
+
+  for (const d of detalles) {
+    const stats = statsPorJugador(d);
+    const lados = [
+      [d.alineacionesLocal, d.local || {}],
+      [d.alineacionesVisitante, d.visitante || {}],
+    ];
+
+    for (const [alineacion, equipo] of lados) {
+      for (const a of Array.isArray(alineacion) ? alineacion : []) {
+        const rol = String(a.rolPosicion || "").toUpperCase();
+        if (rol && rol !== "JUGADOR" && rol !== "PORTERO") continue;
+        const id = a.plantillaEquipoId;
+        if (!id) continue;
+
+        let j = acc.get(id);
+        if (!j) {
+          j = {
+            id,
+            nombre: a.nombre || "",
+            fotoUrl: a.fotoUrl || "",
+            equipoAbrev: equipo.nombreAbrev || "",
+            equipoId: equipo.equipoId || null,
+            clubLogoUrl: equipo.logoUrl || "",
+            grupo: "",
+            esPortero: rol === "PORTERO",
+            partidosJugados: 0,
+            goles: 0,
+            asistencias: 0,
+            azules: 0,
+            amarillas: 0,
+            rojas: 0,
+            faltas: 0,
+            paradas: 0,
+            golesEncajados: 0,
+            porcentajeParadas: 0,
+            minutosJugados: 0,
+          };
+          acc.set(id, j);
+        }
+
+        const s = stats.get(id) || {};
+        j.partidosJugados += 1;
+        j.goles += s.Goles || 0;
+        j.asistencias += s.Asist || 0;
+        j.azules += s.Azules || 0;
+        j.amarillas += s.Amarillas || 0;
+        j.rojas += s.Rojas || 0;
+        j.faltas += s.FaltaReal || 0;
+        j.paradas += s.Paradas || 0;
+        j.golesEncajados += s.GolesEncajados || 0;
+      }
+    }
+  }
+
+  for (const j of acc.values()) {
+    const tiros = j.paradas + j.golesEncajados;
+    j.porcentajeParadas = tiros ? (j.paradas / tiros) * 100 : 0;
+  }
+  return Array.from(acc.values());
+}
+
+/**
+ * Obtiene las estadísticas de jugador de la última jornada jugada.
+ * El endpoint de estadísticas sólo da totales de temporada (ignora cualquier filtro), así que
+ * la jornada se agrega a partir de las incidencias de sus partidos, que son inmutables.
+ *
+ * @param {string} compId UUID de la competición.
+ * @returns {Promise<{nombre:string, jugadores:Array<object>}>}
+ */
+export async function buildEstadisticasUltimaJornada(compId) {
+  const trees = await getCompetitionTrees(compId);
+  const jornada = ultimaJornadaJugada(trees);
+  if (!jornada?.partidos?.length) return { nombre: "", jugadores: [] };
+
+  const detalles = await Promise.all(
+    jornada.partidos.map((id) => apiGet(`/public/partidos/${id}`, CACHE_TTL_LONG).catch(() => null)),
+  );
+  return { nombre: jornada.nombre, jugadores: agregarJugadoresJornada(detalles.filter(Boolean)) };
 }
 
 /**
