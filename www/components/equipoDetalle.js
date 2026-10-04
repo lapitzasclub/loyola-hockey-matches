@@ -5,6 +5,7 @@ import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml } 
 import { escapeHtml, formatHora, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
 import { buildRosterFromMatches, renderEquipoDetalleRoster } from "./equipoDetalleRoster.js";
 import { renderTeamStatsView } from "./equipoDetalleStats.js";
+import { renderJugadoresRanking } from "./jugadoresRanking.js";
 import { renderPillTabs } from "./uiTabs.js";
 import { hydrateMatchesWithHubLineups } from "./equipoDetalleLineupsHub.js";
 import { groupClasificacionData } from "../utils/clasificacionHelpers.js";
@@ -299,6 +300,9 @@ function getTeamDetailTabs(options = {}) {
   if (options?.showStats) {
     tabs.push(["estadisticas", t("team_detail_tab_stats")]);
   }
+  if (options?.showPlayers) {
+    tabs.push(["jugadores", t("team_detail_tab_players")]);
+  }
 
   return tabs;
 }
@@ -561,7 +565,7 @@ function renderRosterSkeleton() {
  * @returns {string} HTML del panel activo.
  */
 export function renderEquipoDetalleTabContent(equipo, partidos = [], options = {}) {
-  const { activeTab = "resumen", activeFilter = "all", isLoading = false, isLoadingRoster = false, showRoster = false, teamStats = null, loadingStats = false } = options;
+  const { activeTab = "resumen", activeFilter = "all", isLoading = false, isLoadingRoster = false, showRoster = false, teamStats = null, loadingStats = false, teamPlayers = null, loadingPlayers = false } = options;
   const filteredMatches = filterTeamMatches(partidos, equipo, activeFilter);
   const roster = showRoster ? buildRosterFromMatches(partidos, equipo) : null;
 
@@ -579,6 +583,15 @@ export function renderEquipoDetalleTabContent(equipo, partidos = [], options = {
   if (activeTab === "estadisticas") {
     return renderTeamStatsView(teamStats, { isLoading: loadingStats });
   }
+  if (activeTab === "jugadores") {
+    if (loadingPlayers) return renderRosterSkeleton();
+    // El ranking llega con todos los jugadores de la división: se filtra por la abreviatura
+    // del equipo, que es la clave común con el catálogo.
+    return renderJugadoresRanking(teamPlayers || [], {
+      equipoAbrev: equipo?.nombreEquipoAbrev || null,
+      mostrarEquipo: false,
+    });
+  }
 
   return "";
 }
@@ -592,10 +605,10 @@ export function renderEquipoDetalleTabContent(equipo, partidos = [], options = {
  * @returns {string} HTML base de la vista.
  */
 export function renderEquipoDetalleView(equipo, partidos = [], options = {}) {
-  const { activeTab = "resumen", showRoster = false, showStats = false } = options;
+  const { activeTab = "resumen", showRoster = false, showStats = false, showPlayers = false } = options;
   return `
     <div class="team-detail-view">
-      ${renderTeamDetailTabs(activeTab, { showRoster, showStats })}
+      ${renderTeamDetailTabs(activeTab, { showRoster, showStats, showPlayers })}
       <div class="team-tab-content" data-team-tab-content>
         ${renderEquipoDetalleTabContent(equipo, partidos, options)}
       </div>

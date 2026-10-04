@@ -9,10 +9,44 @@ import {
   renderEquipoDetalleView,
 } from "./equipoDetalle.js";
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
+import { getEstadisticasJugadoresCompeticion } from "../services.js";
 import { animatePillTabSelection, animateTabContentSwap } from "./uiTabs.js";
 
 function isTeamStatsTabPending(state, tab) {
   return tab === "estadisticas" && !state.teamStats && !state.loadingStats;
+}
+
+function isTeamPlayersTabPending(state, tab) {
+  return tab === "jugadores" && !state.teamPlayers && !state.loadingPlayers;
+}
+
+/**
+ * Carga el ranking de jugadores de la competición del equipo al abrir su pestaña.
+ *
+ * @param {object} state Estado del detalle.
+ * @param {Function} renderContent Rerender del panel activo.
+ * @returns {void}
+ */
+function loadSubviewTeamPlayers(state, renderContent) {
+  const idCompeticion = state.selectedEquipo?.idCompeticion;
+  if (!idCompeticion) {
+    state.teamPlayers = [];
+    renderContent();
+    return;
+  }
+  state.loadingPlayers = true;
+  renderContent();
+  getEstadisticasJugadoresCompeticion(idCompeticion)
+    .then((jugadores) => {
+      state.teamPlayers = jugadores;
+    })
+    .catch(() => {
+      state.teamPlayers = [];
+    })
+    .finally(() => {
+      state.loadingPlayers = false;
+      renderContent();
+    });
 }
 
 function loadSubviewTeamStats(state, renderContent) {
@@ -68,8 +102,11 @@ export function renderEquipoSubview(state) {
     isLoadingRoster: state.loadingRoster,
     showRoster: true,
     showStats: true,
+    showPlayers: true,
     teamStats: state.teamStats || null,
     loadingStats: state.loadingStats || false,
+    teamPlayers: state.teamPlayers || null,
+    loadingPlayers: state.loadingPlayers || false,
   });
 }
 
@@ -191,8 +228,11 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       isLoadingRoster: state.loadingRoster,
       showRoster: true,
       showStats: true,
+      showPlayers: true,
       teamStats: state.teamStats || null,
       loadingStats: state.loadingStats || false,
+      teamPlayers: state.teamPlayers || null,
+      loadingPlayers: state.loadingPlayers || false,
     });
 
     if (state.teamFilters?.tab === 'estadisticas' && state.teamStats && !state.loadingStats) {
@@ -241,6 +281,9 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       animatePillTabSelection(viewEl, '[data-team-tab]', tab, 'team-tab', 'active');
       animateTabContentSwap(rootEl, () => {
         renderTeamContentOnly();
+        if (isTeamPlayersTabPending(state, tab)) {
+          loadSubviewTeamPlayers(state, renderTeamContentOnly);
+        }
         if (isTeamStatsTabPending(state, tab)) {
           loadSubviewTeamStats(state, renderTeamContentOnly);
         }

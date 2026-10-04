@@ -1,6 +1,7 @@
 // clasificacion.js — clasificación en tabla estilo BeSoccer
 
-import { getCalendarioTodosEquipos, getParametrosCompeticion } from "../services.js";
+import { getCalendarioTodosEquipos, getEstadisticasJugadoresCompeticion, getParametrosCompeticion } from "../services.js";
+import { renderJugadoresRanking } from "./jugadoresRanking.js";
 import { getEntityLogoUrl } from "../servicesShared.js";
 import { preloadPartidoDetalleModule } from "./partidos.js";
 import { getEquipoLabel } from "../equipo.js";
@@ -335,6 +336,32 @@ async function renderClasificacionContent(matchesList, raw, renderToken) {
   } else {
     renderClasificacionAccordion(matchesList, grupos, gruposKeys, selectedInfo, logoMap, partidos);
   }
+
+  if (idCompeticion) {
+    void appendJugadoresRanking(matchesList, idCompeticion, isRenderStillValid);
+  }
+}
+
+/**
+ * Añade el ranking de jugadores debajo de la clasificación. Se carga aparte para no
+ * retrasar el pintado de la tabla, que es lo que el usuario viene a ver.
+ *
+ * @param {HTMLElement} matchesList Contenedor de la vista.
+ * @param {string|number} idCompeticion ID de la competición mostrada.
+ * @param {() => boolean} isRenderStillValid Indica si el render sigue siendo el vigente.
+ * @returns {Promise<void>}
+ */
+async function appendJugadoresRanking(matchesList, idCompeticion, isRenderStillValid) {
+  const jugadores = await getEstadisticasJugadoresCompeticion(idCompeticion);
+  if (!jugadores.length || !isRenderStillValid()) return;
+
+  const wrap = document.createElement("section");
+  wrap.className = "clas-players-wrap";
+  wrap.innerHTML = `
+    <div class="clas-players-title">${safeStr(t("players_ranking_title"))}</div>
+    ${renderJugadoresRanking(jugadores, { limite: 10 })}
+  `;
+  matchesList.appendChild(wrap);
 }
 
 /**
