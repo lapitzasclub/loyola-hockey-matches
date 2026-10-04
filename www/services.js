@@ -7,6 +7,7 @@ import { getCachedApi, setCachedApi, CACHE_TTL_DEFAULT, CACHE_TTL_LONG, invalida
 import { getApiBaseUrl } from "./servicesShared.js";
 import {
   apiGet,
+  buildEstadisticasJugadores,
   buildLegacyCalendar,
   buildLegacyClasificacion,
   buildLegacyEquipos,
@@ -144,6 +145,20 @@ export function getCalendarioLoyola(equipoId, idCompeticion) {
  * @param {string} idCompeticion ID de la competición.
  * @returns {Promise<any>} Sobre legacy `{ d }` con las filas de clasificación.
  */
+/**
+ * Obtiene el ranking de jugadores de una competición (goleadores y estadísticas de portero).
+ *
+ * @param {string} idCompeticion ID de la competición.
+ * @returns {Promise<Array<object>>} Jugadores normalizados; vacío si la API falla.
+ */
+export async function getEstadisticasJugadoresCompeticion(idCompeticion) {
+  try {
+    return await buildEstadisticasJugadores(idCompeticion);
+  } catch {
+    return [];
+  }
+}
+
 export function getClasificacionLiga(idCompeticion) {
   return safeBuild(() => buildLegacyClasificacion(idCompeticion));
 }

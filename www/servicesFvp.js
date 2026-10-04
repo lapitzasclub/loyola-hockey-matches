@@ -281,6 +281,58 @@ export async function buildLegacyClasificacion(compId) {
 }
 
 /**
+ * Normaliza un jugador del ranking de la división al shape que consume la vista.
+ *
+ * @param {object} j Jugador crudo de `/estadisticas-jugadores`.
+ * @param {object} div División a la que pertenece.
+ * @returns {object} Jugador normalizado.
+ */
+function mapJugadorEstadistica(j, div) {
+  return {
+    id: j.plantillaEquipoId || null,
+    nombre: j.nombreCompleto || "",
+    fotoUrl: j.fotoUrl || "",
+    // En este endpoint `equipoNombre` llega abreviado (p. ej. "LOY A"), que es justo la
+    // clave por la que se empareja con el equipo seleccionado.
+    equipoAbrev: j.equipoNombre || "",
+    equipoId: j.equipoId || null,
+    clubLogoUrl: j.clubLogoUrl || "",
+    grupo: div?.nombreDisplay || div?.categoriaNombre || "",
+    esPortero: !!j.esPortero,
+    partidosJugados: j.partidosJugados || 0,
+    goles: j.goles || 0,
+    asistencias: j.asistencias || 0,
+    azules: j.tarjetasAzules || 0,
+    amarillas: j.tarjetasAmarillas || 0,
+    rojas: j.tarjetasRojas || 0,
+    paradas: j.paradas || 0,
+    golesEncajados: j.golesEncajados || 0,
+    porcentajeParadas: j.porcentajeParadas || 0,
+    minutosJugados: j.minutosJugados || 0,
+  };
+}
+
+/**
+ * Obtiene el ranking de jugadores de todas las divisiones de una competición.
+ * Una sola petición por división devuelve a todos los jugadores con sus totales de temporada.
+ *
+ * @param {string} compId UUID de la competición.
+ * @returns {Promise<Array<object>>} Jugadores normalizados.
+ */
+export async function buildEstadisticasJugadores(compId) {
+  const divisiones = await apiGet(`/hierarchy/competicion/${compId}/divisiones`, CACHE_TTL_LONG);
+  const porDivision = await Promise.all(
+    (Array.isArray(divisiones) ? divisiones : []).map(async (div) => {
+      const data = await apiGet(`/hierarchy/division/${div.id}/estadisticas-jugadores`, CACHE_TTL_DEFAULT)
+        .catch(() => null);
+      const jugadores = Array.isArray(data?.jugadores) ? data.jugadores : [];
+      return jugadores.map((j) => mapJugadorEstadistica(j, div));
+    }),
+  );
+  return porDivision.flat();
+}
+
+/**
  * Construye la lista de equipos legacy (para logos) de una competición desde los árboles.
  * Cada equipo se identifica por `inscripcionId`, consistente con calendario y clasificación.
  *
