@@ -56,6 +56,23 @@ const SECCIONES = {
 const SECCIONES_POR_DEFECTO = ["goles", "asistencias", "porteros", "sanciones"];
 
 /**
+ * Devuelve el líder de cada categoría, para las tarjetas de premios.
+ *
+ * @param {object[]} jugadores Jugadores normalizados.
+ * @param {string[]} [claves=SECCIONES_POR_DEFECTO] Categorías a resolver.
+ * @returns {Array<{clave:string, titulo:string, jugador:object, valor:string}>} Líderes encontrados.
+ */
+export function getLideresPorCategoria(jugadores, claves = SECCIONES_POR_DEFECTO) {
+  const lista = Array.isArray(jugadores) ? jugadores : [];
+  return claves.map((clave) => {
+    const seccion = SECCIONES[clave];
+    if (!seccion) return null;
+    const lider = lista.filter(seccion.incluye).filter(seccion.relevante).sort(seccion.orden)[0];
+    return lider ? { clave, titulo: seccion.titulo(), jugador: lider, valor: seccion.valor(lider) } : null;
+  }).filter(Boolean);
+}
+
+/**
  * Renderiza un chip de estadística, omitiéndolo cuando no aporta información.
  *
  * @param {string} label Etiqueta corta.
@@ -92,15 +109,38 @@ function renderEquipo(jugador) {
  */
 function renderFila(jugador, posicion, seccion, mostrarEquipo) {
   const chips = seccion.chips(jugador).map(([label, value]) => renderChip(label, value)).filter(Boolean).join("");
+  const contenido = `
+    <span class="rank-pos">${posicion}</span>
+    <img class="rank-foto" src="${escapeHtml(getJugadorFotoUrl(jugador.fotoUrl))}" alt="" loading="lazy" decoding="async">
+    <span class="rank-copy">
+      <span class="rank-nombre">${escapeHtml(jugador.nombre)}</span>
+      <span class="rank-meta">${mostrarEquipo ? renderEquipo(jugador) : ""}${chips}</span>
+    </span>
+    <span class="rank-valor">${escapeHtml(seccion.valor(jugador))}</span>
+  `;
+
+  // Sin identificador no se puede cargar su ficha: se deja como fila no interactiva.
+  if (!jugador.id) {
+    return `<li class="rank-row"><div class="rank-row-inner">${contenido}</div></li>`;
+  }
+
+  const payload = {
+    role: jugador.esPortero ? "portero" : "jugador",
+    teamType: null,
+    dorsal: null,
+    nombre: jugador.nombre,
+    idLicencia: jugador.id,
+    licenciaTipo: jugador.esPortero ? "p" : "j",
+    // Marca la ficha como ajena a un partido concreto: oculta el bloque "Partido".
+    source: "team-roster",
+    equipo: jugador.equipoAbrev || "",
+  };
+
   return `
     <li class="rank-row">
-      <span class="rank-pos">${posicion}</span>
-      <img class="rank-foto" src="${escapeHtml(getJugadorFotoUrl(jugador.fotoUrl))}" alt="" loading="lazy" decoding="async">
-      <span class="rank-copy">
-        <span class="rank-nombre">${escapeHtml(jugador.nombre)}</span>
-        <span class="rank-meta">${mostrarEquipo ? renderEquipo(jugador) : ""}${chips}</span>
-      </span>
-      <span class="rank-valor">${escapeHtml(seccion.valor(jugador))}</span>
+      <button type="button" class="rank-row-inner rank-player-link partido-detalle-player-link" data-player='${escapeHtml(JSON.stringify(payload))}'>
+        ${contenido}
+      </button>
     </li>
   `;
 }

@@ -156,7 +156,7 @@ function estadoPartidoLegacy(d) {
  * @param {object} d Detalle nuevo.
  * @returns {Map<string, object>} Estadísticas por jugador.
  */
-function statsPorJugador(d) {
+export function statsPorJugador(d) {
   const map = new Map();
   const get = (id) => {
     if (!id) return null;

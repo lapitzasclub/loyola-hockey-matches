@@ -3,7 +3,7 @@
 import { getClasificacionLiga } from "../services.js";
 import { renderClasificacion } from "../components/ui.js";
 import { t } from "../i18n.js";
-import { renderClasificacionLoadingState } from "../components/loadingStates.js";
+import { renderClasificacionLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { invalidateApiCacheFor } from "../utils/apiCache.js";
 
@@ -12,10 +12,39 @@ import { invalidateApiCacheFor } from "../utils/apiCache.js";
 const VOLATILE_ENDPOINTS = [
   "/tree",
   "/clasificacion",
+  "/estadisticas-jugadores",
   "/public/partidos",
 ];
 import { setCompeticionHeader } from "./header.js";
 import { isOnboardingActive } from "./layoutState.js";
+
+/**
+ * Vuelve a pintar la vista de estadísticas tras un pull-to-refresh.
+ * Sin esto el gesto caía en la rama por defecto y mostraba los partidos.
+ *
+ * @param {HTMLElement|null} navStatsEl Botón de la pestaña de estadísticas.
+ * @returns {Promise<void>}
+ */
+async function refrescarEstadisticas(navStatsEl) {
+  const listEl = document.getElementById("matches");
+  if (!listEl) return;
+  renderClasificacionLoadingState(listEl);
+
+  const seleccionado = getEquipoSeleccionado();
+  if (!seleccionado) {
+    renderTeamSelectionPromptState(listEl);
+    setCompeticionHeader("");
+    return;
+  }
+
+  const [idComp] = seleccionado.split("|");
+  const eq = getEquiposLoyola().find((team) => team.idCompeticion == idComp);
+  const sigueVigente = () => !!navStatsEl?.classList.contains("active");
+  const { renderEstadisticasLiga } = await import("../components/estadisticasLiga.js");
+  if (!sigueVigente()) return;
+  setCompeticionHeader(eq?.nombreCompeticion || "");
+  await renderEstadisticasLiga(listEl, idComp, sigueVigente);
+}
 
 /**
  * Configura el pull-to-refresh para recargar datos y limpiar caché.
@@ -216,9 +245,13 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
         setPtrText(t("ptr_refreshing"));
         invalidateApiCacheFor(VOLATILE_ENDPOINTS);
         const navClasEl = document.getElementById("navClas");
+        const navStatsEl = document.getElementById("navStats");
         const clasRefreshStarted = !!navClasEl?.classList.contains("active");
+        const statsRefreshStarted = !!navStatsEl?.classList.contains("active");
         try {
-          if (clasRefreshStarted) {
+          if (statsRefreshStarted) {
+            await refrescarEstadisticas(navStatsEl);
+          } else if (clasRefreshStarted) {
             const listEl = document.getElementById("matches");
             renderClasificacionLoadingState(listEl);
             if (!getEquipoSeleccionado()) {

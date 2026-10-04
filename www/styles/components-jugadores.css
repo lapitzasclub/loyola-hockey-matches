@@ -7,6 +7,107 @@
   padding: 0.75rem 0.35rem 1rem;
 }
 
+/* Selectores de ámbito y categoría */
+.stats-pills {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.15rem;
+  margin-bottom: 0.85rem;
+}
+
+.stats-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.stats-pill {
+  flex: 0 0 auto;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.82em;
+  font-weight: 700;
+  padding: 0.42em 0.9em;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stats-pill.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-contrast);
+}
+
+/* Tarjetas de líderes */
+.awards-section {
+  margin-bottom: 1.1rem;
+}
+
+.awards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.2rem, 1fr));
+  gap: 0.5rem;
+}
+
+.award-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.18rem;
+  padding: 0.7rem 0.5rem;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-card-border);
+  border-radius: 14px;
+  text-align: center;
+  min-width: 0;
+}
+
+.award-label {
+  font-size: 0.68em;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 0.18rem;
+}
+
+.award-foto {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--color-bg-card-soft);
+  border: 1px solid var(--color-card-border);
+}
+
+.award-nombre {
+  font-size: 0.8em;
+  font-weight: 700;
+  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.award-equipo {
+  font-size: 0.72em;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.award-valor {
+  font-size: 1.25em;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1.1;
+}
+
 .rank-section + .rank-section {
   margin-top: 1rem;
 }
@@ -29,14 +130,40 @@
 }
 
 .rank-row {
+  list-style: none;
+}
+
+/* El interior es el grid para poder envolverlo en un botón sin romper la maquetación. */
+.rank-row-inner {
   display: grid;
-  grid-template-columns: 1.5rem 2.2rem minmax(0, 1fr) auto;
+  grid-template-columns: 1.75rem 2.5rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.5rem 0.7rem;
+  gap: 0.65rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.65rem 0.85rem;
   background: var(--color-bg-card);
   border: 1px solid var(--color-card-border);
-  border-radius: 12px;
+  border-radius: 14px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.rank-row-inner {
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+}
+
+button.rank-row-inner:active {
+  transform: scale(0.99);
+  background: color-mix(in srgb, var(--color-text) 5%, var(--color-bg-card));
+}
+
+button.rank-row-inner:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .rank-pos {
@@ -47,8 +174,8 @@
 }
 
 .rank-foto {
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
   object-fit: cover;
   background: var(--color-bg-card-soft);
