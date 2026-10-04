@@ -1,15 +1,59 @@
 // jugadoresRanking.js
-// Tabla de goleadores y estadísticas de jugadores de una competición.
+// Rankings de jugadores de una competición (goleadores, asistentes, porteros, sancionados).
 // Se alimenta de `/hierarchy/division/{id}/estadisticas-jugadores`, que devuelve a todos los
 // jugadores de la división con sus totales de temporada en una sola petición.
 //
-// El mismo componente sirve para el ranking completo (vista Clasificación) y para la vista
+// El mismo componente sirve para el ranking completo (vista Estadísticas) y para la vista
 // filtrada por equipo (detalle de equipo): el filtro se hace por abreviatura de equipo, que es
 // la clave que comparten el catálogo y este endpoint.
 
 import { t } from "../i18n.js";
 import { escapeHtml } from "./partidoDetalleUtils.js";
 import { getJugadorFotoUrl } from "./partidoDetalleJugadorStats.js";
+
+const porNombre = (a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""));
+
+/**
+ * Definición de cada ranking: a quién incluye, cómo ordena, qué valor destaca y qué chips
+ * acompañan. Centralizarlo evita repetir el render por cada métrica.
+ */
+const SECCIONES = {
+  goles: {
+    titulo: () => t("players_scorers"),
+    incluye: (j) => !j.esPortero,
+    relevante: (j) => j.goles > 0,
+    orden: (a, b) => b.goles - a.goles || b.asistencias - a.asistencias || porNombre(a, b),
+    valor: (j) => String(j.goles || 0),
+    chips: (j) => [["PJ", j.partidosJugados], ["As", j.asistencias]],
+  },
+  asistencias: {
+    titulo: () => t("players_assists"),
+    incluye: (j) => !j.esPortero,
+    relevante: (j) => j.asistencias > 0,
+    orden: (a, b) => b.asistencias - a.asistencias || b.goles - a.goles || porNombre(a, b),
+    valor: (j) => String(j.asistencias || 0),
+    chips: (j) => [["PJ", j.partidosJugados], ["G", j.goles]],
+  },
+  porteros: {
+    titulo: () => t("players_goalkeepers"),
+    incluye: (j) => j.esPortero && j.partidosJugados > 0,
+    relevante: () => true,
+    orden: (a, b) => b.porcentajeParadas - a.porcentajeParadas || a.golesEncajados - b.golesEncajados || porNombre(a, b),
+    valor: (j) => `${Math.round(Number(j.porcentajeParadas) || 0)}%`,
+    chips: (j) => [["PJ", j.partidosJugados], ["GC", j.golesEncajados], ["Par", j.paradas]],
+  },
+  sanciones: {
+    titulo: () => t("players_cards"),
+    incluye: () => true,
+    relevante: (j) => (j.azules || 0) + (j.rojas || 0) > 0,
+    orden: (a, b) => (b.azules + b.rojas * 2) - (a.azules + a.rojas * 2) || porNombre(a, b),
+    valor: (j) => String((j.azules || 0) + (j.rojas || 0)),
+    chips: (j) => [["Az", j.azules], ["Rj", j.rojas], ["F", j.faltas]],
+  },
+};
+
+/** Secciones mostradas cuando no se indican explícitamente. */
+const SECCIONES_POR_DEFECTO = ["goles", "asistencias", "porteros", "sanciones"];
 
 /**
  * Renderiza un chip de estadística, omitiéndolo cuando no aporta información.
@@ -24,57 +68,40 @@ function renderChip(label, value) {
 }
 
 /**
+ * Renderiza la referencia visual al equipo del jugador (escudo + abreviatura).
+ *
+ * @param {object} jugador Jugador normalizado.
+ * @returns {string} HTML del equipo o cadena vacía.
+ */
+function renderEquipo(jugador) {
+  if (!jugador.equipoAbrev && !jugador.clubLogoUrl) return "";
+  const escudo = jugador.clubLogoUrl
+    ? `<img class="rank-equipo-logo" src="${escapeHtml(jugador.clubLogoUrl)}" alt="" loading="lazy" decoding="async">`
+    : "";
+  return `<span class="rank-equipo">${escudo}${escapeHtml(jugador.equipoAbrev || "")}</span>`;
+}
+
+/**
  * Renderiza una fila del ranking.
  *
  * @param {object} jugador Jugador normalizado.
  * @param {number} posicion Puesto dentro de la sección.
- * @param {boolean} esPortero Indica si se renderiza como portero.
- * @param {boolean} mostrarEquipo Muestra la abreviatura del equipo.
+ * @param {object} seccion Definición de la sección activa.
+ * @param {boolean} mostrarEquipo Muestra el equipo del jugador.
  * @returns {string} HTML de la fila.
  */
-function renderFila(jugador, posicion, esPortero, mostrarEquipo) {
-  const valor = esPortero
-    ? `${Math.round(Number(jugador.porcentajeParadas) || 0)}%`
-    : String(jugador.goles || 0);
-
-  const chips = esPortero
-    ? [renderChip("PJ", jugador.partidosJugados), renderChip("GC", jugador.golesEncajados), renderChip("Par", jugador.paradas)]
-    : [renderChip("PJ", jugador.partidosJugados), renderChip("As", jugador.asistencias), renderChip("Az", jugador.azules)];
-
-  const equipo = mostrarEquipo && jugador.equipoAbrev
-    ? `<span class="rank-equipo">${escapeHtml(jugador.equipoAbrev)}</span>`
-    : "";
-
+function renderFila(jugador, posicion, seccion, mostrarEquipo) {
+  const chips = seccion.chips(jugador).map(([label, value]) => renderChip(label, value)).filter(Boolean).join("");
   return `
     <li class="rank-row">
       <span class="rank-pos">${posicion}</span>
       <img class="rank-foto" src="${escapeHtml(getJugadorFotoUrl(jugador.fotoUrl))}" alt="" loading="lazy" decoding="async">
       <span class="rank-copy">
         <span class="rank-nombre">${escapeHtml(jugador.nombre)}</span>
-        <span class="rank-meta">${equipo}${chips.filter(Boolean).join("")}</span>
+        <span class="rank-meta">${mostrarEquipo ? renderEquipo(jugador) : ""}${chips}</span>
       </span>
-      <span class="rank-valor">${escapeHtml(valor)}</span>
+      <span class="rank-valor">${escapeHtml(seccion.valor(jugador))}</span>
     </li>
-  `;
-}
-
-/**
- * Renderiza una sección del ranking (goleadores o porteros).
- *
- * @param {string} titulo Título de la sección.
- * @param {object[]} jugadores Jugadores ya ordenados.
- * @param {boolean} esPortero Modo portero.
- * @param {boolean} mostrarEquipo Muestra la abreviatura del equipo.
- * @returns {string} HTML de la sección o cadena vacía si no hay datos.
- */
-function renderSeccion(titulo, jugadores, esPortero, mostrarEquipo) {
-  if (!jugadores.length) return "";
-  const filas = jugadores.map((j, i) => renderFila(j, i + 1, esPortero, mostrarEquipo)).join("");
-  return `
-    <section class="rank-section">
-      <div class="rank-section-title">${escapeHtml(titulo)}</div>
-      <ol class="rank-list">${filas}</ol>
-    </section>
   `;
 }
 
@@ -85,40 +112,42 @@ function renderSeccion(titulo, jugadores, esPortero, mostrarEquipo) {
  * @param {object} [options={}] Opciones de render.
  * @param {string|null} [options.equipoAbrev=null] Abreviatura para filtrar por equipo.
  * @param {number} [options.limite=0] Máximo por sección; 0 muestra todos.
- * @param {boolean} [options.mostrarEquipo=true] Muestra la abreviatura del equipo en cada fila.
+ * @param {boolean} [options.mostrarEquipo=true] Muestra el equipo en cada fila.
+ * @param {string[]} [options.secciones] Rankings a mostrar.
  * @returns {string} HTML del ranking.
  */
 export function renderJugadoresRanking(jugadores, options = {}) {
-  const { equipoAbrev = null, limite = 0, mostrarEquipo = true } = options;
+  const {
+    equipoAbrev = null,
+    limite = 0,
+    mostrarEquipo = true,
+    secciones = SECCIONES_POR_DEFECTO,
+  } = options;
 
   let lista = Array.isArray(jugadores) ? jugadores : [];
   if (equipoAbrev) {
     const clave = String(equipoAbrev).trim().toUpperCase();
     lista = lista.filter((j) => String(j.equipoAbrev || "").trim().toUpperCase() === clave);
   }
-  if (!lista.length) {
-    return `<div class="partido-detalle-empty cardish">${escapeHtml(t("players_empty"))}</div>`;
-  }
 
-  const porNombre = (a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""));
+  const bloques = secciones.map((clave) => {
+    const seccion = SECCIONES[clave];
+    if (!seccion) return "";
 
-  const goleadores = lista
-    .filter((j) => !j.esPortero)
-    .sort((a, b) => (b.goles || 0) - (a.goles || 0) || (b.asistencias || 0) - (a.asistencias || 0) || porNombre(a, b));
+    let candidatos = lista.filter(seccion.incluye).sort(seccion.orden);
+    // Con límite se está mostrando un ranking de liga: sólo interesan quienes ya tienen
+    // registro. Sin límite (vista de equipo) se muestra la plantilla completa.
+    if (limite) candidatos = candidatos.filter(seccion.relevante).slice(0, limite);
+    if (!candidatos.length) return "";
 
-  const porteros = lista
-    .filter((j) => j.esPortero && j.partidosJugados > 0)
-    .sort((a, b) => (b.porcentajeParadas || 0) - (a.porcentajeParadas || 0) || porNombre(a, b));
+    const filas = candidatos.map((j, i) => renderFila(j, i + 1, seccion, mostrarEquipo)).join("");
+    return `
+      <section class="rank-section">
+        <div class="rank-section-title">${escapeHtml(seccion.titulo())}</div>
+        <ol class="rank-list">${filas}</ol>
+      </section>
+    `;
+  }).filter(Boolean).join("");
 
-  // En el ranking de la competición sólo interesan los que ya han anotado; en la vista de
-  // equipo se muestra la plantilla completa aunque todavía no tenga goles.
-  const goleadoresVisibles = limite ? goleadores.filter((j) => j.goles > 0).slice(0, limite) : goleadores;
-  const porterosVisibles = limite ? porteros.slice(0, limite) : porteros;
-
-  const html = [
-    renderSeccion(t("players_scorers"), goleadoresVisibles, false, mostrarEquipo),
-    renderSeccion(t("players_goalkeepers"), porterosVisibles, true, mostrarEquipo),
-  ].filter(Boolean).join("");
-
-  return html || `<div class="partido-detalle-empty cardish">${escapeHtml(t("players_empty"))}</div>`;
+  return bloques || `<div class="partido-detalle-empty cardish">${escapeHtml(t("players_empty"))}</div>`;
 }
