@@ -13,10 +13,10 @@ import {
   getEstadisticasJugadoresCompeticion,
   getEstadisticasUltimaJornada,
 } from "../services.js";
-import { getLideresPorCategoria, renderJugadoresRanking } from "./jugadoresRanking.js";
-import { getJugadorFotoUrl } from "./partidoDetalleJugadorStats.js";
+import { renderJugadoresRanking, renderPremios } from "./jugadoresRanking.js";
 import { preloadPartidoDetalleModule } from "./partidos.js";
 import { createDetalleState } from "./partidoDetalleUtils.js";
+import { animatePillTabSelection, animateTabContentSwap, renderPillTabs } from "./uiTabs.js";
 
 /** Equipos mostrados en cada ranking de equipo. */
 const TOP_EQUIPOS = 5;
@@ -95,128 +95,199 @@ function renderEquiposRankings(filas) {
 }
 
 /**
- * Renderiza las tarjetas de premios con el líder de cada categoría.
+ * Renderiza las pestañas de ámbito (temporada / última jornada).
  *
- * @param {object[]} jugadores Jugadores del ámbito activo.
- * @returns {string} HTML del bloque de premios.
- */
-function renderPremios(jugadores) {
-  const lideres = getLideresPorCategoria(jugadores);
-  if (!lideres.length) return "";
-
-  const tarjetas = lideres.map(({ clave, jugador, valor }) => `
-    <article class="award-card">
-      <div class="award-label">${escapeHtml(t(`award_${clave}`))}</div>
-      <img class="award-foto" src="${escapeHtml(getJugadorFotoUrl(jugador.fotoUrl))}" alt="" loading="lazy" decoding="async">
-      <div class="award-nombre">${escapeHtml(jugador.nombre)}</div>
-      <div class="award-equipo">${escapeHtml(jugador.equipoAbrev || "")}</div>
-      <div class="award-valor">${escapeHtml(valor)}</div>
-    </article>
-  `).join("");
-
-  return `
-    <section class="awards-section">
-      <div class="rank-section-title">${escapeHtml(t("stats_awards"))}</div>
-      <div class="awards-grid">${tarjetas}</div>
-    </section>
-  `;
-}
-
-/**
- * Renderiza una botonera de pastillas.
- *
- * @param {Array<{id:string, label:string}>} items Opciones.
- * @param {string} activo Identificador activo.
- * @param {string} attr Atributo de datos usado para el binding.
- * @returns {string} HTML de la botonera.
- */
-function renderPills(items, activo, attr) {
-  const botones = items.map((item) => `
-    <button type="button" class="stats-pill${item.id === activo ? " active" : ""}" ${attr}="${escapeHtml(item.id)}">
-      ${escapeHtml(item.label)}
-    </button>
-  `).join("");
-  return `<div class="stats-pills">${botones}</div>`;
-}
-
-/**
- * Pinta el panel completo según el estado actual y vuelve a enlazar sus controles.
- *
- * @param {HTMLElement} container Contenedor de la vista.
  * @param {object} estado Estado interno de la vista.
- * @returns {void}
+ * @returns {string} HTML de las pestañas.
  */
-function pintar(container, estado) {
-  const ambitoActivo = estado.ambito === "semana" ? estado.semana : estado.temporada;
-  const jugadores = ambitoActivo?.jugadores || [];
-
+function renderScopeTabs(estado) {
   const ambitos = [
     { id: "temporada", label: t("stats_scope_season") },
     { id: "semana", label: estado.semana?.nombre || t("stats_scope_week") },
   ];
-  const categorias = CATEGORIAS.map((c) => ({ id: c.id, label: c.label() }));
-
-  let cuerpo;
-  if (estado.ambito === "semana" && estado.cargandoSemana) {
-    cuerpo = `<div class="partido-detalle-empty cardish">${escapeHtml(t("stats_loading_week"))}</div>`;
-  } else if (estado.categoria === "equipos") {
-    // Los equipos sólo tienen lectura de temporada: la clasificación es acumulada.
-    cuerpo = renderEquiposRankings(estado.filasClasificacion) ||
-      `<div class="partido-detalle-empty cardish">${escapeHtml(t("players_empty"))}</div>`;
-  } else if (!jugadores.length) {
-    cuerpo = `<div class="partido-detalle-empty cardish">${escapeHtml(t("players_empty"))}</div>`;
-  } else {
-    cuerpo = renderJugadoresRanking(jugadores, { limite: TOP_JUGADORES, secciones: [estado.categoria] });
-  }
-
-  const premios = estado.categoria === "equipos" || !jugadores.length ? "" : renderPremios(jugadores);
-
-  container.innerHTML = `
-    <div class="stats-liga-wrap">
-      ${renderPills(ambitos, estado.ambito, "data-stats-scope")}
-      ${premios}
-      ${renderPills(categorias, estado.categoria, "data-stats-cat")}
-      <div class="stats-panel">${cuerpo}</div>
-    </div>
-  `;
-
-  bindControles(container, estado);
-  bindFichasJugador(container);
+  return renderPillTabs({
+    className: "stats-scope-tabs ui-pill-tabs ui-pill-tabs-2col",
+    buttonClassName: "tab-btn ui-pill-tab-btn",
+    activeClassName: "active",
+    dataAttr: "stats-scope",
+    ariaLabel: t("stats_scope_aria"),
+    activeTab: estado.ambito,
+    tabs: ambitos.map((item) => [item.id, item.label]),
+  });
 }
 
 /**
- * Enlaza los selectores de ámbito y categoría.
+ * Renderiza las pestañas de categoría (goles, asistencias, porteros, sanciones, equipos).
+ *
+ * @param {object} estado Estado interno de la vista.
+ * @returns {string} HTML de las pestañas.
+ */
+function renderCategoryTabs(estado) {
+  const categorias = CATEGORIAS.map((c) => ({ id: c.id, label: c.label() }));
+  return renderPillTabs({
+    className: `stats-category-tabs ui-pill-tabs ${categorias.length > 3 ? "ui-pill-tabs-2col" : "ui-pill-tabs-3col"}`,
+    buttonClassName: "tab-btn ui-pill-tab-btn",
+    activeClassName: "active",
+    dataAttr: "stats-cat",
+    ariaLabel: t("stats_category_aria"),
+    activeTab: estado.categoria,
+    tabs: categorias.map((item) => [item.id, item.label]),
+  });
+}
+
+/**
+ * Calcula el HTML del panel de ranking según el ámbito y la categoría activos.
+ *
+ * @param {object} estado Estado interno de la vista.
+ * @returns {string} HTML del panel.
+ */
+function renderPanel(estado) {
+  const ambitoActivo = estado.ambito === "semana" ? estado.semana : estado.temporada;
+  const jugadores = ambitoActivo?.jugadores || [];
+
+  if (estado.ambito === "semana" && estado.cargandoSemana) {
+    return `<div class="partido-detalle-empty cardish">${escapeHtml(t("stats_loading_week"))}</div>`;
+  }
+  if (estado.categoria === "equipos") {
+    // Los equipos sólo tienen lectura de temporada: la clasificación es acumulada.
+    return renderEquiposRankings(estado.filasClasificacion) ||
+      `<div class="partido-detalle-empty cardish">${escapeHtml(t("players_empty"))}</div>`;
+  }
+  if (!jugadores.length) {
+    return `<div class="partido-detalle-empty cardish">${escapeHtml(t("players_empty"))}</div>`;
+  }
+  return renderJugadoresRanking(jugadores, { limite: TOP_JUGADORES, secciones: [estado.categoria] });
+}
+
+/**
+ * Renderiza el bloque dependiente del ámbito activo: premios, pestañas de categoría y panel.
+ *
+ * @param {object} estado Estado interno de la vista.
+ * @returns {string} HTML del bloque.
+ */
+function renderScopeBody(estado) {
+  const ambitoActivo = estado.ambito === "semana" ? estado.semana : estado.temporada;
+  const jugadores = ambitoActivo?.jugadores || [];
+  const premios = estado.categoria === "equipos" || !jugadores.length ? "" : renderPremios(jugadores);
+
+  return `
+    ${premios}
+    ${renderCategoryTabs(estado)}
+    <div class="stats-panel team-tab-content" data-stats-panel>${renderPanel(estado)}</div>
+  `;
+}
+
+/**
+ * Pinta el armazón persistente (pestañas de ámbito + bloque dependiente) y enlaza sus
+ * controles. Las pestañas se renderizan una única vez, igual que en el detalle de equipo, para
+ * que los cambios de pestaña sólo reemplacen el contenido y conserven la animación de
+ * selección.
  *
  * @param {HTMLElement} container Contenedor de la vista.
  * @param {object} estado Estado interno de la vista.
  * @returns {void}
  */
-function bindControles(container, estado) {
-  container.querySelectorAll("[data-stats-cat]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      estado.categoria = btn.getAttribute("data-stats-cat");
-      pintar(container, estado);
-    });
-  });
+function pintarShell(container, estado) {
+  container.innerHTML = `
+    <div class="stats-liga-wrap">
+      ${renderScopeTabs(estado)}
+      <div class="stats-scope-body team-tab-content" data-stats-scope-body>${renderScopeBody(estado)}</div>
+    </div>
+  `;
+  bindScopeTabs(container, estado);
+  bindCategoryTabs(container, estado);
+  bindFichasJugador(container);
+}
 
+/**
+ * Vuelve a renderizar el bloque dependiente del ámbito (premios + pestañas de categoría +
+ * panel) sin tocar las pestañas de ámbito.
+ *
+ * @param {HTMLElement} container Contenedor de la vista.
+ * @param {object} estado Estado interno de la vista.
+ * @returns {void}
+ */
+function actualizarScopeBody(container, estado) {
+  const bodyEl = container.querySelector("[data-stats-scope-body]");
+  if (!(bodyEl instanceof HTMLElement)) return;
+  bodyEl.innerHTML = renderScopeBody(estado);
+  bindCategoryTabs(container, estado);
+  bindFichasJugador(container);
+}
+
+/**
+ * Vuelve a renderizar sólo el panel de ranking, sin tocar premios ni pestañas.
+ *
+ * @param {HTMLElement} container Contenedor de la vista.
+ * @param {object} estado Estado interno de la vista.
+ * @returns {void}
+ */
+function actualizarPanel(container, estado) {
+  const panelEl = container.querySelector("[data-stats-panel]");
+  if (!(panelEl instanceof HTMLElement)) return;
+  panelEl.innerHTML = renderPanel(estado);
+  bindFichasJugador(container);
+}
+
+/**
+ * Enlaza las pestañas de ámbito. Se vinculan una sola vez (las pestañas nunca se recrean), con
+ * la misma animación de selección y de contenido que el detalle de equipo.
+ *
+ * @param {HTMLElement} container Contenedor de la vista.
+ * @param {object} estado Estado interno de la vista.
+ * @returns {void}
+ */
+function bindScopeTabs(container, estado) {
   container.querySelectorAll("[data-stats-scope]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    btn.onclick = async () => {
       const ambito = btn.getAttribute("data-stats-scope");
       if (ambito === estado.ambito) return;
       estado.ambito = ambito;
+      animatePillTabSelection(container, "[data-stats-scope]", ambito, "stats-scope", "active");
 
       // La jornada se calcula agregando sus partidos, así que se carga la primera vez
       // que se consulta y se reutiliza después.
       if (ambito === "semana" && !estado.semana) {
         estado.cargandoSemana = true;
-        pintar(container, estado);
+        animateTabContentSwap(container, () => {
+          actualizarScopeBody(container, estado);
+        }, (root) => root.querySelector("[data-stats-scope-body]"));
+
         const semana = await getEstadisticasUltimaJornada(estado.idCompeticion);
         if (!estado.sigueVigente()) return;
         estado.semana = semana;
         estado.cargandoSemana = false;
+        actualizarScopeBody(container, estado);
+        return;
       }
-      pintar(container, estado);
-    });
+
+      animateTabContentSwap(container, () => {
+        actualizarScopeBody(container, estado);
+      }, (root) => root.querySelector("[data-stats-scope-body]"));
+    };
+  });
+}
+
+/**
+ * Enlaza las pestañas de categoría. Se re-vinculan en cada render del bloque de ámbito, ya que
+ * ese bloque sí se recrea; sólo animan el panel de ranking, no los premios ni las propias
+ * pestañas.
+ *
+ * @param {HTMLElement} container Contenedor de la vista.
+ * @param {object} estado Estado interno de la vista.
+ * @returns {void}
+ */
+function bindCategoryTabs(container, estado) {
+  container.querySelectorAll("[data-stats-cat]").forEach((btn) => {
+    btn.onclick = () => {
+      const categoria = btn.getAttribute("data-stats-cat");
+      if (categoria === estado.categoria) return;
+      estado.categoria = categoria;
+      animatePillTabSelection(container, "[data-stats-cat]", categoria, "stats-cat", "active");
+      animateTabContentSwap(container, () => {
+        actualizarPanel(container, estado);
+      }, (root) => root.querySelector("[data-stats-panel]"));
+    };
   });
 }
 
@@ -253,7 +324,7 @@ export async function renderEstadisticasLiga(container, idCompeticion, isStillVa
     return;
   }
 
-  pintar(container, estado);
+  pintarShell(container, estado);
 }
 
 /**
@@ -287,18 +358,12 @@ async function abrirFichaJugador(payload) {
     initialHeaderHtml: subview.renderJugadorHeader(initialState.selectedJugador),
   });
 
-  requestAnimationFrame(async () => {
-    const state = globalThis.__partidoDetalleState;
-    const headerEl = document.getElementById("partido-detalle-header-content");
-    const bodyEl = document.getElementById("partido-detalle-body");
-    const renderAll = globalThis.__partidoDetalleRenderAll;
-    if (!state || !headerEl || !bodyEl || typeof renderAll !== "function") return;
+  const headerEl = document.getElementById("partido-detalle-header-content");
+  const bodyEl = document.getElementById("partido-detalle-body");
+  const renderAll = globalThis.__partidoDetalleRenderAll;
+  if (!headerEl || !bodyEl || typeof renderAll !== "function") return;
 
-    state.selectedJugador = initialState.selectedJugador;
-    state.navigation.currentView = "jugador";
-    renderAll(state, headerEl, bodyEl);
-    await subview.hydrateJugadorStats(state, headerEl, bodyEl, renderAll);
-  });
+  await subview.hydrateJugadorStats(initialState, headerEl, bodyEl, renderAll);
 }
 
 /**

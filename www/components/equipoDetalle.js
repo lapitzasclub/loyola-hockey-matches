@@ -5,7 +5,7 @@ import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml } 
 import { escapeHtml, formatHora, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
 import { buildRosterFromMatches, renderEquipoDetalleRoster } from "./equipoDetalleRoster.js";
 import { renderTeamStatsView } from "./equipoDetalleStats.js";
-import { renderJugadoresRanking } from "./jugadoresRanking.js";
+import { renderJugadoresRanking, renderPremios } from "./jugadoresRanking.js";
 import { renderPillTabs } from "./uiTabs.js";
 import { hydrateMatchesWithHubLineups } from "./equipoDetalleLineupsHub.js";
 import { groupClasificacionData } from "../utils/clasificacionHelpers.js";
@@ -586,11 +586,22 @@ export function renderEquipoDetalleTabContent(equipo, partidos = [], options = {
   if (activeTab === "jugadores") {
     if (loadingPlayers) return renderRosterSkeleton();
     // El ranking llega con todos los jugadores de la división: se filtra por la abreviatura
-    // del equipo, que es la clave común con el catálogo.
-    return renderJugadoresRanking(teamPlayers || [], {
-      equipoAbrev: equipo?.nombreEquipoAbrev || null,
-      mostrarEquipo: false,
-    });
+    // del equipo, que es la clave común con el catálogo. Se muestra en acordeón porque esta
+    // pestaña ya vive dentro del sistema de pestañas del detalle de equipo. Con `limite` se
+    // excluye además a quienes no tienen registro en cada categoría (p. ej. jugadores sin
+    // goles no aparecen en "Máximos goleadores"). Las tarjetas de destacados son las mismas
+    // que en las estadísticas de liga, filtradas a este equipo.
+    const equipoAbrev = equipo?.nombreEquipoAbrev || null;
+    const premios = renderPremios(teamPlayers || [], { equipoAbrev, mostrarEquipo: false });
+    return `
+      ${premios}
+      ${renderJugadoresRanking(teamPlayers || [], {
+        equipoAbrev,
+        mostrarEquipo: false,
+        acordeon: true,
+        limite: 10,
+      })}
+    `;
   }
 
   return "";

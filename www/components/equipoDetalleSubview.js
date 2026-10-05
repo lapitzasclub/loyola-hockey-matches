@@ -10,6 +10,7 @@ import {
 } from "./equipoDetalle.js";
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
 import { getEstadisticasJugadoresCompeticion } from "../services.js";
+import { bindJugadoresRankingAccordion } from "./jugadoresRanking.js";
 import { animatePillTabSelection, animateTabContentSwap } from "./uiTabs.js";
 
 function isTeamStatsTabPending(state, tab) {
@@ -237,6 +238,10 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
 
     if (state.teamFilters?.tab === 'estadisticas' && state.teamStats && !state.loadingStats) {
       requestAnimationFrame(() => mountTeamStatsCharts(bodyEl, state.teamStats));
+    }
+
+    if (state.teamFilters?.tab === 'jugadores') {
+      bindJugadoresRankingAccordion(contentEl);
     }
 
     rootEl.querySelectorAll('[data-team-match]').forEach((node) => {
