@@ -1430,6 +1430,12 @@ body[data-theme="dark"] .tab-btn {
   background: transparent;
 }
 
+/* La regla de tema oscuro de arriba tiene más especificidad que la anterior (selector de
+   tipo "body"), así que aquí hay que igualarla explícitamente o el borde reaparece en oscuro. */
+body[data-theme="dark"] .team-detail-tabs.ui-pill-tabs {
+  border-bottom: 0;
+}
+
 .team-detail-view .ui-pill-tabs {
   margin-bottom: 0.25rem;
 }

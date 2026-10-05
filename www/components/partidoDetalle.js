@@ -153,7 +153,7 @@ export function openPartidoDetalle(idPartido, options = {}) {
   const headerEl = modal.querySelector("#partido-detalle-header-content");
   const bodyEl = modal.querySelector("#partido-detalle-body");
   if (headerEl instanceof HTMLElement && bodyEl instanceof HTMLElement) {
-    if (initialState && getCurrentView(initialState) === "equipo") {
+    if (initialState) {
       headerEl.innerHTML = initialHeaderHtml;
     } else {
       headerEl.innerHTML = renderPartidoHeaderSkeleton();
@@ -161,7 +161,7 @@ export function openPartidoDetalle(idPartido, options = {}) {
     }
   }
 
-  if (initialState && getCurrentView(initialState) === "equipo") {
+  if (initialState) {
     window.__partidoDetalleState = initialState;
     if (headerEl instanceof HTMLElement && bodyEl instanceof HTMLElement) {
       renderAll(initialState, headerEl, bodyEl);
