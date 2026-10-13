@@ -11,6 +11,7 @@ import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionActionH
 import { renderEmptyState, renderErrorState } from "./loadingStates.js";
 import { renderEquipoDetalleHeader, openEquipoSubview } from "./equipoDetalleSubview.js";
 import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
+import { openJornadaOverlay } from "./jornadaOverlay.js";
 
 const competitionLogoCache = new Map();
 let partidoDetalleModulePromise = null;
@@ -34,7 +35,7 @@ export function preloadPartidoDetalleModule() {
  * @param {object} [options={}] Opciones de apertura del modal.
  * @returns {Promise<void>}
  */
-async function openPartidoDetalleLazy(idPartido, options = {}) {
+export async function openPartidoDetalleLazy(idPartido, options = {}) {
   const { openPartidoDetalle } = await preloadPartidoDetalleModule();
   openPartidoDetalle(idPartido, options);
 }
@@ -108,7 +109,7 @@ function parseCompetitionLogoMap(raw) {
  *
  * @returns {Promise<Map<string, {entityId: string|null, hasLogo: boolean}>>} Mapa por `IdEquipoComp`.
  */
-async function getCompetitionLogoMap() {
+export async function getCompetitionLogoMap() {
   const idCompeticion = getSelectedCompetitionId();
   if (!idCompeticion) return new Map();
   if (competitionLogoCache.has(idCompeticion)) return competitionLogoCache.get(idCompeticion);
@@ -134,7 +135,7 @@ async function getCompetitionLogoMap() {
  * @param {string} nombre Nombre del equipo para accesibilidad.
  * @returns {string} HTML del escudo.
  */
-function renderTeamLogo(logoMap, equipoCompId, nombre) {
+export function renderTeamLogo(logoMap, equipoCompId, nombre) {
   const logoInfo = logoMap.get(String(equipoCompId || ""));
   const src = logoInfo?.hasLogo ? getEntityLogoUrl(logoInfo.entityId) : getEntityLogoUrl("sinescudo");
   return `<img class="partido-team-logo" src="${src}" alt="Escudo de ${safeStr(nombre || "equipo")}" loading="lazy" decoding="async">`;
@@ -220,7 +221,7 @@ function renderPartidoLi(p, equipoSel, lang, proximoIdx, idx, logoMap) {
   li.innerHTML = `
     <div class="partido-card-shell">
       <div class="partido-header">
-        <span class="partido-jornada">${safeStr(p?.NombreJornada || "")}</span>
+        <button type="button" class="partido-jornada">${safeStr(p?.NombreJornada || "")}</button>
         <span class="partido-fecha">${safeStr(fechaFormateada)}${
     hora ? " · " + hora : ""
   }</span>
@@ -375,6 +376,20 @@ function bindPartidoInteractions(li, partido, logoMap) {
       void openPartidoDetalleLazy(partido.IdPartido);
     }
   };
+
+  const jornadaBtn = li.querySelector(".partido-jornada");
+  if (jornadaBtn && partido.NombreJornada) {
+    jornadaBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      void openJornadaOverlay({
+        idCompeticion: getSelectedCompetitionId(),
+        idDivision: partido.IdDivision,
+        nombreJornada: partido.NombreJornada,
+        idPartidoActual: partido.IdPartido,
+        logoMap,
+      });
+    });
+  }
 }
 
 /**

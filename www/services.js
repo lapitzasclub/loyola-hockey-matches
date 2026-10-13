@@ -143,6 +143,28 @@ export function getCalendarioLoyola(equipoId, idCompeticion) {
 }
 
 /**
+ * Obtiene todos los enfrentamientos de una jornada concreta dentro de una división,
+ * para mostrar el calendario completo de la jornada más allá del equipo seguido.
+ * Filtra por división además del nombre de jornada porque una competición puede agrupar
+ * varias categorías cuyas jornadas comparten nombre (p. ej. "Jornada 2" en dos grupos distintos).
+ *
+ * @param {string} idCompeticion ID de la competición.
+ * @param {string} idDivision ID de la división/categoría dentro de la competición.
+ * @param {string} nombreJornada Nombre de la jornada tal como aparece en el calendario.
+ * @returns {Promise<any>} Sobre legacy `{ d }` con `[{ Partidos }]` filtrado por jornada.
+ */
+export function getPartidosJornada(idCompeticion, idDivision, nombreJornada) {
+  return safeBuild(async () => {
+    const partidos = await buildLegacyCalendar(idCompeticion);
+    const divStr = String(idDivision || "");
+    const filtrados = partidos.filter(
+      (p) => String(p.IdDivision || "") === divStr && p.NombreJornada === nombreJornada,
+    );
+    return [{ Partidos: filtrados }];
+  });
+}
+
+/**
  * Obtiene el ranking de jugadores de una competición (goleadores y estadísticas de portero).
  *
  * @param {string} idCompeticion ID de la competición.

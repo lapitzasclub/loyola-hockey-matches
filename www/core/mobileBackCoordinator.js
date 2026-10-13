@@ -1,6 +1,7 @@
 import { closeEquipoSelectorOverlay } from "../components/equipoSelectorOverlay.js";
+import { closeJornadaOverlay } from "../components/jornadaOverlay.js";
 import { isNative } from "../utils/env.js";
-import { isTeamSelectorOverlayOpen } from "./layoutState.js";
+import { isJornadaOverlayOpen, isTeamSelectorOverlayOpen } from "./layoutState.js";
 
 /**
  * Crea el coordinador ligero del botón atrás para web y entorno nativo.
@@ -41,6 +42,11 @@ export function createMobileBackCoordinator() {
       return true;
     }
 
+    if (isJornadaOverlayOpen()) {
+      closeJornadaOverlay();
+      return true;
+    }
+
     if (isJugadorDetalleOpen()) {
       document.querySelector(".partido-detalle-back")?.click();
       return true;
@@ -55,7 +61,7 @@ export function createMobileBackCoordinator() {
   }
 
   function computeNeedsOverlayState() {
-    return isSideMenuOpen() || isPartidoDetalleOpen() || isTeamSelectorOverlayOpen();
+    return isSideMenuOpen() || isPartidoDetalleOpen() || isTeamSelectorOverlayOpen() || isJornadaOverlayOpen();
   }
 
   function syncHistory() {

@@ -6,6 +6,31 @@ const FALLBACK_IOS_STATUSBAR_INSET_PX = 44;
 const DEFAULT_HEADER_COLOR = "#0e3a43";
 const DEFAULT_NAV_COLOR = "#0e3a43";
 
+/**
+ * Detecta un dispositivo iOS (iPhone/iPad/iPod) por user agent.
+ * No hay target nativo Capacitor para iOS en este proyecto, así que el
+ * runtime de iPhone siempre llega como `platform === "web"`.
+ * @returns {boolean}
+ */
+function isIOSDevice() {
+  return /iPhone|iPad|iPod/i.test(globalThis.navigator?.userAgent || "");
+}
+
+/**
+ * Detecta si la PWA se está ejecutando instalada en pantalla completa
+ * (home screen en iOS), donde la barra de estado se superpone al contenido
+ * y por tanto sí hace falta reservar espacio con el fallback.
+ * En una pestaña normal de Safari no hace falta: el propio navegador
+ * reserva su chrome y env(safe-area-inset-top) es legítimamente 0.
+ * @returns {boolean}
+ */
+function isStandaloneDisplay() {
+  return (
+    globalThis.navigator?.standalone === true ||
+    globalThis.matchMedia?.("(display-mode: standalone)")?.matches === true
+  );
+}
+
 // ===== Helpers de color =====
 /**
  * Obtiene el valor de una variable CSS del documento.
@@ -202,10 +227,11 @@ export function applySafeAreaInsets(platform) {
   probe.remove();
 
   const needsFallback = !Number.isFinite(envTop) || envTop <= 0;
+  const needsIosWebFallback = needsFallback && isIOSDevice() && isStandaloneDisplay();
   const resolvedTop =
     platform === "android" && needsFallback
       ? FALLBACK_ANDROID_STATUSBAR_INSET_PX
-      : platform === "ios" && needsFallback
+      : (platform === "ios" && needsFallback) || needsIosWebFallback
       ? FALLBACK_IOS_STATUSBAR_INSET_PX
       : Math.max(0, Number.isFinite(envTop) ? envTop : 0);
   const resolvedBottom = Math.max(0, Number.isFinite(envBottom) ? envBottom : 0);

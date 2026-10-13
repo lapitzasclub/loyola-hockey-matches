@@ -204,7 +204,7 @@ export async function buildLegacyCalendar(compId) {
     getMarcadoresLive(),
   ]);
   const partidos = [];
-  for (const { tree } of trees) {
+  for (const { divisionId, tree } of trees) {
     for (const fase of tree) {
       for (const jornada of fase?.jornadas || []) {
         for (const enf of jornada?.enfrentamientos || []) {
@@ -213,6 +213,7 @@ export async function buildLegacyCalendar(compId) {
           const golesVisit = vis?.puntaje ?? null;
           partidos.push({
             IdPartido: enf.id,
+            IdDivision: divisionId,
             NombreJornada: jornada.nombre || "",
             Orden: jornada.orden ?? jornadaOrden(jornada.nombre),
             Fecha: String(enf.fechaInicio || "").slice(0, 10),

@@ -1,0 +1,214 @@
+/* =======================
+   components-jornada-overlay.css
+   Overlay con todos los enfrentamientos de una jornada
+   ======================= */
+
+.jornada-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10030;
+}
+
+.jornada-overlay[hidden] {
+  display: none;
+}
+
+.jornada-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--selector-overlay-backdrop);
+  backdrop-filter: blur(2px);
+  animation: team-selector-backdrop-in 220ms ease;
+}
+
+.jornada-overlay.is-closing .jornada-overlay-backdrop {
+  animation: team-selector-backdrop-out 200ms ease forwards;
+}
+
+.jornada-overlay-sheet {
+  --jornada-overlay-padding-x: 1rem;
+  --jornada-overlay-padding-top: 1rem;
+  position: absolute;
+  inset: auto 0 0 0;
+  max-height: min(86vh, 780px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 24px 24px 0 0;
+  background: var(--color-bg);
+  background-clip: padding-box;
+  box-shadow: 0 -16px 40px color-mix(in srgb, var(--color-shadow) 50%, transparent);
+  padding: var(--jornada-overlay-padding-top) var(--jornada-overlay-padding-x) calc(1.2rem + env(safe-area-inset-bottom, 0px));
+  animation: team-selector-sheet-up 240ms ease;
+  isolation: isolate;
+}
+
+.jornada-overlay.is-closing .jornada-overlay-sheet {
+  animation: team-selector-sheet-down 200ms ease forwards;
+}
+
+.jornada-overlay-header {
+  position: sticky;
+  top: calc(-1 * var(--jornada-overlay-padding-top));
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: calc(-1 * var(--jornada-overlay-padding-top)) calc(-1 * var(--jornada-overlay-padding-x)) 0.8rem;
+  padding: var(--jornada-overlay-padding-top) var(--jornada-overlay-padding-x) 0.9rem;
+  background: var(--color-bg);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--color-shadow) 12%, transparent);
+}
+
+.jornada-overlay-kicker {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.jornada-overlay-title {
+  margin: 0;
+  font-size: 1.35rem;
+  color: var(--color-text);
+}
+
+.jornada-overlay-close {
+  min-width: 42px;
+  min-height: 42px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, #cfdbe4 84%);
+  border-radius: 50%;
+  background: var(--selector-overlay-close-bg);
+  color: var(--selector-overlay-close-color);
+  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-shadow) 10%, transparent);
+}
+
+.jornada-overlay-close:hover,
+.jornada-overlay-close:focus-visible {
+  background: var(--selector-overlay-close-bg-hover);
+}
+
+body[data-theme="dark"] .jornada-overlay-close {
+  border-color: color-mix(in srgb, var(--color-active-surface) 44%, transparent);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-active-surface) 24%, transparent);
+}
+
+.jornada-overlay-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.jornada-overlay-loading,
+.jornada-overlay-empty {
+  padding: 1.4rem 0.5rem;
+  text-align: center;
+  color: var(--color-fecha, var(--color-text));
+  font-size: 0.94rem;
+}
+
+.jornada-overlay-match {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 14px;
+  border: 0;
+  background: var(--match-header-bg);
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.jornada-overlay-row.is-actual .jornada-overlay-match {
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+.jornada-overlay-fecha {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-text) 74%, #68809a 26%);
+}
+
+.jornada-overlay-duelo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.jornada-overlay-team {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.jornada-overlay-row .jornada-overlay-duelo > .jornada-overlay-team:last-child {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.jornada-overlay-team .partido-team-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: var(--match-logo-bg);
+  flex: 0 0 auto;
+}
+
+.jornada-overlay-team-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.jornada-overlay-resultado {
+  flex: 0 0 auto;
+  min-width: 2.6em;
+  padding: 0.2em 0.5em;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.9em;
+  background: var(--match-score-bg);
+  color: var(--color-text);
+}
+
+.jornada-overlay-resultado-pendiente {
+  font-weight: 700;
+  font-size: 0.78em;
+  background: transparent;
+}
+
+body.is-jornada-overlay-open {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jornada-overlay-sheet {
+    animation: none;
+  }
+}
