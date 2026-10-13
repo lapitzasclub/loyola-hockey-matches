@@ -1,6 +1,7 @@
 let _isOnboardingActive = false;
 let _isTeamSelectorOverlayOpen = false;
 let _isInitialTeamLoadActive = false;
+let _isJornadaOverlayOpen = false;
 
 /**
  * Aplica las clases globales de layout según el estado actual.
@@ -11,6 +12,7 @@ function syncLayoutState() {
   document.body.classList.toggle("is-onboarding-active", _isOnboardingActive);
   document.body.classList.toggle("is-team-selector-overlay-open", _isTeamSelectorOverlayOpen);
   document.body.classList.toggle("is-initial-team-load-active", _isInitialTeamLoadActive);
+  document.body.classList.toggle("is-jornada-overlay-open", _isJornadaOverlayOpen);
 }
 
 /**
@@ -71,4 +73,24 @@ export function setInitialTeamLoadActive(active) {
  */
 export function isInitialTeamLoadActive() {
   return _isInitialTeamLoadActive;
+}
+
+/**
+ * Activa o desactiva el overlay de enfrentamientos de la jornada.
+ *
+ * @param {boolean} open Estado deseado.
+ * @returns {void}
+ */
+export function setJornadaOverlayOpen(open) {
+  _isJornadaOverlayOpen = !!open;
+  syncLayoutState();
+}
+
+/**
+ * Indica si el overlay de enfrentamientos de la jornada está abierto.
+ *
+ * @returns {boolean} True cuando el overlay está visible.
+ */
+export function isJornadaOverlayOpen() {
+  return _isJornadaOverlayOpen;
 }

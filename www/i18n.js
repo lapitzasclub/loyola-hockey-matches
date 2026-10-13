@@ -219,6 +219,9 @@ export const i18n = {
     team_detail_form_won: "V",
     team_detail_form_drawn: "E",
     team_detail_form_lost: "D",
+    jornada_overlay_kicker: "Jornada completa",
+    jornada_overlay_close: "Cerrar jornada",
+    jornada_overlay_empty: "No hay enfrentamientos disponibles para esta jornada.",
   },
   eu: {
     title: "Loyola Indautxu Partidak",
@@ -423,6 +426,9 @@ export const i18n = {
     team_detail_form_won: "I",
     team_detail_form_drawn: "B",
     team_detail_form_lost: "G",
+    jornada_overlay_kicker: "Jardunaldi osoa",
+    jornada_overlay_close: "Itxi jardunaldia",
+    jornada_overlay_empty: "Ez dago partidarik eskuragarri jardunaldi honetan.",
   },
 };
 
