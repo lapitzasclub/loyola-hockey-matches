@@ -1003,7 +1003,11 @@ body[data-theme="dark"] .team-form-pill-lost {
 }
 
 .partido-detalle-modal.is-open .partido-detalle-shell {
-  transform: translateY(0) scale(1);
+  /* `transform: none` (no un identity transform como translateY(0) scale(1)) a propósito:
+     Safari/WebKit rompe `position: sticky` en descendientes (.partido-detalle-tabs,
+     .partido-detalle-header) cuando un ancestro tiene cualquier transform distinto de `none`,
+     incluso uno sin efecto visual. Visualmente es idéntico; solo iOS se ve afectado por esto. */
+  transform: none;
   opacity: 1;
 }
 
