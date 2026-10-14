@@ -40,4 +40,15 @@ export function bindPlayerLinks(rootEl, state, headerEl, renderAll, hydrateJugad
       await hydrateJugadorStats(state, headerEl, bodyEl, renderAll);
     };
   });
+
+  const retryBtn = rootEl.querySelector(".partido-detalle-player-retry");
+  if (retryBtn) {
+    retryBtn.onclick = async () => {
+      if (!state.selectedJugador) return;
+      const bodyEl = rootEl.closest("#partido-detalle-body") || rootEl;
+      state.selectedJugador.loading = true;
+      renderAll(state, headerEl, bodyEl);
+      await hydrateJugadorStats(state, headerEl, bodyEl, renderAll);
+    };
+  }
 }
