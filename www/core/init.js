@@ -4,7 +4,11 @@ import { cargarSelectorEquiposLoyola, getEquiposLoyola, getEquipoSeleccionado, h
 import { setCompeticionHeader } from "./header.js";
 import { mostrarPantallaErrorGlobal } from "../state/errorOverlay.js";
 import { renderPartidos } from "../components/ui.js";
-import { renderPartidosLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
+import {
+  renderErrorState,
+  renderPartidosLoadingState,
+  renderTeamSelectionPromptState,
+} from "../components/loadingStates.js";
 import { renderEquipoSelectorSkeleton } from "../components/equipoSelector.js";
 import { preloadPartidoDetalleModule } from "../components/partidos.js";
 import { t, updateTexts } from "../i18n.js";
@@ -12,6 +16,8 @@ import { applyTheme, listenSystemScheme } from "../theme.js";
 import { observeThemeAttribute, scheduleApplySystemBars } from "../systemBars.js";
 import { getCalendarioLoyola } from "../services.js";
 import { setInitialTeamLoadActive, setOnboardingActive } from "./layoutState.js";
+import { withRetry } from "../utils/retry.js";
+import { showToast } from "../ui/toast.js";
 import {
   ensureMatchesList,
   handleLanguageChange,
@@ -108,7 +114,7 @@ export async function initApp() {
  *
  * @returns {Promise<void>} Promesa resuelta al terminar la carga principal.
  */
-export async function mostrarPartidosYClasificacion() {
+export async function mostrarPartidosYClasificacion({ isBackgroundRefresh = false } = {}) {
   const matchesList = ensureMatchesList();
   const headerTitle = document.getElementById("headerTitle");
   if (!matchesList) return;
@@ -126,13 +132,24 @@ export async function mostrarPartidosYClasificacion() {
     headerTitle.textContent = eq?.nombreEquipo || "Equipo Loyola";
   }
   setCompeticionHeader(eq?.nombreCompeticion || "");
-  renderPartidosLoadingState(matchesList);
+  if (!isBackgroundRefresh) {
+    renderPartidosLoadingState(matchesList);
+  }
   try {
-    const raw = await getCalendarioLoyola(idEquipo, idComp);
+    const raw = isBackgroundRefresh
+      ? await withRetry(() => getCalendarioLoyola(idEquipo, idComp), { attempts: 3, delayMs: 500 })
+      : await withRetry(() => getCalendarioLoyola(idEquipo, idComp));
     setInitialTeamLoadActive(false);
-    renderPartidos(matchesList, raw);
+    await renderPartidos(matchesList, raw);
   } catch (error) {
     setInitialTeamLoadActive(false);
-    matchesList.innerHTML = `<li>${t("error", error?.message || String(error))}</li>`;
+    if (isBackgroundRefresh) {
+      showToast(t("toast_refresh_failed"), { variant: "warning" });
+      return;
+    }
+    renderErrorState(matchesList, {
+      title: t("error", error?.message || String(error)),
+      onRetry: () => mostrarPartidosYClasificacion(),
+    });
   }
 }
