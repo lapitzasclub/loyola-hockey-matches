@@ -20,5 +20,10 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- Este tema se queda aplicado a la Activity durante toda su vida (no hay
+             installSplashScreen()/setTheme() que cambie a AppTheme.NoActionBar), así
+             que el opt-out de edge-to-edge forzado (Android 15+) debe ir aquí también
+             para que los colores de StatusBar/NavigationBar surtan efecto. -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 </resources>

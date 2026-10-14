@@ -6,31 +6,6 @@ const FALLBACK_IOS_STATUSBAR_INSET_PX = 44;
 const DEFAULT_HEADER_COLOR = "#0e3a43";
 const DEFAULT_NAV_COLOR = "#0e3a43";
 
-/**
- * Detecta un dispositivo iOS (iPhone/iPad/iPod) por user agent.
- * No hay target nativo Capacitor para iOS en este proyecto, así que el
- * runtime de iPhone siempre llega como `platform === "web"`.
- * @returns {boolean}
- */
-function isIOSDevice() {
-  return /iPhone|iPad|iPod/i.test(globalThis.navigator?.userAgent || "");
-}
-
-/**
- * Detecta si la PWA se está ejecutando instalada en pantalla completa
- * (home screen en iOS), donde la barra de estado se superpone al contenido
- * y por tanto sí hace falta reservar espacio con el fallback.
- * En una pestaña normal de Safari no hace falta: el propio navegador
- * reserva su chrome y env(safe-area-inset-top) es legítimamente 0.
- * @returns {boolean}
- */
-function isStandaloneDisplay() {
-  return (
-    globalThis.navigator?.standalone === true ||
-    globalThis.matchMedia?.("(display-mode: standalone)")?.matches === true
-  );
-}
-
 // ===== Helpers de color =====
 /**
  * Obtiene el valor de una variable CSS del documento.
@@ -142,9 +117,12 @@ export async function applySystemBars() {
   }
   meta.setAttribute("content", headerColor);
 
-  // Web: no hay overlay de Capacitor, leer env() directamente
+  // Web (incluye iOS Safari/PWA instalada, que no tiene target nativo Capacitor):
+  // no hay overlay que recalcular. env(safe-area-inset-*) ya es correcto y reactivo
+  // vía la regla nativa en :root (layout.css); no lo pisamos con un valor JS
+  // estático que puede quedar obsoleto (p.ej. medido en 0 antes de que el motor
+  // estabilice el safe-area, o no recalculado tras un cambio de orientación).
   if (!platform || platform === "web") {
-    applySafeAreaInsets(platform);
     return;
   }
 
@@ -227,11 +205,10 @@ export function applySafeAreaInsets(platform) {
   probe.remove();
 
   const needsFallback = !Number.isFinite(envTop) || envTop <= 0;
-  const needsIosWebFallback = needsFallback && isIOSDevice() && isStandaloneDisplay();
   const resolvedTop =
     platform === "android" && needsFallback
       ? FALLBACK_ANDROID_STATUSBAR_INSET_PX
-      : (platform === "ios" && needsFallback) || needsIosWebFallback
+      : platform === "ios" && needsFallback
       ? FALLBACK_IOS_STATUSBAR_INSET_PX
       : Math.max(0, Number.isFinite(envTop) ? envTop : 0);
   const resolvedBottom = Math.max(0, Number.isFinite(envBottom) ? envBottom : 0);
