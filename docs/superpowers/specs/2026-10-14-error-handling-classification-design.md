@@ -60,7 +60,7 @@ Basado en los tokens y animaciones ya existentes (`styles/theme.css`, fichero de
 
 **Nuevos:**
 - `www/utils/retry.js` — `withRetry(fn, {attempts=2, delayMs=900})`: ejecuta `fn`, reintenta en silencio antes de que el llamador escale a UI de error. Usado por los niveles 🔴 y 🟡.
-- `www/ui/toast.js` — `showToast(message, {variant: "warning"|"info", duration=3500})`: gestiona una cola (máx. 2 visibles) y renderiza en un contenedor `#toastStack` nuevo en `index.html` (hermano de `bottom-nav`, fuera de `main`, respetando z-index y safe-area ya establecidos).
+- `www/ui/toast.js` — `showToast(message, {variant: "warning"|"info", duration=3500})`: gestiona una cola (máx. 2 visibles) y crea su propio contenedor `#toastStack` de forma perezosa en el primer uso (mismo patrón que ya usa `state/errorOverlay.js` para su overlay), sin necesidad de tocar `index.html`.
 
 **Ampliado:**
 - `components/loadingStates.js` → `renderErrorState(container, {title, copy, onRetry})`. Cambio de firma respecto a la actual `(container, title, copy)`; se actualizan sus 2 llamadas existentes (`clasificacion.js`, `partidos.js`) al nuevo shape, añadiendo el botón de reintento.
@@ -71,7 +71,9 @@ Basado en los tokens y animaciones ya existentes (`styles/theme.css`, fichero de
 |---|---|---|---|
 | `state/equipos.js:101` (catálogo en arranque) | Overlay siempre | 🔴 | Envolver `getLoyolaCompetitionCatalog()` con `withRetry` antes de escalar a `mostrarPantallaErrorGlobal` |
 | `core/init.js:134-137` (`mostrarPartidosYClasificacion`, primera carga) | `<li>Error: msg</li>` crudo | 🟡 | `withRetry` + `renderErrorState` con reintento manual |
-| `core/teamSelectorFlow.js:167-169` (clasificación al cambiar de tab) | ídem | 🟡 | ídem |
+| `core/navigation.js:106-114` (clic en pestaña Clasificación) | ídem | 🟡 | ídem |
+| `core/navigation.js:70-77` (clic en pestaña Estadísticas) | ídem | 🟡 | ídem |
+| `core/teamSelectorFlow.js:163-169` (clasificación al cambiar de idioma) | ídem | 🟡 | ídem — corrige el mapeo inicial de este spec, que había fundido este punto con los dos de `navigation.js` de arriba |
 | `components/partidoDetalleJugadorSubview.js:147-148` (stats de jugador) | `jugador.error` como texto suelto | 🟡 | Usar el mismo componente de tarjeta en vez de texto ad hoc |
 | `core/pullToRefresh.js:283-285` | Borra la lista a skeleton y luego a error crudo | 🟢 | Deja de borrar el contenido antes de confirmar éxito; en fallo conserva el contenido anterior + `showToast` |
 | `servicesCompetitionCatalog.js:106-109` (competición suelta en el catálogo) | `console.error` silencioso, sin aviso | 🟢 | Un único `showToast` resumen tras terminar la carga si se descartó alguna competición (no uno por competición) |
