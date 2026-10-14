@@ -3,9 +3,10 @@
 import { getClasificacionLiga } from "../services.js";
 import { renderClasificacion } from "../components/ui.js";
 import { t } from "../i18n.js";
-import { renderClasificacionLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { invalidateApiCacheFor } from "../utils/apiCache.js";
+import { withRetry } from "../utils/retry.js";
+import { showToast } from "../ui/toast.js";
 
 // Fragmentos de URL de datos que cambian durante el día; se excluyen la estructura
 // (divisiones/fases) y la agenda de descubrimiento porque son estables durante la temporada.
@@ -28,22 +29,52 @@ import { isOnboardingActive } from "./layoutState.js";
 async function refrescarEstadisticas(navStatsEl) {
   const listEl = document.getElementById("matches");
   if (!listEl) return;
-  renderClasificacionLoadingState(listEl);
 
   const seleccionado = getEquipoSeleccionado();
-  if (!seleccionado) {
-    renderTeamSelectionPromptState(listEl);
-    setCompeticionHeader("");
-    return;
-  }
+  if (!seleccionado) return;
 
   const [idComp] = seleccionado.split("|");
   const eq = getEquiposLoyola().find((team) => team.idCompeticion == idComp);
   const sigueVigente = () => !!navStatsEl?.classList.contains("active");
-  const { renderEstadisticasLiga } = await import("../components/estadisticasLiga.js");
-  if (!sigueVigente()) return;
-  setCompeticionHeader(eq?.nombreCompeticion || "");
-  await renderEstadisticasLiga(listEl, idComp, sigueVigente);
+
+  try {
+    const { renderEstadisticasLiga } = await import("../components/estadisticasLiga.js");
+    if (!sigueVigente()) return;
+    setCompeticionHeader(eq?.nombreCompeticion || "");
+    await renderEstadisticasLiga(listEl, idComp, sigueVigente);
+  } catch {
+    if (!sigueVigente()) return;
+    showToast(t("toast_refresh_failed"), { variant: "warning" });
+  }
+}
+
+/**
+ * Refresca la clasificación en segundo plano (pull-to-refresh): no borra el
+ * contenido anterior; si falla, lo conserva y avisa con un toast.
+ *
+ * @param {HTMLElement|null} navClasEl Botón de la pestaña de clasificación.
+ * @returns {Promise<void>}
+ */
+async function refrescarClasificacion(navClasEl) {
+  const listEl = document.getElementById("matches");
+  if (!listEl) return;
+
+  const seleccionado = getEquipoSeleccionado();
+  if (!seleccionado) return;
+
+  const [idComp] = seleccionado.split("|");
+  const eq = getEquiposLoyola().find((team) => team.idCompeticion == idComp);
+
+  try {
+    const raw = await withRetry(() => getClasificacionLiga(idComp), { attempts: 3, delayMs: 500 });
+    if (!navClasEl?.classList.contains("active")) return;
+    setCompeticionHeader(eq?.nombreCompeticion || "");
+    listEl.innerHTML = "";
+    renderClasificacion(listEl, raw);
+  } catch {
+    if (!navClasEl?.classList.contains("active")) return;
+    showToast(t("toast_refresh_failed"), { variant: "warning" });
+  }
 }
 
 /**
@@ -252,37 +283,12 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
           if (statsRefreshStarted) {
             await refrescarEstadisticas(navStatsEl);
           } else if (clasRefreshStarted) {
-            const listEl = document.getElementById("matches");
-            renderClasificacionLoadingState(listEl);
-            if (!getEquipoSeleccionado()) {
-              if (getEquipoSeleccionado() === null || getEquipoSeleccionado() === undefined) {
-                if (!navClasEl?.classList.contains("active")) return;
-                listEl.innerHTML = `<li>Selecciona un equipo Loyola</li>`;
-                setCompeticionHeader("");
-              } else {
-                const [idComp] = getEquipoSeleccionado().split("|");
-                const eq = getEquiposLoyola().find((team) => team.idCompeticion == idComp);
-                const raw = await getClasificacionLiga(idComp);
-                if (!navClasEl?.classList.contains("active")) return;
-                setCompeticionHeader(eq?.nombreCompeticion || "");
-                listEl.innerHTML = "";
-                renderClasificacion(listEl, raw);
-              }
-            } else {
-              const [idComp] = getEquipoSeleccionado().split("|");
-              const eq = getEquiposLoyola().find((team) => team.idCompeticion == idComp);
-              const raw = await getClasificacionLiga(idComp);
-              if (!navClasEl?.classList.contains("active")) return;
-              setCompeticionHeader(eq?.nombreCompeticion || "");
-              listEl.innerHTML = "";
-              renderClasificacion(listEl, raw);
-            }
+            await refrescarClasificacion(navClasEl);
           } else {
-            await mostrarPartidosYClasificacion();
+            await mostrarPartidosYClasificacion({ isBackgroundRefresh: true });
           }
-        } catch (error) {
-          const listEl = document.getElementById("matches");
-          listEl.innerHTML = `<li>${t("error", error?.message || String(error))}</li>`;
+        } catch {
+          showToast(t("toast_refresh_failed"), { variant: "warning" });
         } finally {
           setTimeout(() => {
             refreshing = false;
