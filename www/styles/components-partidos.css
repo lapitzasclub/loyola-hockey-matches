@@ -93,6 +93,55 @@ body[data-theme="dark"] .match-error-shell {
   background: linear-gradient(180deg, var(--color-surface-danger-soft-strong) 0%, var(--color-surface-elevated) 100%);
 }
 
+.match-error-icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0 auto 0.6rem;
+  border-radius: 999px;
+  background: var(--color-surface-danger-soft-strong);
+  color: var(--color-danger);
+}
+
+.match-error-icon svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.match-error-retry {
+  display: block;
+  margin: 0.75rem auto 0;
+  padding: 0.55rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-text-contrast);
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: transform 0.16s ease;
+}
+
+.match-error-retry:hover,
+.match-error-retry:focus-visible {
+  transform: translateY(-1px);
+}
+
+.match-error-retry:disabled {
+  opacity: 0.7;
+  cursor: wait;
+  transform: none;
+}
+
+#matches li.match-error-card .match-error-shell {
+  animation: match-error-fade-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes match-error-fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .match-empty-kicker {
   font-size: 0.78rem;
   font-weight: 700;

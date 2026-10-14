@@ -3,7 +3,7 @@
 import { getEquipoLabel } from "../equipo.js";
 import { getLang, t } from "../i18n.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
-import { getParametrosCompeticion } from "../services.js";
+import { getParametrosCompeticion, getCalendarioLoyola } from "../services.js";
 import { getEntityLogoUrl } from "../servicesShared.js";
 import { createCalendarButton } from "../utils/calendar.js";
 import { comparePartidosByScheduledDate, extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
@@ -142,6 +142,27 @@ export function renderTeamLogo(logoMap, equipoCompId, nombre) {
 }
 
 /**
+ * Vuelve a pedir el calendario del equipo seleccionado y repinta la lista.
+ *
+ * @param {HTMLElement} matchesList Contenedor de la lista de partidos.
+ * @returns {Promise<void>}
+ */
+async function retryPartidos(matchesList) {
+  const seleccionado = getEquipoSeleccionado();
+  if (!seleccionado) return;
+  const [idComp, idEquipo] = seleccionado.split("|");
+  try {
+    const raw = await getCalendarioLoyola(idEquipo, idComp);
+    await renderPartidos(matchesList, raw);
+  } catch (error) {
+    renderErrorState(matchesList, {
+      title: t("error", error?.message || String(error)),
+      onRetry: () => retryPartidos(matchesList),
+    });
+  }
+}
+
+/**
  * Renderiza la lista de partidos en el elemento dado.
  * Expone el histórico de partidos en window._partidosLoyola para la clasificación.
  * @param {HTMLElement} matchesList - Elemento donde se renderiza la lista.
@@ -154,7 +175,10 @@ export async function renderPartidos(matchesList, raw) {
   window._partidosLoyola = partidosOrdenados;
 
   if (error) {
-    renderErrorState(matchesList, t("error", error));
+    renderErrorState(matchesList, {
+      title: t("error", error),
+      onRetry: () => retryPartidos(matchesList),
+    });
     return;
   }
 

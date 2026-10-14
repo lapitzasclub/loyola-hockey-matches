@@ -1,10 +1,11 @@
 // clasificacion.js — clasificación en tabla estilo BeSoccer
 
-import { getCalendarioTodosEquipos, getParametrosCompeticion } from "../services.js";
+import { getCalendarioTodosEquipos, getParametrosCompeticion, getClasificacionLiga } from "../services.js";
 import { getEntityLogoUrl } from "../servicesShared.js";
 import { preloadPartidoDetalleModule } from "./partidos.js";
 import { getEquipoLabel } from "../equipo.js";
 import { t } from "../i18n.js";
+import { getEquipoSeleccionado } from "../state/equipos.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
 import { comparePartidosByScheduledDate, decodeApiRaw, safeStr } from "../utils/helpers.js";
 import { renderClasificacionLoadingState, renderEmptyState, renderErrorState } from "./loadingStates.js";
@@ -264,6 +265,30 @@ function renderTeamCell(equipo, logoMap, formMap) {
 }
 
 /**
+ * Vuelve a pedir la clasificación del equipo seleccionado y repinta si la petición sigue vigente.
+ *
+ * @param {HTMLElement} matchesList Contenedor de la clasificación.
+ * @param {string} renderToken Token de la petición de render en curso.
+ * @returns {Promise<void>}
+ */
+async function retryClasificacion(matchesList, renderToken) {
+  const seleccionado = getEquipoSeleccionado();
+  if (!seleccionado) return;
+  const [idComp] = seleccionado.split("|");
+  try {
+    const raw = await getClasificacionLiga(idComp);
+    if (matchesList.dataset.clasRenderToken !== renderToken) return;
+    renderClasificacionContent(matchesList, raw, renderToken);
+  } catch (error) {
+    if (matchesList.dataset.clasRenderToken !== renderToken) return;
+    renderErrorState(matchesList, {
+      title: t("error", error?.message || String(error)),
+      onRetry: () => retryClasificacion(matchesList, renderToken),
+    });
+  }
+}
+
+/**
  * Renderiza la clasificación. Si la API retorna vacío o error, muestra mensaje amigable.
  * @param {HTMLElement} matchesList - Elemento donde renderizar la clasificación.
  * @param {any} raw - Respuesta cruda de la API.
@@ -290,7 +315,10 @@ async function renderClasificacionContent(matchesList, raw, renderToken) {
   };
   const data = decodeApiRaw(raw);
   if (data?.__error) {
-    renderErrorState(matchesList, t("error", data.__error));
+    renderErrorState(matchesList, {
+      title: t("error", data.__error),
+      onRetry: () => retryClasificacion(matchesList, renderToken),
+    });
     return;
   }
   if (!data || (Array.isArray(data) && data.length === 0)) {

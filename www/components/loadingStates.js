@@ -294,22 +294,42 @@ export function renderEmptyState(matchesList, title, copy = "") {
   `;
 }
 
+const ERROR_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>`;
+
 /**
- * Renderiza un estado de error reutilizable en listas principales.
+ * Renderiza un estado de error reutilizable en listas principales, con icono
+ * y reintento opcional (nivel "recuperable en sección").
  *
  * @param {HTMLElement} matchesList Lista o contenedor donde pintar el estado.
- * @param {string} title Mensaje principal de error.
- * @param {string} [copy=""] Texto secundario opcional.
+ * @param {{title: string, copy?: string, onRetry?: () => (void|Promise<void>)}} options
  * @returns {void}
  */
-export function renderErrorState(matchesList, title, copy = "") {
+export function renderErrorState(matchesList, { title, copy = "", onRetry } = {}) {
   matchesList.innerHTML = `
     <li class="match-empty-card match-error-card">
       <div class="match-empty-shell match-error-shell">
+        <div class="match-error-icon" aria-hidden="true">${ERROR_ICON_SVG}</div>
         <div class="match-empty-kicker">${t("app_short_name")}</div>
         <div class="match-empty-title">${title}</div>
         ${copy ? `<div class="match-empty-copy">${copy}</div>` : ""}
+        ${onRetry ? `<button type="button" class="match-error-retry">${t("global_error_retry")}</button>` : ""}
       </div>
     </li>
   `;
+
+  if (!onRetry) return;
+  const btn = matchesList.querySelector(".match-error-retry");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    btn.textContent = t("global_error_retrying");
+    try {
+      await onRetry();
+    } finally {
+      if (btn.isConnected) {
+        btn.disabled = false;
+        btn.textContent = t("global_error_retry");
+      }
+    }
+  });
 }
