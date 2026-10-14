@@ -1,6 +1,7 @@
 // equipos.js
 // Carga y gestión del selector de equipos
 import { getLoyolaCompetitionCatalog } from "../services.js";
+import { withRetry } from "../utils/retry.js";
 
 let _equiposLoyola = [];
 let _competitionCatalog = [];
@@ -57,7 +58,7 @@ export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion,
   if (!selector) return;
   selector.innerHTML = `<option value="">Cargando equipos...</option>`;
   try {
-    const catalog = await getLoyolaCompetitionCatalog();
+    const catalog = await withRetry(() => getLoyolaCompetitionCatalog());
     const equipos = catalog.flatMap((competition) => competition.equipos);
     setEquiposLoyola(equipos);
     setCompetitionCatalog(catalog);
