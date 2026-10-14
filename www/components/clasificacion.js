@@ -275,12 +275,16 @@ async function retryClasificacion(matchesList, renderToken) {
   const seleccionado = getEquipoSeleccionado();
   if (!seleccionado) return;
   const [idComp] = seleccionado.split("|");
+  const stillValid = () => {
+    const navClas = document.getElementById("navClas");
+    return matchesList.dataset.clasRenderToken === renderToken && !!navClas?.classList.contains("active");
+  };
   try {
     const raw = await getClasificacionLiga(idComp);
-    if (matchesList.dataset.clasRenderToken !== renderToken) return;
+    if (!stillValid()) return;
     renderClasificacionContent(matchesList, raw, renderToken);
   } catch (error) {
-    if (matchesList.dataset.clasRenderToken !== renderToken) return;
+    if (!stillValid()) return;
     renderErrorState(matchesList, {
       title: t("error", error?.message || String(error)),
       onRetry: () => retryClasificacion(matchesList, renderToken),
