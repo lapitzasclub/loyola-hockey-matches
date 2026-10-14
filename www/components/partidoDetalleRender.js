@@ -117,7 +117,15 @@ export function renderPartidoHeader(state) {
   const bonusLocal = String(p.puntoBonus || "") === String(p.idEquipoLocal || "") ? "*" : "";
   const bonusVisit = String(p.puntoBonus || "") === String(p.idEquipoVisit || "") ? "*" : "";
   const fechaHora = [formatFecha(p.fecha), formatHora(p.hora)].filter(Boolean).join(" · ");
-  const estado = p.estado || "";
+  // El texto crudo de "estado" viene de la API y no es fiable (puede llegar en inglés,
+  // p.ej. "Finished", o vacío en vivo): el estado numérico sí lo es, así que para los
+  // casos claros (no iniciado / finalizado) se prioriza la traducción propia.
+  const estado =
+    p.estadoPartido === 0
+      ? t("detail_not_started")
+      : p.estadoPartido === 2
+      ? t("detail_finished")
+      : p.estado || "";
   const arbitros = p.arbitros.length
     ? `<div class="partido-detalle-arbitros"><strong>${escapeHtml(t("detail_referees"))}:</strong><br>${p.arbitros.map(escapeHtml).join("<br>")}</div>`
     : "";

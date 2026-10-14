@@ -194,7 +194,7 @@ function renderResultado(p) {
   }
 
   const hora = p?.Hora ? String(p.Hora).slice(0, 5) : "";
-  const estado = hora || t("detail_match").replace(/\s+/g, " ") || "Próximo";
+  const estado = hora || t("detail_not_started").replace(/\s+/g, " ") || "Próximo";
   return `<div class='partido-resultado-row'><span class="partido-resultado partido-resultado-pendiente">${safeStr(estado)}</span></div>`;
 }
 

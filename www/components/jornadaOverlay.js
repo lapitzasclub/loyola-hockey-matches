@@ -60,7 +60,7 @@ function renderJornadaRow(p, logoMap, idPartidoActual) {
   const resultadoHtml =
     p.EstadoPartido == 2 && p.GolesLocal != null && p.GolesVisit != null
       ? `<span class="jornada-overlay-resultado">${safeStr(p.GolesLocal)} - ${safeStr(p.GolesVisit)}</span>`
-      : `<span class="jornada-overlay-resultado jornada-overlay-resultado-pendiente">${safeStr(hora || t("detail_match"))}</span>`;
+      : `<span class="jornada-overlay-resultado jornada-overlay-resultado-pendiente">${safeStr(hora || t("detail_not_started"))}</span>`;
 
   const row = document.createElement("li");
   row.className = `jornada-overlay-row${esActual ? " is-actual" : ""}`;
