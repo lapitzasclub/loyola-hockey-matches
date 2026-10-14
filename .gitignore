@@ -48,3 +48,6 @@ captures/
 
 # Cloudflare local state
 .wrangler/
+
+# Superpowers subagent-driven-development scratch workspace
+.superpowers/
