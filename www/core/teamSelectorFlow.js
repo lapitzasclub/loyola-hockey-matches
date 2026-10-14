@@ -162,12 +162,15 @@ export async function handleLanguageChange(mobileBackCoordinator, nextLang, most
     const eq = getEquiposLoyola().find((item) => item.idCompeticion == idComp);
     setCompeticionHeader(eq?.nombreCompeticion || "");
 
+    const sigueVigente = () => navClas.classList.contains("active");
     const cargarClasificacionTrasIdioma = async () => {
       try {
         const raw = await withRetry(() => getClasificacionLiga(idComp));
+        if (!sigueVigente()) return;
         matchesList.innerHTML = "";
         renderClasificacion(matchesList, raw);
       } catch (error) {
+        if (!sigueVigente()) return;
         renderErrorState(matchesList, {
           title: t("error", error?.message || String(error)),
           onRetry: cargarClasificacionTrasIdioma,
