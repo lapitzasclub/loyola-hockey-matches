@@ -17,6 +17,8 @@
 import { Centrifuge } from "centrifuge";
 import { emitLivePartidoRefresh } from "../services.js";
 import { getApiBaseUrl } from "../servicesShared.js";
+import { showToast } from "../ui/toast.js";
+import { t } from "../i18n.js";
 
 let client = null;
 const subscriptions = new Map();
@@ -129,6 +131,12 @@ export async function initRealtime() {
       getToken: () => fetchConnectionToken(),
     });
     client.on("error", (ctx) => console.warn("[Realtime] Error de cliente Centrifugo:", ctx?.error?.message || ctx));
+
+    const initialConnectTimer = setTimeout(() => {
+      showToast(t("toast_realtime_unavailable"), { variant: "warning" });
+    }, 10000);
+    client.on("connected", () => clearTimeout(initialConnectTimer));
+
     client.connect();
   } catch (error) {
     console.warn("[Realtime] No se pudo conectar a Centrifugo:", error);
