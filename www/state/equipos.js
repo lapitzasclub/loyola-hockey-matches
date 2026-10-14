@@ -1,7 +1,9 @@
 // equipos.js
 // Carga y gestión del selector de equipos
-import { getLoyolaCompetitionCatalog } from "../services.js";
+import { getLoyolaCompetitionCatalog, getLastCatalogFailures } from "../services.js";
 import { withRetry } from "../utils/retry.js";
+import { showToast } from "../ui/toast.js";
+import { t } from "../i18n.js";
 
 let _equiposLoyola = [];
 let _competitionCatalog = [];
@@ -96,6 +98,10 @@ export async function cargarSelectorEquiposLoyola(mostrarPartidosYClasificacion,
       await mostrarPartidosYClasificacion();
     });
     setEquipoSeleccionado(saved || null);
+    const failures = getLastCatalogFailures();
+    if (failures.length) {
+      showToast(t("toast_catalog_partial", failures.length), { variant: "warning" });
+    }
   } catch (err) {
     selector.innerHTML = `<option value="">Error cargando equipos</option>`;
     console.error("Error cargando selector de equipos Loyola:", err);

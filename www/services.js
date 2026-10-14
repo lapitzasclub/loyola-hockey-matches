@@ -16,7 +16,7 @@ import {
 
 import { buildEstadisticaBlock, mapEstadisticaJugador, mapPartidoDetalle } from "./servicesPartidoMappers.js";
 
-export { getEquiposLoyolaTodasCompeticiones, getLoyolaCompetitionCatalog } from "./servicesCompetitionCatalog.js";
+export { getEquiposLoyolaTodasCompeticiones, getLastCatalogFailures, getLoyolaCompetitionCatalog } from "./servicesCompetitionCatalog.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";
 

@@ -12,6 +12,7 @@ const CATALOG_CONCURRENCY = 6;
 
 const competitionCatalogCache = new Map();
 const competitionCatalogInflight = new Map();
+let lastCatalogFailures = [];
 
 /**
  * Recorre una lista aplicando `fn` en paralelo pero con un tope de tareas simultáneas,
@@ -99,12 +100,14 @@ export async function getLoyolaCompetitionCatalog() {
   const requestPromise = (async () => {
     const competiciones = await discoverCompetitions();
 
+    const failedNames = [];
     const entradas = await mapConConcurrencia(competiciones, CATALOG_CONCURRENCY, async (comp) => {
       let equipos;
       try {
         equipos = await buildLegacyEquipos(comp.id);
       } catch (error) {
         console.error("Error cargando equipos de competición:", comp.id, error);
+        failedNames.push(comp.nombre || String(comp.id));
         return null;
       }
 
@@ -127,6 +130,7 @@ export async function getLoyolaCompetitionCatalog() {
     });
     const catalog = entradas.filter(Boolean);
 
+    lastCatalogFailures = failedNames;
     saveCatalogToStorage(catalog);
     competitionCatalogCache.set(cacheKey, catalog);
     return catalog;
@@ -148,4 +152,15 @@ export async function getLoyolaCompetitionCatalog() {
 export async function getEquiposLoyolaTodasCompeticiones() {
   const catalog = await getLoyolaCompetitionCatalog();
   return catalog.flatMap((competition) => competition.equipos);
+}
+
+/**
+ * Devuelve los nombres de las competiciones cuya carga de equipos falló en la
+ * última llamada a `getLoyolaCompetitionCatalog()` que hizo una petición real
+ * (vacío si la respuesta se sirvió de caché/localStorage).
+ *
+ * @returns {string[]}
+ */
+export function getLastCatalogFailures() {
+  return lastCatalogFailures;
 }
