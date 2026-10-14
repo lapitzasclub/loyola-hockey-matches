@@ -6,7 +6,7 @@ import { setCompeticionHeader } from "./header.js";
 import { getEquiposLoyola, getEquipoSeleccionado } from "../state/equipos.js";
 import { getClasificacionLiga } from "../services.js";
 import { renderClasificacionLoadingState, renderErrorState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
-import { withRetry } from "../utils/retry.js";
+import { throwIfApiError, withRetry } from "../utils/retry.js";
 
 /**
  * Configura la navegación inferior y los listeners de los botones de navegación.
@@ -116,7 +116,7 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
       const sigueVigente = () => loadToken === clasLoadToken && navClas.classList.contains("active");
       const cargarClasificacionTab = async () => {
         try {
-          const raw = await withRetry(() => getClasificacionLiga(idComp));
+          const raw = await withRetry(() => getClasificacionLiga(idComp).then(throwIfApiError));
           if (!sigueVigente()) return;
           matchesList.innerHTML = "";
           renderClasificacion(matchesList, raw);

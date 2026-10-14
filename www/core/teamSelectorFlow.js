@@ -5,7 +5,7 @@ import { openEquipoSelectorOverlay } from "../components/equipoSelectorOverlay.j
 import { setCompeticionHeader } from "./header.js";
 import { renderClasificacion } from "../components/ui.js";
 import { renderClasificacionLoadingState, renderErrorState, renderInitialTeamLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
-import { withRetry } from "../utils/retry.js";
+import { throwIfApiError, withRetry } from "../utils/retry.js";
 import { getClasificacionLiga } from "../services.js";
 import { t, updateTexts } from "../i18n.js";
 import { isOnboardingActive, setInitialTeamLoadActive, setOnboardingActive } from "./layoutState.js";
@@ -141,6 +141,7 @@ export async function handleLanguageChange(mobileBackCoordinator, nextLang, most
   if (overlay && !overlay.hidden) {
     openEquipoSelectorOverlay({
       onSelect: async () => {
+        setPartidosTabActive();
         refreshMenuTeamLauncher(mobileBackCoordinator, mostrarPartidosYClasificacion);
         await mostrarPartidosYClasificacion();
       },
@@ -165,7 +166,7 @@ export async function handleLanguageChange(mobileBackCoordinator, nextLang, most
     const sigueVigente = () => navClas.classList.contains("active");
     const cargarClasificacionTrasIdioma = async () => {
       try {
-        const raw = await withRetry(() => getClasificacionLiga(idComp));
+        const raw = await withRetry(() => getClasificacionLiga(idComp).then(throwIfApiError));
         if (!sigueVigente()) return;
         matchesList.innerHTML = "";
         renderClasificacion(matchesList, raw);

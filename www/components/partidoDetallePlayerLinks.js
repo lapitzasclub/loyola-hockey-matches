@@ -47,6 +47,7 @@ export function bindPlayerLinks(rootEl, state, headerEl, renderAll, hydrateJugad
       if (!state.selectedJugador) return;
       const bodyEl = rootEl.closest("#partido-detalle-body") || rootEl;
       state.selectedJugador.loading = true;
+      state.selectedJugador.error = "";
       renderAll(state, headerEl, bodyEl);
       await hydrateJugadorStats(state, headerEl, bodyEl, renderAll);
     };

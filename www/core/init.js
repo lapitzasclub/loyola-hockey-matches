@@ -16,7 +16,7 @@ import { applyTheme, listenSystemScheme } from "../theme.js";
 import { observeThemeAttribute, scheduleApplySystemBars } from "../systemBars.js";
 import { getCalendarioLoyola } from "../services.js";
 import { setInitialTeamLoadActive, setOnboardingActive } from "./layoutState.js";
-import { withRetry } from "../utils/retry.js";
+import { throwIfApiError, withRetry } from "../utils/retry.js";
 import { showToast } from "../ui/toast.js";
 import {
   ensureMatchesList,
@@ -31,6 +31,9 @@ import {
   initThemeControls,
 } from "./initBootstrap.js";
 import { createMobileBackCoordinator } from "./mobileBackCoordinator.js";
+
+/** Token de la carga de partidos más reciente; descarta respuestas obsoletas. */
+let partidosLoadToken = 0;
 
 /**
  * Programa la precarga diferida del módulo pesado del detalle de partido.
@@ -135,14 +138,19 @@ export async function mostrarPartidosYClasificacion({ isBackgroundRefresh = fals
   if (!isBackgroundRefresh) {
     renderPartidosLoadingState(matchesList);
   }
+  const token = ++partidosLoadToken;
+  const sigueVigente = () =>
+    token === partidosLoadToken && !!document.getElementById("navPartidos")?.classList.contains("active");
   try {
     const raw = isBackgroundRefresh
-      ? await withRetry(() => getCalendarioLoyola(idEquipo, idComp), { attempts: 3, delayMs: 500 })
-      : await withRetry(() => getCalendarioLoyola(idEquipo, idComp));
+      ? await withRetry(() => getCalendarioLoyola(idEquipo, idComp).then(throwIfApiError), { attempts: 3, delayMs: 500 })
+      : await withRetry(() => getCalendarioLoyola(idEquipo, idComp).then(throwIfApiError));
     setInitialTeamLoadActive(false);
+    if (!sigueVigente()) return;
     await renderPartidos(matchesList, raw);
   } catch (error) {
     setInitialTeamLoadActive(false);
+    if (!sigueVigente()) return;
     if (isBackgroundRefresh) {
       showToast(t("toast_refresh_failed"), { variant: "warning" });
       return;

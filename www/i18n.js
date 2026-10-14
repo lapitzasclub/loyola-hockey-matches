@@ -62,7 +62,7 @@ export const i18n = {
     detail_match_load_error: "No se pudo cargar el partido",
     detail_match_no_data: "No se encontraron datos del partido",
     toast_refresh_failed: "No se pudo actualizar. Mostrando los últimos datos guardados.",
-    toast_catalog_partial: (count) => `No se pudieron cargar ${count} competición${count === 1 ? "" : "es"}.`,
+    toast_catalog_partial: (count) => Number(count) === 1 ? "No se pudo cargar 1 competición." : `No se pudieron cargar ${count} competiciones.`,
     toast_realtime_unavailable: "Sin conexión en directo. Los resultados se actualizarán al reabrir cada partido.",
     detail_referees: "Árbitros",
     detail_match: "Partido",

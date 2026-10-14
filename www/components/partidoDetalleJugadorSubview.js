@@ -1,6 +1,6 @@
 import { t } from "../i18n.js";
 import { getEstadisticaJugador } from "../services.js";
-import { withRetry } from "../utils/retry.js";
+import { throwIfApiError, withRetry } from "../utils/retry.js";
 import { renderJugadorHeader } from "./partidoDetalleJugadorView.js";
 import {
   getJugadorFotoUrl,
@@ -83,7 +83,7 @@ export function renderJugadorSubview(state) {
             </div>
           </div>
         </div>
-        ${jugador.error ? `<div class="partido-detalle-empty small cardish">${escapeHtml(jugador.error)}${jugador.errorRetryable ? `<button type="button" class="partido-detalle-player-retry">${escapeHtml(t("global_error_retry"))}</button>` : ""}</div>` : ""}
+        ${jugador.error ? `<div class="partido-detalle-empty small cardish">${escapeHtml(jugador.error)}${jugador.errorRetryable ? `<button type="button" class="match-error-retry partido-detalle-player-retry">${escapeHtml(t("global_error_retry"))}</button>` : ""}</div>` : ""}
       </section>
       ${showMatchBlock ? `
         <section class="partido-detalle-section partido-detalle-player-events-card">
@@ -143,7 +143,7 @@ export async function hydrateJugadorStats(state, headerEl, bodyEl, renderAll) {
   }
 
   try {
-    const statsRes = await withRetry(() => getEstadisticaJugador(jugador.idLicencia));
+    const statsRes = await withRetry(() => getEstadisticaJugador(jugador.idLicencia).then(throwIfApiError));
     jugador.statsGlobales = getPlayerStatsData(statsRes);
     jugador.error = jugador.statsGlobales ? "" : t("detail_player_load_error");
     jugador.errorRetryable = !jugador.statsGlobales;

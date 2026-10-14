@@ -5,7 +5,7 @@ import { renderClasificacion } from "../components/ui.js";
 import { t } from "../i18n.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 import { invalidateApiCacheFor } from "../utils/apiCache.js";
-import { withRetry } from "../utils/retry.js";
+import { throwIfApiError, withRetry } from "../utils/retry.js";
 import { showToast } from "../ui/toast.js";
 
 // Fragmentos de URL de datos que cambian durante el día; se excluyen la estructura
@@ -66,7 +66,7 @@ async function refrescarClasificacion(navClasEl) {
   const eq = getEquiposLoyola().find((team) => team.idCompeticion == idComp);
 
   try {
-    const raw = await withRetry(() => getClasificacionLiga(idComp), { attempts: 3, delayMs: 500 });
+    const raw = await withRetry(() => getClasificacionLiga(idComp).then(throwIfApiError), { attempts: 3, delayMs: 500 });
     if (!navClasEl?.classList.contains("active")) return;
     setCompeticionHeader(eq?.nombreCompeticion || "");
     listEl.innerHTML = "";

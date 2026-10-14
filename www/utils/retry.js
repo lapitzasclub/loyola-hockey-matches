@@ -27,3 +27,19 @@ export async function withRetry(fn, { attempts = 2, delayMs = 900 } = {}) {
   }
   throw lastError;
 }
+
+/**
+ * Convierte el sobre de error legacy `{error: true, message}` (que usan las
+ * funciones de `services.js` envueltas en `safeBuild`, que nunca rechazan)
+ * en una excepción real, para que `withRetry` pueda detectar el fallo.
+ *
+ * @param {any} raw Respuesta cruda de una función de `services.js`.
+ * @returns {any} La misma respuesta si no es un error.
+ * @throws {Error} Si la respuesta es el sobre `{error: true, message}`.
+ */
+export function throwIfApiError(raw) {
+  if (raw && typeof raw === "object" && raw.error === true) {
+    throw new Error(raw.message || "Error de API");
+  }
+  return raw;
+}
