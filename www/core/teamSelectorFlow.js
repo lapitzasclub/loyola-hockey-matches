@@ -4,7 +4,8 @@ import { renderEquipoSelectorLauncher } from "../components/equipoSelectorLaunch
 import { openEquipoSelectorOverlay } from "../components/equipoSelectorOverlay.js";
 import { setCompeticionHeader } from "./header.js";
 import { renderClasificacion } from "../components/ui.js";
-import { renderClasificacionLoadingState, renderInitialTeamLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
+import { renderClasificacionLoadingState, renderErrorState, renderInitialTeamLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
+import { withRetry } from "../utils/retry.js";
 import { getClasificacionLiga } from "../services.js";
 import { t, updateTexts } from "../i18n.js";
 import { isOnboardingActive, setInitialTeamLoadActive, setOnboardingActive } from "./layoutState.js";
@@ -160,13 +161,20 @@ export async function handleLanguageChange(mobileBackCoordinator, nextLang, most
     const [idComp] = getEquipoSeleccionado().split("|");
     const eq = getEquiposLoyola().find((item) => item.idCompeticion == idComp);
     setCompeticionHeader(eq?.nombreCompeticion || "");
-    try {
-      const raw = await getClasificacionLiga(idComp);
-      matchesList.innerHTML = "";
-      renderClasificacion(matchesList, raw);
-    } catch (error) {
-      matchesList.innerHTML = `<li>${t("error", error?.message || String(error))}</li>`;
-    }
+
+    const cargarClasificacionTrasIdioma = async () => {
+      try {
+        const raw = await withRetry(() => getClasificacionLiga(idComp));
+        matchesList.innerHTML = "";
+        renderClasificacion(matchesList, raw);
+      } catch (error) {
+        renderErrorState(matchesList, {
+          title: t("error", error?.message || String(error)),
+          onRetry: cargarClasificacionTrasIdioma,
+        });
+      }
+    };
+    await cargarClasificacionTrasIdioma();
     return;
   }
 

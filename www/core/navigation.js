@@ -5,7 +5,8 @@ import { renderClasificacion } from "../components/ui.js";
 import { setCompeticionHeader } from "./header.js";
 import { getEquiposLoyola, getEquipoSeleccionado } from "../state/equipos.js";
 import { getClasificacionLiga } from "../services.js";
-import { renderClasificacionLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
+import { renderClasificacionLoadingState, renderErrorState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
+import { withRetry } from "../utils/retry.js";
 
 /**
  * Configura la navegación inferior y los listeners de los botones de navegación.
@@ -67,14 +68,22 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
       setCompeticionHeader(eq?.nombreCompeticion || "");
 
       const sigueVigente = () => loadToken === statsLoadToken && navStats.classList.contains("active");
-      try {
-        const { renderEstadisticasLiga } = await import("../components/estadisticasLiga.js");
-        if (!sigueVigente()) return;
-        await renderEstadisticasLiga(matchesList, idComp, sigueVigente);
-      } catch (e) {
-        if (!sigueVigente()) return;
-        matchesList.innerHTML = `<li>${t("error", e?.message || String(e))}</li>`;
-      }
+      // No se envuelve renderEstadisticasLiga en withRetry: pinta directamente en el DOM
+      // y no se ha auditado como idempotente ante una segunda llamada tras fallo parcial.
+      const cargarEstadisticasTab = async () => {
+        try {
+          const { renderEstadisticasLiga } = await import("../components/estadisticasLiga.js");
+          if (!sigueVigente()) return;
+          await renderEstadisticasLiga(matchesList, idComp, sigueVigente);
+        } catch (e) {
+          if (!sigueVigente()) return;
+          renderErrorState(matchesList, {
+            title: t("error", e?.message || String(e)),
+            onRetry: cargarEstadisticasTab,
+          });
+        }
+      };
+      await cargarEstadisticasTab();
     });
   }
 
@@ -103,15 +112,23 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
       const [idComp] = getEquipoSeleccionado().split("|");
       const eq = getEquiposLoyola().find((e) => e.idCompeticion == idComp);
       setCompeticionHeader(eq?.nombreCompeticion || "");
-      try {
-        const raw = await getClasificacionLiga(idComp);
-        if (loadToken !== clasLoadToken || !navClas.classList.contains("active")) return;
-        matchesList.innerHTML = "";
-        renderClasificacion(matchesList, raw);
-      } catch (e) {
-        if (loadToken !== clasLoadToken || !navClas.classList.contains("active")) return;
-        matchesList.innerHTML = `<li>${t("error", e?.message || String(e))}</li>`;
-      }
+
+      const sigueVigente = () => loadToken === clasLoadToken && navClas.classList.contains("active");
+      const cargarClasificacionTab = async () => {
+        try {
+          const raw = await withRetry(() => getClasificacionLiga(idComp));
+          if (!sigueVigente()) return;
+          matchesList.innerHTML = "";
+          renderClasificacion(matchesList, raw);
+        } catch (e) {
+          if (!sigueVigente()) return;
+          renderErrorState(matchesList, {
+            title: t("error", e?.message || String(e)),
+            onRetry: cargarClasificacionTab,
+          });
+        }
+      };
+      await cargarClasificacionTab();
     });
   }
 }
