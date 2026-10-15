@@ -9,6 +9,7 @@ import { createCalendarButton } from "../utils/calendar.js";
 import { comparePartidosByScheduledDate, extractPartidos, getProximoPartidoIdx, safeStr } from "../utils/helpers.js";
 import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionActionHtml, makeInstalacionHtml, scrollToProximo } from "../utils/partidosHelpers.js";
 import { renderEmptyState, renderErrorState } from "./loadingStates.js";
+import { friendlyErrorTitle } from "../utils/errorMessages.js";
 import { renderEquipoDetalleHeader, openEquipoSubview } from "./equipoDetalleSubview.js";
 import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
 import { openJornadaOverlay } from "./jornadaOverlay.js";
@@ -156,7 +157,7 @@ async function retryPartidos(matchesList) {
     await renderPartidos(matchesList, raw);
   } catch (error) {
     renderErrorState(matchesList, {
-      title: t("error", error?.message || String(error)),
+      title: friendlyErrorTitle(error),
       onRetry: () => retryPartidos(matchesList),
     });
   }
@@ -176,7 +177,7 @@ export async function renderPartidos(matchesList, raw) {
 
   if (error) {
     renderErrorState(matchesList, {
-      title: t("error", error),
+      title: friendlyErrorTitle(error),
       onRetry: () => retryPartidos(matchesList),
     });
     return;

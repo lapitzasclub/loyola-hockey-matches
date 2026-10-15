@@ -9,6 +9,7 @@ import { getEquipoSeleccionado } from "../state/equipos.js";
 import { calcularPosicionesPrevias, groupClasificacionData } from "../utils/clasificacionHelpers.js";
 import { comparePartidosByScheduledDate, decodeApiRaw, safeStr } from "../utils/helpers.js";
 import { renderClasificacionLoadingState, renderEmptyState, renderErrorState } from "./loadingStates.js";
+import { friendlyErrorTitle } from "../utils/errorMessages.js";
 import { renderEquipoDetalleHeader, openEquipoSubview } from "./equipoDetalleSubview.js";
 import { createDetalleState, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
 import { bindDetailsAccordion } from "./accordion.js";
@@ -286,7 +287,7 @@ async function retryClasificacion(matchesList, renderToken) {
   } catch (error) {
     if (!stillValid()) return;
     renderErrorState(matchesList, {
-      title: t("error", error?.message || String(error)),
+      title: friendlyErrorTitle(error),
       onRetry: () => retryClasificacion(matchesList, renderToken),
     });
   }
@@ -320,7 +321,7 @@ async function renderClasificacionContent(matchesList, raw, renderToken) {
   const data = decodeApiRaw(raw);
   if (data?.__error) {
     renderErrorState(matchesList, {
-      title: t("error", data.__error),
+      title: friendlyErrorTitle(data.__error),
       onRetry: () => retryClasificacion(matchesList, renderToken),
     });
     return;

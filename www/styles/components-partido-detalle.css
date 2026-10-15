@@ -1618,6 +1618,20 @@ body[data-theme="dark"] .partido-detalle-empty.cardish {
   background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card)) 0%, color-mix(in srgb, var(--color-primary) 4%, var(--color-bg-card)) 100%);
 }
 
+.partido-detalle-error-section {
+  padding: 1.75rem 1.2rem;
+  text-align: center;
+}
+
+.partido-detalle-error-section .match-error-icon {
+  margin: 0 auto 0.6rem;
+}
+
+.partido-detalle-error-section .partido-detalle-empty {
+  padding: 0;
+  margin-bottom: 0.9rem;
+}
+
 .eventos-board {
   display: flex;
   flex-direction: column;

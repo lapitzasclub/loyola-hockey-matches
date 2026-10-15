@@ -167,15 +167,15 @@ export function getPartidosJornada(idCompeticion, idDivision, nombreJornada) {
 /**
  * Obtiene el ranking de jugadores de una competición (goleadores y estadísticas de portero).
  *
+ * A diferencia de otras funciones de este fichero, esta SÍ propaga el error (no usa
+ * `safeBuild`): sus 2 llamadores ya gestionan el fallo explícitamente (uno con reintento
+ * y tarjeta/toast de error, el otro con su propio `.catch()`).
+ *
  * @param {string} idCompeticion ID de la competición.
- * @returns {Promise<Array<object>>} Jugadores normalizados; vacío si la API falla.
+ * @returns {Promise<Array<object>>} Jugadores normalizados.
  */
 export async function getEstadisticasJugadoresCompeticion(idCompeticion) {
-  try {
-    return await buildEstadisticasJugadores(idCompeticion);
-  } catch {
-    return [];
-  }
+  return await buildEstadisticasJugadores(idCompeticion);
 }
 
 /**

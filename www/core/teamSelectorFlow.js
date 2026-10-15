@@ -7,6 +7,7 @@ import { renderClasificacion } from "../components/ui.js";
 import { renderClasificacionLoadingState, renderErrorState, renderInitialTeamLoadingState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
 import { throwIfApiError, withRetry } from "../utils/retry.js";
 import { getClasificacionLiga } from "../services.js";
+import { friendlyErrorTitle } from "../utils/errorMessages.js";
 import { t, updateTexts } from "../i18n.js";
 import { isOnboardingActive, setInitialTeamLoadActive, setOnboardingActive } from "./layoutState.js";
 
@@ -173,7 +174,7 @@ export async function handleLanguageChange(mobileBackCoordinator, nextLang, most
       } catch (error) {
         if (!sigueVigente()) return;
         renderErrorState(matchesList, {
-          title: t("error", error?.message || String(error)),
+          title: friendlyErrorTitle(error),
           onRetry: cargarClasificacionTrasIdioma,
         });
       }

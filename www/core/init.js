@@ -18,6 +18,7 @@ import { getCalendarioLoyola } from "../services.js";
 import { setInitialTeamLoadActive, setOnboardingActive } from "./layoutState.js";
 import { throwIfApiError, withRetry } from "../utils/retry.js";
 import { showToast } from "../ui/toast.js";
+import { friendlyErrorTitle } from "../utils/errorMessages.js";
 import {
   ensureMatchesList,
   handleLanguageChange,
@@ -156,7 +157,7 @@ export async function mostrarPartidosYClasificacion({ isBackgroundRefresh = fals
       return;
     }
     renderErrorState(matchesList, {
-      title: t("error", error?.message || String(error)),
+      title: friendlyErrorTitle(error),
       onRetry: () => mostrarPartidosYClasificacion(),
     });
   }

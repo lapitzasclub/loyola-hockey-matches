@@ -11,6 +11,7 @@ import {
   safeNumber,
 } from "./partidoDetalleJugadorStats.js";
 import { emptyArray, escapeHtml, getCurrentView } from "./partidoDetalleUtils.js";
+import { friendlyErrorTitle } from "../utils/errorMessages.js";
 
 /**
  * Renderiza la subvista activa distinta de la vista principal del partido.
@@ -48,7 +49,6 @@ export function renderJugadorSubview(state) {
 
   const partidoStats = jugador.partidoStats || {};
   const globales = jugador.statsGlobales;
-  const hasGlobales = !!globales;
   const foto = getJugadorFotoUrl(globales?.foto);
   const competicionesOrdenadas = emptyArray(globales?.competiciones)
     .slice()
@@ -63,7 +63,7 @@ export function renderJugadorSubview(state) {
   return `
     <div class="partido-detalle-player-sheet subview-enter">
       <section class="partido-detalle-section partido-detalle-player-card partido-detalle-player-card-hero">
-        <div class="partido-detalle-player-block ${hasGlobales ? "is-ready" : "is-loading"}">
+        <div class="partido-detalle-player-block ${jugador.loading ? "is-loading" : "is-ready"}">
           <div class="partido-detalle-player-block-loading partido-detalle-player-hero partido-detalle-player-hero-lg partido-detalle-player-hero-card">
             <span class="partido-detalle-skeleton skeleton-photo"></span>
             <div class="partido-detalle-player-skeleton-meta">
@@ -96,7 +96,7 @@ export function renderJugadorSubview(state) {
       ` : ""}
       <section class="partido-detalle-section partido-detalle-player-events-card">
         <div class="partido-detalle-section-title">${escapeHtml(t("detail_player_statistics"))}</div>
-        <div class="partido-detalle-player-block ${hasGlobales ? "is-ready" : "is-loading"}">
+        <div class="partido-detalle-player-block ${jugador.loading ? "is-loading" : "is-ready"}">
           <div class="partido-detalle-player-block-loading partido-detalle-player-competitions">
             <div class="partido-detalle-player-competition partido-detalle-player-competition-skeleton">
               <div class="partido-detalle-player-competition-bar">
@@ -148,7 +148,7 @@ export async function hydrateJugadorStats(state, headerEl, bodyEl, renderAll) {
     jugador.error = jugador.statsGlobales ? "" : t("detail_player_load_error");
     jugador.errorRetryable = !jugador.statsGlobales;
   } catch (error) {
-    jugador.error = error?.message || t("detail_player_load_error");
+    jugador.error = friendlyErrorTitle(error);
     jugador.errorRetryable = true;
   } finally {
     jugador.loading = false;

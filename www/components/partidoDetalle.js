@@ -7,6 +7,8 @@ import {
   subscribePartidoHubEvents,
 } from "../services.js";
 import { renderPartidoHeader, renderPartidoHeaderSkeleton } from "./partidoDetalleRender.js";
+import { ERROR_ICON_SVG } from "./loadingStates.js";
+import { friendlyErrorTitle } from "../utils/errorMessages.js";
 import {
   createDetalleState,
   escapeHtml,
@@ -299,6 +301,28 @@ async function openMatchInSharedModal(state, partido, headerEl, bodyEl, renderAl
   await cargarDetallePartido(partido.IdPartido, state, headerEl, bodyEl);
 }
 
+/**
+ * Renderiza el estado de error (nivel recuperable-en-sección) cuando falla la
+ * carga inicial del partido, con icono, mensaje amigable y botón de reintento.
+ *
+ * @param {HTMLElement} headerEl Contenedor de cabecera del modal.
+ * @param {HTMLElement} bodyEl Contenedor principal de contenido del modal.
+ * @param {string|undefined} rawMessage Mensaje técnico crudo del fallo, si lo hay.
+ * @param {() => void} onRetry Callback de reintento.
+ * @returns {void}
+ */
+function renderPartidoDetalleError(headerEl, bodyEl, rawMessage, onRetry) {
+  setHeaderContent(headerEl, escapeHtml(t("detail_match_load_error")), "getPartido-error");
+  bodyEl.innerHTML = `
+    <div class="partido-detalle-section partido-detalle-error-section">
+      <div class="match-error-icon" aria-hidden="true">${ERROR_ICON_SVG}</div>
+      <div class="partido-detalle-empty">${escapeHtml(friendlyErrorTitle(rawMessage))}</div>
+      <button type="button" class="match-error-retry">${escapeHtml(t("global_error_retry"))}</button>
+    </div>
+  `;
+  bodyEl.querySelector(".match-error-retry")?.addEventListener("click", onRetry);
+}
+
 async function cargarDetallePartido(idPartido, stateOverride = null, headerOverride = null, bodyOverride = null) {
   const headerEl = headerOverride || document.getElementById("partido-detalle-header-content");
   const bodyEl = bodyOverride || document.getElementById("partido-detalle-body");
@@ -322,7 +346,10 @@ async function cargarDetallePartido(idPartido, stateOverride = null, headerOverr
     setHeaderContent(headerEl, renderPartidoHeader(state), "getPartido");
   } else if (partidoRes?.error) {
     state.loadingMatch = false;
-    setHeaderContent(headerEl, `<div>${escapeHtml(t("error", partidoRes.message || t("detail_match_load_error")))}</div>`, "getPartido-error");
+    renderPartidoDetalleError(headerEl, bodyEl, partidoRes.message, () =>
+      cargarDetallePartido(idPartido, stateOverride, headerOverride, bodyOverride),
+    );
+    return;
   } else {
     console.warn("[Detalle] getPartido sin datos iniciales, se mantiene skeleton a la espera de estadística o realtime.", {
       idPartido,

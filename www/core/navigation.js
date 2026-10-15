@@ -1,12 +1,12 @@
 // navigation.js
 // Lógica de navegación inferior
-import { t } from "../i18n.js";
 import { renderClasificacion } from "../components/ui.js";
 import { setCompeticionHeader } from "./header.js";
 import { getEquiposLoyola, getEquipoSeleccionado } from "../state/equipos.js";
 import { getClasificacionLiga } from "../services.js";
 import { renderClasificacionLoadingState, renderErrorState, renderTeamSelectionPromptState } from "../components/loadingStates.js";
 import { throwIfApiError, withRetry } from "../utils/retry.js";
+import { friendlyErrorTitle } from "../utils/errorMessages.js";
 
 /**
  * Configura la navegación inferior y los listeners de los botones de navegación.
@@ -68,8 +68,9 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
       setCompeticionHeader(eq?.nombreCompeticion || "");
 
       const sigueVigente = () => loadToken === statsLoadToken && navStats.classList.contains("active");
-      // No se envuelve renderEstadisticasLiga en withRetry: pinta directamente en el DOM
-      // y no se ha auditado como idempotente ante una segunda llamada tras fallo parcial.
+      // renderEstadisticasLiga ya hace su propio reintento silencioso y pinta su propia
+      // tarjeta de error; este catch es solo red de seguridad para fallos inesperados
+      // fuera de esa función (p.ej. el import() dinámico).
       const cargarEstadisticasTab = async () => {
         try {
           const { renderEstadisticasLiga } = await import("../components/estadisticasLiga.js");
@@ -78,7 +79,7 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
         } catch (e) {
           if (!sigueVigente()) return;
           renderErrorState(matchesList, {
-            title: t("error", e?.message || String(e)),
+            title: friendlyErrorTitle(e),
             onRetry: cargarEstadisticasTab,
           });
         }
@@ -123,7 +124,7 @@ export function setupNavigation(mostrarPartidosYClasificacion) {
         } catch (e) {
           if (!sigueVigente()) return;
           renderErrorState(matchesList, {
-            title: t("error", e?.message || String(e)),
+            title: friendlyErrorTitle(e),
             onRetry: cargarClasificacionTab,
           });
         }

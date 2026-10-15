@@ -41,7 +41,7 @@ async function refrescarEstadisticas(navStatsEl) {
     const { renderEstadisticasLiga } = await import("../components/estadisticasLiga.js");
     if (!sigueVigente()) return;
     setCompeticionHeader(eq?.nombreCompeticion || "");
-    await renderEstadisticasLiga(listEl, idComp, sigueVigente);
+    await renderEstadisticasLiga(listEl, idComp, sigueVigente, { isBackgroundRefresh: true });
   } catch {
     if (!sigueVigente()) return;
     showToast(t("toast_refresh_failed"), { variant: "warning" });

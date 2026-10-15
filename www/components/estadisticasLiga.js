@@ -17,6 +17,10 @@ import { renderJugadoresRanking, renderPremios } from "./jugadoresRanking.js";
 import { preloadPartidoDetalleModule } from "./partidos.js";
 import { createDetalleState } from "./partidoDetalleUtils.js";
 import { animatePillTabSelection, animateTabContentSwap, renderPillTabs } from "./uiTabs.js";
+import { renderErrorState } from "./loadingStates.js";
+import { withRetry } from "../utils/retry.js";
+import { showToast } from "../ui/toast.js";
+import { friendlyErrorTitle } from "../utils/errorMessages.js";
 
 /** Equipos mostrados en cada ranking de equipo. */
 const TOP_EQUIPOS = 5;
@@ -297,13 +301,32 @@ function bindCategoryTabs(container, estado) {
  * @param {HTMLElement} container Contenedor de la vista.
  * @param {string|number} idCompeticion Competición activa.
  * @param {() => boolean} isStillValid Indica si el render sigue siendo el vigente.
+ * @param {{isBackgroundRefresh?: boolean}} [options] `isBackgroundRefresh: true` desde
+ *   pull-to-refresh: no pinta tarjeta de error, conserva el contenido anterior y avisa con toast.
  * @returns {Promise<void>}
  */
-export async function renderEstadisticasLiga(container, idCompeticion, isStillValid) {
-  const [jugadores, clasificacionRaw] = await Promise.all([
-    getEstadisticasJugadoresCompeticion(idCompeticion),
-    getClasificacionLiga(idCompeticion).catch(() => null),
-  ]);
+export async function renderEstadisticasLiga(container, idCompeticion, isStillValid, { isBackgroundRefresh = false } = {}) {
+  let jugadores;
+  let clasificacionRaw;
+  try {
+    [jugadores, clasificacionRaw] = await Promise.all([
+      isBackgroundRefresh
+        ? withRetry(() => getEstadisticasJugadoresCompeticion(idCompeticion), { attempts: 3, delayMs: 500 })
+        : withRetry(() => getEstadisticasJugadoresCompeticion(idCompeticion)),
+      getClasificacionLiga(idCompeticion).catch(() => null),
+    ]);
+  } catch (error) {
+    if (!isStillValid()) return;
+    if (isBackgroundRefresh) {
+      showToast(t("toast_refresh_failed"), { variant: "warning" });
+      return;
+    }
+    renderErrorState(container, {
+      title: friendlyErrorTitle(error),
+      onRetry: () => renderEstadisticasLiga(container, idCompeticion, isStillValid),
+    });
+    return;
+  }
 
   if (!isStillValid()) return;
 
