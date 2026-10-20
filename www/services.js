@@ -12,6 +12,7 @@ import {
   buildLegacyCalendar,
   buildLegacyClasificacion,
   buildLegacyEquipos,
+  buildPlantillaEquipo,
 } from "./servicesFvp.js";
 
 import { buildEstadisticaBlock, mapEstadisticaJugador, mapPartidoDetalle } from "./servicesPartidoMappers.js";
@@ -176,6 +177,21 @@ export function getPartidosJornada(idCompeticion, idDivision, nombreJornada) {
  */
 export async function getEstadisticasJugadoresCompeticion(idCompeticion) {
   return await buildEstadisticasJugadores(idCompeticion);
+}
+
+/**
+ * Obtiene la plantilla completa (jugadores + cuerpo técnico) de un equipo, con sus
+ * estadísticas de temporada. Incluye a quienes aún no han jugado ningún partido.
+ *
+ * Igual que `getEstadisticasJugadoresCompeticion`, propaga el error: el único llamador
+ * gestiona el fallo con su propio `.catch()`.
+ *
+ * @param {string} idCompeticion ID de la competición.
+ * @param {string} equipoAbrev Abreviatura del equipo.
+ * @returns {Promise<{jugadores:Array<object>, tecnicos:Array<object>}|null>}
+ */
+export async function getPlantillaEquipo(idCompeticion, equipoAbrev) {
+  return await buildPlantillaEquipo(idCompeticion, equipoAbrev);
 }
 
 /**

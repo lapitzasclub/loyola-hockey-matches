@@ -1,148 +1,67 @@
 import { t } from "../i18n.js";
-import { emptyArray, escapeHtml, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
+import { emptyArray, escapeHtml } from "./partidoDetalleUtils.js";
+import { getJugadorFotoUrl } from "./partidoDetalleJugadorStats.js";
 
-function getTeamSideForMatch(partido, equipo) {
-  const normalized = normalizarEquipoClasificacion(equipo);
-  if (!normalized || !partido) return null;
-  const ids = new Set([normalized.idEquipo, normalized.idEquipoComp].filter(Boolean).map(String));
-  const isLocal = ids.has(String(partido?.IdEquipoLocal || ""));
-  const isVisit = ids.has(String(partido?.IdEquipoVisit || ""));
-  if (isLocal) return "local";
-  if (isVisit) return "visitante";
-  return null;
-}
-
-function getBucketKey(persona, role) {
-  const licencia = String(persona?.IdLicencia || "").trim();
-  if (licencia) return `${role}:lic:${licencia}`;
-
-  const dorsal = String(persona?.Dorsal || "").trim();
-  const nombre = String(persona?.ApellidosNombre || persona?.NombreApellidos || "").trim().toLowerCase();
-  return `${role}:fallback:${dorsal}:${nombre}`;
-}
+const porPartidosYNombre = (a, b) =>
+  (b?.partidosJugados || 0) - (a?.partidosJugados || 0) || String(a?.nombre || "").localeCompare(String(b?.nombre || ""), "es");
 
 /**
- * Etiquetas abreviadas para los roles del cuerpo técnico según IdPosicion de la API FVP.
- * Valores: 3=Entrenador, 4=Segundo entrenador, 5=Delegado, 6=Auxiliar; resto → "TEC".
+ * Etiquetas abreviadas para los roles del cuerpo técnico que da `rolCuerpoTecnico`.
+ * La API no documenta un enum cerrado: se usa el texto tal cual cuando no hay mapeo.
  */
-const STAFF_ROLE_MAP = { 3: "ENT", 4: "ENT2", 5: "DEL", 6: "AUX" };
+const STAFF_ROLE_MAP = {
+  ENTRENADOR: "ENT",
+  "SEGUNDO ENTRENADOR": "ENT2",
+  DELEGADO: "DEL",
+  AUXILIAR: "AUX",
+};
 
-function getStaffRoleLabel(entry) {
-  return STAFF_ROLE_MAP[entry?.raw?.IdPosicion] || "TEC";
+function getStaffRoleLabel(persona) {
+  const rol = String(persona?.rolCuerpoTecnico || "").trim().toUpperCase();
+  return STAFF_ROLE_MAP[rol] || rol || "TEC";
 }
 
-function buildPlayerPayload(entry) {
+function buildPlayerPayload(persona, role) {
   return {
-    role: entry.role,
-    teamType: entry.teamType,
+    role,
+    teamType: null,
     source: "team-roster",
-    dorsal: entry.dorsal ?? null,
-    nombre: entry.nombre || "",
-    idLicencia: entry.idLicencia ?? null,
-    licenciaTipo: entry.role === "portero" ? "p" : "j",
-    data: entry.raw || null,
+    dorsal: null,
+    nombre: persona.nombre || "",
+    idLicencia: persona.id ?? null,
+    licenciaTipo: role === "portero" ? "p" : "j",
+    data: persona,
   };
 }
 
-/**
- * Fusiona los datos de una aparición de un jugador/técnico en un partido concreto
- * sobre el bucket acumulado del mismo jugador. La primera aparición establece los
- * datos base (nombre, dorsal); las siguientes incrementan `appearances` y añaden
- * el partido al historial.
- *
- * @param {object} target Bucket acumulado del jugador (modificado in-place).
- * @param {object} persona Objeto de la alineación de la API (IdLicencia, Dorsal, ApellidosNombre…).
- * @param {string} role Rol del jugador: "jugador", "portero" o "tecnico".
- * @param {string} teamType Lado del campo: "local" o "visitante".
- * @param {object} partido Partido del que proviene la aparición.
- * @returns {void}
- */
-function mergeEntry(target, persona, role, teamType, partido) {
-  target.role = role;
-  target.teamType = target.teamType || teamType;
-  target.idLicencia = target.idLicencia ?? persona?.IdLicencia ?? null;
-  target.nombre = target.nombre || persona?.ApellidosNombre || persona?.NombreApellidos || "";
-  target.dorsal = target.dorsal ?? persona?.Dorsal ?? null;
-  target.raw = target.raw || persona;
-  target.appearances = (target.appearances || 0) + 1;
-  target.matches = target.matches || [];
-  if (partido?.IdPartido && !target.matches.some((item) => String(item?.IdPartido || "") === String(partido.IdPartido))) {
-    target.matches.push({
-      IdPartido: partido.IdPartido,
-      Fecha: partido.Fecha,
-      NombreJornada: partido.NombreJornada,
-    });
-  }
+function renderChip(label, value) {
+  if (value === null || value === undefined || value === "" || value === 0) return "";
+  return `<span class="rank-chip">${escapeHtml(label)} <strong>${escapeHtml(value)}</strong></span>`;
 }
 
-export function buildRosterFromMatches(partidos, equipo) {
-  const buckets = {
-    jugador: new Map(),
-    portero: new Map(),
-    tecnico: new Map(),
-  };
-
-  for (const partido of emptyArray(partidos)) {
-    const side = getTeamSideForMatch(partido, equipo);
-    if (!side || !partido?.alineaciones) continue;
-
-    const alineacion = partido.alineaciones;
-    const groups = side === "local"
-      ? [
-          ["jugador", emptyArray(alineacion.JugLocal)],
-          ["portero", emptyArray(alineacion.PortLocal)],
-          ["tecnico", emptyArray(alineacion.TecnLocal)],
-        ]
-      : [
-          ["jugador", emptyArray(alineacion.JugVisit)],
-          ["portero", emptyArray(alineacion.PortVisit)],
-          ["tecnico", emptyArray(alineacion.TecnVisit)],
-        ];
-
-    for (const [role, personas] of groups) {
-      for (const persona of personas) {
-        const key = getBucketKey(persona, role);
-        const existing = buckets[role].get(key) || {
-          role,
-          teamType: side,
-          idLicencia: null,
-          nombre: "",
-          dorsal: null,
-          appearances: 0,
-          matches: [],
-          raw: null,
-        };
-        mergeEntry(existing, persona, role, side, partido);
-        buckets[role].set(key, existing);
-      }
-    }
-  }
-
-  const sortEntries = (items) => items.sort((a, b) => {
-    const dorsalA = Number(a?.dorsal);
-    const dorsalB = Number(b?.dorsal);
-    if (!Number.isNaN(dorsalA) && !Number.isNaN(dorsalB) && dorsalA !== dorsalB) return dorsalA - dorsalB;
-    if ((b?.appearances || 0) !== (a?.appearances || 0)) return (b?.appearances || 0) - (a?.appearances || 0);
-    return String(a?.nombre || "").localeCompare(String(b?.nombre || ""), "es");
-  });
-
-  return {
-    jugadores: sortEntries(Array.from(buckets.jugador.values())),
-    porteros: sortEntries(Array.from(buckets.portero.values())),
-    tecnicos: sortEntries(Array.from(buckets.tecnico.values())),
-  };
+function renderStatMeta(persona) {
+  const pj = `<span class="rank-chip">PJ <strong>${escapeHtml(persona.partidosJugados || 0)}</strong></span>`;
+  const resto = persona.esPortero
+    ? [renderChip("GC", persona.golesEncajados), renderChip("Par", persona.paradas)]
+    : [renderChip("G", persona.goles), renderChip("As", persona.asistencias)];
+  return [pj, ...resto].filter(Boolean).join("");
 }
 
-function renderRosterItem(entry) {
-  const payload = buildPlayerPayload(entry);
-  const canOpen = !!entry.idLicencia;
-  const roleLabel = entry.role === "tecnico" ? getStaffRoleLabel(entry) : null;
+function renderRosterItem(persona, role) {
+  const payload = buildPlayerPayload(persona, role);
+  const canOpen = !!persona.id;
+  const roleLabel = role === "tecnico" ? getStaffRoleLabel(persona) : null;
+  const fotoUrl = persona.fotoUrl ? getJugadorFotoUrl(persona.fotoUrl) : "";
+  const marker = fotoUrl
+    ? `<img class="rank-foto" src="${escapeHtml(fotoUrl)}" alt="" loading="lazy" decoding="async">`
+    : `<div class="team-roster-item-marker">${escapeHtml(roleLabel || "--")}</div>`;
+
   const content = `
     <div class="team-roster-item-main">
-      <div class="team-roster-item-marker">${escapeHtml(entry.dorsal ?? roleLabel ?? "--")}</div>
+      ${marker}
       <div class="team-roster-item-info">
-        <div class="team-roster-item-name">${escapeHtml(entry.nombre || t("team_detail_roster_unknown_player"))}</div>
-        <div class="team-roster-item-meta">${escapeHtml(t("team_detail_roster_appearances", entry.appearances || 0))}${roleLabel ? ` · ${escapeHtml(roleLabel)}` : ""}</div>
+        <div class="team-roster-item-name">${escapeHtml(persona.nombre || t("team_detail_roster_unknown_player"))}</div>
+        <div class="team-roster-item-meta">${role === "tecnico" ? escapeHtml(roleLabel || "") : renderStatMeta(persona)}</div>
       </div>
       ${canOpen ? `<div class="team-roster-item-action" aria-hidden="true">↗</div>` : ""}
     </div>
@@ -157,7 +76,7 @@ function renderRosterItem(entry) {
   `;
 }
 
-function renderRosterBlock(title, entries) {
+function renderRosterBlock(title, entries, role) {
   if (!entries.length) return "";
   return `
     <section class="team-detail-section team-roster-block">
@@ -166,37 +85,44 @@ function renderRosterBlock(title, entries) {
         <div class="team-roster-block-count">${escapeHtml(entries.length)}</div>
       </div>
       <div class="team-roster-list">
-        ${entries.map(renderRosterItem).join("")}
+        ${entries.map((entry) => renderRosterItem(entry, role)).join("")}
       </div>
     </section>
   `;
 }
 
-export function renderEquipoDetalleRoster(roster) {
-  const jugadores = emptyArray(roster?.jugadores);
-  const porteros = emptyArray(roster?.porteros);
-  const tecnicos = emptyArray(roster?.tecnicos);
+/**
+ * Renderiza la plantilla de un equipo a partir de `getPlantillaEquipo` (jugadores + cuerpo
+ * técnico, con estadísticas de temporada). A diferencia del roster antiguo derivado de
+ * alineaciones de partidos, incluye también a quienes aún no han debutado.
+ *
+ * @param {{jugadores:Array<object>, tecnicos:Array<object>}|null} plantilla Plantilla normalizada.
+ * @returns {string} HTML de la vista de plantilla.
+ */
+export function renderEquipoDetalleRoster(plantilla) {
+  const todos = emptyArray(plantilla?.jugadores);
+  const jugadores = todos.filter((p) => !p.esPortero).sort(porPartidosYNombre);
+  const porteros = todos.filter((p) => p.esPortero).sort(porPartidosYNombre);
+  const tecnicos = emptyArray(plantilla?.tecnicos).sort((a, b) => String(a?.nombre || "").localeCompare(String(b?.nombre || ""), "es"));
 
   if (!jugadores.length && !porteros.length && !tecnicos.length) {
     return `
       <section class="team-detail-section">
         <div class="team-detail-section-title">${escapeHtml(t("team_detail_tab_roster"))}</div>
-        <div class="team-detail-empty">${escapeHtml(t("team_detail_roster_empty_from_lineups"))}</div>
+        <div class="team-detail-empty">${escapeHtml(t("team_detail_roster_empty"))}</div>
       </section>
     `;
   }
 
   return `
     <div class="team-roster-view">
-      <div class="team-detail-inline-note">${escapeHtml(t("team_detail_roster_generated_from_loaded_lineups"))}</div>
-      ${renderRosterBlock(t("detail_players"), jugadores)}
-      ${renderRosterBlock(t("detail_goalkeepers"), porteros)}
-      ${renderRosterBlock(t("detail_staff"), tecnicos)}
+      ${renderRosterBlock(t("detail_players"), jugadores, "jugador")}
+      ${renderRosterBlock(t("detail_goalkeepers"), porteros, "portero")}
+      ${renderRosterBlock(t("detail_staff"), tecnicos, "tecnico")}
     </div>
   `;
 }
 
 export default {
-  buildRosterFromMatches,
   renderEquipoDetalleRoster,
 };

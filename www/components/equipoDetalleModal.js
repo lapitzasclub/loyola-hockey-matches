@@ -1,18 +1,22 @@
 import { syncMobileBackState } from "./partidoDetalleNavigation.js";
 import { normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
 import {
-  hydrateEquipoDetalleRosterMatches,
   loadEquipoDetalleMatches,
   renderEquipoDetalleTabContent,
   renderEquipoDetalleView,
 } from "./equipoDetalle.js";
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
+import { getPlantillaEquipo } from "../services.js";
 import { createModalHandoffCover, removeModalHandoffCover } from "./modalHandoff.js";
 import { mountDetalleModalShell } from "./detalleModalShell.js";
 import { animatePillTabSelection, animateTabContentSwap } from "./uiTabs.js";
 
 function isTeamStatsTabPending(viewState, tab) {
   return tab === "estadisticas" && !viewState.teamStats && !viewState.loadingStats;
+}
+
+function isTeamRosterTabPending(viewState, tab) {
+  return tab === "plantilla" && !viewState.teamRoster && !viewState.loadingRoster;
 }
 
 function loadStandaloneTeamStats(equipo, viewState, renderContent) {
@@ -26,6 +30,22 @@ function loadStandaloneTeamStats(equipo, viewState, renderContent) {
     })
     .catch(() => {
       viewState.loadingStats = false;
+      renderContent();
+    });
+}
+
+function loadStandaloneTeamRoster(equipo, viewState, renderContent) {
+  viewState.loadingRoster = true;
+  renderContent();
+  getPlantillaEquipo(equipo?.idCompeticion, equipo?.nombreEquipoAbrev)
+    .then((plantilla) => {
+      viewState.teamRoster = plantilla;
+    })
+    .catch(() => {
+      viewState.teamRoster = null;
+    })
+    .finally(() => {
+      viewState.loadingRoster = false;
       renderContent();
     });
 }
@@ -97,7 +117,8 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
     filter: "all",
     partidos: [],
     loading: true,
-    loadingRoster: true,
+    loadingRoster: false,
+    teamRoster: null,
     loadingStats: false,
     teamStats: null,
   };
@@ -113,6 +134,7 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
       activeFilter: viewState.filter,
       isLoading: viewState.loading,
       isLoadingRoster: viewState.loadingRoster,
+      teamRoster: viewState.teamRoster,
       showRoster: true,
       showStats: true,
       teamStats: viewState.teamStats,
@@ -170,6 +192,9 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
           if (isTeamStatsTabPending(viewState, viewState.tab)) {
             loadStandaloneTeamStats(equipo, viewState, renderContent);
           }
+          if (isTeamRosterTabPending(viewState, viewState.tab)) {
+            loadStandaloneTeamRoster(equipo, viewState, renderContent);
+          }
         }, (root) => root.querySelector("[data-team-tab-content]"));
       });
     });
@@ -184,6 +209,7 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
     activeFilter: viewState.filter,
     isLoading: viewState.loading,
     isLoadingRoster: viewState.loadingRoster,
+    teamRoster: viewState.teamRoster,
     showRoster: true,
     showStats: true,
     teamStats: viewState.teamStats,
@@ -199,14 +225,4 @@ export async function openEquipoDetalle(equipoPayload, options = {}) {
   viewState.partidos = await loadEquipoDetalleMatches(equipo);
   viewState.loading = false;
   renderContent();
-
-  hydrateEquipoDetalleRosterMatches(equipo, viewState.partidos)
-    .then(() => {
-      viewState.loadingRoster = false;
-      renderContent();
-    })
-    .catch(() => {
-      viewState.loadingRoster = false;
-      renderContent();
-    });
 }

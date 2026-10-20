@@ -3,13 +3,12 @@ import { getCurrentView, logoUrl, normalizarEquipoClasificacion, pushView, setCu
 import {
   ensureTeamCompetitionClasificacion,
   getClasificacionMatch,
-  hydrateEquipoDetalleRosterMatches,
   loadEquipoDetalleMatches,
   renderEquipoDetalleTabContent,
   renderEquipoDetalleView,
 } from "./equipoDetalle.js";
 import { loadTeamAdvancedStats, mountTeamStatsCharts, unmountTeamStatsCharts } from "./equipoDetalleStats.js";
-import { getEstadisticasJugadoresCompeticion } from "../services.js";
+import { getEstadisticasJugadoresCompeticion, getPlantillaEquipo } from "../services.js";
 import { bindJugadoresRankingAccordion } from "./jugadoresRanking.js";
 import { animatePillTabSelection, animateTabContentSwap } from "./uiTabs.js";
 
@@ -19,6 +18,10 @@ function isTeamStatsTabPending(state, tab) {
 
 function isTeamPlayersTabPending(state, tab) {
   return tab === "jugadores" && !state.teamPlayers && !state.loadingPlayers;
+}
+
+function isTeamRosterTabPending(state, tab) {
+  return tab === "plantilla" && !state.teamRoster && !state.loadingRoster;
 }
 
 /**
@@ -46,6 +49,31 @@ function loadSubviewTeamPlayers(state, renderContent) {
     })
     .finally(() => {
       state.loadingPlayers = false;
+      renderContent();
+    });
+}
+
+/**
+ * Carga la plantilla del equipo (jugadores + cuerpo técnico, con estadísticas de
+ * temporada) al abrir su pestaña.
+ *
+ * @param {object} state Estado del detalle.
+ * @param {Function} renderContent Rerender del panel activo.
+ * @returns {void}
+ */
+function loadSubviewTeamRoster(state, renderContent) {
+  const equipo = state.selectedEquipo;
+  state.loadingRoster = true;
+  renderContent();
+  getPlantillaEquipo(equipo?.idCompeticion, equipo?.nombreEquipoAbrev)
+    .then((plantilla) => {
+      state.teamRoster = plantilla;
+    })
+    .catch(() => {
+      state.teamRoster = null;
+    })
+    .finally(() => {
+      state.loadingRoster = false;
       renderContent();
     });
 }
@@ -101,6 +129,7 @@ export function renderEquipoSubview(state) {
     activeFilter: state.teamFilters?.matchFilter || "all",
     isLoading: state.loadingTeam,
     isLoadingRoster: state.loadingRoster,
+    teamRoster: state.teamRoster || null,
     showRoster: true,
     showStats: true,
     showPlayers: true,
@@ -144,7 +173,8 @@ export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, 
   state.selectedEquipo = equipo;
   state.teamCompetitionName = equipo?.nombreGrupo || equipoPayload?.NombreGrupo || equipoPayload?.nombreGrupo || state.teamCompetitionName || "";
   state.loadingTeam = true;
-  state.loadingRoster = true;
+  state.loadingRoster = false;
+  state.teamRoster = null;
   state.teamMatches = [];
   state.teamFilters = {
     tab: "resumen",
@@ -173,16 +203,6 @@ export async function openEquipoSubview(state, equipoPayload, headerEl, bodyEl, 
   state.teamMatches = await loadEquipoDetalleMatches(equipo);
   state.loadingTeam = false;
   renderAll(state, headerEl, bodyEl);
-
-  hydrateEquipoDetalleRosterMatches(equipo, state.teamMatches)
-    .then(() => {
-      state.loadingRoster = false;
-      renderAll(state, headerEl, bodyEl);
-    })
-    .catch(() => {
-      state.loadingRoster = false;
-      renderAll(state, headerEl, bodyEl);
-    });
 }
 
 /**
@@ -227,6 +247,7 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
       activeFilter: state.teamFilters?.matchFilter || 'all',
       isLoading: state.loadingTeam,
       isLoadingRoster: state.loadingRoster,
+      teamRoster: state.teamRoster || null,
       showRoster: true,
       showStats: true,
       showPlayers: true,
@@ -291,6 +312,9 @@ export function bindEquipoMatchLinks(rootEl, state, headerEl, bodyEl, renderAll,
         }
         if (isTeamStatsTabPending(state, tab)) {
           loadSubviewTeamStats(state, renderTeamContentOnly);
+        }
+        if (isTeamRosterTabPending(state, tab)) {
+          loadSubviewTeamRoster(state, renderTeamContentOnly);
         }
       }, (root) => root.querySelector('[data-team-tab-content]'));
     };

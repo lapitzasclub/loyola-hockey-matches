@@ -3,11 +3,10 @@ import { t } from "../i18n.js";
 import { comparePartidosByScheduledDate, decodeApiRaw, extractPartidos } from "../utils/helpers.js";
 import { emphasizeTeam, formatFecha as formatFechaHelper, makeInstalacionHtml } from "../utils/partidosHelpers.js";
 import { escapeHtml, formatHora, normalizarEquipoClasificacion } from "./partidoDetalleUtils.js";
-import { buildRosterFromMatches, renderEquipoDetalleRoster } from "./equipoDetalleRoster.js";
+import { renderEquipoDetalleRoster } from "./equipoDetalleRoster.js";
 import { renderTeamStatsView } from "./equipoDetalleStats.js";
 import { renderJugadoresRanking, renderPremios } from "./jugadoresRanking.js";
 import { renderPillTabs } from "./uiTabs.js";
-import { hydrateMatchesWithHubLineups } from "./equipoDetalleLineupsHub.js";
 import { groupClasificacionData } from "../utils/clasificacionHelpers.js";
 
 const TEAM_SUMMARY_DEBUG = false;
@@ -58,20 +57,6 @@ export async function loadEquipoDetalleMatches(equipo) {
   }
 
   return [];
-}
-
-/**
- * Enriquece la colección de partidos con alineaciones cargadas desde el hub.
- *
- * @param {object|null|undefined} equipo Equipo activo.
- * @param {object[]|null|undefined} partidos Partidos ya cargados.
- * @returns {Promise<object[]>} La misma lista, hidratada cuando ha sido posible.
- */
-export async function hydrateEquipoDetalleRosterMatches(equipo, partidos) {
-  const normalized = normalizarEquipoClasificacion(equipo);
-  if (!normalized || !Array.isArray(partidos) || !partidos.length) return partidos || [];
-  await hydrateMatchesWithHubLineups(partidos, normalized.modalidad || "hp", 12);
-  return partidos;
 }
 
 /**
@@ -565,9 +550,8 @@ function renderRosterSkeleton() {
  * @returns {string} HTML del panel activo.
  */
 export function renderEquipoDetalleTabContent(equipo, partidos = [], options = {}) {
-  const { activeTab = "resumen", activeFilter = "all", isLoading = false, isLoadingRoster = false, showRoster = false, teamStats = null, loadingStats = false, teamPlayers = null, loadingPlayers = false } = options;
+  const { activeTab = "resumen", activeFilter = "all", isLoading = false, isLoadingRoster = false, teamRoster = null, teamStats = null, loadingStats = false, teamPlayers = null, loadingPlayers = false } = options;
   const filteredMatches = filterTeamMatches(partidos, equipo, activeFilter);
-  const roster = showRoster ? buildRosterFromMatches(partidos, equipo) : null;
 
   if (activeTab === "resumen") {
     return renderEquipoDetalleSummary(equipo, partidos, activeFilter);
@@ -578,7 +562,7 @@ export function renderEquipoDetalleTabContent(equipo, partidos = [], options = {
       : renderEquipoDetalleMatches(filteredMatches, equipo?.nombreEquipo || "", activeFilter);
   }
   if (activeTab === "plantilla") {
-    return isLoadingRoster ? renderRosterSkeleton() : renderEquipoDetalleRoster(roster);
+    return isLoadingRoster ? renderRosterSkeleton() : renderEquipoDetalleRoster(teamRoster);
   }
   if (activeTab === "estadisticas") {
     return renderTeamStatsView(teamStats, { isLoading: loadingStats });

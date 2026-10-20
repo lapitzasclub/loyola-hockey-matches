@@ -336,6 +336,82 @@ export async function buildEstadisticasJugadores(compId) {
 }
 
 /**
+ * Resuelve la división y el `equipoId` reales (claves de la API nueva, distintas del
+ * `inscripcionId` legacy) de un equipo a partir de su abreviatura, cruzando el listado
+ * ligero de equipos de cada división de la competición.
+ *
+ * @param {string} compId UUID de la competición.
+ * @param {string} equipoAbrev Abreviatura del equipo (p. ej. "LOY").
+ * @returns {Promise<{divisionId:string, equipoId:string}|null>} Ids resueltos o `null`.
+ */
+async function resolveEquipoDivision(compId, equipoAbrev) {
+  const clave = String(equipoAbrev || "").trim().toUpperCase();
+  if (!clave) return null;
+
+  const divisiones = await apiGet(`/hierarchy/competicion/${compId}/divisiones`, CACHE_TTL_LONG);
+  const porDivision = await Promise.all(
+    (Array.isArray(divisiones) ? divisiones : []).map(async (div) => {
+      const equipos = await apiGet(`/hierarchy/division/${div.id}/equipos`, CACHE_TTL_LONG).catch(() => []);
+      const match = (Array.isArray(equipos) ? equipos : []).find(
+        (eq) => String(eq?.nombreAbrev || "").trim().toUpperCase() === clave,
+      );
+      return match ? { divisionId: div.id, equipoId: match.equipoId } : null;
+    }),
+  );
+  return porDivision.find(Boolean) || null;
+}
+
+/**
+ * Normaliza un jugador o miembro del cuerpo técnico del endpoint `/plantilla`, con el mismo
+ * shape que `mapJugadorEstadistica` para poder compartir helpers de render (foto, chips…).
+ *
+ * @param {object} p Persona cruda de `/plantilla`.
+ * @returns {object} Persona normalizada.
+ */
+function mapPlantillaPersona(p) {
+  return {
+    id: p.plantillaEquipoId || null,
+    nombre: p.nombreCompleto || p.nombreCorto || "",
+    fotoUrl: p.fotoUrl || "",
+    equipoAbrev: "",
+    clubLogoUrl: p.clubLogoUrl || "",
+    esPortero: !!p.esPortero,
+    rolCuerpoTecnico: p.rolCuerpoTecnico || "",
+    partidosJugados: p.partidosJugados || 0,
+    goles: p.goles || 0,
+    asistencias: p.asistencias || 0,
+    azules: p.tarjetasAzules || 0,
+    amarillas: p.tarjetasAmarillas || 0,
+    rojas: p.tarjetasRojas || 0,
+    faltas: p.faltas || 0,
+    paradas: p.paradas || 0,
+    golesEncajados: p.golesEncajados || 0,
+    porcentajeParadas: p.porcentajeParadas || 0,
+    minutosJugados: p.minutosJugados || 0,
+  };
+}
+
+/**
+ * Construye la plantilla completa (jugadores + cuerpo técnico) de un equipo con sus
+ * estadísticas de temporada. A diferencia del roster derivado de alineaciones de partidos,
+ * incluye también a quienes todavía no han debutado.
+ *
+ * @param {string} compId UUID de la competición.
+ * @param {string} equipoAbrev Abreviatura del equipo.
+ * @returns {Promise<{jugadores:Array<object>, tecnicos:Array<object>}|null>} Plantilla normalizada, o `null` si no se pudo resolver el equipo.
+ */
+export async function buildPlantillaEquipo(compId, equipoAbrev) {
+  const resolved = await resolveEquipoDivision(compId, equipoAbrev);
+  if (!resolved) return null;
+
+  const data = await apiGet(`/hierarchy/division/${resolved.divisionId}/equipo/${resolved.equipoId}/plantilla`, CACHE_TTL_DEFAULT);
+  return {
+    jugadores: (Array.isArray(data?.jugadores) ? data.jugadores : []).map(mapPlantillaPersona),
+    tecnicos: (Array.isArray(data?.cuerpoTecnico) ? data.cuerpoTecnico : []).map(mapPlantillaPersona),
+  };
+}
+
+/**
  * Localiza la última jornada con partidos ya jugados de una competición.
  *
  * @param {Array<{tree:Array}>} trees Árboles por división.
