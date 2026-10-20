@@ -93,7 +93,7 @@ function bindPartidoDetalleModalControls(modal) {
       requestAnimationFrame(() => {
         currentModal?.remove();
         const backState = window.__partidoDetalleState;
-        if (backState?.partido?.estadoPartido !== 2 && window.__partidoDetalleId && window.signalR?.enDirecto?.server?.salirDePartido) {
+        if (backState?.partido?.estadoPartido !== 2 && window.__partidoDetalleId) {
           callPartidoHubServerMethod("salirDePartido", window.__partidoDetalleId);
         }
         if (window.__partidoDetalleUnsub) {
@@ -194,7 +194,7 @@ export function closePartidoDetalle(options = {}) {
     }
     const matchState = window.__partidoDetalleState;
     const joined = matchState?.partido?.estadoPartido !== 2 && window.__partidoDetalleId;
-    if (joined && window.signalR?.enDirecto?.server?.salirDePartido) {
+    if (joined) {
       callPartidoHubServerMethod("salirDePartido", window.__partidoDetalleId);
     }
     if (window.__partidoDetalleUnsub) {
@@ -280,6 +280,16 @@ function bindTeamInteractions(rootEl, state, headerEl, bodyEl, renderAllFn) {
 }
 
 async function openMatchInSharedModal(state, partido, headerEl, bodyEl, renderAllFn) {
+  // Se abandona el partido anterior (canal Centrifugo + listener del bus) antes de cargar el
+  // siguiente: si no, ambos quedan colgados y duplican trabajo en cada refresco en directo.
+  if (state.partido?.estadoPartido !== 2 && window.__partidoDetalleId) {
+    callPartidoHubServerMethod("salirDePartido", window.__partidoDetalleId);
+  }
+  if (window.__partidoDetalleUnsub) {
+    window.__partidoDetalleUnsub();
+    window.__partidoDetalleUnsub = null;
+  }
+
   state.parentView = getCurrentView(state);
   state.idPartido = String(partido.IdPartido);
   state.partido = null;
