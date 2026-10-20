@@ -3,7 +3,7 @@
 // Separado de la capa de gráficas (`equipoDetalleStats.js`), que es la que depende de
 // Chart.js: aquí no se renderiza nada, sólo se agregan datos.
 
-import { getEstadisticaPartido } from "../services.js";
+import { getEstadisticaPartido, upgradeFinishedMatchCache } from "../services.js";
 import { comparePartidosByScheduledDate } from "../utils/helpers.js";
 import { emptyArray, normalizarEquipoClasificacion, parseApiArrayResponse } from "./partidoDetalleUtils.js";
 
@@ -243,6 +243,10 @@ export async function loadTeamAdvancedStats(equipo, partidos = []) {
   const timeline = await Promise.all(base.timeline.map(async (item) => {
     try {
       const raw = await getEstadisticaPartido(item.idPartido);
+      // `base.timeline` solo contiene partidos EstadoPartido===2 (ver buildBaseStats): son
+      // inmutables, así que se promueve su caché a largo plazo para no volver a pedir ~120 KB
+      // por partido cada 5 min (TTL por defecto) al revisitar esta pestaña.
+      upgradeFinishedMatchCache(item.idPartido);
       const parsed = parseApiArrayResponse(raw);
       const payload = Array.isArray(parsed) ? parsed[0] : parsed;
       const stats = Array.isArray(payload?.stats) ? payload.stats : [];
