@@ -18,6 +18,11 @@ export async function onRequestGet(context) {
     return withCors(context.request, errorJson('Ruta no permitida.', 403), context.env);
   }
 
+  // Los tokens de `auth` (conexión y suscripción a Centrifugo) son de corta duración: cachearlos
+  // en el edge puede servir un token ya caducado. El resto de prefijos sigue cacheado 120s para
+  // no consumir de más la cuota de requests del plan gratuito de Cloudflare.
+  const isAuth = prefix === 'auth';
+
   const requestUrl = new URL(context.request.url);
   const upstreamUrl = `${UPSTREAM_BASE}/${segments.map(encodeURIComponent).join('/')}${requestUrl.search}`;
 
@@ -26,7 +31,7 @@ export async function onRequestGet(context) {
     upstream = await fetch(upstreamUrl, {
       method: 'GET',
       headers: { accept: 'application/json, text/javascript, */*; q=0.01' },
-      cf: { cacheTtl: DEFAULT_CACHE_SECONDS, cacheEverything: false },
+      cf: isAuth ? { cacheTtl: 0, cacheEverything: false } : { cacheTtl: DEFAULT_CACHE_SECONDS, cacheEverything: false },
     });
   } catch (error) {
     return withCors(context.request, errorJson('No se pudo contactar con el servicio externo.', 502, { detail: String(error?.message || error) }), context.env);
@@ -37,7 +42,7 @@ export async function onRequestGet(context) {
     status: upstream.status,
     headers: {
       'content-type': upstream.headers.get('content-type') || 'application/json; charset=utf-8',
-      'cache-control': upstream.ok ? `public, s-maxage=${DEFAULT_CACHE_SECONDS}` : 'no-store',
+      'cache-control': isAuth || !upstream.ok ? 'no-store' : `public, s-maxage=${DEFAULT_CACHE_SECONDS}`,
     },
   });
 
