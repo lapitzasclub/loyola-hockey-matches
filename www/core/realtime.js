@@ -131,11 +131,18 @@ export async function initRealtime() {
       getToken: () => fetchConnectionToken(),
     });
     client.on("error", (ctx) => console.warn("[Realtime] Error de cliente Centrifugo:", ctx?.error?.message || ctx));
+    // TODO debug temporal: ver si el WS se cae (bloqueo de pantalla/background en Android) y si
+    // reconecta solo. Quitar junto con el log de "publication" de joinMatch.
+    client.on("disconnected", (ctx) => console.warn("[Realtime][debug] desconectado:", ctx?.reason || ctx));
+    client.on("connecting", (ctx) => console.warn("[Realtime][debug] reconectando:", ctx?.reason || ctx));
 
     const initialConnectTimer = setTimeout(() => {
       showToast(t("toast_realtime_unavailable"), { variant: "warning" });
     }, 10000);
-    client.on("connected", () => clearTimeout(initialConnectTimer));
+    client.on("connected", () => {
+      clearTimeout(initialConnectTimer);
+      console.warn("[Realtime][debug] conectado");
+    });
 
     client.connect();
   } catch (error) {
@@ -158,6 +165,10 @@ function joinMatch(idPartido) {
       getToken: () => fetchSubscriptionToken(channel),
     });
     sub.on("publication", (ctx) => {
+      // TODO debug temporal: confirmar el contrato real de eventos en el próximo partido en
+      // directo (nunca se ha capturado un payload real, ver memoria "pendiente-partidos-jugados").
+      // Quitar este log en cuanto quede confirmado o descartado.
+      console.warn(`[Realtime][debug] publication en ${channel}:`, JSON.stringify(ctx?.data));
       const type = ctx?.data?.type;
       if (typeof type === "string" && TIPOS_RELEVANTES.has(type)) {
         scheduleRefresh(idPartido);
