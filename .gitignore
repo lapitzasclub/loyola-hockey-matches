@@ -49,5 +49,8 @@ captures/
 # Cloudflare local state
 .wrangler/
 
+# Capturas de prueba del CLI (OpenClaw)
+.openclaw-cli-images/
+
 # Superpowers subagent-driven-development scratch workspace
 .superpowers/
