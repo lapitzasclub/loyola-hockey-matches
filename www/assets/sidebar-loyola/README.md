@@ -7,8 +7,7 @@ Contenido del ZIP:
 - `escudo_loyola_indautxu_fondo_transparente.png`: versión con fondo exterior transparente.
 
 ## mockups/
-- `sidebar_loyola_indautxu_tema_claro.png`: propuesta visual en tema claro.
-- `sidebar_loyola_indautxu_tema_noche.png`: propuesta visual en tema noche.
+Los mockups se han movido a `design/sidebar-loyola-mockups/` (fuera de `www/`): no los usa la app y no deben copiarse a `dist/` ni a la APK.
 
 ## iconos_svg/
 Todos los iconos están en SVG y usan `currentColor`, para que puedas cambiar el color desde CSS.
@@ -39,12 +38,12 @@ Ejemplo de cambio de color:
 Se han añadido los siguientes PNGs decorativos extraídos del diseño del sidebar:
 
 ### Tema claro
-- `esquinas_sidebar/claro/sidebar_esquina_superior_derecha_tema_claro.png`
+- `esquinas_sidebar/claro/sidebar_esquina_superior_derecha_tema_claro.webp`
 - `esquinas_sidebar/claro/sidebar_esquina_inferior_izquierda_tema_claro.png`
 - `esquinas_sidebar/claro/sidebar_esquina_inferior_derecha_tema_claro.png`
 
 ### Tema noche
-- `esquinas_sidebar/noche/sidebar_esquina_superior_derecha_tema_noche.png`
+- `esquinas_sidebar/noche/sidebar_esquina_superior_derecha_tema_noche.webp`
 - `esquinas_sidebar/noche/sidebar_esquina_inferior_izquierda_tema_noche.png`
 - `esquinas_sidebar/noche/sidebar_esquina_inferior_derecha_tema_noche.png`
 
@@ -58,5 +57,5 @@ Los assets de `esquinas_sidebar` han sido rehechos **sin esquinas redondeadas** 
 
 - Corregido el asset `sidebar_esquina_superior_derecha_*` para que mantenga las proporciones adecuadas.
 - Sustituido el escudo con fondo transparente por dos versiones con fondo integrado:
-  - `escudo/escudo_loyola_indautxu_fondo_claro.png`
-  - `escudo/escudo_loyola_indautxu_fondo_oscuro.png`
+  - `escudo/escudo_loyola_indautxu_fondo_claro.webp`
+  - `escudo/escudo_loyola_indautxu_fondo_oscuro.webp`

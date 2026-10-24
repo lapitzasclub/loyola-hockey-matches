@@ -351,7 +351,7 @@ body[data-theme="dark"] .side-menu {
   width: 246px;
   height: 128px;
   background-position: top right;
-  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_superior_derecha_tema_claro.png');
+  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_superior_derecha_tema_claro.webp');
 }
 
 .side-menu-content::after {
@@ -382,7 +382,7 @@ body[data-theme="dark"] .side-menu {
 }
 
 body[data-theme="dark"] .side-menu-content::before {
-  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_superior_derecha_tema_noche.png');
+  background-image: url('../assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_superior_derecha_tema_noche.webp');
 }
 
 body[data-theme="dark"] .side-menu-corner-bottom-left {

@@ -1,8 +1,8 @@
 import { t } from "../i18n.js";
 import { getCompetitionCatalog, getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
 
-const LOYOLA_SHIELD_LIGHT_SRC = "assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_claro.png";
-const LOYOLA_SHIELD_DARK_SRC = "assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_oscuro.png";
+const LOYOLA_SHIELD_LIGHT_SRC = "assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_claro.webp";
+const LOYOLA_SHIELD_DARK_SRC = "assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_oscuro.webp";
 
 /**
  * Obtiene los datos del equipo actualmente seleccionado dentro del catálogo.
