@@ -13,10 +13,12 @@ import {
   buildLegacyClasificacion,
   buildLegacyEquipos,
   buildPlantillaEquipo,
+  invalidarMarcadoresFinales,
 } from "./servicesFvp.js";
 
 import { buildEstadisticaBlock, mapEstadisticaJugador, mapPartidoDetalle } from "./servicesPartidoMappers.js";
 
+export { invalidarMarcadoresFinales };
 export { getEquiposLoyolaTodasCompeticiones, getLastCatalogFailures, getLoyolaCompetitionCatalog } from "./servicesCompetitionCatalog.js";
 
 const PARTIDO_HUB_BUS_EVENT = "loyola-signalr-partido";

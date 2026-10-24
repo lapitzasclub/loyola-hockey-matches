@@ -128,6 +128,8 @@ export function normalizarPartido(input) {
     visitAbrev: p.VisitAbrev || "",
     golesLocal: p.GolesLocal ?? "-",
     golesVisit: p.GolesVisit ?? "-",
+    golesOficialLocal: p.GolesOficialLocal ?? null,
+    golesOficialVisit: p.GolesOficialVisit ?? null,
     arbitros: [p.Arb1, p.Arb2].filter(Boolean),
     logoLocal: p.IdEntidadEq1 || p.IdEnt1 || p.IdEq1 || p.IdEquipoLocal || "sinescudo",
     logoVisit: p.IdEntidadEq2 || p.IdEnt2 || p.IdEq2 || p.IdEquipoVisit || "sinescudo",

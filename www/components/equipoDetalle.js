@@ -123,10 +123,13 @@ export function getClasificacionMatch(equipo) {
 
   const sameCompetitionRows = clasData.filter((row) => !competitionId || String(row?.IdCompeticion || "") === competitionId);
 
-  const byIds = sameCompetitionRows.find((row) => {
+  // Un mismo equipo puede estar en dos tablas (p. ej. benjamines): se prefiere la fila de su grupo.
+  const byIdsAll = sameCompetitionRows.filter((row) => {
     const rowIds = [row?.IdEquipoComp, row?.IdEquipo].filter(Boolean).map(String);
     return rowIds.some((id) => candidateIds.has(id));
   });
+  const byIds = byIdsAll.find((row) => !targetGroup || normalizeTextKey(row?.NombreGrupo || row?.DenoComp) === targetGroup)
+    || byIdsAll[0];
   if (byIds) return byIds;
 
   const byNameAndGroup = sameCompetitionRows.find((row) => {
@@ -178,7 +181,7 @@ function debugTeamSummary(equipo, aggregate, positions) {
   } : null)} aggregate=${JSON.stringify(aggregate)} positions=${JSON.stringify(positions)} rows=${JSON.stringify(previewRows)}`);
 }
 
-export function computeTeamAggregateStats(equipo, partidos) {
+export function computeTeamAggregateStats(equipo) {
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized) return null;
 
@@ -372,7 +375,7 @@ export function renderEquipoDetalleSummary(equipo, partidos = [], activeFilter =
   const normalized = normalizarEquipoClasificacion(equipo);
   if (!normalized) return "";
 
-  const aggregate = computeTeamAggregateStats(normalized, partidos);
+  const aggregate = computeTeamAggregateStats(normalized);
   const positions = getTeamPositions(normalized);
   debugTeamSummary(normalized, aggregate, positions);
   const cards = getSummaryCards(aggregate, partidos);

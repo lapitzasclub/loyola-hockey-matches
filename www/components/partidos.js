@@ -267,6 +267,19 @@ export async function renderPartidos(matchesList, raw, { silent = false } = {}) 
  * @returns {string} HTML del resultado o vacío.
  */
 /**
+ * Aviso con el marcador oficial del acta, solo si difiere del marcador real (incidencias).
+ *
+ * @param {object} p Objeto partido.
+ * @returns {string} HTML del aviso o cadena vacía.
+ */
+function renderOficialAviso(p) {
+  const oL = p.GolesOficialLocal;
+  const oV = p.GolesOficialVisit;
+  if (oL == null || oV == null || (oL == p.GolesLocal && oV == p.GolesVisit)) return "";
+  return `<span class="partido-marcador-oficial">${t("score_official")} ${oL} - ${oV}</span>`;
+}
+
+/**
  * Renderiza la pieza central del duelo: marcador final si existe, o estado compacto si aún no se ha jugado.
  *
  * @param {object} p Objeto partido.
@@ -274,7 +287,7 @@ export async function renderPartidos(matchesList, raw, { silent = false } = {}) 
  */
 function renderResultado(p) {
   if (p.EstadoPartido == 2 && p.GolesLocal != null && p.GolesVisit != null) {
-    return `<div class='partido-resultado-row'><span class="partido-resultado">${p.GolesLocal} - ${p.GolesVisit}</span></div>`;
+    return `<div class='partido-resultado-row'><span class="partido-resultado">${p.GolesLocal} - ${p.GolesVisit}</span>${renderOficialAviso(p)}</div>`;
   }
 
   // En juego: marcador parcial del overlay de marcadores en vivo, con etiqueta.

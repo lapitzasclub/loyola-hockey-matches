@@ -66,18 +66,125 @@ export async function apiGet(path, ttl = CACHE_TTL_DEFAULT) {
   const cached = getCachedApi(url, "");
   if (cached !== null) return cached;
 
-  let data;
-  if (shouldPreferNativeHttp() && getHttp()) {
-    const response = await getHttp().request({ method: "GET", url, headers: GET_HEADERS });
-    data = typeof response.data === "string" ? JSON.parse(response.data) : response.data;
-  } else {
-    const response = await fetch(url, { method: "GET", headers: GET_HEADERS });
-    if (!response.ok) throw new Error(`API ${response.status} en ${path}`);
-    data = await response.json();
-  }
-
+  const data = await requestJson(path);
   setCachedApi(url, "", data, ttl);
   return data;
+}
+
+/**
+ * GET directo a la API nueva, sin caché. Quien lo use decide qué guardar.
+ *
+ * @param {string} path Ruta relativa a la base de la API.
+ * @returns {Promise<any>} JSON parseado.
+ */
+async function requestJson(path) {
+  const url = `${getApiBaseUrl()}${path}`;
+  if (shouldPreferNativeHttp() && getHttp()) {
+    const response = await getHttp().request({ method: "GET", url, headers: GET_HEADERS });
+    return typeof response.data === "string" ? JSON.parse(response.data) : response.data;
+  }
+  const response = await fetch(url, { method: "GET", headers: GET_HEADERS });
+  if (!response.ok) throw new Error(`API ${response.status} en ${path}`);
+  return response.json();
+}
+
+/**
+ * Marcador de un partido finalizado. La federación puede corregir el acta durante la jornada,
+ * así que no se guarda más de 6 h; el pull-to-refresh lo vacía además por completo.
+ */
+const MARCADOR_FINAL_TTL = 6 * 60 * 60 * 1000;
+/** Marcador en juego: se refresca casi en cada vista. */
+const MARCADOR_LIVE_TTL = 30 * 1000;
+const MARCADOR_STORE_KEY = "partido_marcador_cache";
+const marcadorLive = new Map();
+
+/**
+ * Descarta los marcadores guardados (finales y en juego) para que el próximo cálculo
+ * vuelva a pedir el detalle. Lo usa el pull-to-refresh: sin esto un acta corregida
+ * seguiría viéndose hasta que caduque el almacén.
+ *
+ * @returns {void}
+ */
+export function invalidarMarcadoresFinales() {
+  marcadorLive.clear();
+  try {
+    localStorage.removeItem(MARCADOR_STORE_KEY);
+  } catch {
+    // Sin localStorage no hay almacén que vaciar.
+  }
+}
+
+/**
+ * Lee el almacén compacto de marcadores finalizados (solo números, no el detalle completo).
+ *
+ * @returns {Record<string, object>} Registros por id de partido.
+ */
+function leerMarcadorStore() {
+  try {
+    return JSON.parse(localStorage.getItem(MARCADOR_STORE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Guarda un marcador final y descarta los caducados para que el almacén no crezca sin límite.
+ *
+ * @param {string} id Id del partido.
+ * @param {object} rec Registro compacto con marca de tiempo.
+ * @returns {void}
+ */
+function guardarMarcadorStore(id, rec) {
+  try {
+    const ahora = Date.now();
+    const store = leerMarcadorStore();
+    for (const key of Object.keys(store)) {
+      if (ahora - store[key].t >= MARCADOR_FINAL_TTL) delete store[key];
+    }
+    store[id] = rec;
+    localStorage.setItem(MARCADOR_STORE_KEY, JSON.stringify(store));
+  } catch {
+    // Sin localStorage se vuelve a pedir el detalle en la siguiente carga.
+  }
+}
+
+/**
+ * Pone en el partido el marcador real (incidencias GOL) y el oficial, desde su detalle.
+ * Los finalizados salen del almacén si son recientes; los demás, de memoria con TTL corto.
+ *
+ * @param {object} p Partido legacy del calendario (se modifica en sitio).
+ * @returns {Promise<void>}
+ */
+async function aplicarMarcadorDetalle(p) {
+  const id = String(p.IdPartido);
+  const finalizado = p.EstadoPartido === 2;
+  const ttl = finalizado ? MARCADOR_FINAL_TTL : MARCADOR_LIVE_TTL;
+  let rec = finalizado ? leerMarcadorStore()[id] : marcadorLive.get(id);
+
+  if (!rec || Date.now() - rec.t >= ttl) {
+    try {
+      const mapped = mapPartidoDetalle(await requestJson(`/public/partidos/${id}`));
+      rec = {
+        t: Date.now(),
+        e: mapped.EstadoPartido,
+        gl: mapped.GolesLocal,
+        gv: mapped.GolesVisit,
+        ol: mapped.GolesOficialLocal,
+        ov: mapped.GolesOficialVisit,
+      };
+      if (rec.e === 2) guardarMarcadorStore(id, rec);
+      else marcadorLive.set(id, rec);
+    } catch {
+      // Sin detalle no hay marcador fiable: la tarjeta se queda sin resultado.
+      rec = null;
+    }
+  }
+
+  p.GolesLocal = rec?.gl ?? null;
+  p.GolesVisit = rec?.gv ?? null;
+  p.GolesOficialLocal = rec?.ol ?? null;
+  p.GolesOficialVisit = rec?.ov ?? null;
+  if (rec?.e) p.EstadoPartido = rec.e;
 }
 
 /**
@@ -147,21 +254,53 @@ async function getCompetitionTrees(compId) {
  * de la división (≈7 KB frente a ≈222 KB).
  *
  * @param {string} compId UUID de la competición.
- * @returns {Promise<Array<{div:object, filas:Array}>>} Filas agrupadas por división.
+ * @returns {Promise<Array<{div:object, fase:object, grupoNombre:string, filas:Array, fasesConTabla:number, gruposConTabla:number}>>} Una entrada por tabla (fase × grupo).
  */
 async function getCompetitionClasificacion(compId) {
   const divisiones = await apiGet(`/hierarchy/competicion/${compId}/divisiones`, CACHE_TTL_LONG);
-  return Promise.all(
+  const porDivision = await Promise.all(
     (Array.isArray(divisiones) ? divisiones : []).map(async (div) => {
       const fases = await apiGet(`/hierarchy/division/${div.id}/fases`, CACHE_TTL_LONG);
-      const clasificaciones = await Promise.all(
-        (Array.isArray(fases) ? fases : []).map((fase) =>
-          apiGet(`/hierarchy/fase/${fase.id}/clasificacion`, CACHE_TTL_DEFAULT).catch(() => []),
-        ),
+      const porFase = await Promise.all(
+        (Array.isArray(fases) ? fases : []).map(async (fase) => {
+          const filas = await apiGet(`/hierarchy/fase/${fase.id}/clasificacion`, CACHE_TTL_DEFAULT).catch(() => []);
+          return { fase, filas: Array.isArray(filas) ? filas : [] };
+        }),
       );
-      return { div, filas: clasificaciones.flatMap((c) => (Array.isArray(c) ? c : [])) };
+      // Dentro de una fase, la API mezcla varias clasificaciones (p. ej. por territorio o año de nacimiento).
+      // Cada grupo viene marcado en `datosAdicionales.grupoId`/`grupoNombre`: se separan en tablas distintas.
+      const tablas = porFase.flatMap(({ fase, filas }) => {
+        const porGrupo = new Map();
+        for (const row of filas) {
+          const datos = parseDatosAdicionales(row.datosAdicionales);
+          const key = datos.grupoId || "";
+          if (!porGrupo.has(key)) porGrupo.set(key, { grupoNombre: datos.grupoNombre || "", filas: [] });
+          porGrupo.get(key).filas.push(row);
+        }
+        return [...porGrupo.values()].map((g) => ({ fase, ...g }));
+      });
+      const fasesConTabla = new Set(tablas.map((t) => t.fase.id)).size;
+      const gruposConTabla = new Set(tablas.map((t) => t.grupoNombre)).size;
+      return tablas.map((t) => ({ div, ...t, fasesConTabla, gruposConTabla }));
     }),
   );
+  return porDivision.flat();
+}
+
+/**
+ * Lee `datosAdicionales` de una fila de clasificación, que llega como JSON en texto.
+ *
+ * @param {string|object|null} raw Valor crudo.
+ * @returns {{grupoId?:string, grupoNombre?:string}} Datos del grupo o vacío.
+ */
+function parseDatosAdicionales(raw) {
+  if (!raw) return {};
+  if (typeof raw === "object") return raw;
+  try {
+    return JSON.parse(raw) || {};
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -209,8 +348,10 @@ export async function buildLegacyCalendar(compId) {
       for (const jornada of fase?.jornadas || []) {
         for (const enf of jornada?.enfrentamientos || []) {
           const [loc, vis] = enf?.participants || [];
-          const golesLocal = loc?.puntaje ?? null;
-          const golesVisit = vis?.puntaje ?? null;
+          // El puntaje del árbol solo sirve para saber que el partido ya tiene acta (estado).
+          // El marcador que se muestra sale del detalle (incidencias GOL), más abajo.
+          const puntajeLocal = loc?.puntaje ?? null;
+          const puntajeVisit = vis?.puntaje ?? null;
           partidos.push({
             IdPartido: enf.id,
             IdDivision: divisionId,
@@ -218,15 +359,17 @@ export async function buildLegacyCalendar(compId) {
             Orden: jornada.orden ?? jornadaOrden(jornada.nombre),
             Fecha: String(enf.fechaInicio || "").slice(0, 10),
             Hora: enf.hora || "",
-            EstadoPartido: estadoLegacy(enf.estado, { golesLocal, golesVisit }),
+            EstadoPartido: estadoLegacy(enf.estado, { golesLocal: puntajeLocal, golesVisit: puntajeVisit }),
             EquipoLocal: loc?.atletaNombre || "",
             EquipoVisit: vis?.atletaNombre || "",
             EquipoLocalAbrev: loc?.atletaNombreAbrev || "",
             EquipoVisitAbrev: vis?.atletaNombreAbrev || "",
             IdEquipoLocal: loc?.inscripcionId || "",
             IdEquipoVisit: vis?.inscripcionId || "",
-            GolesLocal: golesLocal,
-            GolesVisit: golesVisit,
+            GolesLocal: null,
+            GolesVisit: null,
+            GolesOficialLocal: puntajeLocal,
+            GolesOficialVisit: puntajeVisit,
             NombreCompeticion: nombreComp,
             Instalacion: enf.pista || "",
             CoordenadasGPS: enf.pistaLatitud != null && enf.pistaLongitud != null ? `${enf.pistaLatitud},${enf.pistaLongitud}` : "",
@@ -235,37 +378,17 @@ export async function buildLegacyCalendar(compId) {
       }
     }
   }
-  for (const p of partidos) {
-    const live = marcadores.get(String(p.IdPartido));
-    // `marcadores` también lista partidos aún no empezados (periodo 0, marcador 0-0):
-    // hay que ignorarlos o se pintarían como "en juego" con un falso 0-0.
-    if (!live || live.periodo <= 0) continue;
-    if (live.golesLocal != null) p.GolesLocal = live.golesLocal;
-    if (live.golesVisit != null) p.GolesVisit = live.golesVisit;
-    p.EstadoPartido = live.periodo === 30 ? 2 : 1;
-  }
-  // `marcadores` no incluye todas las competiciones (p. ej. Benjamín): los partidos de hoy ya
-  // empezados que no aparecen allí se completan con su detalle, que sí trae el periodo en vivo.
+  // Marcador y estado salen del detalle (incidencias GOL), no del puntaje oficial, que puede
+  // venir topado. Se piden los finalizados, los que tienen periodo en vivo y los de hoy ya
+  // empezados (`marcadores` no lo cubre todo, p. ej. Benjamín).
   const ahora = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" });
   const hoy = ahora.slice(0, 10);
   const horaAhora = ahora.slice(11, 16);
-  const sinOverlay = partidos.filter(
-    (p) => !marcadores.has(String(p.IdPartido)) && p.Fecha === hoy && p.Hora && p.Hora.slice(0, 5) <= horaAhora,
-  );
-  await Promise.all(
-    sinOverlay.map(async (p) => {
-      try {
-        const d = await apiGet(`/public/partidos/${p.IdPartido}`, 30 * 1000);
-        const mapped = mapPartidoDetalle(d);
-        if (!mapped.EstadoPartido) return;
-        p.GolesLocal = mapped.GolesLocal;
-        p.GolesVisit = mapped.GolesVisit;
-        p.EstadoPartido = mapped.EstadoPartido;
-      } catch {
-        // Sin detalle no hay estado en vivo: la tarjeta queda como estaba.
-      }
-    }),
-  );
+  const candidatos = partidos.filter((p) => {
+    const live = marcadores.get(String(p.IdPartido));
+    return p.EstadoPartido === 2 || (live && live.periodo > 0) || (p.Fecha === hoy && p.Hora && p.Hora.slice(0, 5) <= horaAhora);
+  });
+  await Promise.all(candidatos.map(aplicarMarcadorDetalle));
   return partidos;
 }
 
@@ -278,11 +401,15 @@ export async function buildLegacyCalendar(compId) {
 export async function buildLegacyClasificacion(compId) {
   const porDivision = await getCompetitionClasificacion(compId);
   const rows = [];
-  for (const { div, filas } of porDivision) {
+  for (const { div, fase, grupoNombre, filas, fasesConTabla, gruposConTabla } of porDivision) {
+    // Con varias tablas en la misma división, el nombre del grupo (y de la fase si hay varias) las separa en la vista.
+    const base = div.nombreDisplay || div.categoriaNombre || "Clasificación";
+    let grupo = gruposConTabla > 1 && grupoNombre ? grupoNombre : base;
+    if (fasesConTabla > 1 && fase?.nombre) grupo = `${grupo} · ${fase.nombre}`;
     for (const row of filas) {
       rows.push({
         IdCompeticion: compId,
-        NombreGrupo: div.nombreDisplay || div.categoriaNombre || "Clasificación",
+        NombreGrupo: grupo,
         IdEquipo: row.inscripcionId,
         IdEquipoComp: row.inscripcionId,
         IdEntidadEquipo: row.clubLogoUrl || null,

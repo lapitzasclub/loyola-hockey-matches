@@ -408,6 +408,14 @@ body[data-theme="dark"] .partido-vs {
 }
 
 /* Partido en juego: marcador real + etiqueta. Color de peligro para que destaque sin ser un error. */
+.partido-marcador-oficial {
+  display: block;
+  margin-top: 0.3em;
+  font-size: 0.72em;
+  font-weight: 600;
+  color: var(--color-muted, #6b6b6b);
+}
+
 .partido-en-directo {
   display: block;
   margin-top: 0.3em;

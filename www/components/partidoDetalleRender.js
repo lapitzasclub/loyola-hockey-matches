@@ -105,6 +105,19 @@ export function updateTabVisibility(bodyEl, activeTab) {
 }
 
 /**
+ * Aviso con el marcador oficial del acta, solo si difiere del marcador real (incidencias).
+ *
+ * @param {object} p Partido normalizado del detalle.
+ * @returns {string} HTML del aviso o cadena vacía.
+ */
+function renderOficialDetalle(p) {
+  const oL = p.golesOficialLocal;
+  const oV = p.golesOficialVisit;
+  if (oL == null || oV == null || (String(oL) === String(p.golesLocal) && String(oV) === String(p.golesVisit))) return "";
+  return `<div class="partido-marcador-oficial">${escapeHtml(t("score_official"))} ${escapeHtml(oL)} - ${escapeHtml(oV)}</div>`;
+}
+
+/**
  * Renderiza la cabecera completa del partido con marcador, meta e instalación.
  *
  * @param {object} state Estado interno del detalle de partido.
@@ -149,6 +162,7 @@ export function renderPartidoHeader(state) {
           <span>-</span>
           <span>${escapeHtml(p.golesVisit)}${bonusVisit}</span>
         </div>
+        ${renderOficialDetalle(p)}
       </div>
       <div class="partido-detalle-team partido-detalle-team-visit">
         <img class="partido-detalle-team-logo" src="${logoUrl(p.logoVisit)}" alt="${escapeHtml(p.visit)}">

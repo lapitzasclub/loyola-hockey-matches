@@ -1,6 +1,6 @@
 // pullToRefresh.js
 // Lógica de pull-to-refresh
-import { getClasificacionLiga } from "../services.js";
+import { getClasificacionLiga, invalidarMarcadoresFinales } from "../services.js";
 import { renderClasificacion } from "../components/ui.js";
 import { t } from "../i18n.js";
 import { getEquipoSeleccionado, getEquiposLoyola } from "../state/equipos.js";
@@ -275,6 +275,7 @@ export function setupPullToRefresh(mostrarPartidosYClasificacion) {
         setPtrIconState("loading");
         setPtrText(t("ptr_refreshing"));
         invalidateApiCacheFor(VOLATILE_ENDPOINTS);
+        invalidarMarcadoresFinales();
         const navClasEl = document.getElementById("navClas");
         const navStatsEl = document.getElementById("navStats");
         const clasRefreshStarted = !!navClasEl?.classList.contains("active");

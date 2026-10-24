@@ -361,8 +361,13 @@ export function mapPartidoDetalle(d) {
     Eq2: vis.nombre || "",
     LocalAbrev: loc.nombreAbrev || "",
     VisitAbrev: vis.nombreAbrev || "",
-    GolesLocal: loc.puntaje ?? (comenzado ? goles.golesLocal : null),
-    GolesVisit: vis.puntaje ?? (comenzado ? goles.golesVisit : null),
+    // Marcador real = incidencias GOL. El `puntaje` oficial puede venir con la diferencia
+    // topada (p. ej. 1-12 real figura como 1-6) y no lo mostramos.
+    GolesLocal: comenzado ? goles.golesLocal : null,
+    GolesVisit: comenzado ? goles.golesVisit : null,
+    // Marcador oficial del acta (puede venir topado); se muestra como aviso si difiere del real.
+    GolesOficialLocal: loc.puntaje ?? null,
+    GolesOficialVisit: vis.puntaje ?? null,
     Arb1: d.arbitro1Nombre || "",
     Arb2: d.arbitro2Nombre || "",
     IdEntidadEq1: loc.logoUrl || "",

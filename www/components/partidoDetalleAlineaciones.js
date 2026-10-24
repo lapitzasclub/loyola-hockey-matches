@@ -178,7 +178,7 @@ function renderPorterosCards(porteros, modalidad, teamType) {
  * @param {string} teamType Lado del partido.
  * @returns {string} HTML del bloque.
  */
-function renderTecnicosCards(tecnicos, modalidad, teamType) {
+function renderTecnicosCards(tecnicos, modalidad) {
   if (!tecnicos.length) return "";
   const isHp = modalidad !== "hl";
   const items = tecnicos.map((tecnico) => {
@@ -218,7 +218,7 @@ function renderAlineacionEquipo(nombre, jugadores, porteros, tecnicos, modalidad
       <div class="alineacion-team-title">${escapeHtml(nombre)}</div>
       ${renderJugadoresCards(jugadores, modalidad, teamType)}
       ${renderPorterosCards(porteros, modalidad, teamType)}
-      ${renderTecnicosCards(tecnicos, modalidad, teamType)}
+      ${renderTecnicosCards(tecnicos, modalidad)}
     </section>
   `;
 }
