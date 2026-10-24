@@ -163,19 +163,66 @@ async function retryPartidos(matchesList) {
   }
 }
 
+/** Intervalo del refresco silencioso mientras haya partidos en juego. */
+const LIVE_REFRESH_MS = 60 * 1000;
+let liveRefreshTimer = null;
+let ultimosPartidos = [];
+
+/**
+ * Programa el siguiente refresco silencioso sólo si hay algún partido en juego.
+ *
+ * @param {HTMLElement} matchesList Contenedor de la lista de partidos.
+ * @returns {void}
+ */
+function scheduleLiveRefresh(matchesList) {
+  clearTimeout(liveRefreshTimer);
+  liveRefreshTimer = null;
+  if (!ultimosPartidos.some((p) => p.EstadoPartido == 1)) return;
+  liveRefreshTimer = setTimeout(() => refreshLiveSilently(matchesList), LIVE_REFRESH_MS);
+}
+
+/**
+ * Vuelve a pedir el calendario sin tocar la pantalla si falla y sin mover el scroll.
+ * Sólo corre con la pestaña de partidos activa; si la app está oculta, reprograma sin pedir datos.
+ *
+ * @param {HTMLElement} matchesList Contenedor de la lista de partidos.
+ * @returns {Promise<void>}
+ */
+async function refreshLiveSilently(matchesList) {
+  liveRefreshTimer = null;
+  if (!document.getElementById("navPartidos")?.classList.contains("active")) return;
+  if (document.hidden) {
+    scheduleLiveRefresh(matchesList);
+    return;
+  }
+  try {
+    const [idComp, idEquipo] = getEquipoSeleccionado().split("|");
+    const raw = await getCalendarioLoyola(idEquipo, idComp);
+    await renderPartidos(matchesList, raw, { silent: true });
+  } catch {
+    scheduleLiveRefresh(matchesList);
+  }
+}
+
 /**
  * Renderiza la lista de partidos en el elemento dado.
  * Expone el histórico de partidos en window._partidosLoyola para la clasificación.
+ * Con `silent` (refresco en directo) no muestra errores ni repinta si la respuesta falla, y conserva el scroll.
  * @param {HTMLElement} matchesList - Elemento donde se renderiza la lista.
  * @param {any} raw - Datos crudos de la API (JSON o string).
+ * @param {{silent?: boolean}} [options] - Modo silencioso para refrescos en segundo plano.
  */
-export async function renderPartidos(matchesList, raw) {
+export async function renderPartidos(matchesList, raw, { silent = false } = {}) {
   const { error, partidos } = extractPartidos(raw);
   const partidosOrdenados = Array.isArray(partidos) ? partidos.slice().sort(comparePartidosByScheduledDate) : [];
 
-  window._partidosLoyola = partidosOrdenados;
-
   if (error) {
+    if (silent) {
+      scheduleLiveRefresh(matchesList);
+      return;
+    }
+    ultimosPartidos = [];
+    scheduleLiveRefresh(matchesList);
     renderErrorState(matchesList, {
       title: friendlyErrorTitle(error),
       onRetry: () => retryPartidos(matchesList),
@@ -183,10 +230,17 @@ export async function renderPartidos(matchesList, raw) {
     return;
   }
 
+  window._partidosLoyola = partidosOrdenados;
+  ultimosPartidos = partidosOrdenados;
+
   if (!partidosOrdenados.length) {
+    scheduleLiveRefresh(matchesList);
     renderEmptyState(matchesList, t("no_matches", getEquipoLabel()));
     return;
   }
+
+  const scrollContainer = document.querySelector("main") || document.scrollingElement;
+  const scrollBefore = silent ? scrollContainer?.scrollTop : null;
 
   matchesList.innerHTML = "";
   void preloadPartidoDetalleModule();
@@ -199,7 +253,12 @@ export async function renderPartidos(matchesList, raw) {
   };
 
   const proximoLi = renderPartidosList(matchesList, partidosOrdenados, renderContext);
-  scrollToProximo(proximoLi);
+  if (scrollBefore != null && scrollContainer) {
+    scrollContainer.scrollTop = scrollBefore;
+  } else {
+    scrollToProximo(proximoLi);
+  }
+  scheduleLiveRefresh(matchesList);
 }
 
 /**
@@ -216,6 +275,11 @@ export async function renderPartidos(matchesList, raw) {
 function renderResultado(p) {
   if (p.EstadoPartido == 2 && p.GolesLocal != null && p.GolesVisit != null) {
     return `<div class='partido-resultado-row'><span class="partido-resultado">${p.GolesLocal} - ${p.GolesVisit}</span></div>`;
+  }
+
+  // En juego: marcador parcial del overlay de marcadores en vivo, con etiqueta.
+  if (p.EstadoPartido == 1 && p.GolesLocal != null && p.GolesVisit != null) {
+    return `<div class='partido-resultado-row'><span class="partido-resultado">${p.GolesLocal} - ${p.GolesVisit}</span><span class="partido-en-directo">${t("live_now")}</span></div>`;
   }
 
   const hora = p?.Hora ? String(p.Hora).slice(0, 5) : "";
