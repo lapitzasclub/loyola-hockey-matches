@@ -123,6 +123,8 @@ export function renderPartidoHeader(state) {
   const estado =
     p.estadoPartido === 0
       ? t("detail_not_started")
+      : p.estadoPartido === 1
+      ? t("live_now")
       : p.estadoPartido === 2
       ? t("detail_finished")
       : p.estado || "";

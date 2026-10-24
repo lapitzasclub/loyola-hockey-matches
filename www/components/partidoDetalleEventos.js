@@ -125,6 +125,25 @@ export function renderEventos(state) {
     return `<div class="partido-detalle-empty cardish">${escapeHtml(t("detail_no_events"))}</div>`;
   }
 
+  // El marcador oficial (puntaje) puede no cuadrar con el recuento de incidencias GOL
+  // (p. ej. goles duplicados en el acta). Si no cuadra, no mostramos marcadores acumulados
+  // que sabemos incorrectos: el oficial sigue visible en la cabecera.
+  const golesEnEventos = state.eventos.reduce(
+    (acc, ev) => {
+      if (ev.IdTipoEvento !== "gol") return acc;
+      if (Number(ev.LocalVisit) === 1) acc.local += 1;
+      if (Number(ev.LocalVisit) === 2) acc.visit += 1;
+      return acc;
+    },
+    { local: 0, visit: 0 },
+  );
+  const oficialLocal = Number(state.partido?.golesLocal);
+  const oficialVisit = Number(state.partido?.golesVisit);
+  const marcadorFiable =
+    !Number.isFinite(oficialLocal) ||
+    !Number.isFinite(oficialVisit) ||
+    (oficialLocal === golesEnEventos.local && oficialVisit === golesEnEventos.visit);
+
   let golesLocal = 0;
   let golesVisit = 0;
   let faltasLocal = 0;
@@ -144,7 +163,10 @@ export function renderEventos(state) {
     const crono = escapeHtml(ev.Crono || "");
     const logo = logoUrl(ev.IdEntidadEquipo || "sinescudo", 36);
     const eq = escapeHtml(ev.Eq || "");
-    const icon = renderEventoIcon(ev, golesLocal, golesVisit, faltasLocal, faltasVisit);
+    const icon =
+      ev.IdTipoEvento === "gol" && !marcadorFiable
+        ? '<div class="evento-icon-score">•</div>'
+        : renderEventoIcon(ev, golesLocal, golesVisit, faltasLocal, faltasVisit);
     const text = renderEventoTexto(ev);
 
     return `

@@ -7,7 +7,7 @@ import { getCachedApi, setCachedApi, CACHE_TTL_DEFAULT, CACHE_TTL_LONG } from ".
 import { getHttp } from "./utils/env.js";
 import { shouldPreferNativeHttp } from "./config/runtime.js";
 import { getApiBaseUrl, ENTIDAD_ID, DEPORTE_HP, HEADERS } from "./servicesShared.js";
-import { statsPorJugador } from "./servicesPartidoMappers.js";
+import { statsPorJugador, mapPartidoDetalle } from "./servicesPartidoMappers.js";
 
 const GET_HEADERS = { accept: HEADERS.accept };
 
@@ -244,6 +244,28 @@ export async function buildLegacyCalendar(compId) {
     if (live.golesVisit != null) p.GolesVisit = live.golesVisit;
     p.EstadoPartido = live.periodo === 30 ? 2 : 1;
   }
+  // `marcadores` no incluye todas las competiciones (p. ej. Benjamín): los partidos de hoy ya
+  // empezados que no aparecen allí se completan con su detalle, que sí trae el periodo en vivo.
+  const ahora = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" });
+  const hoy = ahora.slice(0, 10);
+  const horaAhora = ahora.slice(11, 16);
+  const sinOverlay = partidos.filter(
+    (p) => !marcadores.has(String(p.IdPartido)) && p.Fecha === hoy && p.Hora && p.Hora.slice(0, 5) <= horaAhora,
+  );
+  await Promise.all(
+    sinOverlay.map(async (p) => {
+      try {
+        const d = await apiGet(`/public/partidos/${p.IdPartido}`, 30 * 1000);
+        const mapped = mapPartidoDetalle(d);
+        if (!mapped.EstadoPartido) return;
+        p.GolesLocal = mapped.GolesLocal;
+        p.GolesVisit = mapped.GolesVisit;
+        p.EstadoPartido = mapped.EstadoPartido;
+      } catch {
+        // Sin detalle no hay estado en vivo: la tarjeta queda como estaba.
+      }
+    }),
+  );
   return partidos;
 }
 
