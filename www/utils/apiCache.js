@@ -1,7 +1,11 @@
 // apiCache.js
-// Lógica de caché para llamadas API (memoria + localStorage, TTL configurable por entrada)
+// Lógica de caché para llamadas API (memoria + localStorage, TTL configurable por entrada).
+// Cada entrada vive en su propia clave de localStorage: escribir una respuesta no reserializa
+// el resto de la caché (antes se reescribía un blob único de ~1 MB en cada llamada).
 
 const API_CACHE = new Map();
+const STORE_PREFIX = 'api_cache:';
+const LEGACY_KEY = 'api_cache';
 
 export const CACHE_TTL_DEFAULT = 5 * 60 * 1000;       // 5 min — calendario, clasificación
 export const CACHE_TTL_LONG    = 24 * 60 * 60 * 1000; // 24 h  — parámetros de competición
@@ -14,6 +18,21 @@ export const CACHE_TTL_LONG    = 24 * 60 * 60 * 1000; // 24 h  — parámetros d
  */
 export function getCacheKey(url, body) {
   return url + '::' + (typeof body === 'string' ? body : JSON.stringify(body));
+}
+
+/**
+ * Lee una entrada persistida. Si aún existe el blob antiguo `api_cache` se usa como respaldo.
+ * @param {string} key - Clave de caché.
+ * @returns {{t:number,v:any,ttl?:number}|null}
+ */
+function readStoredEntry(key) {
+  try {
+    const raw = localStorage.getItem(STORE_PREFIX + key);
+    if (raw) return JSON.parse(raw);
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) return JSON.parse(legacy)[key] ?? null;
+  } catch {}
+  return null;
 }
 
 /**
@@ -32,18 +51,11 @@ export function getCachedApi(url, body) {
     API_CACHE.delete(key);
   }
 
-  try {
-    const cacheStr = localStorage.getItem('api_cache');
-    if (cacheStr) {
-      const cacheObj = JSON.parse(cacheStr);
-      const entry = cacheObj[key];
-      if (entry && now - entry.t < (entry.ttl ?? CACHE_TTL_DEFAULT)) {
-        API_CACHE.set(key, entry);
-        return entry.v;
-      }
-    }
-  } catch {}
-
+  const entry = readStoredEntry(key);
+  if (entry && now - entry.t < (entry.ttl ?? CACHE_TTL_DEFAULT)) {
+    API_CACHE.set(key, entry);
+    return entry.v;
+  }
   return null;
 }
 
@@ -59,11 +71,25 @@ export function setCachedApi(url, body, value, ttl = CACHE_TTL_DEFAULT) {
   const entry = { t: Date.now(), v: value, ttl };
   API_CACHE.set(key, entry);
   try {
-    const cacheStr = localStorage.getItem('api_cache');
-    const cacheObj = cacheStr ? JSON.parse(cacheStr) : {};
-    cacheObj[key] = entry;
-    localStorage.setItem('api_cache', JSON.stringify(cacheObj));
+    localStorage.setItem(STORE_PREFIX + key, JSON.stringify(entry));
+    // El blob antiguo ya no se lee salvo como respaldo: se retira en la primera escritura.
+    localStorage.removeItem(LEGACY_KEY);
   } catch {}
+}
+
+/**
+ * Lista las claves persistidas de la caché (nuevo formato).
+ * @returns {string[]} Claves de caché sin prefijo.
+ */
+function storedKeys() {
+  const keys = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(STORE_PREFIX)) keys.push(k.slice(STORE_PREFIX.length));
+    }
+  } catch {}
+  return keys;
 }
 
 /**
@@ -72,23 +98,28 @@ export function setCachedApi(url, body, value, ttl = CACHE_TTL_DEFAULT) {
  * @param {string[]} urlPatterns - Fragmentos de URL a buscar en la clave de caché.
  */
 export function invalidateApiCacheFor(urlPatterns) {
-  for (const key of API_CACHE.keys()) {
-    const url = key.split('::')[0];
-    if (urlPatterns.some((p) => url.includes(p))) API_CACHE.delete(key);
+  const matches = (key) => urlPatterns.some((p) => key.split('::')[0].includes(p));
+
+  for (const key of [...API_CACHE.keys()]) {
+    if (matches(key)) API_CACHE.delete(key);
+  }
+  for (const key of storedKeys()) {
+    if (matches(key)) {
+      try { localStorage.removeItem(STORE_PREFIX + key); } catch {}
+    }
   }
   try {
-    const cacheStr = localStorage.getItem('api_cache');
-    if (!cacheStr) return;
-    const cacheObj = JSON.parse(cacheStr);
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (!legacy) return;
+    const cacheObj = JSON.parse(legacy);
     let dirty = false;
     for (const key of Object.keys(cacheObj)) {
-      const url = key.split('::')[0];
-      if (urlPatterns.some((p) => url.includes(p))) {
+      if (matches(key)) {
         delete cacheObj[key];
         dirty = true;
       }
     }
-    if (dirty) localStorage.setItem('api_cache', JSON.stringify(cacheObj));
+    if (dirty) localStorage.setItem(LEGACY_KEY, JSON.stringify(cacheObj));
   } catch {}
 }
 
@@ -97,5 +128,8 @@ export function invalidateApiCacheFor(urlPatterns) {
  */
 export function invalidateApiCache() {
   API_CACHE.clear();
-  try { localStorage.removeItem('api_cache'); } catch {}
+  try {
+    for (const key of storedKeys()) localStorage.removeItem(STORE_PREFIX + key);
+    localStorage.removeItem(LEGACY_KEY);
+  } catch {}
 }

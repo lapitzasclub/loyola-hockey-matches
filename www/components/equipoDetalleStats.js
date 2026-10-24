@@ -1,17 +1,3 @@
-import {
-  Chart,
-  LineController,
-  BarController,
-  DoughnutController,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Tooltip,
-  Filler,
-} from "chart.js";
 import { t } from "../i18n.js";
 import { escapeHtml } from "./partidoDetalleUtils.js";
 
@@ -19,7 +5,25 @@ import { escapeHtml } from "./partidoDetalleUtils.js";
 // Se re-exporta para no cambiar los imports de los consumidores.
 export { computeTeamBaseStats, loadTeamAdvancedStats } from "./equipoDetalleStatsData.js";
 
-Chart.register(LineController, BarController, DoughnutController, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Filler);
+// Chart.js (~180 KB) sólo se descarga al abrir la vista de estadísticas, no en el arranque.
+let chartLib = null;
+
+/**
+ * Carga Chart.js una sola vez y registra los controladores que usan las gráficas.
+ *
+ * @returns {Promise<typeof import("chart.js")>} Módulo de Chart.js ya registrado.
+ */
+async function loadChartLib() {
+  if (!chartLib) {
+    const lib = await import("chart.js");
+    lib.Chart.register(
+      lib.LineController, lib.BarController, lib.DoughnutController, lib.CategoryScale, lib.LinearScale,
+      lib.PointElement, lib.LineElement, lib.BarElement, lib.ArcElement, lib.Tooltip, lib.Filler,
+    );
+    chartLib = lib;
+  }
+  return chartLib;
+}
 
 const TEAM_CHARTS = new WeakMap();
 const TEAM_STATS_RANGE_OPTIONS = ["all", 8, 5];
@@ -82,7 +86,7 @@ function chartPalette() {
 }
 
 function createBaseChart(canvas, config) {
-  return new Chart(canvas, {
+  return new chartLib.Chart(canvas, {
     type: "line",
     data: config.data,
     options: {
@@ -202,7 +206,7 @@ function buildVenueComparisonChart(mount, stats) {
   if (!canvas) return null;
 
   const colors = chartPalette();
-  return new Chart(canvas, {
+  return new chartLib.Chart(canvas, {
     type: "bar",
     data: {
       labels: [t("team_detail_stats_home"), t("team_detail_stats_away")],
@@ -284,7 +288,7 @@ function buildDisciplineChart(mount, items) {
   const maxY = Math.max(1, ...foulsFor, ...foulsAgainst, ...blueCardsFor, ...blueCardsAgainst, ...redCardsFor, ...redCardsAgainst) + 1;
   const colors = chartPalette();
 
-  return new Chart(canvas, {
+  return new chartLib.Chart(canvas, {
     type: "bar",
     data: {
       labels,
@@ -435,7 +439,7 @@ function buildResultsBars(mount, stats) {
   const canvas = ensureCanvas(canvasMount, 'team-chart-canvas team-chart-canvas-donut');
   if (!canvas) return null;
   const colors = chartPalette();
-  return new Chart(canvas, {
+  return new chartLib.Chart(canvas, {
     type: 'doughnut',
     data: {
       labels: [t("team_detail_won"), t("team_detail_drawn"), t("team_detail_lost")],
@@ -486,10 +490,13 @@ function renderRangeControls(root, selectedRange) {
  *
  * @param {HTMLElement} root Nodo raíz de la vista de estadísticas.
  * @param {object} stats Estadísticas ya calculadas.
- * @returns {void}
+ * @returns {Promise<void>} Resuelve cuando las gráficas están montadas.
  */
-export function mountTeamStatsCharts(root, stats) {
+export async function mountTeamStatsCharts(root, stats) {
   if (!(root instanceof HTMLElement) || !stats?.timeline?.length) return;
+  await loadChartLib();
+  // La vista pudo cerrarse mientras se descargaba la librería.
+  if (!root.isConnected) return;
   destroyTeamCharts(root);
 
   const selectedRange = getSelectedRange(root);

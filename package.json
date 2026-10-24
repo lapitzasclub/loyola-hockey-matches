@@ -7,6 +7,7 @@
     "build": "vite build",
     "serve": "vite preview",
     "lint": "eslint \"www/**/*.js\"",
+    "test": "node --test tests/",
     "cap:copy": "npx cap copy",
     "cap:sync": "npx cap sync",
     "android:sync": "npm run build && npx cap sync android",
@@ -22,20 +23,12 @@
     "@capacitor/status-bar": "^7.0.3",
     "@capgo/capacitor-navigation-bar": "^7.1.33",
     "centrifuge": "^5.7.4",
-    "chart.js": "^4.5.1",
-    "express": "^5.1.0",
-    "http-proxy": "^1.18.1",
-    "http-proxy-middleware": "^3.0.5",
-    "jquery": "^4.0.0",
-    "uplot": "^1.6.32"
+    "chart.js": "^4.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "browser-sync": "^3.0.4",
     "eslint": "^10.3.0",
     "globals": "^17.6.0",
-    "live-server": "^1.2.2",
-    "nodemon": "^3.1.10",
     "vite": "^7.3.1"
   }
 }
