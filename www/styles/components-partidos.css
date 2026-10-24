@@ -375,6 +375,10 @@ body[data-theme="dark"] .partido-vs {
 
 /* Resultado */
 .partido-resultado-row {
+  /* Columna: la etiqueta "En directo" va debajo del marcador y no lo empuja a un lado. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   margin: 0;
 }
@@ -405,7 +409,7 @@ body[data-theme="dark"] .partido-vs {
 
 /* Partido en juego: marcador real + etiqueta. Color de peligro para que destaque sin ser un error. */
 .partido-en-directo {
-  display: inline-block;
+  display: block;
   margin-top: 0.3em;
   font-size: 0.72em;
   font-weight: 700;
