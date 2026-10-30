@@ -61,7 +61,9 @@ export function Pestanas<Id extends string>({
     const el = fila.current;
     if (!el || el.clientWidth === 0) return;
     const destino = indice * el.clientWidth;
-    if (Math.abs(el.scrollLeft - destino) < 1) return;
+    // Si ya está en su sitio no hay nada que mover, salvo que aún haya un
+    // desplazamiento en curso hacia otro panel: hay que pisarlo.
+    if (Math.abs(el.scrollLeft - destino) < 1 && !guiado.current) return;
     guiado.current = true;
     el.scrollTo({
       left: destino,
