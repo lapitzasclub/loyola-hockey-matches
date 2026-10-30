@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizarEstado } from './estado';
+import { estadoDetalle, normalizarEstado } from './estado';
 
 describe('normalizarEstado', () => {
   it.each([
@@ -42,5 +42,27 @@ describe('normalizarEstado', () => {
     expect(normalizarEstado('SUSPENDIDO')).toBe('programado');
     expect(normalizarEstado(null)).toBe('programado');
     expect(normalizarEstado(undefined, null)).toBe('programado');
+  });
+});
+
+describe('estadoDetalle', () => {
+  it('ignora el SCHEDULED del detalle en vivo: manda el periodo', () => {
+    expect(estadoDetalle('SCHEDULED', 'PROGRAMADO', 1)).toBe('en_juego');
+    expect(estadoDetalle('SCHEDULED', 'PROGRAMADO', 9)).toBe('en_juego');
+    expect(estadoDetalle('SCHEDULED', 'PROGRAMADO', 21)).toBe('en_juego');
+  });
+
+  it('da por finalizado el periodo 30 aunque el acta no esté cerrada', () => {
+    expect(estadoDetalle('SCHEDULED', 'PROGRAMADO', 30)).toBe('finalizado');
+    expect(estadoDetalle('FINISHED', 'REABIERTA', 30)).toBe('finalizado');
+  });
+
+  it('con periodo 0 o menos el partido no ha empezado', () => {
+    expect(estadoDetalle('SCHEDULED', 'PROGRAMADO', 0)).toBe('programado');
+    expect(estadoDetalle('PROGRAMADO', 'PROGRAMADO', -1)).toBe('programado');
+  });
+
+  it('el acta FINALIZADO cierra el partido sea cual sea el periodo', () => {
+    expect(estadoDetalle('SCHEDULED', 'FINALIZADO', 2)).toBe('finalizado');
   });
 });

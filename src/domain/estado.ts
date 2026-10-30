@@ -28,3 +28,20 @@ export function normalizarEstado(
   }
   return 'programado';
 }
+
+/**
+ * Estado del detalle de partido. Su `estado` se queda en SCHEDULED durante el
+ * juego, así que manda `periodo` (vía `normalizarEstado`); el acta finalizada
+ * también lo cierra. Las incidencias no cuentan: hay cambios registrados en
+ * el periodo 0, antes de empezar.
+ */
+export function estadoDetalle(
+  estado: string,
+  actaEstado: string | null,
+  periodo: number,
+): EstadoPartido {
+  if ((actaEstado ?? '').trim().toUpperCase() === 'FINALIZADO') {
+    return 'finalizado';
+  }
+  return normalizarEstado(estado, periodo);
+}

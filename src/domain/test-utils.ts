@@ -1,4 +1,5 @@
 import type { Equipo } from './equipo';
+import type { Gol, Lado, Lanzamiento } from './incidencia';
 import type { PartidoResumen } from './partido';
 
 /** Constructores mínimos para tests del dominio. */
@@ -48,4 +49,46 @@ export function jugado(
     visitante: equipo(visitante, { inscripcionId: visitante }),
     marcadorOficial: { local: goles[0], visitante: goles[1] },
   });
+}
+
+let siguienteIncidencia = 0;
+
+function baseIncidencia(lado: Lado, periodo: number) {
+  siguienteIncidencia += 1;
+  return {
+    id: `i${siguienteIncidencia}`,
+    lado,
+    periodo,
+    minuto: 10,
+    segundo: 0,
+    registro: '2026-10-03T18:00:00',
+  };
+}
+
+export function gol(lado: Lado, periodo = 1, extra: Partial<Gol> = {}): Gol {
+  return {
+    ...baseIncidencia(lado, periodo),
+    tipo: 'GOL',
+    autor: null,
+    asistente: null,
+    portero: null,
+    via: 'juego',
+    ...extra,
+  };
+}
+
+/** Penalti de la tanda (periodo 21) salvo que se diga otro periodo. */
+export function penalti(
+  lado: Lado,
+  resultado: Lanzamiento['resultado'],
+  extra: Partial<Lanzamiento> = {},
+): Lanzamiento {
+  return {
+    ...baseIncidencia(lado, 21),
+    tipo: 'PENALTI',
+    lanzador: null,
+    portero: null,
+    resultado,
+    ...extra,
+  };
 }
