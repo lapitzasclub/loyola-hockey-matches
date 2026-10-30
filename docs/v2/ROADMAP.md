@@ -187,7 +187,9 @@ Validación en dispositivo real:
 | Plataforma | Dispositivo | Versión | Back / swipe | Pull-to-refresh | Tema e idioma | Notas |
 |---|---|---|---|---|---|---|
 | Android (APK, emulador) | AVD Pixel `sdk_gphone64_x86_64` | Android 16 (API 36), WebView 133 | ✅ back: action sheet → hoja → jugador → partido → equipo → Clasificación → Partidos → sale; la pila se conserva al cambiar de pestaña | ✅ vuelve a pedir `/public/agenda` directo a fvpatinaje.eus | ✅ oscuro + euskera tras force-stop | Datos reales sin trust-all; barras corregidas para WebView < 140 |
-| iPhone (PWA instalada) | _pendiente_ | | | | | |
+| iPhone (PWA instalada) | ❌ sin dispositivo | — | ⚠️ solo e2e WebKit (Playwright, iPhone emulado) | ⚠️ solo e2e WebKit | ⚠️ solo e2e WebKit | Preview en `v2.loyola-hockey-matches.pages.dev` (proxy `/api`, manifest y meta de iOS comprobados). Swipe-back, safe areas con notch/Dynamic Island y standalone **sin validar en iPhone real**: se acepta el riesgo y se revisa en cuanto haya uno |
+
+Hallazgo pendiente: en arranque en frío la web pide `/public/agenda` dos veces, una por `consultas.agenda` (Partidos) y otra dentro de `consultas.catalogo`. El edge la cachea 120 s, así que no cuesta cuota; se puede unificar haciendo que el catálogo reutilice la consulta de la agenda (`fetchQuery`).
 
 ## 7. Fases
 
