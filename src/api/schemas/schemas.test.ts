@@ -1,16 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { fixture, fixturesDivision, muestra } from '../fixtures';
+import {
+  fixture,
+  fixturePartido,
+  fixturesDivision,
+  fixturesJugadores,
+  muestra,
+  partidosMuestra,
+} from '../fixtures';
 import {
   agendaSchema,
   arbolSchema,
   clasificacionSchema,
   divisionesSchema,
   equiposDivisionSchema,
+  estadisticasJugadoresSchema,
   eventoAgendaSchema,
   fasesSchema,
   filaClasificacionSchema,
   jsonString,
+  marcadoresSchema,
+  partidoDetalleSchema,
+  plantillaSchema,
+  statsJugadorSchema,
 } from '.';
 
 function esperarValido<T extends z.ZodType>(esquema: T, datos: unknown) {
@@ -42,6 +54,41 @@ describe('esquemas sobre las fixtures reales', () => {
       }
     },
   );
+});
+
+describe('esquemas de partido y jugador sobre las fixtures reales', () => {
+  it.each(partidosMuestra().map((p) => p.clave))(
+    'validan el detalle del partido %s',
+    (clave) => {
+      const d = esperarValido(partidoDetalleSchema, fixturePartido(clave));
+      expect(d.id).toBe(partidosMuestra().find((p) => p.clave === clave)?.id);
+    },
+  );
+
+  it('parsea configuracionReglas del partido', () => {
+    const copa = esperarValido(partidoDetalleSchema, fixturePartido('copa'));
+    expect(copa.configuracionReglas.penaltis).toBe(true);
+    const liga = esperarValido(partidoDetalleSchema, fixturePartido('roja'));
+    expect(liga.configuracionReglas.penaltis).toBe(false);
+  });
+
+  it('validan los marcadores', () => {
+    const m = esperarValido(marcadoresSchema, fixture('marcadores.json'));
+    expect(m.flatMap((c) => c.matches).length).toBeGreaterThan(0);
+  });
+
+  it('validan estadísticas, plantilla y stats de jugador', () => {
+    const f = fixturesJugadores();
+    const est = esperarValido(estadisticasJugadoresSchema, f.estadisticas);
+    expect(est.jugadores.length).toBeGreaterThan(0);
+    const plantilla = esperarValido(plantillaSchema, f.plantilla);
+    expect(plantilla.equipoId).toBe(f.equipoId);
+    expect(plantilla.cuerpoTecnico.length).toBeGreaterThan(0);
+    for (const id of [f.goleadorId, f.porteroId]) {
+      const stats = esperarValido(statsJugadorSchema, f.stats(id));
+      expect(stats.plantillaEquipoId).toBe(id);
+    }
+  });
 });
 
 describe('campos string JSON', () => {
