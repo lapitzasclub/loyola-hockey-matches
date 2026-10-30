@@ -90,13 +90,28 @@ Reglas:
 - `datosAdicionales` de clasificación es un **string JSON**.
 - Ordenar partidos por `fecha + hora`, nunca por orden de jornada (aplazados).
 - `FALTA-HL` lleva guion. Catálogo completo de incidencias en la memoria `new-digitalsport-api`.
+- Halladas en S01 (con test en `src/api/mappers/mappers.test.ts`):
+  - Dos ids por equipo: árbol y clasificación usan `inscripcionId`; agenda y `/equipos`,
+    `equipoId`. En el árbol `participants[].equipoId` es null. `orden` 0 = local.
+  - `golesActa` es el marcador real (== goles del acta) pero vale 0 sin jugar; `puntaje` es el
+    oficial, capado en escolar.
+  - La Copa (KNOCKOUT) usa `PROGRAMADO` también en el árbol, y las rondas futuras llegan con
+    `participants: []`.
+  - `form` de la clasificación: `D` = empate. Coincide con la racha calculada solo contra rivales
+    del mismo grupo; los grupos se solapan y un equipo sale una vez por grupo.
+  - Las leyendas se indexan por nombre de grupo (o `general`) y su `color` puede ser `var(...)`.
+  - `/equipos` omite equipos (justo Loyola en Benjamín C y Sub15 fem).
+  - `nombreDisplay` de división se repite entre competiciones: etiquetar por competición.
+  - La agenda está capada a 60 días.
 - Contrato completo: memoria del proyecto `new-digitalsport-api` y `oportunidades-api-nueva`.
 
 ## 6. Rendimiento objetivo
 
 - Arranque en frío hoy: ~3,3 MB en ~31 requests en serie. Objetivo v2: < 400 KB de datos y
   requests en paralelo.
-- `/equipos` (3,2 KB) en lugar de `/tree` (222 KB) cuando solo hacen falta equipos.
+- `/equipos` (3,2 KB) no basta para el catálogo porque omite equipos (ver §5). Se necesita el árbol
+  igualmente para el calendario; el ahorro está en paralelizar y en no pedir detalles: el marcador
+  real ya viene en el árbol (`golesActa`).
 - `POST /hierarchy/competiciones/divisiones` en batch.
 - `/public/partidos/{id}` pesa ~121 KB: cachear agresivamente partidos finalizados (inmutables).
 - Caché persistida: segunda apertura pinta al instante desde IndexedDB.
