@@ -107,3 +107,11 @@ All accordions (team selector, standings groups, player stats) share `www/compon
 ## Vite dev proxy
 
 `vite.config.js` proxies `/api/*` → FVP ASMX and `/signalr/*` → `digitalsport.online/signalr` during local dev. It also runs a plugin to copy `www/assets/sidebar-loyola/` → `dist/assets/sidebar-loyola/` at build time (Capacitor needs these assets without a manual duplicate in `www/public/`).
+
+## v2 roadmap (in progress)
+
+A major rewrite (React + TypeScript + Ionic + TanStack Query, see `docs/v2/ROADMAP.md`) is planned on a long-lived `v2` branch. Work is split into sessions defined in `docs/v2/roadmap.json`, each with its model, effort and initial prompt.
+
+- The `SessionStart` hook (`.claude/hooks/roadmap.mjs`, wired in `.claude/settings.json`) shows the current session; the `Stop` hook announces the next one once a session is marked done.
+- Mark progress with `node .claude/hooks/roadmap.mjs start SXX` / `done SXX`; `status` and `next` list the plan.
+- Until the `v2` branch exists, the rules above describe the v1 codebase on `main`.

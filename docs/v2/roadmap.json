@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "branch": "v2",
+  "doc": "docs/v2/ROADMAP.md",
+  "models": {
+    "opus": {
+      "label": "Opus 5.5",
+      "command": "/model claude-opus-5-5"
+    },
+    "sonnet": {
+      "label": "Sonnet 5.5",
+      "command": "/model claude-sonnet-5-5"
+    }
+  },
+  "sessions": [
+    {
+      "id": "S00",
+      "phase": "F0",
+      "title": "Esqueleto v2: React + TS + Ionic + Capacitor",
+      "model": "opus",
+      "effort": "high",
+      "status": "pending",
+      "prompt": "Crea la rama `v2` desde `main` y monta el esqueleto de la v2 en la raíz del repo. Antes, crea un worktree de referencia de la v1 en `../loyola-hockey-matches-v1` (rama main) para consultar comportamiento sin tenerlo en el árbol de trabajo. En la rama v2 elimina `www/` y el código de la v1 que no se reutilice, conservando `android/` (mismo appId y firma), `functions/` como referencia hasta F5, `docs/`, `.claude/` y los assets de marca. Monta: Vite + React 19 + TypeScript strict, Ionic React con IonReactRouter y tabs (partidos, clasificación, estadísticas) vacías, Capacitor 7 apuntando a `dist`, TanStack Query con provider, i18next con es/eu, ESLint flat + typescript-eslint + Prettier, Vitest + Testing Library, Playwright con proyectos WebKit y Chromium móvil, y la estructura de carpetas de la sección 4 del ROADMAP con un README corto en cada una. Reescribe el CLAUDE.md del proyecto para la v2 (comandos, arquitectura, reglas, protocolo de roadmap) quitando las referencias obsoletas a ASMX y SignalR. Ajusta scripts de package.json equivalentes a los de la v1 (start, build, lint, test, e2e, android:*, cf:*).",
+      "exit": [
+        "`npm run lint`, `npm run build`, `npm test` y `npm run e2e` pasan",
+        "La app arranca en `npm start` con las tres tabs navegables",
+        "`npm run android:sync` funciona y la app abre en un Android real",
+        "CLAUDE.md describe la v2 sin referencias a ASMX/SignalR"
+      ]
+    },
+    {
+      "id": "S01",
+      "phase": "F1",
+      "title": "Dominio I: catálogo, calendario y clasificación",
+      "model": "opus",
+      "effort": "xhigh",
+      "status": "pending",
+      "prompt": "Construye la primera mitad del dominio. 1) Script `scripts/capture-fixtures.ts` que descarga respuestas reales de la API (agenda, divisiones en batch, fases, equipos, tree, clasificación) para una muestra representativa de divisiones de Loyola y las guarda en `src/api/fixtures/` (sin datos personales innecesarios). 2) Esquemas Zod en `src/api/schemas/` para esas respuestas, tolerantes a campos extra y estrictos en los que usamos. 3) Tipos de dominio en `src/domain/` (Competicion, Division, Fase, Equipo, Partido resumen, FilaClasificacion, Racha) y mappers API→dominio que normalizan los dos vocabularios de estado, `puntaje` float, `datosAdicionales` string JSON y ordenación por fecha+hora. 4) Tests Vitest sobre las fixtures reales que cubran cada trampa de la sección 5 aplicable a este bloque. Usa las memorias `new-digitalsport-api` y `oportunidades-api-nueva` como contrato; verifica contra la API real si algo no cuadra y actualiza la memoria si descubres algo nuevo.",
+      "exit": [
+        "Fixtures reales versionadas y script reproducible",
+        "Esquemas Zod validan todas las fixtures",
+        "Tests de dominio verdes cubriendo estados, ordenación y clasificación",
+        "Cero `any` en domain/ y api/"
+      ]
+    },
+    {
+      "id": "S02",
+      "phase": "F1",
+      "title": "Dominio II: partido, incidencias, alineaciones y jugador",
+      "model": "opus",
+      "effort": "xhigh",
+      "status": "pending",
+      "prompt": "Segunda mitad del dominio, mismo enfoque que S01. Amplía el script de fixtures con `/public/partidos/{id}` (finalizados con penaltis, con faltas directas, con cambios y tarjetas), `/public/partidos/marcadores`, `estadisticas-jugadores`, `plantilla` y stats de jugador. Esquemas Zod y modelo de dominio para: PartidoDetalle, Incidencia como unión discriminada por `tipo` (GOL, PARADA, FALTA, FALTA-HL, FALTADIRECTA, PENALTI, TM, CAMBIO, TARJETAAZUL, TARJETAAMARILLA, TARJETAROJA), Alineacion con roles (incluido ENTRENADOR2 y `rolPosicion` vacío), estado de partido derivado (periodo 30, periodo <= 0, estado poco fiable del detalle), marcador calculado por incidencias GOL, tanda de penaltis, estadísticas de jugador y ranking de goleadores. Tests sobre fixtures que cubran `NO_GOL`, marcador en vivo vs oficial y staff sin dorsal.",
+      "exit": [
+        "Incidencia es una unión discriminada exhaustiva (switch sin default compila)",
+        "Tests verdes de NO_GOL, periodo 30/0, marcador por incidencias y roles",
+        "Fixtures de partidos con penaltis, cambios y tarjetas incluidas"
+      ]
+    },
+    {
+      "id": "S03",
+      "phase": "F1",
+      "title": "Capa de datos: transporte dual-target y TanStack Query",
+      "model": "opus",
+      "effort": "high",
+      "status": "pending",
+      "prompt": "Implementa `src/api/transport.ts` (único punto que decide directo en Android vía CapacitorHttp vs proxy `/api` en web), cliente tipado que valida con Zod y devuelve dominio, y `src/queries/` con query keys centralizadas y hooks por recurso. Configura persistencia de la caché en IndexedDB con versión de buster, `staleTime` por tipo de dato (partidos finalizados prácticamente inmutables, clasificación corta, agenda muy corta) y reintentos. Optimiza el arranque en frío según la sección 6 del ROADMAP: divisiones en batch, `/equipos` en lugar de `/tree` donde baste, requests en paralelo. Mide antes/después (bytes y número de requests) con la API real y deja el resultado en la memoria `oportunidades-api-nueva`. Ajusta el proxy de desarrollo de Vite para `/api`.",
+      "exit": [
+        "Ningún componente ni hook usa fetch directo: todo pasa por transport.ts",
+        "Arranque en frío medido y por debajo del objetivo de la sección 6, o justificado",
+        "Segunda apertura pinta desde caché persistida sin red",
+        "Tests de queries con MSW o fixtures"
+      ]
+    },
+    {
+      "id": "S04",
+      "phase": "F2",
+      "title": "Shell: navegación, tema, i18n y validación en dispositivo",
+      "model": "opus",
+      "effort": "high",
+      "status": "pending",
+      "prompt": "Termina la infraestructura móvil antes de las pantallas. Rutas anidadas para el flujo clasificación → equipo → partido → jugador con IonReactRouter, swipe-back en iOS PWA, back button de Android (cerrar modal → volver en pila → salir), pull-to-refresh que invalida las queries de la vista, modales/sheets, safe areas, barras de sistema y splash en Android, tema claro/oscuro con tokens CSS en `src/styles/` (variables bajo el selector de tema, no globales), i18next es/eu con selector, manifest PWA y meta de iOS standalone. Crea pantallas placeholder con datos reales mínimos para probar la navegación. Valida en Android real (`npm run android:run`) y en un iPhone con la PWA instalada servida desde un preview de Cloudflare o túnel; documenta en el ROADMAP cualquier hallazgo.",
+      "exit": [
+        "Back de Android y swipe iOS funcionan en toda la pila sin estados rotos",
+        "Pull-to-refresh fiable en Android y PWA iPhone",
+        "Tema y idioma persistidos",
+        "Validado en dispositivo real (anotar modelo y versión)"
+      ]
+    },
+    {
+      "id": "S05",
+      "phase": "F3",
+      "title": "Pantallas: selector de equipo y partidos",
+      "model": "sonnet",
+      "effort": "high",
+      "status": "pending",
+      "prompt": "Implementa con paridad v1 (consulta el worktree `../loyola-hockey-matches-v1`) el selector de equipo Loyola agrupado por categoría y persistido, y la tab de partidos: lista ordenada por fecha+hora, agrupada por jornada o fecha, marcador real con badge de estado (programado, en juego, finalizado, aplazado), escudos, skeletons con la misma geometría que el contenido final, estados vacío y error con reintento. Usa solo hooks de `src/queries/` y componentes de `src/ui/`. Todos los textos con i18n. Tests de componentes para estados y ordenación.",
+      "exit": [
+        "Casillas de selector, calendario y pull-to-refresh marcadas en la checklist de paridad",
+        "Tests de componente verdes",
+        "Probado en Android real y PWA iPhone"
+      ]
+    },
+    {
+      "id": "S06",
+      "phase": "F3",
+      "title": "Pantallas: clasificación y detalle de equipo",
+      "model": "sonnet",
+      "effort": "high",
+      "status": "pending",
+      "prompt": "Implementa con paridad v1 la tab de clasificación (por fase y grupo, destacando Loyola, racha V/E/D calculada en dominio) y el detalle de equipo (resumen, lista de partidos, plantilla, estadísticas y hub de alineaciones) como vista de la pila de navegación. Desde clasificación se navega a equipo y de ahí a partido. Deja preparados los `layoutId`/nombres de view-transition del escudo y el nombre del equipo para S09, sin animar aún. Tests de componente.",
+      "exit": [
+        "Casillas de clasificación y detalle de equipo marcadas en la checklist",
+        "Navegación clasificación → equipo → partido funcionando con back",
+        "Tests verdes"
+      ]
+    },
+    {
+      "id": "S07",
+      "phase": "F3",
+      "title": "Pantalla: detalle de partido",
+      "model": "opus",
+      "effort": "high",
+      "status": "pending",
+      "prompt": "Implementa el detalle de partido con paridad v1: cabecera con escudos, marcador y estado; pestañas deslizables (resumen, eventos, alineaciones) con un componente de tabs reutilizable en `src/ui/`; línea de eventos por periodo con iconos por tipo de incidencia; alineaciones local/visitante con iniciales, capitán, porteros y cuerpo técnico (cuerpo técnico sin navegación, como en la v1); tanda de penaltis; árbitros y pista. Desde una alineación o evento se navega al jugador. La cabecera debe estar estructurada para plegarse con el scroll en S09. Pensado para recibir datos en vivo desde la caché en S10 sin cambios en la vista.",
+      "exit": [
+        "Casilla de detalle de partido marcada en la checklist",
+        "Partidos con penaltis, cambios y tarjetas se ven correctamente (comparar con v1)",
+        "Tests de componente de eventos y alineaciones"
+      ]
+    },
+    {
+      "id": "S08",
+      "phase": "F3",
+      "title": "Pantallas: jugador, estadísticas y rankings",
+      "model": "sonnet",
+      "effort": "high",
+      "status": "pending",
+      "prompt": "Implementa con paridad v1 la vista de jugador (cabecera compacta y estadísticas por temporada/competición) y la tab de estadísticas con rankings (goleadores y los que hoy existan en la v1) aprovechando `estadisticas-jugadores`. Elige una librería de gráficas ligera con carga diferida (o SVG propio si basta) y justifica la elección en el ROADMAP. Cierra la checklist de paridad de F3 completa.",
+      "exit": [
+        "Todas las casillas de pantallas de la checklist marcadas",
+        "Gráficas cargadas en diferido, sin penalizar el arranque",
+        "Tests verdes"
+      ]
+    },
+    {
+      "id": "S09",
+      "phase": "F3",
+      "title": "Capa wow: transiciones y microanimaciones",
+      "model": "opus",
+      "effort": "xhigh",
+      "status": "pending",
+      "prompt": "Añade la capa de efecto wow sobre las pantallas ya hechas, sin tocar la lógica: escudo y nombre de equipo que vuelan de la clasificación/lista a la cabecera del detalle (Motion `layoutId` o View Transitions, lo que funcione mejor con Ionic y en Safari iOS), cabecera de partido que se pliega con el scroll, indicador de pestaña que sigue al deslizamiento, skeletons que se transforman en contenido, pulso de EN JUEGO, animación del marcador al cambiar, racha W/D/L animada, y confeti discreto cuando gana Loyola. Solo `transform` y `opacity`, 60 fps en un Android de gama media, y todo desactivado con `prefers-reduced-motion`. Graba antes/después si es posible.",
+      "exit": [
+        "Transiciones compartidas funcionando en Android real y PWA iPhone",
+        "Sin jank visible (perfil de rendimiento en Android)",
+        "prefers-reduced-motion respetado"
+      ]
+    },
+    {
+      "id": "S10",
+      "phase": "F4",
+      "title": "Directo con Centrifugo",
+      "model": "opus",
+      "effort": "xhigh",
+      "status": "pending",
+      "prompt": "Implementa `src/live/`: conexión Centrifugo (config de `/api/auth/config`, token público, sub-token por canal `acta_${id}`), reconexión, suspensión en segundo plano y reanudación, y un reducer puro y testeado que aplica `incidencia_creada`, `incidencia_eliminada`, `periodo_actualizado`, `acta_cerrada`, `acta_reabierta` y `alineacion_actualizada` a la caché de TanStack Query. Overlay de `/public/partidos/marcadores` para listas (ignorando periodo <= 0). Animación y vibración (Android) al recibir un gol. En web, el WebSocket pasa por el proxy si hace falta según la política dual-target. Revisa la memoria `pendiente-partidos-jugados`: lo que solo pueda validarse con un partido en juego queda listado como pendiente explícito.",
+      "exit": [
+        "Reducer de eventos con tests sobre mensajes reales grabados",
+        "Validado con un partido en juego, o pendiente documentado con fecha",
+        "Sin fugas de suscripciones al navegar"
+      ]
+    },
+    {
+      "id": "S11",
+      "phase": "F5",
+      "title": "Worker Hono, PWA de producción y E2E",
+      "model": "opus",
+      "effort": "high",
+      "status": "pending",
+      "prompt": "Sustituye `functions/` por un backend Hono en Cloudflare (Worker con assets o Pages Functions, elige y justifica): proxy con allowlist tipada de los endpoints de la API nueva, caché en el edge por tipo de recurso, rate limit con el KV existente, cabeceras de seguridad, y lo necesario para Centrifugo en web. Service worker de producción (precache del shell, estrategia para datos), manifest completo, iconos y splash de iOS. Suite E2E Playwright (WebKit + Chromium móvil) con los flujos de la checklist sobre respuestas grabadas. Despliegue de preview en Cloudflare y prueba de instalación en iPhone.",
+      "exit": [
+        "Preview desplegada y PWA instalable en iPhone",
+        "E2E verdes en WebKit y Chromium",
+        "functions/ de la v1 eliminado"
+      ]
+    },
+    {
+      "id": "S12",
+      "phase": "F5",
+      "title": "Corte de versión 2.0.0",
+      "model": "sonnet",
+      "effort": "medium",
+      "status": "pending",
+      "prompt": "Cierra la v2: repasa la checklist de paridad completa en Android real y PWA iPhone, versión 2.0.0 en package.json y Android (versionCode mayor que el de la v1, mismo appId y firma), changelog, actualización de README y documentos de release, y prepara el merge de `v2` a `main` y el despliegue de producción. Pídeme confirmación antes de cada paso irreversible (merge, tag, push, deploy, subida a Play).",
+      "exit": [
+        "Checklist de paridad completa",
+        "APK 2.0.0 instala como actualización sobre la v1",
+        "Producción desplegada tras mi confirmación"
+      ]
+    },
+    {
+      "id": "S13",
+      "phase": "F6",
+      "title": "Notificaciones push de goles y resultados",
+      "model": "opus",
+      "effort": "xhigh",
+      "status": "pending",
+      "prompt": "Diseña e implementa notificaciones push a coste cero: suscripción Web Push (VAPID) en la PWA de iOS 16.4+ y navegadores, FCM en Android vía Capacitor, preferencias por equipo, y un Durable Object en Cloudflare que escucha Centrifugo de los partidos de Loyola en juego y hace el fan-out (gol, descanso, final). Revisa límites del plan gratuito de Workers/Durable Objects y FCM antes de implementar y documenta el diseño en el ROADMAP.",
+      "exit": [
+        "Push recibida en iPhone (PWA) y Android en un partido real",
+        "Dentro de los límites gratuitos documentados"
+      ]
+    }
+  ]
+}
