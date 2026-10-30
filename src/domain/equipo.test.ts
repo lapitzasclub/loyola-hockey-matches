@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { construirCatalogoLoyola } from './catalogo';
 import type { Competicion, Division } from './competicion';
-import { esEquipoLoyola, fusionarEquipos } from './equipo';
+import { esEquipoLoyola, fusionarEquipos, mismoEquipo } from './equipo';
 import { equipo } from './test-utils';
 
 describe('esEquipoLoyola', () => {
@@ -45,6 +45,39 @@ describe('fusionarEquipos', () => {
       ['A', '1', 'a.webp'],
       ['B', null, null],
     ]);
+  });
+});
+
+describe('mismoEquipo', () => {
+  it('casa el equipo del catálogo (solo equipoId) con el del árbol (solo inscripcionId) por nombre', () => {
+    const catalogo = equipo('LOYOLA INDAUTXU A', { equipoId: 'eq-a' });
+    expect(
+      mismoEquipo(
+        catalogo,
+        equipo('loyola indautxu a', { inscripcionId: '1' }),
+      ),
+    ).toBe(true);
+    expect(
+      mismoEquipo(
+        catalogo,
+        equipo('LOYOLA INDAUTXU B', { inscripcionId: '2' }),
+      ),
+    ).toBe(false);
+  });
+
+  it('si los dos traen el mismo tipo de id, manda el id y no el nombre', () => {
+    expect(
+      mismoEquipo(
+        equipo('A', { inscripcionId: '1' }),
+        equipo('A', { inscripcionId: '2' }),
+      ),
+    ).toBe(false);
+    expect(
+      mismoEquipo(
+        equipo('A', { equipoId: 'x' }),
+        equipo('Otro nombre', { equipoId: 'x' }),
+      ),
+    ).toBe(true);
   });
 });
 

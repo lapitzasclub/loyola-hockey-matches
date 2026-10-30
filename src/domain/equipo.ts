@@ -28,6 +28,23 @@ function claveNombre(nombre: string): string {
 }
 
 /**
+ * Si dos equipos de una misma división son el mismo aunque vengan de fuentes
+ * distintas. Cada id solo vale si ambos lo traen: el catálogo sale de la
+ * agenda y `/equipos` (solo `equipoId`) y el calendario, del árbol (solo
+ * `inscripcionId`), así que entre ellos solo queda el nombre.
+ */
+export function mismoEquipo(
+  a: Pick<Equipo, 'inscripcionId' | 'equipoId' | 'nombre'>,
+  b: Pick<Equipo, 'inscripcionId' | 'equipoId' | 'nombre'>,
+): boolean {
+  if (a.inscripcionId && b.inscripcionId) {
+    return a.inscripcionId === b.inscripcionId;
+  }
+  if (a.equipoId && b.equipoId) return a.equipoId === b.equipoId;
+  return claveNombre(a.nombre) === claveNombre(b.nombre);
+}
+
+/**
  * Junta los equipos de varias fuentes de una misma división. El nombre es lo
  * único que comparten todas; la primera fuente manda y las siguientes solo
  * rellenan los campos que le faltan.
