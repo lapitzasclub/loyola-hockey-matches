@@ -191,6 +191,37 @@ Validación en dispositivo real:
 
 Hallazgo pendiente: en arranque en frío la web pide `/public/agenda` dos veces, una por `consultas.agenda` (Partidos) y otra dentro de `consultas.catalogo`. El edge la cachea 120 s, así que no cuesta cuota; se puede unificar haciendo que el catálogo reutilice la consulta de la agenda (`fetchQuery`).
 
+### Selector y partidos: decisiones y hallazgos (S05)
+
+- **Equipo elegido** = `claveEquipo` (`${division.id}|${NOMBRE.trim().toUpperCase()}`), en
+  `localStorage` (`loyola.equipo`) vía `useEquipoElegido` (`useSyncExternalStore`). No se usan los
+  ids de la API: hay dos (`inscripcionId` y `equipoId`) y no son estables entre vistas.
+- **Selector** en `IonModal`, agrupado por `division.categoria` (Prebenjamín → Senior, sin
+  diacríticos, desconocidas al final). La API trae la categoría por división, así que Benjamín sale
+  como tres grupos (A, B, C). En lugar del acordeón de la v1, lista plana por grupo con escudo.
+- **Orden** por `fecha` + `hora`, nunca por jornada. Agrupado por mes; el próximo partido se
+  resalta y se centra una sola vez por equipo (`requestAnimationFrame`: al montarse, `ion-content`
+  aún no tiene scroll).
+- **«Aplazado» no existe en la API.** Se deduce de `programado` con fecha pasada: hasta 3 días
+  (`DIAS_PARA_APLAZADO`) se muestra «Pendiente» (el acta puede tardar) y pasado ese margen,
+  «Aplazado». Si `/marcadores` trae el partido `en_juego` o `finalizado`, manda sobre el árbol.
+  **Por verificar con datos reales tras un fin de semana de partidos**: si `/marcadores` conserva
+  los partidos recién terminados.
+- **`useMarcadores(enDirecto)`** repite cada 30 s solo si el equipo juega hoy; el directo real
+  (Centrifugo) llega en S10.
+- **Marcador** = `golesActa`; si el oficial (`puntaje`) difiere, se muestra debajo.
+- **e2e y servidor de desarrollo**: `reuseExistingServer` reutiliza cualquier servidor en el 5173,
+  también `npm start`, y los tests fallan contra él. Pararlo antes de `npm run e2e`.
+- No incluido (fuera de S05): pulsar un equipo desde la tarjeta, añadir al calendario, enlace al
+  mapa de la pista.
+
+Validación:
+
+| Plataforma | Selector y calendario | Persistencia | Pull-to-refresh |
+|---|---|---|---|
+| Android (APK, emulador Android 16) | ✅ onboarding, selector agrupado, tarjetas, próximo resaltado | ✅ force-stop y reapertura conservan el equipo | ⚠️ el gesto de `adb` mueve la lista pero no se vio el spinner (datos en caché); la recarga se comprueba en e2e lanzando `ionRefresh` y ya se vio en dispositivo en S04 |
+| iPhone (PWA) | ⚠️ solo e2e WebKit | ⚠️ solo e2e WebKit | ⚠️ solo e2e WebKit; **sin validar en iPhone real** (mismo riesgo aceptado que en S04) |
+
 ## 7. Fases
 
 | Fase | Objetivo | Sesiones |
@@ -208,9 +239,9 @@ Hallazgo pendiente: en arranque en frío la web pide `/public/agenda` dos veces,
 
 Cada casilla se marca cuando la v2 lo hace **igual o mejor** en Android real y en PWA iPhone.
 
-- [ ] Selector de equipo Loyola (acordeón por categoría), persistido
-- [ ] Calendario/partidos del equipo, ordenado por fecha+hora, marcador real y badge de estado
-- [ ] Pull-to-refresh
+- [x] Selector de equipo Loyola (acordeón por categoría), persistido (iPhone real sin validar)
+- [x] Calendario/partidos del equipo, ordenado por fecha+hora, marcador real y badge de estado (iPhone real sin validar; «aplazado» deducido, revisar con datos reales)
+- [x] Pull-to-refresh (iPhone real sin validar)
 - [ ] Clasificación por grupo/fase con racha V/E/D
 - [ ] Detalle de equipo: resumen, partidos, plantilla, estadísticas, hub de alineaciones
 - [ ] Detalle de partido: resumen, marcador, eventos, alineaciones, penaltis, cuerpo técnico (sin navegación)

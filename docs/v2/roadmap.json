@@ -93,7 +93,7 @@
       "title": "Pantallas: selector de equipo y partidos",
       "model": "sonnet",
       "effort": "high",
-      "status": "pending",
+      "status": "in_progress",
       "prompt": "Implementa con paridad v1 (consulta el worktree `../loyola-hockey-matches-v1`) el selector de equipo Loyola agrupado por categoría y persistido, y la tab de partidos: lista ordenada por fecha+hora, agrupada por jornada o fecha, marcador real con badge de estado (programado, en juego, finalizado, aplazado), escudos, skeletons con la misma geometría que el contenido final, estados vacío y error con reintento. Usa solo hooks de `src/queries/` y componentes de `src/ui/`. Todos los textos con i18n. Tests de componentes para estados y ordenación.",
       "exit": [
         "Casillas de selector, calendario y pull-to-refresh marcadas en la checklist de paridad",
