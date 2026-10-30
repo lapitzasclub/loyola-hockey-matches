@@ -78,7 +78,7 @@
       "title": "Shell: navegación, tema, i18n y validación en dispositivo",
       "model": "opus",
       "effort": "medium",
-      "status": "pending",
+      "status": "done",
       "prompt": "Termina la infraestructura móvil antes de las pantallas. Rutas anidadas para el flujo clasificación → equipo → partido → jugador con IonReactRouter, swipe-back en iOS PWA, back button de Android (cerrar modal → volver en pila → salir), pull-to-refresh que invalida las queries de la vista, modales/sheets, safe areas, barras de sistema y splash en Android, tema claro/oscuro con tokens CSS en `src/styles/` (variables bajo el selector de tema, no globales), i18next es/eu con selector, manifest PWA y meta de iOS standalone. Crea pantallas placeholder con datos reales mínimos para probar la navegación. Valida en Android real (`npm run android:run`) y en un iPhone con la PWA instalada servida desde un preview de Cloudflare o túnel; documenta en el ROADMAP cualquier hallazgo.",
       "exit": [
         "Back de Android y swipe iOS funcionan en toda la pila sin estados rotos",
