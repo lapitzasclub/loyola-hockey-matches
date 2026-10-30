@@ -48,15 +48,93 @@
     }
   },
   "clasificacion": {
-    "equipo": "Equipo",
     "error": "No se ha podido cargar la clasificación.",
     "vacia": "Todavía no hay clasificación.",
-    "puntos_one": "{{count}} pt",
-    "puntos_other": "{{count}} pts"
+    "columnas": {
+      "equipo": "Equipo",
+      "pj": "PJ",
+      "pg": "PG",
+      "pe": "PE",
+      "pp": "PP",
+      "dg": "DG",
+      "pts": "Pts"
+    },
+    "ajuste": "Ajuste de {{puntos}} pts a {{equipo}}. {{nota}}",
+    "eliminatoria": "Esta fase es eliminatoria y no tiene tabla.",
+    "sinEquipoTexto": "Verás la clasificación de su categoría."
   },
   "equipo": {
     "titulo": "Equipo",
-    "error": "No se han podido cargar los partidos del equipo."
+    "error": "No se han podido cargar los partidos del equipo.",
+    "noEncontrado": "No se ha encontrado el equipo en esta división.",
+    "secciones": {
+      "resumen": "Resumen",
+      "partidos": "Partidos",
+      "plantilla": "Plantilla",
+      "estadisticas": "Estadísticas",
+      "alineaciones": "Alineaciones"
+    },
+    "puesto": "Puesto",
+    "golesFavor": "GF",
+    "golesContra": "GC",
+    "sinClasificacion": "Todavía no sale en la clasificación.",
+    "racha": "Racha",
+    "sinRacha": "Aún no ha jugado ningún partido.",
+    "proximoPartido": "Próximo partido",
+    "ultimoPartido": "Último partido",
+    "filtros": {
+      "todos": "Todos",
+      "jugados": "Jugados",
+      "pendientes": "Pendientes"
+    },
+    "sinPartidos": "No hay partidos que mostrar.",
+    "plantilla": {
+      "porteros": "Porteros",
+      "jugadores": "Jugadores",
+      "cuerpoTecnico": "Cuerpo técnico",
+      "vacia": "Todavía no hay plantilla publicada.",
+      "error": "No se ha podido cargar la plantilla.",
+      "partidos_one": "{{count}} partido",
+      "partidos_other": "{{count}} partidos",
+      "goles_one": "{{count}} gol",
+      "goles_other": "{{count}} goles",
+      "paradas": "{{valor}}% paradas"
+    },
+    "roles": {
+      "entrenador": "Entrenador",
+      "segundo-entrenador": "Segundo entrenador",
+      "delegado": "Delegado",
+      "auxiliar": "Auxiliar",
+      "staff": "Staff"
+    },
+    "estadisticas": {
+      "vacias": "Aún no hay partidos jugados para calcular estadísticas.",
+      "resultados": "Resultados",
+      "victorias": "Victorias",
+      "golesPartido": "Goles a favor / en contra por partido",
+      "porteriaACero": "Porterías a cero",
+      "sinMarcar": "Partidos sin marcar",
+      "local": "En casa",
+      "visitante": "Fuera",
+      "resumenLado": "{{pg}}G {{pe}}E {{pp}}P",
+      "goleadores": "Goleadores",
+      "asistencias_one": "{{count}} asistencia",
+      "asistencias_other": "{{count}} asistencias",
+      "disciplina": "Disciplina",
+      "faltas": "Faltas",
+      "azules": "Tarjetas azules",
+      "amarillas": "Tarjetas amarillas",
+      "rojas": "Tarjetas rojas"
+    },
+    "alineaciones": {
+      "vacias": "Todavía no hay alineaciones: el equipo no ha jugado.",
+      "ultimo": "Último partido",
+      "partidos": "Partidos jugados",
+      "capitan": "Capitán",
+      "titular": "Titular",
+      "sinAlineacion": "Este partido no tiene alineación publicada.",
+      "error": "No se ha podido cargar la alineación."
+    }
   },
   "partido": {
     "titulo": "Partido",
@@ -77,5 +155,10 @@
     "elegir": "Elegir equipo",
     "cambiar": "Cambiar de equipo",
     "vacio": "No hay equipos disponibles."
+  },
+  "racha": {
+    "victoria": "Victoria",
+    "empate": "Empate",
+    "derrota": "Derrota"
   }
 }

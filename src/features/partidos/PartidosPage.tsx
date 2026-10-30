@@ -4,9 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
-  agruparPorCategoria,
   agruparPorMes,
-  buscarEquipo,
   claveEquipo,
   fechaLocal,
   indiceProximoPartido,
@@ -17,10 +15,9 @@ import type { EquipoCatalogo, MarcadorDirecto } from '../../domain';
 import {
   claves,
   useCalendario,
-  useCatalogo,
-  useEquipoElegido,
   useMarcadores,
   useRefrescar,
+  useSeleccionEquipo,
 } from '../../queries';
 import {
   CabeceraEquipo,
@@ -137,15 +134,8 @@ function Calendario({ elegido }: { elegido: EquipoCatalogo }) {
 
 export function PartidosPage() {
   const { t } = useTranslation();
-  const catalogo = useCatalogo();
-  const [clave, elegir] = useEquipoElegido();
+  const { catalogo, clave, elegir, grupos, elegido } = useSeleccionEquipo();
   const [selectorAbierto, setSelectorAbierto] = useState(false);
-
-  const grupos = useMemo(
-    () => agruparPorCategoria(catalogo.data ?? []),
-    [catalogo.data],
-  );
-  const elegido = buscarEquipo(catalogo.data ?? [], clave);
 
   const refrescar = useRefrescar(
     claves.catalogo(),

@@ -1,46 +1,190 @@
-import {
-  IonItem,
-  IonLabel,
-  IonList,
-  IonListHeader,
-  IonNote,
-  IonSelect,
-  IonSelectOption,
-} from '@ionic/react';
-import { useState } from 'react';
+import { IonButton, IonSegment, IonSegmentButton } from '@ionic/react';
+import { listOutline, shirtOutline } from 'ionicons/icons';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { agruparClasificacion } from '../../domain';
+import {
+  agruparClasificacion,
+  claveEquipo,
+  faseInicial,
+  rachasDeTabla,
+} from '../../domain';
 import type { EquipoCatalogo } from '../../domain';
 import {
   claves,
-  useCatalogo,
+  useCalendario,
   useClasificacion,
   useFases,
   useRefrescar,
+  useSeleccionEquipo,
 } from '../../queries';
-import { Consulta } from '../../ui/Consulta';
+import {
+  CabeceraEquipo,
+  CabeceraEquipoSkeleton,
+} from '../../ui/CabeceraEquipo';
+import { EstadoError } from '../../ui/EstadoError';
+import { EstadoVacio } from '../../ui/EstadoVacio';
 import { Pagina } from '../../ui/Pagina';
-import { useRutas } from '../../ui/rutas';
+import { SelectorEquipo } from '../../ui/SelectorEquipo';
+import {
+  TablaClasificacionGrupo,
+  TablaClasificacionSkeleton,
+} from './TablaClasificacion';
 
-/**
- * Provisional hasta la pantalla de clasificación (S06): la tabla de la
- * primera fase de la división del equipo elegido, para probar la pila
- * clasificación → equipo → partido → jugador.
- */
+/** Tablas de la fase elegida (por defecto la primera de liga) de la división. */
+function Tablas({ elegido }: { elegido: EquipoCatalogo }) {
+  const { t } = useTranslation();
+  const { id: divisionId, competicionId } = elegido.division;
+  const fases = useFases(divisionId);
+  const [faseElegida, setFaseElegida] = useState<string | null>(null);
+  const fase =
+    fases.data?.find((f) => f.id === faseElegida) ??
+    (fases.data ? faseInicial(fases.data) : null);
+
+  const clasificacion = useClasificacion(fase?.id);
+  // La racha se calcula con los partidos; si aún no han llegado vale la de la federación.
+  const calendario = useCalendario(elegido.division);
+
+  const tablas = useMemo(
+    () =>
+      fase && clasificacion.data
+        ? agruparClasificacion(fase, clasificacion.data)
+        : [],
+    [fase, clasificacion.data],
+  );
+
+  if (fases.isPending) return <TablaClasificacionSkeleton />;
+  if (fases.isError) {
+    return (
+      <EstadoError
+        texto={t('clasificacion.error')}
+        alReintentar={() => void fases.refetch()}
+      />
+    );
+  }
+  if (!fase) {
+    return (
+      <EstadoVacio
+        testId="clasificacion-vacia"
+        icono={listOutline}
+        titulo={t('clasificacion.vacia')}
+      />
+    );
+  }
+
+  return (
+    <>
+      {fases.data.length > 1 && (
+        <IonSegment
+          className="segmento"
+          scrollable
+          value={fase.id}
+          onIonChange={(e) => setFaseElegida(String(e.detail.value))}
+          data-testid="fases"
+        >
+          {fases.data.map((f) => (
+            <IonSegmentButton key={f.id} value={f.id} data-testid="fase">
+              {f.nombre}
+            </IonSegmentButton>
+          ))}
+        </IonSegment>
+      )}
+      {clasificacion.isPending ? (
+        <TablaClasificacionSkeleton />
+      ) : clasificacion.isError ? (
+        <EstadoError
+          texto={t('clasificacion.error')}
+          alReintentar={() => void clasificacion.refetch()}
+        />
+      ) : tablas.length === 0 ? (
+        <EstadoVacio
+          testId="clasificacion-vacia"
+          icono={listOutline}
+          titulo={t('clasificacion.vacia')}
+          texto={
+            fase.formato === 'eliminatoria'
+              ? t('clasificacion.eliminatoria')
+              : undefined
+          }
+        />
+      ) : (
+        tablas.map((tabla) => (
+          <TablaClasificacionGrupo
+            key={tabla.grupo?.id ?? 'unica'}
+            tabla={tabla}
+            competicionId={competicionId}
+            divisionId={divisionId}
+            rachas={
+              calendario.data
+                ? rachasDeTabla(tabla, calendario.data.partidos)
+                : undefined
+            }
+          />
+        ))
+      )}
+    </>
+  );
+}
+
 export function ClasificacionPage() {
   const { t } = useTranslation();
-  const catalogo = useCatalogo();
-  const [elegido, setElegido] = useState(0);
-  const entrada = catalogo.data?.[elegido] ?? catalogo.data?.[0];
-  const divisionId = entrada?.division.id;
-  const fases = useFases(divisionId);
-  const fase = fases.data?.[0];
-  const clasificacion = useClasificacion(fase?.id);
+  const { catalogo, clave, elegir, grupos, elegido } = useSeleccionEquipo();
+  const [selectorAbierto, setSelectorAbierto] = useState(false);
+
   const refrescar = useRefrescar(
-    claves.fases(divisionId),
-    claves.clasificacion(fase?.id),
+    claves.catalogo(),
+    claves.division(elegido?.division.id),
+    claves.clasificaciones(),
   );
+
+  const contenido = () => {
+    if (catalogo.isPending) {
+      return (
+        <>
+          <CabeceraEquipoSkeleton />
+          <TablaClasificacionSkeleton />
+        </>
+      );
+    }
+    if (catalogo.isError) {
+      return (
+        <EstadoError
+          texto={t('clasificacion.error')}
+          alReintentar={() => void catalogo.refetch()}
+        />
+      );
+    }
+    if (!elegido) {
+      return (
+        <EstadoVacio
+          testId="sin-equipo"
+          icono={shirtOutline}
+          titulo={t('partidos.sinEquipoTitulo')}
+          texto={t('clasificacion.sinEquipoTexto')}
+          accion={
+            <IonButton
+              data-testid="elegir-equipo"
+              onClick={() => setSelectorAbierto(true)}
+            >
+              {t('selector.elegir')}
+            </IonButton>
+          }
+        />
+      );
+    }
+    return (
+      <>
+        <CabeceraEquipo
+          nombre={elegido.equipo.nombre}
+          abreviatura={elegido.equipo.nombreAbrev}
+          logoUrl={elegido.equipo.logoUrl}
+          competicion={elegido.competicion.nombre}
+          alCambiar={() => setSelectorAbierto(true)}
+        />
+        <Tablas key={claveEquipo(elegido)} elegido={elegido} />
+      </>
+    );
+  };
 
   return (
     <Pagina
@@ -48,86 +192,18 @@ export function ClasificacionPage() {
       testId="page-clasificacion"
       alRefrescar={refrescar}
     >
-      <Consulta consulta={catalogo} error={t('clasificacion.error')}>
-        {(equipos) => (
-          <>
-            <IonList>
-              <IonItem>
-                <IonSelect
-                  label={t('clasificacion.equipo')}
-                  value={elegido}
-                  onIonChange={(e) => setElegido(Number(e.detail.value))}
-                  interface="action-sheet"
-                  cancelText={t('common.cancelar')}
-                >
-                  {equipos.map((e, i) => (
-                    <IonSelectOption key={claveEntrada(e)} value={i}>
-                      {e.competicion.nombre} · {e.equipo.nombre}
-                    </IonSelectOption>
-                  ))}
-                </IonSelect>
-              </IonItem>
-            </IonList>
-            {fase && entrada && (
-              <Consulta
-                consulta={clasificacion}
-                error={t('clasificacion.error')}
-              >
-                {(filas) => (
-                  <Tablas
-                    entrada={entrada}
-                    tablas={agruparClasificacion(fase, filas)}
-                  />
-                )}
-              </Consulta>
-            )}
-          </>
-        )}
-      </Consulta>
+      {contenido()}
+      <div style={{ height: 24 }} />
+      <SelectorEquipo
+        abierto={selectorAbierto}
+        alCerrar={() => setSelectorAbierto(false)}
+        grupos={grupos}
+        elegido={clave}
+        alElegir={(nueva) => {
+          elegir(nueva);
+          setSelectorAbierto(false);
+        }}
+      />
     </Pagina>
   );
-}
-
-const claveEntrada = (e: EquipoCatalogo) =>
-  `${e.division.id}:${e.equipo.inscripcionId ?? e.equipo.equipoId ?? e.equipo.nombre}`;
-
-function Tablas({
-  entrada,
-  tablas,
-}: {
-  entrada: EquipoCatalogo;
-  tablas: ReturnType<typeof agruparClasificacion>;
-}) {
-  const { t } = useTranslation();
-  const rutas = useRutas();
-  if (tablas.length === 0) {
-    return <p className="ion-padding">{t('clasificacion.vacia')}</p>;
-  }
-  return tablas.map((tabla) => (
-    <IonList key={tabla.grupo?.id ?? 'unica'} data-testid="clasificacion">
-      {tabla.grupo && <IonListHeader>{tabla.grupo.nombre}</IonListHeader>}
-      {tabla.filas.map((fila) => (
-        <IonItem
-          key={fila.equipo.inscripcionId}
-          detail
-          routerLink={
-            fila.equipo.inscripcionId
-              ? rutas.equipo({
-                  competicionId: entrada.competicion.id,
-                  divisionId: entrada.division.id,
-                  inscripcionId: fila.equipo.inscripcionId,
-                })
-              : undefined
-          }
-        >
-          <IonLabel>
-            {fila.puesto}. {fila.equipo.nombre}
-          </IonLabel>
-          <IonNote slot="end">
-            {t('clasificacion.puntos', { count: fila.pts })}
-          </IonNote>
-        </IonItem>
-      ))}
-    </IonList>
-  ));
 }

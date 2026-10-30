@@ -401,3 +401,413 @@ button.cabecera-equipo:active {
   color: var(--app-programado);
   font-size: 2rem;
 }
+
+/* Pantallas de clasificación y equipo: sin paneles ni bordes, solo separadores finos */
+.segmento {
+  margin: 8px 12px;
+}
+
+.nota {
+  margin: 8px 16px;
+  color: var(--app-texto-secundario);
+  font-size: 0.8rem;
+}
+
+.seccion {
+  padding: 8px 0 4px;
+}
+
+.seccion__titulo {
+  margin: 0;
+  padding: 14px 16px 6px;
+  color: var(--app-texto-secundario);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Racha: últimos resultados como puntos con su letra */
+.racha {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.seccion > .racha {
+  padding: 0 16px;
+}
+
+.racha__punto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--app-racha-texto);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.racha--compacta {
+  align-self: flex-start;
+  gap: 3px;
+}
+
+.racha--compacta .racha__punto {
+  width: 14px;
+  height: 14px;
+  font-size: 0.5rem;
+}
+
+.racha__punto--victoria {
+  background: var(--app-victoria);
+}
+
+.racha__punto--empate {
+  background: var(--app-empate);
+}
+
+.racha__punto--derrota {
+  background: var(--app-derrota);
+}
+
+/* Tabla de clasificación */
+.clasif {
+  --clasif-columnas: 30px minmax(0, 1fr) repeat(3, 26px) 34px 36px 38px;
+  padding-bottom: 8px;
+}
+
+@media (max-width: 400px) {
+  .clasif {
+    --clasif-columnas: 30px minmax(0, 1fr) 26px 34px 38px;
+  }
+
+  .clasif__num--opc {
+    display: none;
+  }
+}
+
+.clasif__grupo {
+  margin: 0;
+  padding: 16px 16px 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.clasif__fila {
+  display: grid;
+  grid-template-columns: var(--clasif-columnas);
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 6px 12px 6px 0;
+  border-bottom: 1px solid var(--app-superficie-borde);
+  color: var(--ion-text-color);
+  text-decoration: none;
+}
+
+/*
+ * ion-router-link pinta un <a> en su shadow DOM: la rejilla no puede ir en el
+ * propio enlace, sino en un hijo suyo.
+ */
+.clasif__fila--enlace {
+  display: block;
+  padding: 0;
+}
+
+.clasif__fila--enlace:active {
+  opacity: 0.75;
+}
+
+.clasif__interior {
+  display: grid;
+  grid-template-columns: var(--clasif-columnas);
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 6px 12px 6px 0;
+}
+
+.clasif__fila--loyola {
+  background: var(--app-resalte);
+  font-weight: 700;
+}
+
+.clasif__cabecera {
+  min-height: 28px;
+  color: var(--app-texto-secundario);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.clasif__cabecera > span:first-child {
+  padding-left: 12px;
+}
+
+.clasif__puesto {
+  box-sizing: border-box;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 4px solid transparent;
+  font-variant-numeric: tabular-nums;
+}
+
+.clasif__equipo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.clasif__textos {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.clasif__nombre {
+  overflow: hidden;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clasif__num {
+  text-align: center;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.clasif__pts {
+  font-weight: 800;
+}
+
+.clasif__fila--skeleton {
+  display: flex;
+  gap: 10px;
+  padding-left: 16px;
+}
+
+.clasif__leyendas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 12px 16px 0;
+  color: var(--app-texto-secundario);
+  font-size: 0.78rem;
+  list-style: none;
+}
+
+.clasif__leyendas li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clasif__marca {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--app-esqueleto);
+}
+
+.clasif__nota {
+  margin: 8px 16px 0;
+  color: var(--app-texto-secundario);
+  font-size: 0.78rem;
+}
+
+/* Detalle de equipo */
+.equipo-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+}
+
+.equipo-cabecera__nombre {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 8px;
+  padding: 8px 16px;
+}
+
+.dato {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.dato__valor {
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.dato__etiqueta {
+  color: var(--app-texto-secundario);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.linea {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--app-superficie-borde);
+  font-size: 0.9rem;
+}
+
+.barra {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  margin: 4px 16px 10px;
+}
+
+.barra__tramo {
+  min-width: 6px;
+  border-radius: 5px;
+}
+
+.barra__tramo--victoria {
+  background: var(--app-victoria);
+}
+
+.barra__tramo--empate {
+  background: var(--app-empate);
+}
+
+.barra__tramo--derrota {
+  background: var(--app-derrota);
+}
+
+.lados-balance {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 16px 0;
+}
+
+.lado-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+}
+
+.lado-balance h3 {
+  margin: 0;
+  color: var(--app-texto-secundario);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Filas de personas: plantilla, goleadores, alineaciones */
+.persona {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--app-superficie-borde);
+  color: var(--ion-text-color);
+  text-decoration: none;
+}
+
+.persona--enlace {
+  display: block;
+  padding: 0;
+}
+
+.persona--enlace:active {
+  opacity: 0.75;
+}
+
+.persona__interior {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 8px 16px;
+}
+
+.persona__foto {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.persona__foto--iniciales {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-programado-fondo);
+  color: var(--app-programado);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.persona__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.persona__dato {
+  color: var(--app-texto-secundario);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.persona__dato--fuerte {
+  color: var(--ion-text-color);
+  font-weight: 700;
+}
+
+.persona__puesto,
+.persona__dorsal {
+  flex: none;
+  width: 28px;
+  color: var(--app-texto-secundario);
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--app-proximo-fondo);
+  color: var(--app-proximo);
+  font-size: 0.7rem;
+  font-weight: 800;
+}

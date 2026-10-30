@@ -25,6 +25,11 @@ body[data-theme='light'] {
   --app-programado: #0e3a43;
   --app-programado-fondo: #dcebee;
   --app-esqueleto: #e7e2d6;
+  --app-victoria: #1f7a3d;
+  --app-empate: #7a8588;
+  --app-derrota: #c8102e;
+  --app-racha-texto: #ffffff;
+  --app-resalte: #ece6d6;
 
   --ion-color-primary: #0e3a43;
   --ion-color-primary-rgb: 14, 58, 67;
@@ -61,6 +66,11 @@ body[data-theme='dark'] {
   --app-programado: #7cc8d6;
   --app-programado-fondo: #12343b;
   --app-esqueleto: #22302f;
+  --app-victoria: #5fd38a;
+  --app-empate: #9aa7aa;
+  --app-derrota: #ff5a6e;
+  --app-racha-texto: #0b1113;
+  --app-resalte: #172a2f;
 
   --ion-color-primary: #5bb8c8;
   --ion-color-primary-rgb: 91, 184, 200;

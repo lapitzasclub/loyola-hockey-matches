@@ -107,7 +107,7 @@
       "title": "Pantallas: clasificación y detalle de equipo",
       "model": "sonnet",
       "effort": "high",
-      "status": "pending",
+      "status": "done",
       "prompt": "Implementa con paridad v1 la tab de clasificación (por fase y grupo, destacando Loyola, racha V/E/D calculada en dominio) y el detalle de equipo (resumen, lista de partidos, plantilla, estadísticas y hub de alineaciones) como vista de la pila de navegación. Desde clasificación se navega a equipo y de ahí a partido. Deja preparados los `layoutId`/nombres de view-transition del escudo y el nombre del equipo para S09, sin animar aún. Tests de componente.",
       "exit": [
         "Casillas de clasificación y detalle de equipo marcadas en la checklist",

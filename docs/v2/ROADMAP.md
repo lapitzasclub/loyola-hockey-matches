@@ -222,6 +222,34 @@ Validación:
 | Android (APK, emulador Android 16) | ✅ onboarding, selector agrupado, tarjetas, próximo resaltado | ✅ force-stop y reapertura conservan el equipo | ⚠️ el gesto de `adb` mueve la lista pero no se vio el spinner (datos en caché); la recarga se comprueba en e2e lanzando `ionRefresh` y ya se vio en dispositivo en S04 |
 | iPhone (PWA) | ⚠️ solo e2e WebKit | ⚠️ solo e2e WebKit | ⚠️ solo e2e WebKit; **sin validar en iPhone real** (mismo riesgo aceptado que en S04) |
 
+### Clasificación y equipo: decisiones y hallazgos (S06)
+
+- **Racha en el dominio** (`rachasDeTabla`, `PARTIDOS_RACHA = 5`): sale de los partidos con el
+  resultado oficial (`marcadorOficial`), no del `form` de la federación. En tablas por grupo solo
+  cuentan los partidos entre miembros del grupo. Orden por `fecha` + `hora`.
+- **Fase del equipo** (`faseDelEquipo`): el resumen usa la fase donde juega el equipo ese día; la
+  pantalla de clasificación abre en `faseInicial`.
+- **Dos ids por equipo**: la tabla y el árbol usan `inscripcionId`; agenda, `/equipos` y plantilla
+  usan `equipoId`. `/equipos` omite algunos equipos del Loyola: `completarEquipo` rellena el
+  `equipoId` por nombre desde `/equipos` y el catálogo. Sin `equipoId` no hay plantilla.
+- **Hub de alineaciones**: la v1 no lo definía. Se interpreta como la alineación del último partido
+  jugado (en línea) más la lista de partidos jugados, del más reciente al más antiguo. El cuerpo
+  técnico no tiene ficha y no enlaza.
+- **Nombres de transición** (S09): solo como atributos `data-transicion` (`escudo-<inscripcionId>`,
+  `nombre-<inscripcionId>`) vía `ui/transiciones.ts`; no se anima nada todavía.
+- **Estilo** sin paneles: filas con separador fino, sin bordes ni sombras. La cabecera con el
+  equipo elegido y las barras del sistema integradas con el fondo (estilo v1) quedan para una
+  tarea aparte tras S06.
+- **`ion-router-link` y la maquetación**: pinta un `<a>` en su shadow DOM, así que una rejilla o
+  flex puesta en el propio enlace colapsa los hijos en la primera columna (la racha salía con
+  ancho 0). La maquetación va en un hijo (`clasif__interior`, `persona__interior`). jsdom no lo
+  detecta; lo cazó el e2e.
+- **`IonSegment` en jsdom**: `onIonChange` no actualiza el estado en jsdom (el wrapper de Stencil
+  no recibe el evento). El cambio de sección y el filtro de partidos se prueban en Playwright
+  (`tests/e2e/equipo.spec.ts`); en Vitest las secciones se renderizan directamente.
+- **Pila de navegación y e2e**: las páginas de debajo siguen en el DOM; los selectores deben
+  acotarse a la página (`page-partido`, `hoja-info-partido`…).
+
 ## 7. Fases
 
 | Fase | Objetivo | Sesiones |
@@ -242,12 +270,12 @@ Cada casilla se marca cuando la v2 lo hace **igual o mejor** en Android real y e
 - [x] Selector de equipo Loyola (acordeón por categoría), persistido (iPhone real sin validar)
 - [x] Calendario/partidos del equipo, ordenado por fecha+hora, marcador real y badge de estado (iPhone real sin validar; «aplazado» deducido, revisar con datos reales)
 - [x] Pull-to-refresh (iPhone real sin validar)
-- [ ] Clasificación por grupo/fase con racha V/E/D
-- [ ] Detalle de equipo: resumen, partidos, plantilla, estadísticas, hub de alineaciones
+- [x] Clasificación por grupo/fase con racha V/E/D (iPhone real sin validar)
+- [x] Detalle de equipo: resumen, partidos, plantilla, estadísticas, hub de alineaciones (iPhone real sin validar)
 - [ ] Detalle de partido: resumen, marcador, eventos, alineaciones, penaltis, cuerpo técnico (sin navegación)
 - [ ] Jugador: cabecera compacta y estadísticas
 - [ ] Pestaña de estadísticas y rankings (goleadores)
-- [ ] Navegación clasificación → equipo → partido → jugador → atrás, con back de Android y swipe iOS
+- [ ] Navegación clasificación → equipo → partido → jugador → atrás, con back de Android y swipe iOS (pila cubierta en e2e; back de Android y swipe iOS sin validar en dispositivo)
 - [ ] Directo: marcador, incidencias y periodo en tiempo real
 - [ ] Tema claro/oscuro, barras de sistema en Android
 - [ ] Español y euskera en todos los textos

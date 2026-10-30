@@ -48,15 +48,93 @@
     }
   },
   "clasificacion": {
-    "equipo": "Taldea",
     "error": "Ezin izan da sailkapena kargatu.",
     "vacia": "Oraindik ez dago sailkapenik.",
-    "puntos_one": "{{count}} pt",
-    "puntos_other": "{{count}} pt"
+    "columnas": {
+      "equipo": "Taldea",
+      "pj": "JP",
+      "pg": "I",
+      "pe": "B",
+      "pp": "G",
+      "dg": "GD",
+      "pts": "Pnt"
+    },
+    "ajuste": "{{equipo}} taldeari {{puntos}} puntuko doikuntza. {{nota}}",
+    "eliminatoria": "Fase hau kanporaketa da eta ez dauka taularik.",
+    "sinEquipoTexto": "Bere kategoriako sailkapena ikusiko duzu."
   },
   "equipo": {
     "titulo": "Taldea",
-    "error": "Ezin izan dira taldearen partidak kargatu."
+    "error": "Ezin izan dira taldearen partidak kargatu.",
+    "noEncontrado": "Ez da taldea aurkitu dibisio honetan.",
+    "secciones": {
+      "resumen": "Laburpena",
+      "partidos": "Partidak",
+      "plantilla": "Plantila",
+      "estadisticas": "Estatistikak",
+      "alineaciones": "Alineazioak"
+    },
+    "puesto": "Postua",
+    "golesFavor": "GA",
+    "golesContra": "GK",
+    "sinClasificacion": "Oraindik ez dago sailkapenean.",
+    "racha": "Bolada",
+    "sinRacha": "Oraindik ez du partidarik jokatu.",
+    "proximoPartido": "Hurrengo partida",
+    "ultimoPartido": "Azken partida",
+    "filtros": {
+      "todos": "Denak",
+      "jugados": "Jokatuak",
+      "pendientes": "Zain daudenak"
+    },
+    "sinPartidos": "Ez dago partidarik erakusteko.",
+    "plantilla": {
+      "porteros": "Atezainak",
+      "jugadores": "Jokalariak",
+      "cuerpoTecnico": "Gorputz teknikoa",
+      "vacia": "Oraindik ez dago plantilarik argitaratuta.",
+      "error": "Ezin izan da plantila kargatu.",
+      "partidos_one": "partida {{count}}",
+      "partidos_other": "{{count}} partida",
+      "goles_one": "gol {{count}}",
+      "goles_other": "{{count}} gol",
+      "paradas": "% {{valor}} geldiketa"
+    },
+    "roles": {
+      "entrenador": "Entrenatzailea",
+      "segundo-entrenador": "Bigarren entrenatzailea",
+      "delegado": "Ordezkaria",
+      "auxiliar": "Laguntzailea",
+      "staff": "Staff"
+    },
+    "estadisticas": {
+      "vacias": "Oraindik ez dago estatistikak kalkulatzeko partida jokaturik.",
+      "resultados": "Emaitzak",
+      "victorias": "Garaipenak",
+      "golesPartido": "Partidako gol sartuak / jasoak",
+      "porteriaACero": "Zero gol jasota",
+      "sinMarcar": "Golik sartu gabeko partidak",
+      "local": "Etxean",
+      "visitante": "Kanpoan",
+      "resumenLado": "{{pg}}I {{pe}}B {{pp}}G",
+      "goleadores": "Goleatzaileak",
+      "asistencias_one": "gol-pase {{count}}",
+      "asistencias_other": "{{count}} gol-pase",
+      "disciplina": "Diziplina",
+      "faltas": "Faltak",
+      "azules": "Txartel urdinak",
+      "amarillas": "Txartel horiak",
+      "rojas": "Txartel gorriak"
+    },
+    "alineaciones": {
+      "vacias": "Oraindik ez dago alineaziorik: taldeak ez du jokatu.",
+      "ultimo": "Azken partida",
+      "partidos": "Jokatutako partidak",
+      "capitan": "Kapitaina",
+      "titular": "Hasierakoa",
+      "sinAlineacion": "Partida honek ez du alineaziorik argitaratuta.",
+      "error": "Ezin izan da alineazioa kargatu."
+    }
   },
   "partido": {
     "titulo": "Partida",
@@ -77,5 +155,10 @@
     "elegir": "Aukeratu taldea",
     "cambiar": "Aldatu taldea",
     "vacio": "Ez dago talderik eskuragarri."
+  },
+  "racha": {
+    "victoria": "Garaipena",
+    "empate": "Berdinketa",
+    "derrota": "Porrota"
   }
 }

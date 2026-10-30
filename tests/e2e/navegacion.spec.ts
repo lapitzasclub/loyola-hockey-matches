@@ -10,28 +10,46 @@ const PARTIDO = '6636af38-a791-4002-ab03-402a765a7d7f';
 const atras = (page: Page, testId: string) =>
   page.getByTestId(testId).getByRole('button', { name: 'Atrás' });
 
+/** Elige el equipo cuya competición se llama exactamente `competicion`. */
+async function elegirEquipo(page: Page, competicion: string) {
+  await page.getByTestId('elegir-equipo').click();
+  await page
+    .getByTestId('selector-equipo')
+    .filter({
+      has: page.locator('.selector__competicion', {
+        hasText: new RegExp(`^${competicion}$`),
+      }),
+    })
+    .click();
+}
+
 test('clasificación → equipo → partido → jugador y vuelta atrás por la pila', async ({
   page,
 }) => {
   await apiDeFixtures(page);
   await page.goto('/clasificacion');
-  await page.locator('ion-select').click();
-  await page.getByRole('radio', { name: /^LIGA NORTE · / }).click();
+  await elegirEquipo(page, 'LIGA NORTE');
   await page.getByTestId('clasificacion').getByText('SANTUTXU HT').click();
 
   await expect(page.getByTestId('page-equipo')).toBeVisible();
   await expect(page).toHaveURL(/\/clasificacion\/equipo\//);
+  await page.getByTestId('seccion-partidos').click();
   await page
-    .locator(
-      `[data-testid=partidos-equipo] ion-item[router-link$="${PARTIDO}"]`,
-    )
+    .locator(`[data-testid=partidos-equipo] [router-link$="${PARTIDO}"]`)
     .click();
 
-  await expect(page.getByTestId('marcador')).toBeVisible();
+  // Las páginas de debajo en la pila siguen en el DOM: se acota al partido.
+  await expect(
+    page.getByTestId('page-partido').getByTestId('marcador'),
+  ).toBeVisible();
   await expect(page).toHaveURL(`/clasificacion/partido/${PARTIDO}`);
   await page.getByTestId('abrir-info-partido').click();
   await expect(page.getByTestId('hoja-info-partido')).toBeVisible();
-  await expect(page.getByText('POLIDEPORTIVO DE TXURDINAGA')).toBeVisible();
+  await expect(
+    page
+      .getByTestId('hoja-info-partido')
+      .getByText('POLIDEPORTIVO DE TXURDINAGA'),
+  ).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('hoja-info-partido')).toBeHidden();
 
