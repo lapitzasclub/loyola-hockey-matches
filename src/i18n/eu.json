@@ -13,11 +13,25 @@
     "reintentar": "Saiatu berriro",
     "atras": "Atzera",
     "cerrar": "Itxi",
-    "cancelar": "Utzi"
+    "cancelar": "Utzi",
+    "error": "Zerbait gaizki atera da"
   },
   "partidos": {
     "error": "Ezin izan dira partidak kargatu.",
-    "vacio": "Ez dago partidarik hurrengo egunetan."
+    "vacio": "Talde honek ez du partidarik egutegian.",
+    "estados": {
+      "programado": "Programatuta",
+      "en_juego": "Jokoan",
+      "finalizado": "Amaituta",
+      "aplazado": "Atzeratuta",
+      "pendiente": "Emaitzaren zain"
+    },
+    "porDefinir": "Zehazteke",
+    "sinHora": "Ordua zehazteke",
+    "oficial": "Ofiziala {{resultado}}",
+    "proximo": "Hurrengoa",
+    "sinEquipoTitulo": "Aukeratu zure taldea",
+    "sinEquipoTexto": "Bere egutegia eta emaitzak pantaila honetan ikusiko dituzu."
   },
   "ajustes": {
     "titulo": "Ezarpenak",
@@ -57,5 +71,11 @@
     "titulo": "Jokalaria",
     "error": "Ezin izan da jokalaria kargatu.",
     "resumen": "{{partidos}} PJ · {{goles}} gol"
+  },
+  "selector": {
+    "titulo": "Aukeratu talde bat",
+    "elegir": "Aukeratu taldea",
+    "cambiar": "Aldatu taldea",
+    "vacio": "Ez dago talderik eskuragarri."
   }
 }

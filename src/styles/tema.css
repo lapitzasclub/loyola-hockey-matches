@@ -11,6 +11,20 @@ body[data-theme='light'] {
   --app-barra-superior-texto: #ffffff;
   --app-barra-inferior: #ffffff;
   --app-texto-secundario: #5c6b6e;
+  --app-superficie: #ffffff;
+  --app-superficie-borde: #e6e0d2;
+  --app-sombra:
+    0 1px 2px rgba(14, 58, 67, 0.06), 0 4px 14px rgba(14, 58, 67, 0.07);
+  --app-proximo: #8a6508;
+  --app-proximo-fondo: #fbf1d4;
+  --app-aviso: #8a5a00;
+  --app-aviso-fondo: #fdecc8;
+  --app-vivo: #c8102e;
+  --app-terminado: #4d5b5e;
+  --app-terminado-fondo: #eceae4;
+  --app-programado: #0e3a43;
+  --app-programado-fondo: #dcebee;
+  --app-esqueleto: #e7e2d6;
 
   --ion-color-primary: #0e3a43;
   --ion-color-primary-rgb: 14, 58, 67;
@@ -19,8 +33,8 @@ body[data-theme='light'] {
   --ion-color-primary-shade: #0c333b;
   --ion-color-primary-tint: #264e56;
 
-  --ion-background-color: #ffffff;
-  --ion-background-color-rgb: 255, 255, 255;
+  --ion-background-color: #f6f3ec;
+  --ion-background-color-rgb: 246, 243, 236;
   --ion-text-color: #000000;
   --ion-text-color-rgb: 0, 0, 0;
   --ion-item-background: #ffffff;
@@ -34,6 +48,19 @@ body[data-theme='dark'] {
   --app-barra-superior-texto: #ffffff;
   --app-barra-inferior: #121212;
   --app-texto-secundario: #9aa7aa;
+  --app-superficie: #172023;
+  --app-superficie-borde: #26333a;
+  --app-sombra: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --app-proximo: #f0c14b;
+  --app-proximo-fondo: #3a2f0f;
+  --app-aviso: #f0b45a;
+  --app-aviso-fondo: #3a2a0e;
+  --app-vivo: #ff5a6e;
+  --app-terminado: #a9b6b9;
+  --app-terminado-fondo: #202b2f;
+  --app-programado: #7cc8d6;
+  --app-programado-fondo: #12343b;
+  --app-esqueleto: #22302f;
 
   --ion-color-primary: #5bb8c8;
   --ion-color-primary-rgb: 91, 184, 200;
@@ -43,8 +70,8 @@ body[data-theme='dark'] {
   --ion-color-primary-tint: #6bbfce;
 
   /* Paleta oscura de Ionic (modo ios). */
-  --ion-background-color: #000000;
-  --ion-background-color-rgb: 0, 0, 0;
+  --ion-background-color: #0b1113;
+  --ion-background-color-rgb: 11, 17, 19;
   --ion-text-color: #ffffff;
   --ion-text-color-rgb: 255, 255, 255;
   --ion-background-color-step-50: #0d0d0d;

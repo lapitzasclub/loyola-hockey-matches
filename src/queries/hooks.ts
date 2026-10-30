@@ -6,7 +6,12 @@ import { consultas } from './consultas';
 
 export const useAgenda = () => useQuery(consultas.agenda());
 
-export const useMarcadores = () => useQuery(consultas.marcadores());
+/** Con `enDirecto` se vuelve a pedir cada 30 s mientras la pantalla está abierta. */
+export const useMarcadores = (enDirecto = false) =>
+  useQuery({
+    ...consultas.marcadores(),
+    refetchInterval: enDirecto ? 30_000 : false,
+  });
 
 /** Equipos Loyola de la temporada, ordenados por competición y nombre. */
 export const useCatalogo = () => useQuery(consultas.catalogo());

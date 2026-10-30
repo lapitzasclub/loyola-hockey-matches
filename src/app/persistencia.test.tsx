@@ -44,10 +44,10 @@ beforeEach(() => {
   transporte.mockReset().mockImplementation(transporteDeFixtures());
 });
 
-/** Abre la app, espera a la agenda y la cierra dejando escrita la caché. */
+/** Abre la app, espera al selector y la cierra dejando escrita la caché. */
 async function primeraApertura() {
   const { unmount } = render(<App />);
-  expect(await screen.findByTestId('agenda')).toBeInTheDocument();
+  expect(await screen.findByTestId('sin-equipo')).toBeInTheDocument();
   await waitFor(() => expect(almacen.guardado()).toBeDefined(), {
     timeout: 3000,
   });
@@ -64,7 +64,7 @@ describe('caché persistida', () => {
 
     transporte.mockReset().mockRejectedValue(new ErrorApi(0, '/sin-red'));
     render(<App />);
-    expect(await screen.findByTestId('agenda')).toBeInTheDocument();
+    expect(await screen.findByTestId('sin-equipo')).toBeInTheDocument();
     expect(transporte).not.toHaveBeenCalled();
   });
 

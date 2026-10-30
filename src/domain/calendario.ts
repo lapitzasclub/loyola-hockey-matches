@@ -6,11 +6,22 @@ import { compararPorFechaHora } from './partido';
 import type { Marcador, PartidoResumen } from './partido';
 
 /**
- * Lo que se enseña de un partido: a los tres estados de la API se suma
- * «aplazado», un partido ya pasado que sigue sin resultado (aplazado o
- * suspendido; la API no lo marca de forma explícita).
+ * Lo que se enseña de un partido. La API solo tiene programado, en juego y
+ * finalizado; de un programado ya pasado se deduce:
+ * - «pendiente»: pasó hace poco y aún no hay resultado (lo habitual es que
+ *   la federación no haya subido el acta);
+ * - «aplazado»: lleva días sin resultado, así que casi seguro no se jugó.
  */
-export type EstadoVisible = EstadoPartido | 'aplazado';
+export type EstadoVisible = EstadoPartido | 'pendiente' | 'aplazado';
+
+/** Días de margen antes de dar por aplazado un partido sin resultado. */
+export const DIAS_PARA_APLAZADO = 3;
+
+const MS_DIA = 86_400_000;
+
+function diasEntre(desde: string, hasta: string): number {
+  return Math.round((Date.parse(hasta) - Date.parse(desde)) / MS_DIA);
+}
 
 /** `YYYY-MM-DD` en hora local, para comparar con `PartidoResumen.fecha`. */
 export function fechaLocal(fecha: Date): string {
@@ -23,9 +34,12 @@ export function estadoVisible(
   partido: Pick<PartidoResumen, 'estado' | 'fecha'>,
   hoy: string,
 ): EstadoVisible {
-  return partido.estado === 'programado' && partido.fecha < hoy
+  if (partido.estado !== 'programado' || partido.fecha >= hoy) {
+    return partido.estado;
+  }
+  return diasEntre(partido.fecha, hoy) > DIAS_PARA_APLAZADO
     ? 'aplazado'
-    : partido.estado;
+    : 'pendiente';
 }
 
 /** Partidos de un equipo, por fecha y hora. */
@@ -91,20 +105,23 @@ const igual = (a: Marcador, b: Marcador) =>
   a.local === b.local && a.visitante === b.visitante;
 
 /**
- * Cruza el calendario con `/marcadores`, que va por delante del árbol en un
- * partido empezado. El estado en juego de `/marcadores` manda; el marcador
- * oficial solo se enseña si no coincide con el real.
+ * Cruza el calendario con `/marcadores`, que va por delante del árbol: manda
+ * su «en juego» y también su «finalizado» (un partido jugado cuyo acta aún no
+ * está en el árbol deja de parecer pendiente o aplazado). El marcador oficial
+ * solo se enseña si no coincide con el real.
  */
 export function partidoVisible(
   partido: PartidoResumen,
   hoy: string,
   directo?: MarcadorDirecto,
 ): PartidoVisible {
-  const enJuego =
-    directo?.estado === 'en_juego' && partido.estado !== 'finalizado';
-  const estado = enJuego ? 'en_juego' : estadoVisible(partido, hoy);
-  const marcador = enJuego ? directo.goles : partido.marcador;
-  const oficial = enJuego ? directo.oficial : partido.marcadorOficial;
+  const delDirecto =
+    directo !== undefined &&
+    directo.estado !== 'programado' &&
+    partido.estado !== 'finalizado';
+  const estado = delDirecto ? directo.estado : estadoVisible(partido, hoy);
+  const marcador = delDirecto ? directo.goles : partido.marcador;
+  const oficial = delDirecto ? directo.oficial : partido.marcadorOficial;
   return {
     partido,
     estado,

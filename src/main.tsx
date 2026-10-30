@@ -7,6 +7,7 @@ import './i18n';
 import './app/ionic';
 import './styles/tokens.css';
 import './styles/tema.css';
+import './styles/componentes.css';
 
 aplicarTemaInicial();
 

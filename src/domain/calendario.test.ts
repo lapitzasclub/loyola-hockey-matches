@@ -20,9 +20,18 @@ describe('fechaLocal', () => {
 });
 
 describe('estadoVisible', () => {
-  it('un programado ya pasado se enseña como aplazado', () => {
+  it('un programado pasado hace poco está pendiente de resultado', () => {
     expect(
       estadoVisible({ estado: 'programado', fecha: '2026-10-29' }, HOY),
+    ).toBe('pendiente');
+    expect(
+      estadoVisible({ estado: 'programado', fecha: '2026-10-27' }, HOY),
+    ).toBe('pendiente');
+  });
+
+  it('pasado el margen sin resultado se da por aplazado', () => {
+    expect(
+      estadoVisible({ estado: 'programado', fecha: '2026-10-26' }, HOY),
     ).toBe('aplazado');
   });
 
@@ -147,6 +156,26 @@ describe('partidoVisible', () => {
     const v = partidoVisible(partido({ fecha: HOY }), HOY, directo());
     expect(v.estado).toBe('en_juego');
     expect(v.marcador).toEqual({ local: 3, visitante: 1 });
+  });
+
+  it('un jugado sin acta en el árbol sale finalizado si /marcadores lo da por terminado', () => {
+    const v = partidoVisible(
+      partido({ fecha: '2026-10-25' }),
+      HOY,
+      directo({ estado: 'finalizado', goles: { local: 2, visitante: 2 } }),
+    );
+    expect(v.estado).toBe('finalizado');
+    expect(v.marcador).toEqual({ local: 2, visitante: 2 });
+  });
+
+  it('un directo que sigue programado no cambia nada', () => {
+    const v = partidoVisible(
+      partido({ fecha: '2026-10-29' }),
+      HOY,
+      directo({ estado: 'programado', goles: { local: 0, visitante: 0 } }),
+    );
+    expect(v.estado).toBe('pendiente');
+    expect(v.marcador).toBeNull();
   });
 
   it('un finalizado no vuelve a en juego por un directo atrasado', () => {

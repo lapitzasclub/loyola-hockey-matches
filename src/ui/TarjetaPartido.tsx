@@ -1,0 +1,147 @@
+import { IonRouterLink } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
+
+import { mismoEquipo } from '../domain';
+import type { Equipo, Marcador, PartidoVisible } from '../domain';
+import { Escudo } from './Escudo';
+import { formatoDia } from './formato';
+import { InsigniaEstado } from './InsigniaEstado';
+import { Skeleton } from './Skeleton';
+
+interface Props {
+  visible: PartidoVisible;
+  /** Equipo cuyo calendario se ve: se resalta en la tarjeta. */
+  propio?: Equipo;
+  /** El partido al que lleva la lista al abrirse. */
+  proximo?: boolean;
+  /** Ruta de detalle; sin ella la tarjeta no es enlace. */
+  href?: string;
+}
+
+function Lado({ equipo, propio }: { equipo: Equipo | null; propio: boolean }) {
+  const { t } = useTranslation();
+  const nombre = equipo?.nombre ?? t('partidos.porDefinir');
+  return (
+    <div className={`tarjeta__lado${propio ? ' tarjeta__lado--propio' : ''}`}>
+      <Escudo
+        logoUrl={equipo?.logoUrl ?? null}
+        nombre={nombre}
+        abreviatura={equipo?.nombreAbrev}
+      />
+      <span className="tarjeta__nombre">{nombre}</span>
+    </div>
+  );
+}
+
+function Centro({
+  visible: { marcador, oficial, partido, estado },
+}: {
+  visible: PartidoVisible;
+}) {
+  const { t } = useTranslation();
+  const resultado = (m: Marcador) => `${m.local} – ${m.visitante}`;
+  if (marcador) {
+    return (
+      <div className="tarjeta__centro" data-testid="marcador">
+        <span className="tarjeta__marcador">{resultado(marcador)}</span>
+        {oficial && (
+          <span className="tarjeta__oficial">
+            {t('partidos.oficial', { resultado: resultado(oficial) })}
+          </span>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className="tarjeta__centro">
+      <span className="tarjeta__hora">
+        {estado === 'aplazado' ? '—' : (partido.hora ?? t('partidos.sinHora'))}
+      </span>
+    </div>
+  );
+}
+
+export function TarjetaPartido({ visible, propio, proximo, href }: Props) {
+  const { t, i18n } = useTranslation();
+  const { partido, estado } = visible;
+  const esPropio = (e: Equipo | null) =>
+    !!(propio && e && mismoEquipo(e, propio));
+
+  const clases = [
+    'tarjeta',
+    `tarjeta--${estado}`,
+    proximo ? 'tarjeta--proximo' : '',
+  ].join(' ');
+
+  const contenido = (
+    <>
+      <header className="tarjeta__cabecera">
+        <span className="tarjeta__fecha">
+          {proximo && (
+            <span className="tarjeta__proximo">{t('partidos.proximo')}</span>
+          )}
+          {formatoDia(partido.fecha, i18n.language)}
+          {partido.jornada && ` · ${partido.jornada}`}
+        </span>
+        <InsigniaEstado estado={estado} />
+      </header>
+      <div className="tarjeta__cruce">
+        <Lado equipo={partido.local} propio={esPropio(partido.local)} />
+        <Centro visible={visible} />
+        <Lado equipo={partido.visitante} propio={esPropio(partido.visitante)} />
+      </div>
+      {partido.pista && (
+        <footer className="tarjeta__pie">{partido.pista}</footer>
+      )}
+    </>
+  );
+
+  return href ? (
+    <IonRouterLink
+      routerLink={href}
+      className={`${clases} tarjeta--enlace`}
+      data-testid="tarjeta-partido"
+      data-partido={partido.id}
+      data-fecha={partido.fecha}
+    >
+      {contenido}
+    </IonRouterLink>
+  ) : (
+    <article
+      className={clases}
+      data-testid="tarjeta-partido"
+      data-partido={partido.id}
+      data-fecha={partido.fecha}
+    >
+      {contenido}
+    </article>
+  );
+}
+
+function LadoSkeleton() {
+  return (
+    <div className="tarjeta__lado">
+      <Skeleton ancho={44} alto={44} redondo />
+      <Skeleton ancho={72} alto={12} />
+    </div>
+  );
+}
+
+/** Misma estructura y alturas que la tarjeta real para que la carga no salte. */
+export function TarjetaPartidoSkeleton() {
+  return (
+    <div className="tarjeta tarjeta--skeleton" data-testid="tarjeta-skeleton">
+      <header className="tarjeta__cabecera">
+        <Skeleton ancho={90} alto={12} />
+        <Skeleton ancho={64} alto={20} style={{ borderRadius: 10 }} />
+      </header>
+      <div className="tarjeta__cruce">
+        <LadoSkeleton />
+        <div className="tarjeta__centro">
+          <Skeleton ancho={48} alto={26} />
+        </div>
+        <LadoSkeleton />
+      </div>
+    </div>
+  );
+}

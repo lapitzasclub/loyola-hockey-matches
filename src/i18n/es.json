@@ -13,11 +13,25 @@
     "reintentar": "Reintentar",
     "atras": "Atrás",
     "cerrar": "Cerrar",
-    "cancelar": "Cancelar"
+    "cancelar": "Cancelar",
+    "error": "Algo ha fallado"
   },
   "partidos": {
     "error": "No se han podido cargar los partidos.",
-    "vacio": "No hay partidos en los próximos días."
+    "vacio": "Este equipo no tiene partidos en el calendario.",
+    "estados": {
+      "programado": "Programado",
+      "en_juego": "En juego",
+      "finalizado": "Finalizado",
+      "aplazado": "Aplazado",
+      "pendiente": "Pendiente de resultado"
+    },
+    "porDefinir": "Por definir",
+    "sinHora": "Hora por fijar",
+    "oficial": "Oficial {{resultado}}",
+    "proximo": "Próximo",
+    "sinEquipoTitulo": "Elige tu equipo",
+    "sinEquipoTexto": "Verás su calendario y resultados en esta pantalla."
   },
   "ajustes": {
     "titulo": "Ajustes",
@@ -57,5 +71,11 @@
     "titulo": "Jugador",
     "error": "No se ha podido cargar el jugador.",
     "resumen": "{{partidos}} PJ · {{goles}} goles"
+  },
+  "selector": {
+    "titulo": "Elige un equipo",
+    "elegir": "Elegir equipo",
+    "cambiar": "Cambiar de equipo",
+    "vacio": "No hay equipos disponibles."
   }
 }
