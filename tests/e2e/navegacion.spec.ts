@@ -43,18 +43,17 @@ test('clasificación → equipo → partido → jugador y vuelta atrás por la p
     page.getByTestId('page-partido').getByTestId('marcador'),
   ).toBeVisible();
   await expect(page).toHaveURL(`/clasificacion/partido/${PARTIDO}`);
-  await page.getByTestId('abrir-info-partido').click();
-  await expect(page.getByTestId('hoja-info-partido')).toBeVisible();
   await expect(
     page
-      .getByTestId('hoja-info-partido')
+      .getByTestId('page-partido')
+      .getByTestId('informacion-partido')
       .getByText('POLIDEPORTIVO DE TXURDINAGA'),
   ).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('hoja-info-partido')).toBeHidden();
 
+  await page.getByTestId('secciones-partido-alineaciones').click();
   await page
-    .locator('[data-testid=page-partido] ion-item[router-link*="/jugador/"]')
+    .getByTestId('page-partido')
+    .getByTestId('miembro-jugador')
     .first()
     .click();
   await expect(page).toHaveURL(/\/clasificacion\/jugador\//);

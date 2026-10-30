@@ -4,6 +4,7 @@ export * from './calendario';
 export * from './catalogo';
 export * from './clasificacion';
 export * from './competicion';
+export * from './cronologia';
 export * from './detalle';
 export * from './equipo';
 export * from './estado';

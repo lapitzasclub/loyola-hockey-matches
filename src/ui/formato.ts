@@ -19,3 +19,8 @@ export function formatoMes(mes: string, idioma: string): string {
     year: 'numeric',
   }).format(aFecha(`${mes}-01`));
 }
+
+/** Reloj de una incidencia: `7:05`. */
+export function formatoCrono(minuto: number, segundo: number): string {
+  return `${minuto}:${String(segundo).padStart(2, '0')}`;
+}

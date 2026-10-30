@@ -811,3 +811,303 @@ button.cabecera-equipo:active {
   font-size: 0.7rem;
   font-weight: 800;
 }
+
+/* Pestañas deslizables: los paneles forman una fila con scroll-snap */
+.pestanas__fila {
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.pestanas__fila::-webkit-scrollbar {
+  display: none;
+}
+
+.pestanas__panel {
+  flex: none;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Detalle de partido */
+.partido-cabecera {
+  padding: 12px 16px 8px;
+}
+
+.partido-cabecera__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--app-texto-secundario);
+  font-size: 0.75rem;
+}
+
+.partido-cabecera__cruce {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 8px;
+  padding-top: 14px;
+}
+
+.partido-cabecera__equipo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  text-align: center;
+}
+
+.partido-cabecera__nombre {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.partido-cabecera__centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 96px;
+}
+
+.partido-cabecera__marcador {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.partido-cabecera__marcador--hora {
+  font-size: 1.6rem;
+}
+
+.partido-cabecera__periodo,
+.partido-cabecera__oficial {
+  color: var(--app-texto-secundario);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Línea de eventos */
+.eventos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evento {
+  display: grid;
+  grid-template-columns: 44px 24px 1fr auto 24px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--app-superficie-borde);
+}
+
+.evento__reloj {
+  color: var(--app-texto-secundario);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.evento__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--app-texto-secundario);
+}
+
+.evento--gol .evento__icono {
+  color: var(--ion-text-color);
+}
+
+.evento__texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 0.9rem;
+}
+
+.evento__sub {
+  color: var(--app-texto-secundario);
+  font-size: 0.78rem;
+}
+
+.evento__marcador {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.persona-enlace {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--app-superficie-borde);
+  text-underline-offset: 3px;
+}
+
+.tarjeta-color {
+  width: 12px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.tarjeta-color--azul {
+  background: var(--app-tarjeta-azul);
+}
+
+.tarjeta-color--amarilla {
+  background: var(--app-tarjeta-amarilla);
+}
+
+.tarjeta-color--roja {
+  background: var(--app-tarjeta-roja);
+}
+
+/* Tanda de penaltis */
+.tanda__cabecera,
+.tanda__ronda {
+  display: grid;
+  grid-template-columns: 1fr 36px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--app-superficie-borde);
+}
+
+.tanda__cabecera {
+  font-weight: 700;
+  text-align: center;
+}
+
+.tanda__cabecera strong {
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tanda__lanzamiento {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
+.tanda__ronda > .tanda__lanzamiento:last-child {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.tanda__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tanda__numero {
+  color: var(--app-texto-secundario);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.tanda__resultado {
+  font-weight: 800;
+}
+
+.tanda__lanzamiento--gol .tanda__resultado {
+  color: var(--app-victoria);
+}
+
+.tanda__lanzamiento--fallo .tanda__resultado {
+  color: var(--app-derrota);
+}
+
+/* Resumen del partido */
+.totales {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.totales th,
+.totales td {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--app-superficie-borde);
+  text-align: center;
+}
+
+.totales tbody th {
+  font-weight: 400;
+  text-align: left;
+}
+
+.totales thead th {
+  color: var(--app-texto-secundario);
+  font-size: 0.75rem;
+}
+
+.datos-lista {
+  margin: 0;
+}
+
+.datos-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--app-superficie-borde);
+  font-size: 0.9rem;
+}
+
+.datos-fila dt {
+  color: var(--app-texto-secundario);
+}
+
+.datos-fila dd {
+  margin: 0;
+  text-align: right;
+}
+
+.cronica {
+  padding: 0 16px;
+}
+
+.cronica h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.cronica p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.seccion__titulo--equipo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seccion__subtitulo {
+  margin: 0;
+  padding: 10px 16px 2px;
+  color: var(--app-texto-secundario);
+  font-size: 0.72rem;
+  font-weight: 600;
+}

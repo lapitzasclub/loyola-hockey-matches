@@ -139,11 +139,84 @@
   "partido": {
     "titulo": "Partido",
     "error": "No se ha podido cargar el partido.",
-    "info": "Información del partido",
-    "competicion": "Competición",
-    "fecha": "Fecha",
-    "pista": "Pista",
-    "arbitros": "Árbitros"
+    "jornada": "{{competicion}} · {{jornada}}",
+    "secciones": {
+      "resumen": "Resumen",
+      "eventos": "Eventos",
+      "alineaciones": "Alineaciones"
+    },
+    "periodo": {
+      "previa": "Previa",
+      "juego": "{{numero}}º periodo",
+      "descanso": "Descanso",
+      "prorroga": "Prórroga {{numero}}",
+      "penaltis": "Tanda de penaltis",
+      "final": "Final",
+      "desconocido": "Periodo {{codigo}}"
+    },
+    "resumen": {
+      "estadisticas": "Estadísticas",
+      "goles": "Goles",
+      "faltas": "Faltas",
+      "azules": "Tarjetas azules",
+      "amarillas": "Tarjetas amarillas",
+      "rojas": "Tarjetas rojas",
+      "tiemposMuertos": "Tiempos muertos",
+      "parciales": "Parciales",
+      "parcial": "Periodo {{numero}}",
+      "resultadoOficial": "Resultado oficial",
+      "reglas": {
+        "porPeriodos": "Cada periodo vale 2 puntos al ganador, o 1 a cada equipo si empatan.",
+        "desempatePenaltis": "Gana {{equipo}} en la tanda de penaltis y se lleva el punto extra.",
+        "desempateProrroga": "Gana {{equipo}} en la prórroga y se lleva el punto extra.",
+        "aCero": "En esta liga el resultado oficial es siempre 0-0.",
+        "diferenciaMaxima": "En esta liga el resultado oficial no refleja más de {{max}} goles de diferencia."
+      },
+      "informacion": "Información",
+      "competicion": "Competición",
+      "fecha": "Fecha",
+      "pista": "Pista",
+      "arbitros": "Árbitros",
+      "cronica": "Crónica",
+      "sinDatos": "El partido aún no ha empezado."
+    },
+    "eventos": {
+      "vacios": "Todavía no hay incidencias.",
+      "gol": "Gol",
+      "golPenalti": "Gol de penalti",
+      "golFaltaDirecta": "Gol de falta directa",
+      "asiste": "Asiste",
+      "falta": "Falta",
+      "penalti": "Penalti",
+      "penaltiFallado": "Penalti fallado",
+      "faltaDirecta": "Falta directa",
+      "faltaDirectaFallada": "Falta directa fallada",
+      "tiempoMuerto": "Tiempo muerto",
+      "cambio": "Cambio",
+      "entra": "Entra",
+      "sale": "Sale",
+      "tarjetaAzul": "Tarjeta azul",
+      "tarjetaAmarilla": "Tarjeta amarilla",
+      "tarjetaRoja": "Tarjeta roja",
+      "sancion": "{{minutos}} min",
+      "portero": "Portero",
+      "marcador": "Marcador {{resultado}}"
+    },
+    "tanda": {
+      "titulo": "Tanda de penaltis",
+      "gol": "Gol",
+      "fallo": "Fallado",
+      "pendiente": "Pendiente",
+      "ronda": "Ronda {{numero}}"
+    },
+    "alineaciones": {
+      "sinAlineacion": "Este partido no tiene alineación publicada.",
+      "porteros": "Porteros",
+      "jugadores": "Jugadores",
+      "cuerpoTecnico": "Cuerpo técnico",
+      "capitan": "Capitán",
+      "titular": "Titular"
+    }
   },
   "jugador": {
     "titulo": "Jugador",

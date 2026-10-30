@@ -272,7 +272,7 @@ Cada casilla se marca cuando la v2 lo hace **igual o mejor** en Android real y e
 - [x] Pull-to-refresh (iPhone real sin validar)
 - [x] Clasificación por grupo/fase con racha V/E/D (iPhone real sin validar)
 - [x] Detalle de equipo: resumen, partidos, plantilla, estadísticas, hub de alineaciones (iPhone real sin validar)
-- [ ] Detalle de partido: resumen, marcador, eventos, alineaciones, penaltis, cuerpo técnico (sin navegación)
+- [x] Detalle de partido: resumen, marcador, eventos, alineaciones, penaltis, cuerpo técnico (sin navegación)
 - [ ] Jugador: cabecera compacta y estadísticas
 - [ ] Pestaña de estadísticas y rankings (goleadores)
 - [ ] Navegación clasificación → equipo → partido → jugador → atrás, con back de Android y swipe iOS (pila cubierta en e2e; back de Android y swipe iOS sin validar en dispositivo)

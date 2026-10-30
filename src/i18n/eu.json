@@ -139,11 +139,84 @@
   "partido": {
     "titulo": "Partida",
     "error": "Ezin izan da partida kargatu.",
-    "info": "Partidaren informazioa",
-    "competicion": "Txapelketa",
-    "fecha": "Data",
-    "pista": "Pista",
-    "arbitros": "Epaileak"
+    "jornada": "{{competicion}} · {{jornada}}",
+    "secciones": {
+      "resumen": "Laburpena",
+      "eventos": "Gertaerak",
+      "alineaciones": "Alineazioak"
+    },
+    "periodo": {
+      "previa": "Aurrekoa",
+      "juego": "{{numero}}. aldia",
+      "descanso": "Atsedenaldia",
+      "prorroga": "{{numero}}. luzapena",
+      "penaltis": "Penalti-sorta",
+      "final": "Amaiera",
+      "desconocido": "{{codigo}}. aldia"
+    },
+    "resumen": {
+      "estadisticas": "Estatistikak",
+      "goles": "Golak",
+      "faltas": "Faltak",
+      "azules": "Txartel urdinak",
+      "amarillas": "Txartel horiak",
+      "rojas": "Txartel gorriak",
+      "tiemposMuertos": "Denbora-etenak",
+      "parciales": "Zatikakoak",
+      "parcial": "{{numero}}. aldia",
+      "resultadoOficial": "Emaitza ofiziala",
+      "reglas": {
+        "porPeriodos": "Aldi bakoitzak 2 puntu ematen dizkio irabazleari, edo 1 talde bakoitzari berdinduz gero.",
+        "desempatePenaltis": "{{equipo}} taldeak irabazten du penalti-sortan eta puntu gehigarria lortzen du.",
+        "desempateProrroga": "{{equipo}} taldeak irabazten du luzapenean eta puntu gehigarria lortzen du.",
+        "aCero": "Liga honetan emaitza ofiziala beti da 0-0.",
+        "diferenciaMaxima": "Liga honetan emaitza ofizialak ez du {{max}} gol baino diferentzia handiagorik islatzen."
+      },
+      "informacion": "Informazioa",
+      "competicion": "Txapelketa",
+      "fecha": "Data",
+      "pista": "Pista",
+      "arbitros": "Epaileak",
+      "cronica": "Kronika",
+      "sinDatos": "Partida ez da hasi oraindik."
+    },
+    "eventos": {
+      "vacios": "Oraindik ez dago gertaerarik.",
+      "gol": "Gola",
+      "golPenalti": "Penalti-gola",
+      "golFaltaDirecta": "Zuzeneko falta-gola",
+      "asiste": "Gol-pasea",
+      "falta": "Falta",
+      "penalti": "Penaltia",
+      "penaltiFallado": "Penalti hutsa",
+      "faltaDirecta": "Zuzeneko falta",
+      "faltaDirectaFallada": "Zuzeneko falta hutsa",
+      "tiempoMuerto": "Denbora-etena",
+      "cambio": "Aldaketa",
+      "entra": "Sartzen da",
+      "sale": "Irteten da",
+      "tarjetaAzul": "Txartel urdina",
+      "tarjetaAmarilla": "Txartel horia",
+      "tarjetaRoja": "Txartel gorria",
+      "sancion": "{{minutos}} min",
+      "portero": "Atezaina",
+      "marcador": "Markagailua {{resultado}}"
+    },
+    "tanda": {
+      "titulo": "Penalti-sorta",
+      "gol": "Gola",
+      "fallo": "Huts",
+      "pendiente": "Zain",
+      "ronda": "{{numero}}. txanda"
+    },
+    "alineaciones": {
+      "sinAlineacion": "Partida honek ez du alineaziorik argitaratuta.",
+      "porteros": "Atezainak",
+      "jugadores": "Jokalariak",
+      "cuerpoTecnico": "Gorputz teknikoa",
+      "capitan": "Kapitaina",
+      "titular": "Hasierakoa"
+    }
   },
   "jugador": {
     "titulo": "Jokalaria",

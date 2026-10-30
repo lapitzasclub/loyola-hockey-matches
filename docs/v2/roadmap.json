@@ -121,7 +121,7 @@
       "title": "Pantalla: detalle de partido",
       "model": "sonnet",
       "effort": "high",
-      "status": "pending",
+      "status": "done",
       "prompt": "Implementa el detalle de partido con paridad v1: cabecera con escudos, marcador y estado; pestañas deslizables (resumen, eventos, alineaciones) con un componente de tabs reutilizable en `src/ui/`; línea de eventos por periodo con iconos por tipo de incidencia; alineaciones local/visitante con iniciales, capitán, porteros y cuerpo técnico (cuerpo técnico sin navegación, como en la v1); tanda de penaltis; árbitros y pista. Desde una alineación o evento se navega al jugador. La cabecera debe estar estructurada para plegarse con el scroll en S09. Pensado para recibir datos en vivo desde la caché en S10 sin cambios en la vista.",
       "exit": [
         "Casilla de detalle de partido marcada en la checklist",
