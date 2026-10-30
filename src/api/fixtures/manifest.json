@@ -1,5 +1,5 @@
 {
-  "capturadoEn": "2026-10-30T17:52:57.297Z",
+  "capturadoEn": "2026-10-30T18:25:11.236Z",
   "api": "https://fvpatinaje.eus/api",
   "entidadId": "00000000-0000-4000-0000-000000000001",
   "deporte": "hp",
@@ -56,5 +56,73 @@
         "f3672a7c-6bd4-4241-9139-00a02224d4f3"
       ]
     }
-  ]
+  ],
+  "partidos": [
+    {
+      "clave": "falta-directa",
+      "id": "6636af38-a791-4002-ab03-402a765a7d7f",
+      "motivo": "Liga Norte 3-2: falta directa marcada, azul, amarilla a staff sin dorsal, cambios y asistencias"
+    },
+    {
+      "clave": "roja",
+      "id": "8b78cf18-2638-418d-961f-c200becec224",
+      "motivo": "Liga Norte 4-6: tarjeta roja, penalti marcado y dos faltas directas marcadas"
+    },
+    {
+      "clave": "periodo-0",
+      "id": "13a7f4de-99ce-4634-a56f-ad56dba6141a",
+      "motivo": "Liga Norte 5-4: cambios en el periodo 0 (previa), falta directa marcada y fallada"
+    },
+    {
+      "clave": "descanso",
+      "id": "13aad399-731a-4dc8-93df-cfd4f2a6054b",
+      "motivo": "Liga Norte 2-5: cambios en el periodo 9 (descanso) y falta directa fallada"
+    },
+    {
+      "clave": "penaltis-fallados",
+      "id": "8761059e-ec91-47f6-a042-195bde5ac2e4",
+      "motivo": "Liga Vasca Junior 1-1: dos penaltis NO_GOL y amarillas"
+    },
+    {
+      "clave": "copa",
+      "id": "b931107f-6c3d-4811-8469-d616167478f6",
+      "motivo": "Copa 5-6: configuracionReglas {\"penaltis\":true}, penalti fallado, falta directa marcada y fallada"
+    },
+    {
+      "clave": "escolar-capado",
+      "id": "4ac17159-ebe2-4036-b5ed-756e49517395",
+      "motivo": "Infantil R: 1-9 en goles, 1-6 oficial (maxDiferenciaGoles 5) y staff con rolPosicion vacío"
+    },
+    {
+      "clave": "escolar-por-periodos",
+      "id": "fdc003b2-9f7e-4bad-8379-371dc2684e64",
+      "motivo": "Alevín A: 6-6 en goles, 3-3 oficial por periodos (3 periodos) y penalti marcado"
+    },
+    {
+      "clave": "escolar-a-cero",
+      "id": "92a0ec93-70c9-4757-b50a-8ea9da96044c",
+      "motivo": "Benjamín B: 12-6 en goles, 0-0 oficial (marcadorACero) y staff con rolPosicion vacío"
+    },
+    {
+      "clave": "jugador-sin-dorsal",
+      "id": "76c1c3cc-c29f-4475-a7a8-6216ef5c94ee",
+      "motivo": "Alevín R: JUGADOR con dorsal \"\" (no jugó) y Loyola A"
+    },
+    {
+      "clave": "puntaje-fuera-de-regla",
+      "id": "bf26aba9-ce4e-4e72-9979-a6a79f5a6f08",
+      "motivo": "Juvenil escolar: puntaje oficial 10-0 aunque maxDiferenciaGoles es 5"
+    },
+    {
+      "clave": "programado",
+      "id": "edc4ce10-2aa7-4080-93e9-59ba04af9bdd",
+      "motivo": "Próximo partido del Loyola en liga-norte: sin jugar, periodo 0, puntaje null"
+    }
+  ],
+  "jugadores": {
+    "slug": "liga-norte",
+    "equipoId": "d14ff5fb-bfa3-45a8-98cc-c6bd0f5254f5",
+    "goleadorId": "f0aa4989-77d8-4e18-8500-28dc2a101c64",
+    "porteroId": "c3706c6a-a738-4073-9894-1fa8657d95e2"
+  }
 }

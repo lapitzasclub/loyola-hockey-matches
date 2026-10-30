@@ -30,8 +30,58 @@ export interface FixturesDivision {
   clasificaciones: Map<string, unknown>;
 }
 
+/** Detalle de partido de la muestra; `clave` nombra el fichero. */
+export interface MuestraPartido {
+  clave: string;
+  id: string;
+  motivo: string;
+}
+
+/** Plantilla, goleador y portero del Loyola en la competición `slug`. */
+export interface MuestraJugadores {
+  slug: string;
+  equipoId: string;
+  goleadorId: string;
+  porteroId: string;
+}
+
+interface Manifiesto {
+  muestra: MuestraFixture[];
+  partidos: MuestraPartido[];
+  jugadores: MuestraJugadores;
+}
+
+function manifiesto(): Manifiesto {
+  return fixture('manifest.json') as Manifiesto;
+}
+
 export function muestra(): MuestraFixture[] {
-  return (fixture('manifest.json') as { muestra: MuestraFixture[] }).muestra;
+  return manifiesto().muestra;
+}
+
+export function partidosMuestra(): MuestraPartido[] {
+  return manifiesto().partidos;
+}
+
+export function fixturePartido(clave: string): unknown {
+  return fixture(`partidos/${clave}.json`);
+}
+
+export interface FixturesJugadores extends MuestraJugadores {
+  estadisticas: unknown;
+  plantilla: unknown;
+  /** `/public/partidos/jugador/{id}/stats` del goleador y del portero. */
+  stats: (plantillaEquipoId: string) => unknown;
+}
+
+export function fixturesJugadores(): FixturesJugadores {
+  const m = manifiesto().jugadores;
+  return {
+    ...m,
+    estadisticas: fixture(`${m.slug}/estadisticas-jugadores.json`),
+    plantilla: fixture(`${m.slug}/plantilla/${m.equipoId}.json`),
+    stats: (id) => fixture(`jugadores/${id}.json`),
+  };
 }
 
 export function fixturesDivision(slug: string): FixturesDivision {

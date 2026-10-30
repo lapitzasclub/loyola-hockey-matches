@@ -1,0 +1,356 @@
+[
+  {
+    "competicionId": "fe7edab7-0be9-441e-9b34-888a0f95d251",
+    "competicionNombre": "LIGA NORTE",
+    "fases": [
+      {
+        "id": "f991edaf-9299-4cf1-bd15-0645d01b08d1",
+        "nombre": "FASE REGULAR"
+      }
+    ],
+    "matches": [
+      {
+        "id": "95e1c8b2-2f6b-435e-96c2-17acfaca2972",
+        "jornadaNombre": "JORNADA 5",
+        "fechaInicio": "2026-10-31T00:00:00Z",
+        "hora": "18:00",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 0,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "c73057f7-27e3-4e13-8f24-42b12af1a78c",
+          "equipoId": "11fad97c-c7d9-4072-87b6-142d37f375a5",
+          "nombreAbrev": "OBE",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000090.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "ca089cb4-5b58-4e53-b29c-906512e00b09",
+          "equipoId": "17a27de0-9f33-4cef-9c36-1f66db2eaa0a",
+          "nombreAbrev": "GTX",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000056.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      },
+      {
+        "id": "edc4ce10-2aa7-4080-93e9-59ba04af9bdd",
+        "jornadaNombre": "JORNADA 5",
+        "fechaInicio": "2026-10-31T00:00:00Z",
+        "hora": "18:00",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 0,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "c0ff3715-c75f-4665-b471-30b5b997907d",
+          "equipoId": "d14ff5fb-bfa3-45a8-98cc-c6bd0f5254f5",
+          "nombreAbrev": "LOY",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000044.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "78d4878a-bf24-4436-a069-01a0e8210ac8",
+          "equipoId": "b136a95b-c90e-445e-b2d3-abd7d9c8f7c8",
+          "nombreAbrev": "TEN",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000091.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      },
+      {
+        "id": "1de5d018-3eb3-4381-9f16-e5eb3551607f",
+        "jornadaNombre": "JORNADA 5",
+        "fechaInicio": "2026-10-31T00:00:00Z",
+        "hora": "18:00",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 0,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "8b96b2be-a01f-4835-be2e-6d230b5a5a2b",
+          "equipoId": "86043d42-3002-4ae2-a725-85bd0d654d25",
+          "nombreAbrev": "LGN",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000089.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "c1436771-e706-41c9-85dd-e8789fa7e70a",
+          "equipoId": "38378fe6-29e7-4d4f-931d-bfff3acbc9b4",
+          "nombreAbrev": "STX",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000043.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      },
+      {
+        "id": "03760375-4767-41c0-9f42-775d8b00638d",
+        "jornadaNombre": "JORNADA 5",
+        "fechaInicio": "2026-10-31T00:00:00Z",
+        "hora": "18:00",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 0,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "f291f59b-8f85-4ef2-9edb-61343baebfda",
+          "equipoId": "e9a0c697-dd9f-4e83-a5f9-64439da6707f",
+          "nombreAbrev": "BUR",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000088.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "46739283-311b-4d02-895c-2c6281c0088b",
+          "equipoId": "0a2cf746-45e3-4ba5-915d-e7cf05b1b932",
+          "nombreAbrev": "IRU",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000122.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      },
+      {
+        "id": "32dec047-fafc-466b-bf31-8c11e430cc5d",
+        "jornadaNombre": "JORNADA 5",
+        "fechaInicio": "2026-11-01T00:00:00Z",
+        "hora": "12:00",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 0,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "31b4e596-3f2a-46bf-a254-da744fa93f98",
+          "equipoId": "d9eb23c1-b347-4301-8f1c-d9357cced149",
+          "nombreAbrev": "MUN",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000045.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "8143b07f-c93d-4715-a6bb-7afe01c9d7c5",
+          "equipoId": "ec8219c8-b95d-4746-b2b8-1e02e3482e1a",
+          "nombreAbrev": "GUR",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000066.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      },
+      {
+        "id": "4ad65acf-dbe8-4aa6-bd74-94628cdc8667",
+        "jornadaNombre": "JORNADA 5",
+        "fechaInicio": "2026-11-01T00:00:00Z",
+        "hora": "12:00",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 0,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "a5df3f49-63a2-4103-bff3-d16610628214",
+          "equipoId": "0397d443-6eb3-4fd0-b9d4-5d7fd23e1dab",
+          "nombreAbrev": "BGO",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000040.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "b465322e-2629-46b4-86b6-34667d8bdd6d",
+          "equipoId": "7bbb3643-b0ff-48a9-acf5-903b88c3638a",
+          "nombreAbrev": "URD",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000082.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      }
+    ]
+  },
+  {
+    "competicionId": "841f321b-608f-4fbe-a17d-c7746dc0bba8",
+    "competicionNombre": "LIGA ESCOLAR INFANTIL R",
+    "fases": [
+      {
+        "id": "667dc0d7-14b5-4704-89bf-fb09b6f07e51",
+        "nombre": "FASE REGULAR"
+      }
+    ],
+    "matches": [
+      {
+        "id": "1062eff4-72a9-455e-a53a-7d82a7f18b3e",
+        "jornadaNombre": "JORNADA 4",
+        "fechaInicio": "2026-10-31T00:00:00Z",
+        "hora": "11:00",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 5,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "88bcb260-44b4-47b6-8274-83a502faaa96",
+          "equipoId": "e76fdb3d-13e2-4bc6-ba00-e7b8ccfbf551",
+          "nombreAbrev": "LOY A",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000044.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "94f737bb-2191-4b65-aa8c-8e0b84179f7a",
+          "equipoId": "728ebd30-2fa1-4069-9067-d9360494ffdd",
+          "nombreAbrev": "VOT",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000101.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      },
+      {
+        "id": "971ce7b0-860b-44b4-942b-132a4686504e",
+        "jornadaNombre": "JORNADA 4",
+        "fechaInicio": "2026-10-31T00:00:00Z",
+        "hora": "11:30",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 5,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "d007edb7-6aa4-4c59-bff3-bc7f8de3f2d0",
+          "equipoId": "1bc0892c-d437-4013-9033-880c75f48a4b",
+          "nombreAbrev": "STX B",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000043.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "38e1c2d3-6498-4cc2-aa8e-d6c818fa2ded",
+          "equipoId": "636dff54-dee7-4092-8c8f-0d114884cf7c",
+          "nombreAbrev": "URD",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000082.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      },
+      {
+        "id": "c80b277f-733a-4fe2-9e56-e2fb712c6cf8",
+        "jornadaNombre": "JORNADA 4",
+        "fechaInicio": "2026-10-31T00:00:00Z",
+        "hora": "11:45",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 5,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "cf46c8b1-a779-4dca-9773-684f7b048169",
+          "equipoId": "71d80cf4-21d9-419f-9942-9bcd6b818326",
+          "nombreAbrev": "GT SU",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000120.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "0c9e50fd-93ba-4afc-9426-e97ddf39ab33",
+          "equipoId": "fd1fb075-056b-4ca5-a122-c186d2b4d85e",
+          "nombreAbrev": "JOL A",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000052.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      },
+      {
+        "id": "fddd3a82-f0e7-4798-bc5e-2a406af31e5f",
+        "jornadaNombre": "JORNADA 4",
+        "fechaInicio": "2026-10-31T00:00:00Z",
+        "hora": "12:30",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 5,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "73c47ece-a20b-495b-b273-a71a71b38504",
+          "equipoId": "90a78c87-d3fd-4191-9cf0-8b189a16bafd",
+          "nombreAbrev": "GUR",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000066.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "217c5ad7-0d99-4072-8623-488461fd9708",
+          "equipoId": "a1b652d4-15ba-4604-bb47-bb20e825bf8f",
+          "nombreAbrev": "STX A",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000043.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      },
+      {
+        "id": "353e6b6e-c80e-4160-897e-a069a5b3ac44",
+        "jornadaNombre": "JORNADA 4",
+        "fechaInicio": "2026-10-31T00:00:00Z",
+        "hora": "14:15",
+        "periodo": 0,
+        "actaCerrada": false,
+        "marcadorACero": false,
+        "maxDiferenciaGoles": 5,
+        "resultadoOficial": false,
+        "puntuacionPorPeriodos": false,
+        "puntoBonus": false,
+        "desempatePenaltis": false,
+        "local": {
+          "inscripcionId": "59df7be4-298d-4267-a3f1-e0d83bd3dca7",
+          "equipoId": "6bd5ef0b-e669-4ff0-8d05-43a29dc38d37",
+          "nombreAbrev": "GTX",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000056.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        },
+        "visitante": {
+          "inscripcionId": "e0164069-d5a5-433d-b823-f7c5f9062ac2",
+          "equipoId": "60e8b583-7343-4a92-beb5-2cd840269139",
+          "nombreAbrev": "JOL B",
+          "logoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000052.webp",
+          "goles": 0,
+          "ganoDesempate": false
+        }
+      }
+    ]
+  }
+]
