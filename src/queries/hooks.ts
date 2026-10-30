@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { QueryKey } from '@tanstack/react-query';
 
 import type { Division } from '../domain';
 import { consultas } from './consultas';
@@ -39,3 +40,16 @@ export const usePlantilla = (
 
 export const useFichaJugador = (plantillaEquipoId: string | undefined) =>
   useQuery(consultas.fichaJugador(plantillaEquipoId));
+
+/**
+ * Pull-to-refresh: invalida las consultas de la vista y resuelve cuando las
+ * que están en pantalla han vuelto a pedirse (bien o con error), para cerrar
+ * el spinner justo entonces.
+ */
+export function useRefrescar(...vista: QueryKey[]) {
+  const queryClient = useQueryClient();
+  return () =>
+    Promise.all(
+      vista.map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+    );
+}

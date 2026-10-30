@@ -1,4 +1,6 @@
-import { IonApp, setupIonicReact } from '@ionic/react';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { Capacitor } from '@capacitor/core';
+import { IonApp, isPlatform, setupIonicReact } from '@ionic/react';
 import { useIsRestoring, useQueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -11,7 +13,12 @@ import {
 } from './persistencia';
 import { createQueryClient } from './queryClient';
 
-setupIonicReact({ mode: 'ios' });
+setupIonicReact({
+  mode: 'ios',
+  // En Safari con pestaña el gesto de atrás ya lo hace el navegador y se
+  // pisarían; en la PWA instalada (standalone) no hay gesto del sistema.
+  swipeBackEnabled: !(isPlatform('ios') && !isPlatform('pwa')),
+});
 
 /**
  * Con la caché ya restaurada, pide el catálogo solo si caducó; de paso deja
@@ -24,7 +31,10 @@ function PrecargaCatalogo() {
   const restaurando = useIsRestoring();
   const queryClient = useQueryClient();
   useEffect(() => {
-    if (!restaurando) void queryClient.prefetchQuery(consultas.catalogo());
+    if (restaurando) return;
+    void queryClient.prefetchQuery(consultas.catalogo());
+    // Con la caché ya en pantalla sobra el splash (si no, se oculta solo a los 3 s).
+    if (Capacitor.isNativePlatform()) void SplashScreen.hide();
   }, [restaurando, queryClient]);
   return null;
 }

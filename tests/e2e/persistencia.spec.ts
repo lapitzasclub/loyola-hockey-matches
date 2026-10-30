@@ -1,39 +1,7 @@
-import { readFileSync } from 'node:fs';
-
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
-const fixture = (ruta: string): unknown =>
-  JSON.parse(
-    readFileSync(new URL(`../../src/api/fixtures/${ruta}`, import.meta.url), {
-      encoding: 'utf8',
-    }),
-  );
-
-/** Sirve la API con fixtures y devuelve la lista de rutas pedidas. */
-async function apiDeFixtures(page: Page) {
-  const pedidas: string[] = [];
-  const divisiones = fixture('divisiones.json') as { competicionId: string }[];
-  await page.route('**/api/**', async (route) => {
-    const peticion = route.request();
-    const ruta = new URL(peticion.url()).pathname.replace(/^\/api/, '');
-    pedidas.push(ruta);
-    if (ruta === '/public/agenda') {
-      return route.fulfill({ json: fixture('agenda.json') });
-    }
-    if (ruta === '/hierarchy/competiciones/divisiones') {
-      const ids = new Set(peticion.postDataJSON() as string[]);
-      return route.fulfill({
-        json: divisiones.filter((d) => ids.has(d.competicionId)),
-      });
-    }
-    if (/^\/hierarchy\/division\/[^/]+\/equipos$/.test(ruta)) {
-      return route.fulfill({ json: [] });
-    }
-    return route.fulfill({ status: 404, json: {} });
-  });
-  return pedidas;
-}
+import { apiDeFixtures } from './api';
 
 /** Espera a que la caché quede escrita en IndexedDB. */
 async function cacheEscrita(page: Page) {

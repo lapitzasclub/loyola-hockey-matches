@@ -12,39 +12,100 @@ import {
   listOutline,
   statsChartOutline,
 } from 'ionicons/icons';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route } from 'react-router-dom';
 
+import { AjustesModal } from '../features/ajustes/AjustesModal';
 import { ClasificacionPage } from '../features/clasificacion/ClasificacionPage';
+import { EquipoPage } from '../features/equipo/EquipoPage';
 import { EstadisticasPage } from '../features/estadisticas/EstadisticasPage';
+import { JugadorPage } from '../features/jugador/JugadorPage';
+import { PartidoPage } from '../features/partido/PartidoPage';
 import { PartidosPage } from '../features/partidos/PartidosPage';
+import { PATRONES, PESTANAS, PESTANA_INICIAL, rutas } from '../ui/rutas';
+import { AccionesShellContext } from '../ui/shell';
+import { useBotonAtras } from './botonAtras';
+import { useTema } from './tema';
 
-export function Tabs() {
+const RAICES = {
+  partidos: <PartidosPage />,
+  clasificacion: <ClasificacionPage />,
+  estadisticas: <EstadisticasPage />,
+};
+
+const ICONOS = {
+  partidos: calendarOutline,
+  clasificacion: listOutline,
+  estadisticas: statsChartOutline,
+};
+
+/**
+ * Las pantallas de detalle se registran bajo cada pestaña: así cada una
+ * tiene su pila y el back y el swipe de iOS no saltan de pestaña.
+ */
+const rutasDePestanas = PESTANAS.flatMap((p) => [
+  <Route key={p} path={rutas.raiz(p)} element={RAICES[p]} />,
+  <Route
+    key={`${p}-equipo`}
+    path={`${rutas.raiz(p)}/${PATRONES.equipo}`}
+    element={<EquipoPage />}
+  />,
+  <Route
+    key={`${p}-partido`}
+    path={`${rutas.raiz(p)}/${PATRONES.partido}`}
+    element={<PartidoPage />}
+  />,
+  <Route
+    key={`${p}-jugador`}
+    path={`${rutas.raiz(p)}/${PATRONES.jugador}`}
+    element={<JugadorPage />}
+  />,
+]);
+
+function Shell() {
   const { t } = useTranslation();
+  const [tema, cambiarTema] = useTema();
+  const [ajustes, setAjustes] = useState(false);
+  const acciones = useMemo(
+    () => ({ abrirAjustes: () => setAjustes(true) }),
+    [],
+  );
+  useBotonAtras();
+
   return (
-    <IonReactRouter>
+    <AccionesShellContext.Provider value={acciones}>
       <IonTabs>
         <IonRouterOutlet>
-          <Route path="/partidos" element={<PartidosPage />} />
-          <Route path="/clasificacion" element={<ClasificacionPage />} />
-          <Route path="/estadisticas" element={<EstadisticasPage />} />
-          <Route path="/" element={<Navigate to="/partidos" replace />} />
+          {rutasDePestanas}
+          <Route
+            path="/"
+            element={<Navigate to={rutas.raiz(PESTANA_INICIAL)} replace />}
+          />
         </IonRouterOutlet>
         <IonTabBar slot="bottom">
-          <IonTabButton tab="partidos" href="/partidos">
-            <IonIcon aria-hidden="true" icon={calendarOutline} />
-            <IonLabel>{t('tabs.partidos')}</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="clasificacion" href="/clasificacion">
-            <IonIcon aria-hidden="true" icon={listOutline} />
-            <IonLabel>{t('tabs.clasificacion')}</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="estadisticas" href="/estadisticas">
-            <IonIcon aria-hidden="true" icon={statsChartOutline} />
-            <IonLabel>{t('tabs.estadisticas')}</IonLabel>
-          </IonTabButton>
+          {PESTANAS.map((p) => (
+            <IonTabButton key={p} tab={p} href={rutas.raiz(p)}>
+              <IonIcon aria-hidden="true" icon={ICONOS[p]} />
+              <IonLabel>{t(`tabs.${p}`)}</IonLabel>
+            </IonTabButton>
+          ))}
         </IonTabBar>
       </IonTabs>
+      <AjustesModal
+        abierto={ajustes}
+        alCerrar={() => setAjustes(false)}
+        tema={tema}
+        alCambiarTema={cambiarTema}
+      />
+    </AccionesShellContext.Provider>
+  );
+}
+
+export function Tabs() {
+  return (
+    <IonReactRouter>
+      <Shell />
     </IonReactRouter>
   );
 }

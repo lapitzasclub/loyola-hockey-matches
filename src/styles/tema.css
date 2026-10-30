@@ -1,0 +1,115 @@
+/*
+ * Tema claro y oscuro. `app/tema.ts` pone body[data-theme] antes del primer
+ * pintado y lo cambia en caliente. Las barras de sistema de Android y el
+ * theme-color de la PWA se leen de --app-barra-superior y --app-barra-inferior:
+ * deben ser hex.
+ */
+body[data-theme='light'] {
+  color-scheme: light;
+
+  --app-barra-superior: #0e3a43;
+  --app-barra-superior-texto: #ffffff;
+  --app-barra-inferior: #ffffff;
+  --app-texto-secundario: #5c6b6e;
+
+  --ion-color-primary: #0e3a43;
+  --ion-color-primary-rgb: 14, 58, 67;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #0c333b;
+  --ion-color-primary-tint: #264e56;
+
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: #000000;
+  --ion-text-color-rgb: 0, 0, 0;
+  --ion-item-background: #ffffff;
+  --ion-card-background: #ffffff;
+}
+
+body[data-theme='dark'] {
+  color-scheme: dark;
+
+  --app-barra-superior: #0a1b1f;
+  --app-barra-superior-texto: #ffffff;
+  --app-barra-inferior: #121212;
+  --app-texto-secundario: #9aa7aa;
+
+  --ion-color-primary: #5bb8c8;
+  --ion-color-primary-rgb: 91, 184, 200;
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #50a2b0;
+  --ion-color-primary-tint: #6bbfce;
+
+  /* Paleta oscura de Ionic (modo ios). */
+  --ion-background-color: #000000;
+  --ion-background-color-rgb: 0, 0, 0;
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+  --ion-background-color-step-50: #0d0d0d;
+  --ion-background-color-step-100: #1a1a1a;
+  --ion-background-color-step-150: #262626;
+  --ion-background-color-step-200: #333333;
+  --ion-background-color-step-250: #404040;
+  --ion-background-color-step-300: #4d4d4d;
+  --ion-background-color-step-350: #595959;
+  --ion-background-color-step-400: #666666;
+  --ion-background-color-step-450: #737373;
+  --ion-background-color-step-500: #808080;
+  --ion-background-color-step-550: #8c8c8c;
+  --ion-background-color-step-600: #999999;
+  --ion-background-color-step-650: #a6a6a6;
+  --ion-background-color-step-700: #b3b3b3;
+  --ion-background-color-step-750: #bfbfbf;
+  --ion-background-color-step-800: #cccccc;
+  --ion-background-color-step-850: #d9d9d9;
+  --ion-background-color-step-900: #e6e6e6;
+  --ion-background-color-step-950: #f2f2f2;
+  --ion-text-color-step-50: #f2f2f2;
+  --ion-text-color-step-100: #e6e6e6;
+  --ion-text-color-step-150: #d9d9d9;
+  --ion-text-color-step-200: #cccccc;
+  --ion-text-color-step-250: #bfbfbf;
+  --ion-text-color-step-300: #b3b3b3;
+  --ion-text-color-step-350: #a6a6a6;
+  --ion-text-color-step-400: #999999;
+  --ion-text-color-step-450: #8c8c8c;
+  --ion-text-color-step-500: #808080;
+  --ion-text-color-step-550: #737373;
+  --ion-text-color-step-600: #666666;
+  --ion-text-color-step-650: #595959;
+  --ion-text-color-step-700: #4d4d4d;
+  --ion-text-color-step-750: #404040;
+  --ion-text-color-step-800: #333333;
+  --ion-text-color-step-850: #262626;
+  --ion-text-color-step-900: #1a1a1a;
+  --ion-text-color-step-950: #0d0d0d;
+  --ion-item-background: #000000;
+  --ion-card-background: #1c1c1d;
+  --ion-tab-bar-background-focused: #252525;
+}
+
+body[data-theme='light'],
+body[data-theme='dark'] {
+  --ion-toolbar-background: var(--app-barra-superior);
+  --ion-toolbar-color: var(--app-barra-superior-texto);
+  --ion-tab-bar-background: var(--app-barra-inferior);
+  --ion-tab-bar-color-selected: var(--ion-color-primary);
+}
+
+/* En modo ios los botones de la barra salen en color primario, que se pierde sobre la barra. */
+ion-toolbar ion-back-button,
+ion-toolbar ion-button {
+  --color: var(--app-barra-superior-texto);
+}
+
+/* Las hojas y modales llevan su propia barra, clara en tema claro. */
+ion-modal ion-toolbar {
+  --ion-toolbar-background: var(--ion-background-color);
+  --ion-toolbar-color: var(--ion-text-color);
+}
+
+ion-modal ion-toolbar ion-button {
+  --color: var(--ion-color-primary);
+}

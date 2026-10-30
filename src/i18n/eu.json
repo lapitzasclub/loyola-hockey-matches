@@ -10,10 +10,52 @@
   "common": {
     "proximamente": "Laster.",
     "cargando": "Kargatzen…",
-    "reintentar": "Saiatu berriro"
+    "reintentar": "Saiatu berriro",
+    "atras": "Atzera",
+    "cerrar": "Itxi",
+    "cancelar": "Utzi"
   },
   "partidos": {
     "error": "Ezin izan dira partidak kargatu.",
     "vacio": "Ez dago partidarik hurrengo egunetan."
+  },
+  "ajustes": {
+    "titulo": "Ezarpenak",
+    "tema": "Gaia",
+    "idioma": "Hizkuntza",
+    "temas": {
+      "sistema": "Sistema",
+      "claro": "Argia",
+      "oscuro": "Iluna"
+    },
+    "idiomas": {
+      "es": "Castellano",
+      "eu": "Euskara"
+    }
+  },
+  "clasificacion": {
+    "equipo": "Taldea",
+    "error": "Ezin izan da sailkapena kargatu.",
+    "vacia": "Oraindik ez dago sailkapenik.",
+    "puntos_one": "{{count}} pt",
+    "puntos_other": "{{count}} pt"
+  },
+  "equipo": {
+    "titulo": "Taldea",
+    "error": "Ezin izan dira taldearen partidak kargatu."
+  },
+  "partido": {
+    "titulo": "Partida",
+    "error": "Ezin izan da partida kargatu.",
+    "info": "Partidaren informazioa",
+    "competicion": "Txapelketa",
+    "fecha": "Data",
+    "pista": "Pista",
+    "arbitros": "Epaileak"
+  },
+  "jugador": {
+    "titulo": "Jokalaria",
+    "error": "Ezin izan da jokalaria kargatu.",
+    "resumen": "{{partidos}} PJ · {{goles}} gol"
   }
 }

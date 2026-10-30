@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import es from './es.json';
 import eu from './eu.json';
-import { detectarIdioma } from './index';
+import i18n, { cambiarIdioma, detectarIdioma } from './index';
 
 function claves(obj: Record<string, unknown>, prefijo = ''): string[] {
   return Object.entries(obj).flatMap(([k, v]) =>
@@ -21,5 +21,13 @@ describe('i18n', () => {
     expect(detectarIdioma('eu-ES')).toBe('eu');
     expect(detectarIdioma('en-US')).toBe('es');
     expect(detectarIdioma(undefined)).toBe('es');
+  });
+
+  it('cambiarIdioma lo aplica y lo recuerda', () => {
+    cambiarIdioma('eu');
+    expect(localStorage.getItem('loyola.idioma')).toBe('eu');
+    expect(i18n.language).toBe('eu');
+    expect(document.documentElement.lang).toBe('eu');
+    cambiarIdioma('es');
   });
 });

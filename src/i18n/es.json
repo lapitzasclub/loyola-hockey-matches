@@ -10,10 +10,52 @@
   "common": {
     "proximamente": "Próximamente.",
     "cargando": "Cargando…",
-    "reintentar": "Reintentar"
+    "reintentar": "Reintentar",
+    "atras": "Atrás",
+    "cerrar": "Cerrar",
+    "cancelar": "Cancelar"
   },
   "partidos": {
     "error": "No se han podido cargar los partidos.",
     "vacio": "No hay partidos en los próximos días."
+  },
+  "ajustes": {
+    "titulo": "Ajustes",
+    "tema": "Tema",
+    "idioma": "Idioma",
+    "temas": {
+      "sistema": "Sistema",
+      "claro": "Claro",
+      "oscuro": "Oscuro"
+    },
+    "idiomas": {
+      "es": "Castellano",
+      "eu": "Euskara"
+    }
+  },
+  "clasificacion": {
+    "equipo": "Equipo",
+    "error": "No se ha podido cargar la clasificación.",
+    "vacia": "Todavía no hay clasificación.",
+    "puntos_one": "{{count}} pt",
+    "puntos_other": "{{count}} pts"
+  },
+  "equipo": {
+    "titulo": "Equipo",
+    "error": "No se han podido cargar los partidos del equipo."
+  },
+  "partido": {
+    "titulo": "Partido",
+    "error": "No se ha podido cargar el partido.",
+    "info": "Información del partido",
+    "competicion": "Competición",
+    "fecha": "Fecha",
+    "pista": "Pista",
+    "arbitros": "Árbitros"
+  },
+  "jugador": {
+    "titulo": "Jugador",
+    "error": "No se ha podido cargar el jugador.",
+    "resumen": "{{partidos}} PJ · {{goles}} goles"
   }
 }
