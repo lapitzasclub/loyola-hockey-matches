@@ -103,6 +103,24 @@ Reglas:
   - `/equipos` omite equipos (justo Loyola en Benjamín C y Sub15 fem).
   - `nombreDisplay` de división se repite entre competiciones: etiquetar por competición.
   - La agenda está capada a 60 días.
+- Halladas en S02 (con test en `src/domain/*.test.ts` y `src/api/mappers/partido.test.ts`):
+  - `PENALTI` y `FALTADIRECTA` apuntan al equipo que **defiende** (`equipoId` y `porteroId` son
+    del portero) y nunca traen lanzador; el `GOL` que sale de ellos lleva el `equipoId` del rival.
+    En la tanda (periodo 21) la web de la federación los pinta en la columna de su `equipoId`:
+    sin datos reales aún, se sigue ese criterio (verificar con la primera tanda).
+  - Códigos de periodo: 0 previa, 1..4 juego, 9 descanso (con `CAMBIO` a 0:00, va entre 1 y 2),
+    11/12 prórroga, 21 penaltis, 30 final. Hay incidencias (`CAMBIO`) en el periodo 0.
+  - El reloj de las incidencias va hacia **atrás** (24:59 es el principio de un periodo de 25).
+  - `numeroPeriodos` vale 0 en casi todas las ligas: usar `duracionPeriodos.length`.
+  - Hay actas cerradas con `puntaje` fuera de regla (10-0 con diferencia máxima 5): manda el
+    `puntaje`; las reglas solo se aplican mientras es null.
+  - `codigo` del `GOL` (`PENALTI`, `FALTA DIRECTA`) no siempre viene aunque haya lanzamiento.
+  - Dorsales string con ceros (`"00"`, `"09"`); `""` en el staff y en algún `JUGADOR`. Tarjetas
+    (amarillas) también al staff, sin dorsal. `FALTA` lleva siempre 90 s de sanción: no significa
+    nada.
+  - `estadisticas-jugadores` solo trae a quien ha jugado y su `equipoNombre` es la abreviatura; en
+    `plantilla` es el nombre completo. La clave es `equipoId`. Las stats de jugador mandan los
+    partidos del más reciente al más antiguo.
 - Contrato completo: memoria del proyecto `new-digitalsport-api` y `oportunidades-api-nueva`.
 
 ## 6. Rendimiento objetivo
