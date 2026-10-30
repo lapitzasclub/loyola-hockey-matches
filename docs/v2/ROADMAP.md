@@ -148,6 +148,44 @@ Medido en S03 con la API real (`npm run medir:arranque`, 2026-10-30):
 - El árbol de la división (~230 KB) solo se pide al abrir un equipo y queda en caché persistida; la
   segunda apertura no toca la red.
 
+### Shell móvil: decisiones y hallazgos (S04)
+
+- **Capacitor 8, targetSdk/compileSdk 36, minSdk 24.** Google Play exige targetSdk 36 desde el
+  31-08-2026, y con él Android 16 ignora `windowOptOutEdgeToEdgeEnforcement`: la app es siempre
+  edge-to-edge. Se usa el plugin `SystemBars` del core (`insetsHandling: "native"`) en lugar de
+  `@capacitor/status-bar` y del plugin de navigation bar. Las barras son transparentes sobre la
+  cabecera y la tab bar, Ionic aparta el contenido con `env(safe-area-inset-*)` y
+  `app/barrasSistema.ts` solo elige iconos claros u oscuros según el fondo del tema.
+- **WebView Chromium < 140**: no expone bien `env(safe-area-inset-*)`, así que Capacitor rellena
+  los insets de forma nativa y bajo las barras se ve el `backgroundColor` de la ventana
+  (`#0e3a43`) en lugar de la cabecera. Es correcto, pero en modo claro la barra de navegación sale
+  teal en vez de blanca.
+- **Fuera el trust-all de certificados** de la v1 (`MainActivity`). La cadena de `fvpatinaje.eus`
+  (Let's Encrypt, ISRG Root X1) es válida desde Android 7.1.1, y minSdk 24 cubre ese caso.
+- **Una pila por pestaña.** Las rutas de detalle cuelgan de cada pestaña
+  (`/clasificacion/equipo/…`, `/partidos/partido/…`, `ui/rutas.ts`), así que back y swipe nunca
+  saltan de pestaña y cada pestaña conserva su pila al volver a ella.
+- **Back de Android** (`app/botonAtras.ts`): primero cierra modales y hojas (prioridad 100 de
+  Ionic), luego vuelve dentro de la pila de la pestaña (con `defaultHref` a su raíz si se entró
+  por enlace), después va de la raíz de otra pestaña a Partidos y, desde la raíz de Partidos, sale.
+  No se usa el historial del navegador porque mezcla pestañas.
+- **Swipe-back iOS** solo en la PWA instalada. En Safari normal se desactiva, porque choca con el
+  gesto propio de Safari y deja la vista a medias.
+- **Pull-to-refresh**: `Pagina` lleva el `IonRefresher` y `useRefrescar(...claves)` invalida las
+  queries de la vista. El spinner espera al refetch.
+- **Tema** `sistema | claro | oscuro` en `localStorage` (`loyola.tema`), con tokens bajo
+  `body[data-theme]` (`styles/tema.css`). Se aplica antes del primer render para que no parpadee y
+  actualiza `theme-color`. El **idioma** se guarda en `loyola.idioma` y `<html lang>` lo sigue.
+- **Splash** con `@capacitor/splash-screen`: se oculta en cuanto se restaura la caché persistida,
+  con un tope de 3 s.
+
+Validación en dispositivo real:
+
+| Plataforma | Dispositivo | Versión | Back / swipe | Pull-to-refresh | Tema e idioma | Notas |
+|---|---|---|---|---|---|---|
+| Android (APK) | _pendiente_ | | | | | |
+| iPhone (PWA instalada) | _pendiente_ | | | | | |
+
 ## 7. Fases
 
 | Fase | Objetivo | Sesiones |
