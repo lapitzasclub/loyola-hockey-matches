@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rankingGoleadores } from './jugador';
+import { disciplinaEquipo, rankingGoleadores } from './jugador';
 
 function goleador(nombre: string, goles: number, asistencias = 0) {
   return { nombre, goles, asistencias };
@@ -30,5 +30,33 @@ describe('rankingGoleadores', () => {
       [2, 'Zuri'],
       [5, 'Nora'],
     ]);
+  });
+});
+
+describe('disciplinaEquipo', () => {
+  it('suma las sanciones de todos los jugadores', () => {
+    const j = (
+      faltas: number,
+      azules: number,
+      amarillas: number,
+      rojas: number,
+    ) => ({
+      faltas,
+      azules,
+      amarillas,
+      rojas,
+    });
+    expect(disciplinaEquipo([j(3, 1, 0, 0), j(2, 0, 1, 1)])).toEqual({
+      faltas: 5,
+      azules: 1,
+      amarillas: 1,
+      rojas: 1,
+    });
+    expect(disciplinaEquipo([])).toEqual({
+      faltas: 0,
+      azules: 0,
+      amarillas: 0,
+      rojas: 0,
+    });
   });
 });

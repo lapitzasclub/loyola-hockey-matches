@@ -71,3 +71,21 @@ export function fusionarEquipos(
   }
   return [...porNombre.values()];
 }
+
+/**
+ * El equipo del calendario (solo `inscripcionId`) con los ids que traen
+ * otras fuentes, p. ej. `equipoId` de `/equipos` o de la agenda, que hace
+ * falta para pedir la plantilla. Cruza por nombre; si ninguna lo conoce,
+ * devuelve el equipo tal cual.
+ */
+export function completarEquipo(
+  base: Equipo,
+  ...fuentes: readonly (readonly Equipo[])[]
+): Equipo {
+  const claveBase = claveNombre(base.nombre);
+  return (
+    fusionarEquipos([base], ...fuentes).find(
+      (e) => claveNombre(e.nombre) === claveBase,
+    ) ?? base
+  );
+}

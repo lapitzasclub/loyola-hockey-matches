@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { construirCatalogoLoyola } from './catalogo';
 import type { Competicion, Division } from './competicion';
-import { esEquipoLoyola, fusionarEquipos, mismoEquipo } from './equipo';
+import {
+  completarEquipo,
+  esEquipoLoyola,
+  fusionarEquipos,
+  mismoEquipo,
+} from './equipo';
 import { equipo } from './test-utils';
 
 describe('esEquipoLoyola', () => {
@@ -131,5 +136,28 @@ describe('construirCatalogoLoyola', () => {
       'LIGA ESCOLAR INFANTIL R / LOYOLA INDAUTXU B',
       'LIGA NORTE / LOYOLA INDAUTXU',
     ]);
+  });
+});
+
+describe('completarEquipo', () => {
+  it('añade el equipoId de otras fuentes sin perder la inscripción', () => {
+    const base = equipo('LOYOLA INDAUTXU A', { inscripcionId: 'ins-a' });
+    const completo = completarEquipo(
+      base,
+      [equipo('OTRO', { equipoId: 'eq-otro' })],
+      [equipo('loyola indautxu a ', { equipoId: 'eq-a', clubId: 'club' })],
+    );
+    expect(completo).toMatchObject({
+      inscripcionId: 'ins-a',
+      equipoId: 'eq-a',
+      clubId: 'club',
+    });
+  });
+
+  it('sin coincidencia devuelve el equipo tal cual', () => {
+    const base = equipo('SOLO', { inscripcionId: 'ins' });
+    expect(completarEquipo(base, [equipo('OTRO', { equipoId: 'x' })])).toEqual(
+      base,
+    );
   });
 });

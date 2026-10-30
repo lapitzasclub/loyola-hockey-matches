@@ -1,4 +1,5 @@
 export * from './alineacion';
+export * from './balance';
 export * from './calendario';
 export * from './catalogo';
 export * from './clasificacion';

@@ -26,6 +26,8 @@ export const claves = {
     [...division(divisionId), 'estadisticas-jugadores'] as const,
   plantilla: (divisionId: string | undefined, equipoId: string | undefined) =>
     [...division(divisionId), 'plantilla', equipoId] as const,
+  /** Las tablas de todas las fases, para refrescar la que haya en pantalla. */
+  clasificaciones: () => [RAIZ, 'fase'] as const,
   clasificacion: (faseId: string | undefined) =>
     [RAIZ, 'fase', faseId, 'clasificacion'] as const,
   partido: (id: string | undefined) => [RAIZ, 'partido', id] as const,

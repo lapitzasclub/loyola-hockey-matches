@@ -1,5 +1,7 @@
 import type { Fase, Leyenda } from './competicion';
 import type { Equipo } from './equipo';
+import type { PartidoResumen } from './partido';
+import { calcularRacha } from './racha';
 import type { Racha } from './racha';
 
 export interface FilaClasificacion {
@@ -67,4 +69,51 @@ export function agruparClasificacion(
       ...t,
       filas: [...t.filas].sort((a, b) => a.puesto - b.puesto),
     }));
+}
+
+/** Partidos que enseña la racha de la tabla. */
+export const PARTIDOS_RACHA = 5;
+
+/**
+ * Racha de cada equipo de una tabla, por `inscripcionId`: los últimos
+ * partidos de la fase con el resultado oficial. En una tabla de grupo solo
+ * cuentan los partidos entre equipos del grupo (ver `calcularRacha`).
+ */
+export function rachasDeTabla(
+  tabla: TablaClasificacion,
+  partidos: readonly PartidoResumen[],
+  cuantos = PARTIDOS_RACHA,
+): Map<string, Racha> {
+  const delGrupo = tabla.grupo
+    ? new Set(tabla.filas.flatMap((f) => f.equipo.inscripcionId ?? []))
+    : undefined;
+  const deLaFase = partidos.filter((p) => p.faseId === tabla.faseId);
+  const rachas = new Map<string, Racha>();
+  for (const { equipo } of tabla.filas) {
+    if (!equipo.inscripcionId) continue;
+    rachas.set(
+      equipo.inscripcionId,
+      calcularRacha(equipo.inscripcionId, deLaFase, delGrupo).slice(-cuantos),
+    );
+  }
+  return rachas;
+}
+
+/** Fila del equipo en la primera tabla en la que sale (un equipo sale una vez por grupo). */
+export function filaDeEquipo(
+  tablas: readonly TablaClasificacion[],
+  inscripcionId: string,
+): FilaClasificacion | null {
+  for (const tabla of tablas) {
+    const fila = tabla.filas.find(
+      (f) => f.equipo.inscripcionId === inscripcionId,
+    );
+    if (fila) return fila;
+  }
+  return null;
+}
+
+/** Fase que se enseña al abrir la clasificación: la primera de liga, o la primera. */
+export function faseInicial(fases: readonly Fase[]): Fase | null {
+  return fases.find((f) => f.formato === 'liga') ?? fases[0] ?? null;
 }

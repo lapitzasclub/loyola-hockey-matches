@@ -6,10 +6,18 @@ interface Props {
   abreviatura?: string;
   /** Lado en px. */
   tamano?: number;
+  /** Nombre de la transición compartida (ver `transiciones.ts`). */
+  transicion?: string;
 }
 
 /** Escudo del club; sin imagen o si falla, un círculo con las iniciales. */
-export function Escudo({ logoUrl, nombre, abreviatura, tamano = 44 }: Props) {
+export function Escudo({
+  logoUrl,
+  nombre,
+  abreviatura,
+  tamano = 44,
+  transicion,
+}: Props) {
   const [fallo, setFallo] = useState(false);
   const estilo = { width: tamano, height: tamano };
 
@@ -18,6 +26,7 @@ export function Escudo({ logoUrl, nombre, abreviatura, tamano = 44 }: Props) {
       <img
         className="escudo"
         style={estilo}
+        data-transicion={transicion}
         src={logoUrl}
         alt=""
         loading="lazy"
@@ -27,7 +36,12 @@ export function Escudo({ logoUrl, nombre, abreviatura, tamano = 44 }: Props) {
   }
   const iniciales = (abreviatura || nombre).trim().slice(0, 3).toUpperCase();
   return (
-    <span className="escudo escudo--iniciales" style={estilo} aria-hidden>
+    <span
+      className="escudo escudo--iniciales"
+      style={estilo}
+      data-transicion={transicion}
+      aria-hidden
+    >
       {iniciales}
     </span>
   );

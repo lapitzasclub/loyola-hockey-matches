@@ -7,6 +7,7 @@ Hooks de TanStack Query con las query keys centralizadas. Las pantallas consumen
 - `consultas.ts`: `queryOptions` de cada recurso, para hooks, `prefetchQuery` o `invalidateQueries`. Un id `undefined` deja la consulta en espera (`skipToken`).
 - `hooks.ts`: un hook por recurso (`useAgenda`, `useCatalogo`, `useCalendario`, `useClasificacion`, `usePartido`…). `useMarcadores(enDirecto)` repite cada 30 s solo si se le indica.
 - `equipoElegido.ts`: `useEquipoElegido()`, la clave del equipo elegido persistida en `localStorage`.
+- `seleccion.ts`: `useSeleccionEquipo()`, el equipo elegido resuelto contra el catálogo (lo comparten partidos y clasificación).
 - `registro.ts`: tipo de `meta`; `persistir: false` deja una consulta fuera de la caché en IndexedDB.
 
 El catálogo siembra la agenda en caché al cargarse: la pestaña de partidos no la vuelve a pedir. La persistencia y los reintentos se configuran en `app/` (`persistencia.ts`, `queryClient.ts`).

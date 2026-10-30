@@ -111,3 +111,28 @@ export function rankingGoleadores<T extends Goleador>(
   });
   return ranking;
 }
+
+export interface Disciplina {
+  faltas: number;
+  azules: number;
+  amarillas: number;
+  rojas: number;
+}
+
+/** Sanciones acumuladas por un conjunto de jugadores (el equipo entero). */
+export function disciplinaEquipo(
+  jugadores: readonly Pick<
+    ContadoresJugador,
+    'faltas' | 'azules' | 'amarillas' | 'rojas'
+  >[],
+): Disciplina {
+  return jugadores.reduce<Disciplina>(
+    (total, j) => ({
+      faltas: total.faltas + j.faltas,
+      azules: total.azules + j.azules,
+      amarillas: total.amarillas + j.amarillas,
+      rojas: total.rojas + j.rojas,
+    }),
+    { faltas: 0, azules: 0, amarillas: 0, rojas: 0 },
+  );
+}
