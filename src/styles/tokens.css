@@ -1,0 +1,10 @@
+/* Tokens de diseño. Los colores de tema por modo (claro/oscuro) van bajo body[data-theme], no en :root. */
+:root {
+  --loyola-teal: #0e3a43;
+  --ion-color-primary: #0e3a43;
+  --ion-color-primary-rgb: 14, 58, 67;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #0c333b;
+  --ion-color-primary-tint: #264e56;
+}

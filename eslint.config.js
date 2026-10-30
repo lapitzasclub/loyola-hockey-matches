@@ -1,41 +1,36 @@
-import js from "@eslint/js";
-import globals from "globals";
+import js from '@eslint/js';
+import prettier from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
   {
     ignores: [
-      "dist/**",
-      "android/**",
-      "node_modules/**",
-      "tmp_*.js",
-      "www/public/**/*.js",
+      'dist/**',
+      'android/**',
+      'functions/**',
+      '.wrangler/**',
+      'node_modules/**',
+      'playwright-report/**',
+      'test-results/**',
+      '.claude/**',
     ],
   },
   js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    files: ["www/**/*.js"],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: "module",
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-        $: "readonly",
-        jQuery: "readonly",
-        google: "readonly",
-      },
-    },
+    files: ['src/**/*.{ts,tsx}', 'tests/**/*.ts'],
+    languageOptions: { globals: { ...globals.browser } },
+    plugins: { 'react-hooks': reactHooks },
     rules: {
-      "no-unused-vars": [
-        "warn",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
-        },
-      ],
-      "no-console": "off",
-      "no-empty": ["warn", { "allowEmptyCatch": true }],
+      ...reactHooks.configs.recommended.rules,
+      '@typescript-eslint/consistent-type-imports': 'error',
     },
   },
-];
+  {
+    files: ['*.config.{js,ts}'],
+    languageOptions: { globals: { ...globals.node } },
+  },
+  prettier,
+);

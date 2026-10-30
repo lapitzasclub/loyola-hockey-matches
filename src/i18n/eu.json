@@ -1,0 +1,9 @@
+{
+  "app": { "nombre": "Loyola Hockey" },
+  "tabs": {
+    "partidos": "Partidak",
+    "clasificacion": "Sailkapena",
+    "estadisticas": "Estatistikak"
+  },
+  "common": { "proximamente": "Laster." }
+}

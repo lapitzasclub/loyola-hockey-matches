@@ -1,0 +1,9 @@
+{
+  "app": { "nombre": "Loyola Hockey" },
+  "tabs": {
+    "partidos": "Partidos",
+    "clasificacion": "Clasificación",
+    "estadisticas": "Estadísticas"
+  },
+  "common": { "proximamente": "Próximamente." }
+}

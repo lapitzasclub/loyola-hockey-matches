@@ -1,117 +1,84 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guía para Claude Code (claude.ai/code) al trabajar en este repositorio.
 
-## Commands
+## Estado del proyecto
+
+Rama `v2`: reescritura de la app (React + TypeScript + Ionic + TanStack Query). La v1 (JS plano, rama `main`) queda como referencia de comportamiento en el worktree `../loyola-hockey-matches-v1`; consúltala para ver cómo se comportaba algo, no para copiar código. El plan completo está en `docs/v2/ROADMAP.md` y las sesiones en `docs/v2/roadmap.json`.
+
+## Comandos
 
 ```bash
-npm start           # dev server (Vite, port 5173), proxies /api/* and /signalr/*
-npm run build       # production build → dist/
-npm run serve       # preview local build
-npm run lint        # ESLint on www/**/*.js (must pass before committing)
+npm start              # dev server (Vite, puerto 5173), proxy de /api y /connection hacia fvpatinaje.eus
+npm run build          # tsc --noEmit + vite build → dist/
+npm run serve          # preview del build
+npm run typecheck      # tsc --noEmit
+npm run lint           # ESLint (flat) + prettier --check
+npm run format         # prettier --write
+npm test               # Vitest (unitarios, junto al código en src/**/*.test.ts(x))
+npm run e2e            # Playwright: webkit-iphone y chromium-android (compila y sirve con vite preview)
 
-npm run android:sync   # build + cap sync android (sync web assets to Capacitor)
-npm run android:run    # android:sync + cap run android (deploy to connected device)
-npm run android:open   # open Android Studio
+npm run android:sync   # build + cap sync android
+npm run android:run    # android:sync + cap run android (dispositivo o emulador)
+npm run android:open   # abre Android Studio
 
-npm run cf:dev      # build + wrangler pages dev dist (Cloudflare runtime locally)
-npm run cf:deploy   # build + wrangler pages deploy dist
+npm run cf:dev         # build + wrangler pages dev dist
+npm run cf:deploy      # build + wrangler pages deploy dist
 ```
 
-Run `npm run lint` and `npm run build` before every commit, Android sync, or Cloudflare deploy.
+Antes de cada commit, sync de Android o deploy: `npm run lint`, `npm test` y `npm run build`. Antes de cerrar una sesión del roadmap, además `npm run e2e`.
 
-## Architecture
+En Windows, si `cap run android` falla con «"gradlew" no se reconoce», la causa es la variable de entorno `NoDefaultCurrentDirectoryInExePath=1`: quítala en esa terminal o ejecuta `android\gradlew.bat assembleDebug` y haz `adb install -r` del APK.
 
-This is a **dual-target hybrid app**: a single shared frontend (`www/`) that runs as both an Android Capacitor app and a web SPA on Cloudflare Pages.
+## Arquitectura
 
-### Source layout
+App híbrida de un solo frontend: PWA en Cloudflare Pages (es el producto de iOS) y app Android con Capacitor 7 (`appId` `com.loyola.hockeymatches`, se mantiene para actualizar la v1).
 
-- `www/` — all frontend source (**Vite root** — all module imports resolve from here, not the project root)
-  - `core/` — app bootstrap, navigation, SignalR init, pull-to-refresh, back-button coordination
-  - `components/` — all UI rendering (matches, standings, team selector, match detail, player detail)
-  - `config/runtime.js` — **single source of truth for runtime target detection**
-  - `services.js` — data access boundary: legacy FVP endpoints, SignalR hub bus
-  - `servicesCompetitionCatalog.js` — Loyola competition catalog, in-memory cache, team aggregation
-  - `servicesShared.js` — shared transport constants (FVP base URL, headers)
-  - `state/equipos.js` — selected team and Loyola teams state
-  - `utils/` — helpers, calendar, env detection, API cache, standings helpers
-  - `styles/` — per-component CSS + `theme.css` (accordion/tab tokens)
-  - `i18n.js` — all visible text; use `t(...)` for any user-facing string
-- `functions/` — Cloudflare Pages Functions (backend proxy)
-  - `api/` — closed allowlist proxy to FVP ASMX legacy endpoints
-  - `signalr/[[route]].js` — full SignalR proxy for web runtime
-- `android/` — Capacitor Android project (do not edit directly; sync via `npm run android:sync`)
-- `dist/` — generated build output, not versioned
+```
+src/
+  app/            bootstrap, router (IonReactRouter + tabs), providers, CSS núcleo de Ionic
+  domain/         tipos y reglas puras (sin React ni fetch)
+  api/            cliente HTTP dual-target, esquemas Zod, mappers API→dominio, fixtures
+  queries/        hooks TanStack Query (query keys centralizadas)
+  live/           Centrifugo: conexión, suscripciones, reducer de eventos → caché
+  features/       una carpeta por pantalla (partidos, clasificacion, equipo, partido, jugador, estadisticas)
+  ui/             componentes de diseño compartidos
+  i18n/           es.json, eu.json
+  styles/         tokens CSS y tema claro/oscuro
+worker/           Hono: proxy con allowlist + caché + (F6) push
+tests/e2e/        Playwright
+android/          proyecto Capacitor (no editar a mano; `npm run android:sync`)
+functions/        proxy Cloudflare Pages de la v1, solo como referencia hasta F5
+public/           iconos, manifest y assets de marca
+```
 
-### Dual-target network policy
+Cada carpeta de `src/` tiene un README corto con su responsabilidad.
 
-This is the most critical invariant in the codebase. All transport decisions must go through `www/config/runtime.js`:
+### Reglas de arquitectura
 
-| Runtime | FVP API | SignalR |
-|---|---|---|
-| `android-native` | Direct ASMX (`getLegacyApiMode() === 'direct'`) | Direct `digitalsport.online` |
-| `web` | Via `/api/*` proxy | Via `/signalr/*` proxy |
+- `domain/` no importa React ni red. La lógica con trampas vive ahí, con tests.
+- Las pantallas solo consumen hooks de `queries/`. Nunca `fetch` en componentes.
+- Un único punto decide el transporte (directo vs proxy): `api/transport.ts`. Android habla directo con `fvpatinaje.eus`; la web pasa por el proxy `/api/*` de Cloudflare. Nunca llamar a hosts externos directamente desde el runtime web.
+- El directo (Centrifugo) solo escribe en la caché de TanStack Query (`setQueryData`/`invalidateQueries`); las pantallas no saben que existe.
+- Las features no se importan entre sí; lo compartido sube a `ui/`, `domain/` o `queries/`.
+- Animar solo `transform` y `opacity`, y respetar `prefers-reduced-motion`.
+- Las trampas conocidas de la API (estados, `resultado`, `periodo`, roles…) están en la sección 5 del ROADMAP y deben tener test.
 
-**Never** call external hosts directly from new web-runtime code. Any new data access must check `getLegacyApiMode()`. A common past bug: a helper used `getAppApiUrl()` instead of `getLegacyApiMode()`, which forced Android through Cloudflare.
+## Convenciones
 
-When touching network code, validate all four scenarios: team selector, calendar/standings, match detail, and both Android and web runtimes.
+- TypeScript `strict` (con `noUncheckedIndexedAccess`); `import type` para tipos.
+- Todo texto visible usa `t(...)` de i18next; `es.json` y `eu.json` deben tener las mismas claves (hay test).
+- Los colores de tema por modo se definen bajo `body[data-theme="light"]` / `body[data-theme="dark"]`, no en `:root` global.
+- Ordenar partidos por `fecha` + `hora`, nunca por orden de jornada (aplazados).
+- Comentarios y JSDoc en español, solo donde el porqué no sea evidente.
+- Prettier manda en el formato (`npm run format`); los `.md` no se formatean.
+- No versionados: `dist/`, `.wrangler/`, `playwright-report/`, `test-results/`, `tmp_*.js`.
 
-The FVP ASMX endpoints exposed by the Cloudflare proxy (closed allowlist):
-- `GetCompeticiones`, `GetParametrosCompeticion`
-- `GetCalendarioCompeticion`, `GetClasificacionCompeticion`
-- `GetParametrosPartido`, `GetEstadisticaPartido`, `GetEstadisticasJugador`
+## Protocolo de roadmap (sesiones con Claude Code)
 
-### SignalR bus architecture
-
-SignalR event handlers are registered **globally at startup** in `www/core/main.js` (not inside the match detail component). They forward all hub events onto an internal bus via `emitPartidoHubEvent()` in `www/services.js`. The match detail subscribes via `subscribePartidoHubEvents()` and filters by `idPartido`. This split was made deliberately after discovering that late registration of handlers inside the modal caused missed initial events (`recibirEventosIniciales`, etc.). Do not move handler registration back into the modal.
-
-### Match detail module map
-
-`www/components/partidoDetalle.js` is the main coordinator for the match modal. It has been progressively split — do not add logic here; extract to existing satellite modules instead:
-
-- `partidoDetalleRenderCoordinator.js` — orchestrates main modal render
-- `partidoDetalleState.js` — state update and normalization
-- `partidoDetalleRender.js` — base render, skeletons, summary, penalties
-- `partidoDetalleAlineaciones.js` / `partidoDetalleEventos.js` — lineups and events
-- `partidoDetalleJugadorSubview.js` — player subview + stats hydration
-- `partidoDetalleJugadorData.js` / `partidoDetalleJugadorView.js` / `partidoDetalleJugadorStats.js` — player data, compact header, stats render
-- `partidoDetallePlayerLinks.js` — click bindings that trigger player navigation
-- **Note:** navigation into coaching staff (`cuerpo técnico`) from lineups is intentionally disabled — that player subview is broken upstream.
-- `partidoDetalleNavigation.js` — internal navigation between team/match/player views
-- `partidoDetalleTabs.js` + `uiTabs.js` — shared tab system (also used by team detail)
-
-### Team detail module map
-
-- `equipoDetalle.js` — team summary, match list render
-- `equipoDetalleSubview.js` — integrated subview inside shared modal
-- `equipoDetalleRoster.js` / `equipoDetalleStats.js` / `equipoDetalleLineupsHub.js`
-- `detalleModalShell.js` — shared modal shell for both team and match detail
-
-### Shared modal navigation
-
-The shared modal (`detalleModalShell.js`) hosts three views: `equipo`, `partido`, `jugador`. Navigation flows: `clasificación → equipo → partido → jugador → partido → equipo`. Back button coordination (web and Android native) is in `www/core/mobileBackCoordinator.js`.
-
-### Accordion component
-
-All accordions (team selector, standings groups, player stats) share `www/components/accordion.js` using `details/summary` elements. CSS tokens for accordion geometry/color live in `www/styles/theme.css`.
-
-## Conventions
-
-- All visible text must use `t(...)` from `www/i18n.js`.
-- JSDoc in Spanish on public functions; only where the `why` is non-obvious.
-- Prefer `globalThis` over `window` when touching newer or shared code.
-- Match and standings ordering must use `Fecha` + `Hora` (not `Orden`) to handle rescheduled/postponed matches correctly — see `www/utils/helpers.js` for the canonical comparator.
-- CSS scoping bugs have bitten before: define theme variables under `body[data-theme="light"]` / `body[data-theme="dark"]`, not globally.
-- `dist/`, `.wrangler/`, and `tmp_*.js` are not versioned.
-
-## Vite dev proxy
-
-`vite.config.js` proxies `/api/*` → FVP ASMX and `/signalr/*` → `digitalsport.online/signalr` during local dev. It also runs a plugin to copy `www/assets/sidebar-loyola/` → `dist/assets/sidebar-loyola/` at build time (Capacitor needs these assets without a manual duplicate in `www/public/`).
-
-## v2 roadmap (in progress)
-
-A major rewrite (React + TypeScript + Ionic + TanStack Query, see `docs/v2/ROADMAP.md`) is planned on a long-lived `v2` branch. Work is split into sessions defined in `docs/v2/roadmap.json`, each with its model, effort and initial prompt.
-
-- The `SessionStart` hook (`.claude/hooks/roadmap.mjs`, wired in `.claude/settings.json`) shows the current session; the `Stop` hook announces the next one once a session is marked done.
-- Mark progress with `node .claude/hooks/roadmap.mjs start SXX` / `done SXX`; `status` and `next` list the plan.
-- Until the `v2` branch exists, the rules above describe the v1 codebase on `main`.
+- El hook `SessionStart` (`.claude/hooks/roadmap.mjs`, cableado en `.claude/settings.json`) muestra la sesión actual: modelo, esfuerzo y prompt inicial. Antes de pegar el prompt: `/model` y `/effort` según indique.
+- Al empezar: `node .claude/hooks/roadmap.mjs start SXX`. Al cumplir los criterios de salida: `node .claude/hooks/roadmap.mjs done SXX`.
+- Tras marcar una sesión como hecha, el hook `Stop` avisa una vez de la siguiente; conviene abrir sesión nueva (`/clear`).
+- `node .claude/hooks/roadmap.mjs status` muestra la tabla y `next` el prompt de la siguiente.
+- Si una sesión crece demasiado, se parte añadiendo `SXXb` en `roadmap.json`.
+- No marcar una sesión como hecha con criterios de salida sin verificar.

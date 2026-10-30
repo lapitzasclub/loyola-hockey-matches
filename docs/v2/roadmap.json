@@ -19,7 +19,7 @@
       "title": "Esqueleto v2: React + TS + Ionic + Capacitor",
       "model": "sonnet",
       "effort": "high",
-      "status": "pending",
+      "status": "done",
       "prompt": "Crea la rama `v2` desde `main` y cámbiate a ella; después crea un worktree de referencia de la v1 en `../loyola-hockey-matches-v1` (rama main, que ya queda libre) para consultar comportamiento sin tenerlo en el árbol de trabajo. Monta el esqueleto de la v2 en la raíz del repo. En la rama v2 elimina `www/` y el código de la v1 que no se reutilice, conservando `android/` (mismo appId y firma), `functions/` como referencia hasta F5, `docs/`, `.claude/` y los assets de marca. Monta: Vite + React 19 + TypeScript strict, Ionic React con IonReactRouter y tabs (partidos, clasificación, estadísticas) vacías, Capacitor 7 apuntando a `dist`, TanStack Query con provider, i18next con es/eu, ESLint flat + typescript-eslint + Prettier, Vitest + Testing Library, Playwright con proyectos WebKit y Chromium móvil, y la estructura de carpetas de la sección 4 del ROADMAP con un README corto en cada una. Reescribe el CLAUDE.md del proyecto para la v2 (comandos, arquitectura, reglas, protocolo de roadmap) quitando las referencias obsoletas a ASMX y SignalR. Ajusta scripts de package.json equivalentes a los de la v1 (start, build, lint, test, e2e, android:*, cf:*).",
       "exit": [
         "`npm run lint`, `npm run build`, `npm test` y `npm run e2e` pasan",
@@ -34,7 +34,7 @@
       "title": "Dominio I: catálogo, calendario y clasificación",
       "model": "opus",
       "effort": "xhigh",
-      "status": "pending",
+      "status": "in_progress",
       "prompt": "Construye la primera mitad del dominio. 1) Script `scripts/capture-fixtures.ts` que descarga respuestas reales de la API (agenda, divisiones en batch, fases, equipos, tree, clasificación) para una muestra representativa de divisiones de Loyola y las guarda en `src/api/fixtures/` (sin datos personales innecesarios). 2) Esquemas Zod en `src/api/schemas/` para esas respuestas, tolerantes a campos extra y estrictos en los que usamos. 3) Tipos de dominio en `src/domain/` (Competicion, Division, Fase, Equipo, Partido resumen, FilaClasificacion, Racha) y mappers API→dominio que normalizan los dos vocabularios de estado, `puntaje` float, `datosAdicionales` string JSON y ordenación por fecha+hora. 4) Tests Vitest sobre las fixtures reales que cubran cada trampa de la sección 5 aplicable a este bloque. Usa las memorias `new-digitalsport-api` y `oportunidades-api-nueva` como contrato; verifica contra la API real si algo no cuadra y actualiza la memoria si descubres algo nuevo.",
       "exit": [
         "Fixtures reales versionadas y script reproducible",
