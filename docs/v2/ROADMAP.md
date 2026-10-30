@@ -134,6 +134,20 @@ Reglas:
 - `/public/partidos/{id}` pesa ~121 KB: cachear agresivamente partidos finalizados (inmutables).
 - Caché persistida: segunda apertura pinta al instante desde IndexedDB.
 
+Medido en S03 con la API real (`npm run medir:arranque`, 2026-10-30):
+
+| Arranque en frío | Requests | Bytes (sin comprimir) | gzip aprox. | Tiempo |
+|---|---|---|---|---|
+| v1 (algoritmo de la v1 sobre la API nueva) | 59 | 846 KB | — | 1,4 s |
+| v2 catálogo (agenda `clubId` + batch + `/equipos` en paralelo, 3 rondas) | 16 | 164 KB | 22 KB | 0,7 s |
+| v2 catálogo + calendario y clasificación de un equipo (Liga Norte) | 18 | 399 KB | 42 KB | 0,5 s |
+
+- La agenda filtrada con `clubId` pesa ~120 KB frente a ~490 KB sin filtrar.
+- El origen no comprime (sin `content-encoding`). En web el proxy de Cloudflare comprime hacia el
+  cliente (cifras gzip); en Android directo llegan los bytes sin comprimir.
+- El árbol de la división (~230 KB) solo se pide al abrir un equipo y queda en caché persistida; la
+  segunda apertura no toca la red.
+
 ## 7. Fases
 
 | Fase | Objetivo | Sesiones |
