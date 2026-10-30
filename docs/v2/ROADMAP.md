@@ -156,10 +156,13 @@ Medido en S03 con la API real (`npm run medir:arranque`, 2026-10-30):
   `@capacitor/status-bar` y del plugin de navigation bar. Las barras son transparentes sobre la
   cabecera y la tab bar, Ionic aparta el contenido con `env(safe-area-inset-*)` y
   `app/barrasSistema.ts` solo elige iconos claros u oscuros según el fondo del tema.
-- **WebView Chromium < 140**: no expone bien `env(safe-area-inset-*)`, así que Capacitor rellena
-  los insets de forma nativa y bajo las barras se ve el `backgroundColor` de la ventana
-  (`#0e3a43`) en lugar de la cabecera. Es correcto, pero en modo claro la barra de navegación sale
-  teal en vez de blanca.
+- **WebView Chromium < 140** (visto en el emulador de Android 16 con WebView 133): Capacitor no
+  pasa las safe areas a la web, la aparta de forma nativa y bajo las barras queda el
+  `windowBackground` de Android, no la cabecera. Con el tema por defecto salía gris claro con
+  iconos blancos, ilegible. Se fija `windowBackground` al teal de marca (`styles.xml`) y, si el
+  WebView es < 140, los iconos de ambas barras van claros (`webViewApartaDeFormaNativa`). En modo
+  oscuro se nota el corte entre las barras teal y la cabecera casi negra; desaparece con WebView
+  140 o superior, que deja las barras transparentes sobre la web.
 - **Fuera el trust-all de certificados** de la v1 (`MainActivity`). La cadena de `fvpatinaje.eus`
   (Let's Encrypt, ISRG Root X1) es válida desde Android 7.1.1, y minSdk 24 cubre ese caso.
 - **Una pila por pestaña.** Las rutas de detalle cuelgan de cada pestaña
@@ -183,7 +186,7 @@ Validación en dispositivo real:
 
 | Plataforma | Dispositivo | Versión | Back / swipe | Pull-to-refresh | Tema e idioma | Notas |
 |---|---|---|---|---|---|---|
-| Android (APK) | _pendiente_ | | | | | |
+| Android (APK, emulador) | AVD Pixel `sdk_gphone64_x86_64` | Android 16 (API 36), WebView 133 | ✅ back: action sheet → hoja → jugador → partido → equipo → Clasificación → Partidos → sale; la pila se conserva al cambiar de pestaña | ✅ vuelve a pedir `/public/agenda` directo a fvpatinaje.eus | ✅ oscuro + euskera tras force-stop | Datos reales sin trust-all; barras corregidas para WebView < 140 |
 | iPhone (PWA instalada) | _pendiente_ | | | | | |
 
 ## 7. Fases

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { esColorClaro } from './barrasSistema';
+import { esColorClaro, webViewApartaDeFormaNativa } from './barrasSistema';
 import { leerPreferenciaTema, temaEfectivo } from './tema';
 
 describe('temaEfectivo', () => {
@@ -29,5 +29,15 @@ describe('esColorClaro', () => {
     expect(esColorClaro('#ffffff')).toBe(true);
     expect(esColorClaro('#0e3a43')).toBe(false);
     expect(esColorClaro('#121212')).toBe(false);
+  });
+});
+
+describe('webViewApartaDeFormaNativa', () => {
+  it('solo antes de Chromium 140', () => {
+    const ua = (v: number) =>
+      `Mozilla/5.0 (Linux; Android 16; wv) AppleWebKit/537.36 Chrome/${v}.0.0.0 Mobile Safari/537.36`;
+    expect(webViewApartaDeFormaNativa(ua(133))).toBe(true);
+    expect(webViewApartaDeFormaNativa(ua(140))).toBe(false);
+    expect(webViewApartaDeFormaNativa('Safari')).toBe(false);
   });
 });
