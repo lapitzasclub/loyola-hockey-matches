@@ -25,11 +25,10 @@
     "cf:deploy": "npm run build && npx wrangler pages deploy dist"
   },
   "dependencies": {
-    "@capacitor/android": "^7.6.10",
-    "@capacitor/app": "^7.1.2",
-    "@capacitor/core": "^7.6.10",
-    "@capacitor/status-bar": "^7.0.6",
-    "@capgo/capacitor-navigation-bar": "^7.3.18",
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/splash-screen": "^8.0.2",
     "@ionic/react": "^9.0.10",
     "@ionic/react-router": "^9.0.10",
     "@tanstack/react-query": "^5.105.0",
@@ -45,7 +44,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.6.10",
+    "@capacitor/cli": "^8.6.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
     "@testing-library/jest-dom": "^7.0.1",

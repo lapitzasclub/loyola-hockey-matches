@@ -9,21 +9,16 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- Con targetSdk 36 la app es siempre edge-to-edge: las barras de sistema
+         son transparentes y la web se aparta de ellas con env(safe-area-inset-*). -->
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
-        <!-- Opt-out of Android 15 forced edge-to-edge so setOverlaysWebView(false) keeps working -->
-        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
-        <!-- Este tema se queda aplicado a la Activity durante toda su vida (no hay
-             installSplashScreen()/setTheme() que cambie a AppTheme.NoActionBar), así
-             que el opt-out de edge-to-edge forzado (Android 15+) debe ir aquí también
-             para que los colores de StatusBar/NavigationBar surtan efecto. -->
-        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 </resources>

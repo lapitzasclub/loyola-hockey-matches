@@ -2,10 +2,21 @@
   "appId": "com.loyola.hockeymatches",
   "appName": "loyola-hockey-matches",
   "webDir": "dist",
-  "bundledWebRuntime": false,
+  "backgroundColor": "#0e3a43",
   "plugins": {
     "CapacitorHttp": {
       "enabled": true
+    },
+    "SystemBars": {
+      "insetsHandling": "native",
+      "initialViewportFitValueHint": "cover"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "launchFadeOutDuration": 200,
+      "backgroundColor": "#0e3a43",
+      "showSpinner": false
     }
   }
 }
