@@ -145,4 +145,5 @@ Cada casilla se marca cuando la v2 lo hace **igual o mejor** en Android real y e
 6. Si una sesión crece demasiado, se parte: añadir `SXXb` en `roadmap.json` en lugar de alargarla.
 
 Criterio de modelo: **Opus 5.5** para arquitectura, dominio con trampas, directo y animación
-compleja; **Sonnet 5.5** para pantallas que siguen patrones ya establecidos y tareas mecánicas.
+compleja; **Sonnet 5.5** para esqueleto, pantallas que siguen patrones ya establecidos y tareas
+mecánicas. Si una sesión de Sonnet se atasca, subir a Opus a mitad con `/model` sin perder contexto.
