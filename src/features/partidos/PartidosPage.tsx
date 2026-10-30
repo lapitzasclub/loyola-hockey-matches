@@ -82,8 +82,12 @@ function Calendario({ elegido }: { elegido: EquipoCatalogo }) {
   const clave = claveEquipo(elegido);
   useEffect(() => {
     if (!proximoId || centrado.current === clave) return;
-    centrado.current = clave;
-    proximoRef.current?.scrollIntoView({ block: 'center' });
+    // Un fotograma después: al montarse, ion-content aún no tiene el scroll listo.
+    const fotograma = requestAnimationFrame(() => {
+      centrado.current = clave;
+      proximoRef.current?.scrollIntoView({ block: 'center' });
+    });
+    return () => cancelAnimationFrame(fotograma);
   }, [clave, proximoId]);
 
   if (calendario.isPending) return <ListaSkeleton />;

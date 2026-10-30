@@ -54,8 +54,11 @@ function Centro({
   }
   return (
     <div className="tarjeta__centro">
-      <span className="tarjeta__hora">
-        {estado === 'aplazado' ? '—' : (partido.hora ?? t('partidos.sinHora'))}
+      <span
+        className="tarjeta__hora"
+        aria-label={partido.hora ? undefined : t('partidos.sinHora')}
+      >
+        {estado === 'aplazado' ? '—' : (partido.hora ?? '--:--')}
       </span>
     </div>
   );

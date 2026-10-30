@@ -72,7 +72,7 @@ test('un detalle abierto por enlace vuelve a la raíz de su pestaña', async ({
   await expect(page.getByTestId('marcador')).toBeVisible();
   await atras(page, 'page-partido').click();
   await expect(page).toHaveURL(/\/partidos$/);
-  await expect(page.getByTestId('agenda')).toBeVisible();
+  await expect(page.getByTestId('sin-equipo')).toBeVisible();
 });
 
 test('el pull-to-refresh vuelve a pedir los datos de la vista', async ({
@@ -80,7 +80,7 @@ test('el pull-to-refresh vuelve a pedir los datos de la vista', async ({
 }) => {
   const pedidas = await apiDeFixtures(page);
   await page.goto('/partidos');
-  await expect(page.getByTestId('agenda')).toBeVisible();
+  await expect(page.getByTestId('sin-equipo')).toBeVisible();
   const agenda = () => pedidas.filter((r) => r === '/public/agenda').length;
   const antes = agenda();
 
