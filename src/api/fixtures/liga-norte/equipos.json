@@ -1,0 +1,86 @@
+[
+  {
+    "equipoId": "0397d443-6eb3-4fd0-b9d4-5d7fd23e1dab",
+    "nombre": "BAT GORA",
+    "nombreAbrev": "BGO",
+    "clubId": "00000000-0000-4000-0000-000000000040",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000040.webp"
+  },
+  {
+    "equipoId": "d9eb23c1-b347-4301-8f1c-d9357cced149",
+    "nombre": "C.D. MUNDAIZ",
+    "nombreAbrev": "MUN",
+    "clubId": "00000000-0000-4000-0000-000000000045",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000045.webp"
+  },
+  {
+    "equipoId": "ec8219c8-b95d-4746-b2b8-1e02e3482e1a",
+    "nombre": "C.D.P. GURUTZETA",
+    "nombreAbrev": "GUR",
+    "clubId": "00000000-0000-4000-0000-000000000066",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000066.webp"
+  },
+  {
+    "equipoId": "7bbb3643-b0ff-48a9-acf5-903b88c3638a",
+    "nombre": "C.D. URDANETA",
+    "nombreAbrev": "URD",
+    "clubId": "00000000-0000-4000-0000-000000000082",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000082.webp"
+  },
+  {
+    "equipoId": "e9a0c697-dd9f-4e83-a5f9-64439da6707f",
+    "nombre": "C.P. BURGOS",
+    "nombreAbrev": "BUR",
+    "clubId": "00000000-0000-4000-0000-000000000088",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000088.webp"
+  },
+  {
+    "equipoId": "17a27de0-9f33-4cef-9c36-1f66db2eaa0a",
+    "nombre": "GETXO IRRISTAN",
+    "nombreAbrev": "GTX",
+    "clubId": "00000000-0000-4000-0000-000000000056",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000056.webp"
+  },
+  {
+    "equipoId": "0a2cf746-45e3-4ba5-915d-e7cf05b1b932",
+    "nombre": "IRUÑA HOCKEY",
+    "nombreAbrev": "IRU",
+    "clubId": "00000000-0000-4000-0000-000000000122",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000122.webp"
+  },
+  {
+    "equipoId": "86043d42-3002-4ae2-a725-85bd0d654d25",
+    "nombre": "LAGUNA NEGRA",
+    "nombreAbrev": "LGN",
+    "clubId": "00000000-0000-4000-0000-000000000089",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000089.webp"
+  },
+  {
+    "equipoId": "d14ff5fb-bfa3-45a8-98cc-c6bd0f5254f5",
+    "nombre": "LOYOLA INDAUTXU",
+    "nombreAbrev": "LOY",
+    "clubId": "00000000-0000-4000-0000-000000000044",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000044.webp"
+  },
+  {
+    "equipoId": "11fad97c-c7d9-4072-87b6-142d37f375a5",
+    "nombre": "OBERENA AUTOESCUELA INDURAIN",
+    "nombreAbrev": "OBE",
+    "clubId": "00000000-0000-4000-0000-000000000090",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000090.webp"
+  },
+  {
+    "equipoId": "38378fe6-29e7-4d4f-931d-bfff3acbc9b4",
+    "nombre": "SANTUTXU HT",
+    "nombreAbrev": "STX",
+    "clubId": "00000000-0000-4000-0000-000000000043",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000043.webp"
+  },
+  {
+    "equipoId": "b136a95b-c90e-445e-b2d3-abd7d9c8f7c8",
+    "nombre": "TENIS SANTANDER",
+    "nombreAbrev": "TEN",
+    "clubId": "00000000-0000-4000-0000-000000000091",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000091.webp"
+  }
+]

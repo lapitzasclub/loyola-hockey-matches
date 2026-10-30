@@ -1,0 +1,12 @@
+[
+  {
+    "id": "cc85f8bb-589c-49c9-8d6f-e6a60b1753a5",
+    "divisionId": "dd7b3cd9-92ac-4176-9231-b8aa4fe3b488",
+    "nombre": "FASE REGULAR",
+    "orden": 1,
+    "formato": "LEAGUE",
+    "configuracionReglas": "{\"plantillaClasificacionId\": \"27226d28-2f30-4ca3-8eb2-0a085a9d2b63\"}",
+    "creadoPor": "00000000-0000-4000-8000-000000000000",
+    "fechaCreacion": "2026-10-25T11:58:55.164172Z"
+  }
+]

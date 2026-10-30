@@ -1,0 +1,79 @@
+[
+  {
+    "equipoId": "71d80cf4-21d9-419f-9942-9bcd6b818326",
+    "nombre": "GATIKE SUTEN",
+    "nombreAbrev": "GT SU",
+    "clubId": "00000000-0000-4000-0000-000000000120",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000120.webp"
+  },
+  {
+    "equipoId": "6bd5ef0b-e669-4ff0-8d05-43a29dc38d37",
+    "nombre": "GETXO IRRISTAN",
+    "nombreAbrev": "GTX",
+    "clubId": "00000000-0000-4000-0000-000000000056",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000056.webp"
+  },
+  {
+    "equipoId": "90a78c87-d3fd-4191-9cf0-8b189a16bafd",
+    "nombre": "GURUTZETA",
+    "nombreAbrev": "GUR",
+    "clubId": "00000000-0000-4000-0000-000000000066",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000066.webp"
+  },
+  {
+    "equipoId": "e76fdb3d-13e2-4bc6-ba00-e7b8ccfbf551",
+    "nombre": "LOYOLA INDAUTXU A",
+    "nombreAbrev": "LOY A",
+    "clubId": "00000000-0000-4000-0000-000000000044",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000044.webp"
+  },
+  {
+    "equipoId": "4bba813e-8d7d-466f-bcec-edadfedc4d6e",
+    "nombre": "LOYOLA INDAUTXU B",
+    "nombreAbrev": "LOY B",
+    "clubId": "00000000-0000-4000-0000-000000000044",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000044.webp"
+  },
+  {
+    "equipoId": "fd1fb075-056b-4ca5-a122-c186d2b4d85e",
+    "nombre": "RC JOLASETA R A",
+    "nombreAbrev": "JOL A",
+    "clubId": "00000000-0000-4000-0000-000000000052",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000052.webp"
+  },
+  {
+    "equipoId": "60e8b583-7343-4a92-beb5-2cd840269139",
+    "nombre": "RC JOLASETA R B",
+    "nombreAbrev": "JOL B",
+    "clubId": "00000000-0000-4000-0000-000000000052",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000052.webp"
+  },
+  {
+    "equipoId": "a1b652d4-15ba-4604-bb47-bb20e825bf8f",
+    "nombre": "SANTUTXU HT A",
+    "nombreAbrev": "STX A",
+    "clubId": "00000000-0000-4000-0000-000000000043",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000043.webp"
+  },
+  {
+    "equipoId": "1bc0892c-d437-4013-9033-880c75f48a4b",
+    "nombre": "SANTUTXU HT B",
+    "nombreAbrev": "STX B",
+    "clubId": "00000000-0000-4000-0000-000000000043",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000043.webp"
+  },
+  {
+    "equipoId": "636dff54-dee7-4092-8c8f-0d114884cf7c",
+    "nombre": "URDANETA",
+    "nombreAbrev": "URD",
+    "clubId": "00000000-0000-4000-0000-000000000082",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000082.webp"
+  },
+  {
+    "equipoId": "728ebd30-2fa1-4069-9067-d9360494ffdd",
+    "nombre": "VOTO",
+    "nombreAbrev": "VOT",
+    "clubId": "00000000-0000-4000-0000-000000000101",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000101.webp"
+  }
+]

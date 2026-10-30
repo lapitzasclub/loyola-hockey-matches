@@ -1,0 +1,12 @@
+[
+  {
+    "id": "667dc0d7-14b5-4704-89bf-fb09b6f07e51",
+    "divisionId": "7f8e791c-385b-48e9-a447-13ed56bd969c",
+    "nombre": "FASE REGULAR",
+    "orden": 1,
+    "formato": "LEAGUE",
+    "configuracionReglas": "{\"grupos\": [{\"id\": \"group-1790504919307-axxrqxvkm\", \"nombre\": \"liga escolar infantil r - clasificación sector infantil\", \"equipos\": [\"cf46c8b1-a779-4dca-9773-684f7b048169\", \"38e1c2d3-6498-4cc2-aa8e-d6c818fa2ded\", \"217c5ad7-0d99-4072-8623-488461fd9708\", \"73c47ece-a20b-495b-b273-a71a71b38504\", \"e0164069-d5a5-433d-b823-f7c5f9062ac2\", \"d007edb7-6aa4-4c59-bff3-bc7f8de3f2d0\", \"59df7be4-298d-4267-a3f1-e0d83bd3dca7\", \"0c9e50fd-93ba-4afc-9426-e97ddf39ab33\", \"c5aea201-abb7-4a51-873c-75c2b61c889a\", \"88bcb260-44b4-47b6-8274-83a502faaa96\"]}, {\"id\": \"group-1790505014735-w8r8664c9\", \"nombre\": \"liga escolar infantil r - clasificación general\", \"equipos\": [\"94f737bb-2191-4b65-aa8c-8e0b84179f7a\", \"cf46c8b1-a779-4dca-9773-684f7b048169\", \"38e1c2d3-6498-4cc2-aa8e-d6c818fa2ded\", \"73c47ece-a20b-495b-b273-a71a71b38504\", \"217c5ad7-0d99-4072-8623-488461fd9708\", \"0c9e50fd-93ba-4afc-9426-e97ddf39ab33\", \"e0164069-d5a5-433d-b823-f7c5f9062ac2\", \"d007edb7-6aa4-4c59-bff3-bc7f8de3f2d0\", \"59df7be4-298d-4267-a3f1-e0d83bd3dca7\", \"88bcb260-44b4-47b6-8274-83a502faaa96\", \"c5aea201-abb7-4a51-873c-75c2b61c889a\"]}], \"leyendasGrupos\": {\"liga escolar infantil r - clasificación sector infantil\": [{\"color\": \"var(--color-ds-ok-bg)\", \"puestos\": \"1,2\", \"colorTexto\": \"#22c55e\", \"descripcion\": \"Clasificación Sector\"}]}, \"gruposSoloClasificacion\": true, \"plantillaClasificacionId\": \"27226d28-2f30-4ca3-8eb2-0a085a9d2b63\"}",
+    "creadoPor": "00000000-0000-4000-8000-000000000000",
+    "fechaCreacion": "2026-09-27T09:45:28.498031Z"
+  }
+]

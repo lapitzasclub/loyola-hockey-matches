@@ -32,5 +32,10 @@ export default tseslint.config(
     files: ['*.config.{js,ts}'],
     languageOptions: { globals: { ...globals.node } },
   },
+  {
+    files: ['scripts/**/*.ts'],
+    languageOptions: { globals: { ...globals.node } },
+    rules: { '@typescript-eslint/consistent-type-imports': 'error' },
+  },
   prettier,
 );

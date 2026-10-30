@@ -1,0 +1,16 @@
+[
+  {
+    "equipoId": "0eed3994-8e6c-4013-97db-8b33572ee6a9",
+    "nombre": "GATIKE SUTEN",
+    "nombreAbrev": "GT SU",
+    "clubId": "00000000-0000-4000-0000-000000000120",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000120.webp"
+  },
+  {
+    "equipoId": "53ba79d0-8a51-40d7-af5b-38b856380bcf",
+    "nombre": "LAREDO HOCKEY",
+    "nombreAbrev": "LAR",
+    "clubId": "00000000-0000-4000-0000-000000000108",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000108.webp"
+  }
+]

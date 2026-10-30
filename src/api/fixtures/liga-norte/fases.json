@@ -1,0 +1,12 @@
+[
+  {
+    "id": "f991edaf-9299-4cf1-bd15-0645d01b08d1",
+    "divisionId": "dd7180cb-3790-41a7-9993-7643575541a5",
+    "nombre": "FASE REGULAR",
+    "orden": 1,
+    "formato": "LEAGUE",
+    "configuracionReglas": "{\"leyendasGrupos\": {\"general\": [{\"color\": \"#dcfce7\", \"puestos\": \"1\", \"colorTexto\": \"#22c55e\", \"descripcion\": \"Ascenso Directo\"}, {\"color\": \"#dbeafe\", \"puestos\": \"2,3,4\", \"colorTexto\": \"#2563eb\", \"descripcion\": \"Final-Four ascenso junto a campeón de Copa\"}]}, \"plantillaClasificacionId\": \"27226d28-2f30-4ca3-8eb2-0a085a9d2b63\"}",
+    "creadoPor": "00000000-0000-4000-8000-000000000000",
+    "fechaCreacion": "2026-09-03T07:15:06.23317Z"
+  }
+]

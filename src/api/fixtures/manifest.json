@@ -1,0 +1,60 @@
+{
+  "capturadoEn": "2026-10-30T17:52:57.297Z",
+  "api": "https://fvpatinaje.eus/api",
+  "entidadId": "00000000-0000-4000-0000-000000000001",
+  "deporte": "hp",
+  "agendaDias": 60,
+  "muestra": [
+    {
+      "slug": "liga-norte",
+      "competicionId": "fe7edab7-0be9-441e-9b34-888a0f95d251",
+      "motivo": "Liga simple con un Loyola, muchos partidos jugados y leyenda \"general\"",
+      "competicionNombre": "LIGA NORTE",
+      "divisionId": "dd7180cb-3790-41a7-9993-7643575541a5",
+      "faseIds": [
+        "f991edaf-9299-4cf1-bd15-0645d01b08d1"
+      ]
+    },
+    {
+      "slug": "infantil-r",
+      "competicionId": "841f321b-608f-4fbe-a17d-c7746dc0bba8",
+      "motivo": "Escolar: puntaje oficial capado ≠ golesActa, dos grupos solapados, Loyola A y B, color de leyenda con var()",
+      "competicionNombre": "LIGA ESCOLAR INFANTIL R",
+      "divisionId": "7f8e791c-385b-48e9-a447-13ed56bd969c",
+      "faseIds": [
+        "667dc0d7-14b5-4704-89bf-fb09b6f07e51"
+      ]
+    },
+    {
+      "slug": "infantil-sub15-fem",
+      "competicionId": "07f37066-0900-4db4-b299-e72655b42791",
+      "motivo": "/equipos no incluye al Loyola; sin partidos jugados",
+      "competicionNombre": "LIGA ESCOLAR SUB 15 FEMENINA",
+      "divisionId": "5a83cd21-814c-4650-87de-1125b79805bf",
+      "faseIds": [
+        "2fab13b3-e570-4c04-9d9c-ad699c00b2d6"
+      ]
+    },
+    {
+      "slug": "benjamin-c",
+      "competicionId": "c92c9a16-5e3f-44af-a7f0-9f14953721cf",
+      "motivo": "Liga sin clasificación todavía y /equipos sin los Loyola A/B (solo salen en el árbol)",
+      "competicionNombre": "LIGA ESCOLAR BENJAMÍN C",
+      "divisionId": "dd7b3cd9-92ac-4176-9231-b8aa4fe3b488",
+      "faseIds": [
+        "cc85f8bb-589c-49c9-8d6f-e6a60b1753a5"
+      ]
+    },
+    {
+      "slug": "copa-liga-norte",
+      "competicionId": "0188d974-d0fb-44d3-89e0-20553f5e2a14",
+      "motivo": "KNOCKOUT en dos fases: cruces, estado PROGRAMADO en el árbol, enfrentamientos sin participantes, sin clasificación",
+      "competicionNombre": "COPA LIGA NORTE",
+      "divisionId": "1c76b561-13f8-4c2b-8c24-fc0e306d68a0",
+      "faseIds": [
+        "d204d9bb-66d9-4e93-bb3b-f9477bbccb0c",
+        "f3672a7c-6bd4-4241-9139-00a02224d4f3"
+      ]
+    }
+  ]
+}

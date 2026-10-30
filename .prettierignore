@@ -15,3 +15,5 @@ design
 media
 artifacts
 *.md
+# Generados por scripts/capture-fixtures.ts
+src/api/fixtures/**/*.json

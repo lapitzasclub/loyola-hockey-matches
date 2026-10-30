@@ -1,0 +1,30 @@
+[
+  {
+    "equipoId": "7f3db1fc-2eb6-45a0-8499-715a6271bf78",
+    "nombre": "GATIKAKO IUSTURI",
+    "nombreAbrev": "GAT",
+    "clubId": "00000000-0000-4000-0000-000000000062",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000062.webp"
+  },
+  {
+    "equipoId": "d7523a20-6057-428d-9066-1f656ea42ae7",
+    "nombre": "IRLANDESAS",
+    "nombreAbrev": "IRL",
+    "clubId": "00000000-0000-4000-0000-000000000111",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000111.webp"
+  },
+  {
+    "equipoId": "550098de-4093-4476-b24c-d3d292df4dc9",
+    "nombre": "R.C. JOLASETA",
+    "nombreAbrev": "JOL",
+    "clubId": "00000000-0000-4000-0000-000000000052",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000052.webp"
+  },
+  {
+    "equipoId": "9f5c0d79-a8fb-4430-9ff2-965db23f7527",
+    "nombre": "SANTUTXU H.T.",
+    "nombreAbrev": "STX",
+    "clubId": "00000000-0000-4000-0000-000000000043",
+    "clubLogoUrl": "https://digitalsport-public-docs.s3.fr-par.scw.cloud/entidades/logos/00000000-0000-4000-0000-000000000043.webp"
+  }
+]
