@@ -34,7 +34,7 @@
       "title": "Dominio I: catálogo, calendario y clasificación",
       "model": "opus",
       "effort": "xhigh",
-      "status": "in_progress",
+      "status": "done",
       "prompt": "Construye la primera mitad del dominio. 1) Script `scripts/capture-fixtures.ts` que descarga respuestas reales de la API (agenda, divisiones en batch, fases, equipos, tree, clasificación) para una muestra representativa de divisiones de Loyola y las guarda en `src/api/fixtures/` (sin datos personales innecesarios). 2) Esquemas Zod en `src/api/schemas/` para esas respuestas, tolerantes a campos extra y estrictos en los que usamos. 3) Tipos de dominio en `src/domain/` (Competicion, Division, Fase, Equipo, Partido resumen, FilaClasificacion, Racha) y mappers API→dominio que normalizan los dos vocabularios de estado, `puntaje` float, `datosAdicionales` string JSON y ordenación por fecha+hora. 4) Tests Vitest sobre las fixtures reales que cubran cada trampa de la sección 5 aplicable a este bloque. Usa las memorias `new-digitalsport-api` y `oportunidades-api-nueva` como contrato; verifica contra la API real si algo no cuadra y actualiza la memoria si descubres algo nuevo.",
       "exit": [
         "Fixtures reales versionadas y script reproducible",
