@@ -47,6 +47,7 @@ export function jugadorDivisionDesdeApi(j: FilaJugadorApi): JugadorDivision {
     nombre: j.nombreCorto,
     nombreCompleto: j.nombreCompleto,
     equipoId: j.equipoId,
+    equipoNombre: j.equipoNombre,
     logoUrl: j.clubLogoUrl,
     fotoUrl: j.fotoUrl,
     partidosJugados: j.partidosJugados,

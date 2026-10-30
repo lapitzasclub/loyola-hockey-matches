@@ -6,25 +6,10 @@ import type { JugadorDivision } from '../../domain';
 import { usePlantilla } from '../../queries';
 import { Consulta } from '../../ui/Consulta';
 import { EstadoVacio } from '../../ui/EstadoVacio';
+import { FotoPersona } from '../../ui/FotoPersona';
 import { useRutas } from '../../ui/rutas';
 import { Skeleton } from '../../ui/Skeleton';
 import type { DatosEquipo } from './tipos';
-
-function Foto({ jugador }: { jugador: JugadorDivision }) {
-  const iniciales = jugador.nombre.trim().slice(0, 2).toUpperCase();
-  return jugador.fotoUrl ? (
-    <img
-      className="persona__foto"
-      src={jugador.fotoUrl}
-      alt=""
-      loading="lazy"
-    />
-  ) : (
-    <span className="persona__foto persona__foto--iniciales" aria-hidden>
-      {iniciales}
-    </span>
-  );
-}
 
 function Fila({ jugador }: { jugador: JugadorDivision }) {
   const { t } = useTranslation();
@@ -36,7 +21,7 @@ function Fila({ jugador }: { jugador: JugadorDivision }) {
       data-testid="jugador-fila"
     >
       <span className="persona__interior">
-        <Foto jugador={jugador} />
+        <FotoPersona nombre={jugador.nombre} fotoUrl={jugador.fotoUrl} />
         <span className="persona__nombre">{jugador.nombre}</span>
         <span className="persona__dato">
           {t('equipo.plantilla.partidos', { count: jugador.partidosJugados })}
@@ -127,7 +112,7 @@ export function PlantillaEquipo({ datos }: { datos: DatosEquipo }) {
                   </h2>
                   {staff.map((m) => (
                     <div key={m.plantillaEquipoId} className="persona">
-                      <Foto jugador={m} />
+                      <FotoPersona nombre={m.nombre} fotoUrl={m.fotoUrl} />
                       <span className="persona__nombre">{m.nombre}</span>
                       <span className="persona__dato">
                         {t(`equipo.roles.${m.rol ?? 'staff'}`)}

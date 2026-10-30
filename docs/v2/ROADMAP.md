@@ -42,7 +42,7 @@ infraestructura, no de negocio:
 | Directo | `centrifuge` → `queryClient.setQueryData/invalidateQueries` | El directo actualiza la caché; las pantallas no saben que existe. |
 | Animación | View Transitions API + **Motion** (`motion/react`) | `layoutId` para elementos compartidos, gestos, springs. |
 | i18n | i18next + react-i18next (es/eu) | Estándar, pluralización, carga por namespace. |
-| Gráficas | Librería ligera con carga diferida (decidir en S08) | chart.js hoy pesa mucho para lo que se usa. |
+| Gráficas | **SVG propio** (`features/jugador/GraficaPartidos.tsx`) con `React.lazy` | La única gráfica son barras agrupadas partido a partido (dos series). chart.js pesaba ~180 KB en la v1 para eso; un SVG de ~100 líneas no añade dependencia, hereda los tokens de tema y es accesible (`role="img"` + descripción). Se carga en diferido al abrir una competición con ≥2 partidos. Si algún día hacen falta ejes, zoom o tooltips, reevaluar uPlot/visx. |
 | Backend | Cloudflare Worker + **Hono** (Pages Functions o Worker con assets) | Proxy allowlist tipado, caché en el edge, base para push. |
 | Push | Web Push (VAPID) + FCM en Android, Durable Object para el fan-out | Gratis en ambos. Fase 6. |
 | Tests | Vitest con fixtures reales + Testing Library + Playwright (WebKit y Chromium móvil) | WebKit ≈ Safari de iPhone. |
@@ -273,8 +273,8 @@ Cada casilla se marca cuando la v2 lo hace **igual o mejor** en Android real y e
 - [x] Clasificación por grupo/fase con racha V/E/D (iPhone real sin validar)
 - [x] Detalle de equipo: resumen, partidos, plantilla, estadísticas, hub de alineaciones (iPhone real sin validar)
 - [x] Detalle de partido: resumen, marcador, eventos, alineaciones, penaltis, cuerpo técnico (sin navegación)
-- [ ] Jugador: cabecera compacta y estadísticas
-- [ ] Pestaña de estadísticas y rankings (goleadores)
+- [x] Jugador: cabecera compacta y estadísticas
+- [x] Pestaña de estadísticas y rankings (goleadores)
 - [ ] Navegación clasificación → equipo → partido → jugador → atrás, con back de Android y swipe iOS (pila cubierta en e2e; back de Android y swipe iOS sin validar en dispositivo)
 - [ ] Directo: marcador, incidencias y periodo en tiempo real
 - [ ] Tema claro/oscuro, barras de sistema en Android

@@ -221,7 +221,70 @@
   "jugador": {
     "titulo": "Jokalaria",
     "error": "Ezin izan da jokalaria kargatu.",
-    "resumen": "{{partidos}} PJ · {{goles}} gol"
+    "resumen": "{{partidos}} JP · {{goles}} gol",
+    "rol": {
+      "portero": "Atezaina",
+      "jugador": "Jokalaria"
+    },
+    "nacionalidad": "Nazionalitatea",
+    "nacimiento": "{{anio}}an jaioa",
+    "temporada": "Denboraldia",
+    "competiciones": "Lehiaketak",
+    "partidos_one": "{{count}} partida",
+    "partidos_other": "{{count}} partida",
+    "sinPartidos": "Oraindik ez du partidarik jokatu.",
+    "grafica": {
+      "titulo": "Partidaz partida",
+      "resumen": "{{serie}}: {{valores}}"
+    },
+    "series": {
+      "goles": "Golak",
+      "asistencias": "Asistentziak",
+      "paradas": "Geldiketak",
+      "encajados": "Jasotakoak"
+    },
+    "contadores": {
+      "goles": "G",
+      "asistencias": "As",
+      "faltasDirectas": "ZF",
+      "penaltis": "Pen",
+      "azules": "Ur",
+      "amarillas": "Ho",
+      "rojas": "Gu",
+      "faltas": "F",
+      "encajados": "JG",
+      "paradas": "Gel",
+      "tiros": "Tiroak",
+      "porcentajeParadas": "%Gel",
+      "minutos": "Min"
+    }
+  },
+  "estadisticas": {
+    "error": "Ezin izan dira estatistikak kargatu.",
+    "sinEquipoTexto": "Bere kategoriako sailkapenak ikusiko dituzu.",
+    "vacia": "Oraindik ez dago estatistikarik kategoria honetan.",
+    "premios": "Liderrak",
+    "categorias": {
+      "goles": "Golak",
+      "asistencias": "Asistentziak",
+      "porteros": "Atezainak",
+      "sanciones": "Zigorrak",
+      "equipos": "Taldeak"
+    },
+    "lider": {
+      "goles": "Gol-sartzaile nagusia",
+      "asistencias": "Asistitzaile nagusia",
+      "porteros": "Atezain onena",
+      "sanciones": "Zigortuena"
+    },
+    "equipos": {
+      "ataque": "Erasorik onenak",
+      "defensa": "Defentsarik onenak"
+    },
+    "partidos": "{{count}} JP",
+    "golesFavor": "{{count}} GA",
+    "golesContra": "{{count}} GK",
+    "ranking": "{{categoria}} sailkapena"
   },
   "selector": {
     "titulo": "Aukeratu talde bat",

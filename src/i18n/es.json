@@ -221,7 +221,70 @@
   "jugador": {
     "titulo": "Jugador",
     "error": "No se ha podido cargar el jugador.",
-    "resumen": "{{partidos}} PJ · {{goles}} goles"
+    "resumen": "{{partidos}} PJ · {{goles}} goles",
+    "rol": {
+      "portero": "Portero",
+      "jugador": "Jugador"
+    },
+    "nacionalidad": "Nacionalidad",
+    "nacimiento": "Nacido en {{anio}}",
+    "temporada": "Temporada",
+    "competiciones": "Competiciones",
+    "partidos_one": "{{count}} partido",
+    "partidos_other": "{{count}} partidos",
+    "sinPartidos": "Todavía no ha jugado ningún partido.",
+    "grafica": {
+      "titulo": "Partido a partido",
+      "resumen": "{{serie}}: {{valores}}"
+    },
+    "series": {
+      "goles": "Goles",
+      "asistencias": "Asistencias",
+      "paradas": "Paradas",
+      "encajados": "Encajados"
+    },
+    "contadores": {
+      "goles": "G",
+      "asistencias": "As",
+      "faltasDirectas": "FD",
+      "penaltis": "Pen",
+      "azules": "Az",
+      "amarillas": "Am",
+      "rojas": "Rj",
+      "faltas": "F",
+      "encajados": "GE",
+      "paradas": "Par",
+      "tiros": "Tiros",
+      "porcentajeParadas": "%Par",
+      "minutos": "Min"
+    }
+  },
+  "estadisticas": {
+    "error": "No se han podido cargar las estadísticas.",
+    "sinEquipoTexto": "Verás los rankings de su categoría.",
+    "vacia": "Aún no hay estadísticas en esta categoría.",
+    "premios": "Líderes",
+    "categorias": {
+      "goles": "Goles",
+      "asistencias": "Asistencias",
+      "porteros": "Porteros",
+      "sanciones": "Sanciones",
+      "equipos": "Equipos"
+    },
+    "lider": {
+      "goles": "Máximo goleador",
+      "asistencias": "Máximo asistente",
+      "porteros": "Mejor portero",
+      "sanciones": "Más sancionado"
+    },
+    "equipos": {
+      "ataque": "Mejores ataques",
+      "defensa": "Mejores defensas"
+    },
+    "partidos": "{{count}} PJ",
+    "golesFavor": "{{count}} GF",
+    "golesContra": "{{count}} GC",
+    "ranking": "Ranking de {{categoria}}"
   },
   "selector": {
     "titulo": "Elige un equipo",

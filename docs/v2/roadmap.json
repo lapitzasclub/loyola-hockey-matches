@@ -135,7 +135,7 @@
       "title": "Pantallas: jugador, estadísticas y rankings",
       "model": "sonnet",
       "effort": "high",
-      "status": "pending",
+      "status": "done",
       "prompt": "Implementa con paridad v1 la vista de jugador (cabecera compacta y estadísticas por temporada/competición) y la tab de estadísticas con rankings (goleadores y los que hoy existan en la v1) aprovechando `estadisticas-jugadores`. Elige una librería de gráficas ligera con carga diferida (o SVG propio si basta) y justifica la elección en el ROADMAP. Cierra la checklist de paridad de F3 completa.",
       "exit": [
         "Todas las casillas de pantallas de la checklist marcadas",

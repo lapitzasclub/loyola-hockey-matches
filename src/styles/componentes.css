@@ -1111,3 +1111,192 @@ button.cabecera-equipo:active {
   font-size: 0.72rem;
   font-weight: 600;
 }
+
+.persona__textos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.persona__textos > .persona__nombre {
+  flex: none;
+}
+
+.persona__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  color: var(--app-texto-secundario);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Líderes de estadísticas: una tarjeta por categoría */
+.lideres {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 12px 8px;
+}
+
+.lider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  padding: 10px 8px;
+  border: 1px solid var(--app-superficie-borde);
+  border-radius: 12px;
+  color: var(--ion-text-color);
+  text-align: center;
+  text-decoration: none;
+}
+
+.lider:active {
+  opacity: 0.75;
+}
+
+.lider__etiqueta {
+  color: var(--app-texto-secundario);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lider__nombre {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lider__equipo {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--app-texto-secundario);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lider__valor {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ficha de jugador */
+.jugador-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+}
+
+.jugador-cabecera__nombre {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.jugador-cabecera__datos {
+  margin: 2px 0 0;
+  color: var(--app-texto-secundario);
+  font-size: 0.82rem;
+}
+
+.dato-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 16px;
+}
+
+.dato-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--app-programado-fondo);
+  color: var(--app-programado);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.jugador-partido {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+}
+
+.jugador-partido__fecha {
+  padding: 0 16px;
+  color: var(--app-texto-secundario);
+  font-size: 0.72rem;
+}
+
+.jugador-partido__cruce {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  font-size: 0.9rem;
+}
+
+/* Gráfica de partidos: SVG propio; solo se pinta, no se anima */
+.grafica {
+  margin: 0;
+  padding: 8px 16px 4px;
+}
+
+.grafica__lienzo {
+  overflow-x: auto;
+}
+
+.grafica svg {
+  display: block;
+  max-width: none;
+}
+
+.grafica__eje {
+  stroke: var(--app-superficie-borde);
+  stroke-width: 1;
+}
+
+.grafica__barra--0 {
+  fill: var(--app-programado);
+  background: var(--app-programado);
+}
+
+.grafica__barra--1 {
+  fill: var(--app-proximo);
+  background: var(--app-proximo);
+}
+
+.grafica__valor,
+.grafica__fecha {
+  fill: var(--app-texto-secundario);
+  font-size: 9px;
+}
+
+.grafica__leyenda {
+  display: flex;
+  gap: 14px;
+  padding-top: 4px;
+  color: var(--app-texto-secundario);
+  font-size: 0.72rem;
+}
+
+.grafica__muestra {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 2px;
+}
