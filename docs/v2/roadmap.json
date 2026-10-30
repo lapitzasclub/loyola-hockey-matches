@@ -49,7 +49,7 @@
       "title": "Dominio II: partido, incidencias, alineaciones y jugador",
       "model": "opus",
       "effort": "xhigh",
-      "status": "pending",
+      "status": "done",
       "prompt": "Segunda mitad del dominio, mismo enfoque que S01. Amplía el script de fixtures con `/public/partidos/{id}` (finalizados con penaltis, con faltas directas, con cambios y tarjetas), `/public/partidos/marcadores`, `estadisticas-jugadores`, `plantilla` y stats de jugador. Esquemas Zod y modelo de dominio para: PartidoDetalle, Incidencia como unión discriminada por `tipo` (GOL, PARADA, FALTA, FALTA-HL, FALTADIRECTA, PENALTI, TM, CAMBIO, TARJETAAZUL, TARJETAAMARILLA, TARJETAROJA), Alineacion con roles (incluido ENTRENADOR2 y `rolPosicion` vacío), estado de partido derivado (periodo 30, periodo <= 0, estado poco fiable del detalle), marcador calculado por incidencias GOL, tanda de penaltis, estadísticas de jugador y ranking de goleadores. Tests sobre fixtures que cubran `NO_GOL`, marcador en vivo vs oficial y staff sin dorsal.",
       "exit": [
         "Incidencia es una unión discriminada exhaustiva (switch sin default compila)",
