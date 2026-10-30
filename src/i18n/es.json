@@ -1,9 +1,19 @@
 {
-  "app": { "nombre": "Loyola Hockey" },
+  "app": {
+    "nombre": "Loyola Hockey"
+  },
   "tabs": {
     "partidos": "Partidos",
     "clasificacion": "Clasificación",
     "estadisticas": "Estadísticas"
   },
-  "common": { "proximamente": "Próximamente." }
+  "common": {
+    "proximamente": "Próximamente.",
+    "cargando": "Cargando…",
+    "reintentar": "Reintentar"
+  },
+  "partidos": {
+    "error": "No se han podido cargar los partidos.",
+    "vacio": "No hay partidos en los próximos días."
+  }
 }

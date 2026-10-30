@@ -29,6 +29,41 @@ export default tseslint.config(
     },
   },
   {
+    // La red solo se toca desde api/transport.ts, que decide directo o proxy.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/api/transport.ts', 'src/**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'fetch',
+          message: 'Usa los hooks de queries/ o api/transport.ts.',
+        },
+        { name: 'XMLHttpRequest', message: 'Usa api/transport.ts.' },
+      ],
+      'no-restricted-properties': [
+        'error',
+        ...['globalThis', 'window', 'self'].map((object) => ({
+          object,
+          property: 'fetch',
+          message: 'Usa los hooks de queries/ o api/transport.ts.',
+        })),
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@capacitor/core',
+              importNames: ['CapacitorHttp'],
+              message: 'Usa api/transport.ts.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['*.config.{js,ts}'],
     languageOptions: { globals: { ...globals.node } },
   },

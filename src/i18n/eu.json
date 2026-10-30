@@ -1,9 +1,19 @@
 {
-  "app": { "nombre": "Loyola Hockey" },
+  "app": {
+    "nombre": "Loyola Hockey"
+  },
   "tabs": {
     "partidos": "Partidak",
     "clasificacion": "Sailkapena",
     "estadisticas": "Estatistikak"
   },
-  "common": { "proximamente": "Laster." }
+  "common": {
+    "proximamente": "Laster.",
+    "cargando": "Kargatzen…",
+    "reintentar": "Saiatu berriro"
+  },
+  "partidos": {
+    "error": "Ezin izan dira partidak kargatu.",
+    "vacio": "Ez dago partidarik hurrengo egunetan."
+  }
 }
