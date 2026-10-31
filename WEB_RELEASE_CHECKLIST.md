@@ -10,13 +10,11 @@
 - [ ] comprobar calendario
 - [ ] comprobar clasificación
 - [ ] comprobar detalle de partido
-- [ ] comprobar `GET /signalr/hubs`
+- [ ] `npm test` y `npm run e2e`
 
 ## Configuración Cloudflare
 
 - [ ] proyecto Pages conectado o deploy con Wrangler
-- [ ] `PUBLIC_APP_ORIGIN` configurado
-- [ ] `SIGNALR_UPSTREAM_BASE` configurado
 - [ ] KV `API_RATE_LIMIT` enlazado
 - [ ] `wrangler.toml` actualizado con ids reales si aplica
 
@@ -29,6 +27,4 @@
 - [ ] verificar respuestas correctas en `/api/*`
 - [ ] verificar comportamiento de realtime si hay partido en vivo
 
-## Limitación conocida
-
-El punto más sensible sigue siendo el canal realtime legacy. Si algo falla en producción web, lo primero a revisar será SignalR y no el proxy ASMX principal.
+Las comprobaciones concretas (cabeceras, `x-cache`, allowlist, PWA en iPhone) están en `CLOUDFLARE_DEPLOY.md`.

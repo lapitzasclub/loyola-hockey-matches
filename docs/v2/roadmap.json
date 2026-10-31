@@ -177,7 +177,7 @@
       "title": "Worker Hono, PWA de producción y E2E",
       "model": "sonnet",
       "effort": "high",
-      "status": "pending",
+      "status": "in_progress",
       "prompt": "Sustituye `functions/` por un backend Hono en Cloudflare (Worker con assets o Pages Functions, elige y justifica): proxy con allowlist tipada de los endpoints de la API nueva, caché en el edge por tipo de recurso, rate limit con el KV existente, cabeceras de seguridad, y lo necesario para Centrifugo en web. Service worker de producción (precache del shell, estrategia para datos), manifest completo, iconos y splash de iOS. Suite E2E Playwright (WebKit + Chromium móvil) con los flujos de la checklist sobre respuestas grabadas. Despliegue de preview en Cloudflare y prueba de instalación en iPhone.",
       "exit": [
         "Preview desplegada y PWA instalable en iPhone",

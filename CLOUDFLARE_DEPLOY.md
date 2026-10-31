@@ -1,107 +1,47 @@
 # Deploy en Cloudflare Pages
 
-## Opción recomendada
+La web (la PWA, que es el producto de iOS) y su backend van en el mismo proyecto de Pages,
+`loyola-hockey-matches`, en **modo avanzado**:
 
-Usar **Cloudflare Pages** para servir la SPA y **Pages Functions** para el backend `/api/*` y `/signalr/*`.
+- `dist/` es la SPA de Vite más `sw.js`, `_headers` y `_routes.json`.
+- `dist/_worker.js` es el worker Hono de `worker/`, compilado con `vite.worker.config.ts`. Hace de
+  proxy con allowlist hacia `fvpatinaje.eus`, caché en el edge, rate limit y paso del WebSocket de
+  Centrifugo.
+- `_routes.json` hace que solo `/api/*` y `/connection/*` invoquen el worker; lo estático lo sirve
+  Pages sin gastar invocaciones.
 
-## Build de Pages
+Las decisiones y los tiempos de caché están en `docs/v2/ROADMAP.md` (sección S11).
 
-- Framework preset: `None`
-- Build command: `npm run build`
-- Build output directory: `dist`
-- Root directory: dejar la del repo si este proyecto se despliega desde su propio repositorio
+## Configuración
 
-## Variables de entorno
+Todo está en `wrangler.toml` (`pages_build_output_dir = "dist"`); no hay variables de entorno.
 
-### `PUBLIC_APP_ORIGIN`
-Dominio público exacto de la app.
+- KV `API_RATE_LIMIT`: guarda solo los bloqueos del rate limit. Si se crea un namespace nuevo,
+  actualiza su `id` en `wrangler.toml`.
 
-Ejemplos:
+## Comandos
 
-```text
-https://loyola-hockey-matches.pages.dev
-```
-
-si más adelante usas dominio propio:
-
-```text
-https://hockey.loyola.example.com
-```
-
-### `SIGNALR_UPSTREAM_BASE`
-Base del servicio legacy de SignalR permitida por el proxy.
-
-```text
-https://digitalsport.online/signalr
-```
-
-## KV para rate limiting
-
-Crear un KV namespace y enlazarlo como:
-
-```text
-API_RATE_LIMIT
-```
-
-Después actualiza `wrangler.toml` con los ids reales:
-
-```toml
-[[kv_namespaces]]
-binding = "API_RATE_LIMIT"
-id = "<production-kv-id>"
-preview_id = "<preview-kv-id>"
-```
-
-## Pasos concretos en Cloudflare Dashboard
-
-1. Ir a **Workers & Pages**.
-2. Crear proyecto **Pages**.
-3. Conectar el repositorio o hacer deploy manual.
-4. Configurar:
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-5. En **Settings > Environment variables** añadir:
-   - `PUBLIC_APP_ORIGIN`
-   - `SIGNALR_UPSTREAM_BASE`
-6. En **Settings > Functions > KV namespace bindings** enlazar:
-   - `API_RATE_LIMIT`
-7. Lanzar el deploy.
-
-## Deploy manual con Wrangler
-
-### Preview local Pages Functions
 ```bash
-npx wrangler pages dev dist
+npm run cf:dev       # build + wrangler pages dev dist (runtime de Pages en local, puerto 8788)
+npm run cf:preview   # build + deploy de la rama v2 → https://v2.loyola-hockey-matches.pages.dev
+npm run cf:deploy    # build + deploy de main (producción)
 ```
 
-### Deploy
-```bash
-npx wrangler pages deploy dist
-```
+Antes de desplegar: `npm run lint`, `npm test`, `npm run build` y `npm run e2e`.
 
 ## Verificaciones después del deploy
 
-1. Abrir la URL pública.
-2. Comprobar que carga selector de equipos.
-3. Verificar llamadas a:
-   - `/api/GetCompeticiones`
-   - `/api/GetParametrosCompeticion`
-   - `/api/GetCalendarioCompeticion`
-   - `/api/GetClasificacionCompeticion`
-   - `/api/GetParametrosPartido`
-   - `/api/GetEstadisticaPartido`
-   - `/api/GetEstadisticasJugador`
-4. Verificar que `/signalr/hubs` responde.
-5. Abrir un partido y confirmar que el realtime entra.
-6. Probar en Safari iPhone y Android Chrome.
+1. `curl -I <url>/` trae la CSP y `X-Frame-Options: DENY`; `/static/*` es `immutable` y `/sw.js`
+   va con `no-cache`.
+2. `<url>/api/auth/config` dos veces: la segunda con `x-cache: HIT`.
+3. Una ruta fuera de la allowlist (`/api/web/noticias`) da 404.
+4. El directo: con un partido en juego, el marcador cambia sin recargar (WebSocket a
+   `/connection/websocket`).
+5. En Safari de iPhone: «Añadir a pantalla de inicio», abrir la app instalada (sin barra de Safari y
+   con la pantalla de arranque) y, en modo avión, que abra con los datos de la última vez.
 
-## Notas operativas
+## Notas
 
-- `.wrangler/` es local, no debe versionarse.
-- `dist/` es salida de build, no debe versionarse.
-- Si cambias a dominio propio, actualiza `PUBLIC_APP_ORIGIN`.
-
-## Nota importante sobre realtime
-
-El bootstrap y las rutas HTTP de SignalR se sirven desde tu dominio, pero el backend realtime sigue siendo legacy.
-Si el servicio upstream limita origen o transporte, podría hacer falta una iteración extra específica del canal SignalR en producción pública.
+- `.wrangler/` y `dist/` no se versionan.
+- `npm run android:sync` quita del APK lo que solo es de Pages (`_worker.js`, `_routes.json`,
+  `_headers`, `sw.js`, `splash/`).

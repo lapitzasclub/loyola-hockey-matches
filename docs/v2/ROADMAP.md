@@ -330,7 +330,7 @@ Validación:
   el reloj del periodo. `acta_reabierta` no apareció.
 - **Listas**: `/public/partidos/marcadores` se superpone al calendario ignorando `periodo <= 0`.
 - **Web**: el WebSocket va al propio origen (`/connection/websocket`) y lo pasa Vite en desarrollo y
-  `functions/connection/[[path]].js` en Cloudflare (solo esa ruta y solo con `Upgrade: websocket`).
+  el worker en Cloudflare (solo esa ruta y solo con `Upgrade: websocket`; ver S11).
 - **Gol**: animación del marcador (solo `transform`/`opacity`, sin ella con movimiento reducido) y,
   en Android, vibración con `@capacitor/haptics`.
 - **Validado el 2026-10-31 con partidos en juego**: web (dev y preview de Cloudflare) y Android
@@ -339,7 +339,8 @@ Validación:
 - **Pendiente para S11 (worker)**: el proxy de Pages cachea `/api/public/*` 120 s en el edge. En web,
   el detalle que el directo pide tras `acta_cerrada` o una alineación nueva puede llegar con hasta
   2 minutos de retraso (el marcador no, que lo pone el reducer). El worker debe no cachear, o cachear
-  segundos, el detalle de partidos de hoy no finalizados y `marcadores`.
+  segundos, el detalle de partidos de hoy no finalizados y `marcadores`. **Resuelto en S11**: el detalle se
+  guarda 5 s con el acta abierta (600 s cerrada) y `marcadores` 5 s.
 
 ### Aspecto de Android: modo `md` (tras S09)
 
@@ -366,6 +367,82 @@ Android deja el modo `ios` de Ionic. iPhone y web siguen en `ios`.
   nombre accesible siguen valiendo. Un test comprueba el modo y el atrás sin texto en cada proyecto.
 - Revisado en el emulador en claro y oscuro: detalle de partido y de equipo, cabecera plegada,
   hoja de ajustes y transición de ida y vuelta.
+
+### Worker, PWA y E2E: decisiones y hallazgos (S11)
+
+- **Pages en modo avanzado, no Worker con assets**: el build deja `dist/_worker.js` (Hono, de
+  `worker/`, con `vite.worker.config.ts`) junto a la web. Se queda en Pages porque:
+  - la PWA y la API comparten origen, así que no hace falta CORS y la CSP queda en `'self'`;
+  - el proyecto, el dominio, las previews por rama y el KV ya existen;
+  - el iPhone que tenga instalada la PWA sigue en la misma URL.
+
+  `public/_routes.json` limita el worker a `/api/*` y `/connection/*`: lo estático no gasta
+  invocaciones del plan gratuito.
+- **Allowlist tipada** (`worker/rutas.ts`): método, segmentos validados (GUID, enteros, canal
+  `acta_<guid>`) y parámetros admitidos por endpoint. Un parámetro desconocido, repetido o mal
+  formado da 404, y así nadie puede llenar la caché con variantes. La query se normaliza en orden
+  alfabético. El proxy de desarrollo de Vite usa la misma allowlist: lo que no pasaría en
+  producción falla también en local.
+- **Caché en el edge** (Cache API, por recurso):
+
+  | Recurso | Segundos |
+  |---|---|
+  | `marcadores` | 5 |
+  | detalle de partido | 5 con el acta abierta, 600 con `FINALIZADO` |
+  | agenda, árbol, clasificación | 60 |
+  | estadísticas (de división y de jugador) | 300 |
+  | fases, equipos, plantilla | 600 |
+  | divisiones (POST; la clave incluye las competiciones del cuerpo, ordenadas y sin repetir) | 3600 |
+  | `auth/config` | 3600 |
+  | tokens de Centrifugo | nunca |
+
+  Solo se guardan respuestas 200. Al navegador le llega `no-store` (sus datos los persiste TanStack
+  Query) y `x-cache: HIT|MISS`. Comprobado en la preview: el segundo `auth/config` sale `HIT`.
+- **Rate limit**: 600 peticiones por minuto e IP, contadas en memoria del isolate. El KV
+  `API_RATE_LIMIT` solo guarda los bloqueos, porque el plan gratuito permite 1000 escrituras al día y
+  escribir en cada petición las agotaría. Cada IP lee el KV como mucho cada 30 s.
+- **Centrifugo en web**: `GET /connection/websocket` pasa a `wss://fvpatinaje.eus` solo si es un
+  upgrade (si no, 426) y el `Origin` es el propio (si no, 403). En la preview el `connect` con el
+  token público responde (`ttl` 86400) y un origen ajeno se rechaza.
+- **Cabeceras** (`public/_headers`):
+  - CSP estricta, sin `unsafe-eval`. El único `unsafe-inline` es el de estilos, porque Ionic los
+    inyecta.
+  - `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` y COOP.
+  - `/static/*` es inmutable y `sw.js` va con `no-cache`.
+
+  `vite preview` aplica las mismas cabeceras, de modo que los e2e corren con la CSP de producción.
+  La CSP sacó un aviso: Zod 4 prueba `new Function` al crear los esquemas, así que se configura
+  `jitless` en `src/api/zod.ts`, que `main.tsx` importa el primero.
+- **Service worker** (`src/pwa/`), propio y sin Workbox:
+  - lo que hace con cada petición está en `estrategias.ts` (puro y con tests);
+  - precache del shell, de los ficheros con hash (que van a `/static/`) y de las imágenes que pinta
+    el CSS;
+  - `public/` va con stale-while-revalidate, y escudos y fotos del S3 con cache-first (400 como
+    mucho);
+  - la API no la toca: los datos sin conexión los da la caché persistida de TanStack Query.
+
+  La versión es un hash del build. Al activarse borra las cachés de shell salvo la anterior: una
+  pestaña abierta puede pedir todavía sus chunks diferidos. La página recarga sola al ocultarse
+  cuando cambia el controlador.
+
+  Trampa: `vite preview` manda `Vary: Origin` y los módulos se piden en modo `cors`, así que
+  `caches.match` no los encontraba. Se busca con `ignoreVary`. En Android (Capacitor) no se
+  registra, y `android:sync` borra del APK `sw.js`, `splash/` y lo de Pages.
+- **Manifest e iconos**: `npm run iconos` (Playwright) genera desde el escudo:
+  - los iconos 192 y 512, el maskable, el favicon y el `apple-touch-icon`;
+  - 24 pantallas de arranque de iOS (12 iPhone, en claro y en oscuro con el fondo del tema), con sus
+    `<link>` en `index.html`.
+- **E2E** (`tests/e2e/pwa.spec.ts`), además de los flujos de la checklist sobre fixtures grabadas:
+  - manifest con iconos de su tamaño real;
+  - cada splash con las medidas de su `media`;
+  - cero violaciones de CSP por las pantallas principales;
+  - con el SW: precache y apertura sin conexión de Clasificación y Partidos, sin peticiones fallidas.
+
+  El resto de pruebas corre con `serviceWorkers: 'block'` porque, con el SW, `page.route` no ve sus
+  peticiones. 66 en verde en `webkit-iphone` y `chromium-android`.
+- **Preview**: `npm run cf:preview` despliega la rama `v2`
+  (`https://v2.loyola-hockey-matches.pages.dev`); `cf:deploy` despliega `main` (producción, S12). En
+  Chromium y WebKit la preview registra el SW sin errores de consola ni de CSP.
 
 ## 7. Fases
 

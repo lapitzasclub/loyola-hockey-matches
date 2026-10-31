@@ -10,7 +10,7 @@ Rama `v2`: reescritura de la app (React + TypeScript + Ionic + TanStack Query). 
 
 ```bash
 npm start              # dev server (Vite, puerto 5173), proxy de /api y /connection hacia fvpatinaje.eus
-npm run build          # tsc --noEmit + vite build → dist/
+npm run build          # tsc --noEmit + vite build (web + sw.js) + build del worker → dist/
 npm run serve          # preview del build
 npm run typecheck      # tsc --noEmit
 npm run lint           # ESLint (flat) + prettier --check
@@ -18,12 +18,14 @@ npm run format         # prettier --write
 npm test               # Vitest (unitarios, junto al código en src/**/*.test.ts(x))
 npm run e2e            # Playwright: webkit-iphone y chromium-android (compila y sirve con vite preview)
 
-npm run android:sync   # build + cap sync android
+npm run android:sync   # build + cap sync android + quita del APK lo que solo es de Pages
 npm run android:run    # android:sync + cap run android (dispositivo o emulador)
 npm run android:open   # abre Android Studio
 
 npm run cf:dev         # build + wrangler pages dev dist
-npm run cf:deploy      # build + wrangler pages deploy dist
+npm run cf:preview     # build + deploy de la rama v2 (https://v2.loyola-hockey-matches.pages.dev)
+npm run cf:deploy      # build + deploy de producción (main)
+npm run iconos         # regenera iconos y splash de iOS desde el escudo (Playwright)
 ```
 
 Antes de cada commit, sync de Android o deploy: `npm run lint`, `npm test` y `npm run build`. Antes de cerrar una sesión del roadmap, además `npm run e2e`.
@@ -45,10 +47,10 @@ src/
   ui/             componentes de diseño compartidos
   i18n/           es.json, eu.json
   styles/         tokens CSS y tema claro/oscuro
-worker/           Hono: proxy con allowlist + caché + (F6) push
+  pwa/            service worker (solo web) y su registro
+worker/           Hono en Pages (modo avanzado, dist/_worker.js): proxy con allowlist, caché, rate limit, WebSocket; (F6) push
 tests/e2e/        Playwright
 android/          proyecto Capacitor (no editar a mano; `npm run android:sync`)
-functions/        proxy Cloudflare Pages de la v1, solo como referencia hasta F5
 public/           iconos, manifest y assets de marca
 ```
 

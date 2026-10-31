@@ -57,17 +57,17 @@ Recomendado cuando necesites:
 
 ## 4. Desarrollo del backend web Cloudflare
 
-### Probar Pages Functions localmente
+### Probar el worker de Pages localmente
 
 ```bash
 npm run cf:dev
 ```
 
-Esto sirve `dist` junto con `functions/` usando el runtime de Pages.
+Esto sirve `dist` junto con el worker (`dist/_worker.js`, de `worker/`) usando el runtime de Pages.
 
 Úsalo para validar:
 - `/api/*`
-- `/signalr/hubs`
+- `/connection/websocket` (directo)
 - comportamiento web más parecido al deploy real
 
 ## 5. Despliegue web a Cloudflare
