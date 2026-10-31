@@ -11,6 +11,9 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
+    // Con el service worker activo `page.route` no ve las peticiones que
+    // pasan por él: las pruebas de la PWA lo habilitan explícitamente.
+    serviceWorkers: 'block',
   },
   projects: [
     // WebKit ≈ Safari de iPhone: es la plataforma iOS (PWA).
