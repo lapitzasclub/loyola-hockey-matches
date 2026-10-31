@@ -40,7 +40,7 @@ infraestructura, no de negocio:
 | Datos | **TanStack Query** + persistencia (IndexedDB) | Caché, stale-while-revalidate, reintentos, offline e invalidación desde el directo. |
 | Validación | **Zod** | Esquemas = contrato de la API; modelo de dominio propio, no la forma legacy. |
 | Directo | `centrifuge` → `queryClient.setQueryData/invalidateQueries` | El directo actualiza la caché; las pantallas no saben que existe. |
-| Animación | View Transitions API + **Motion** (`motion/react`) | `layoutId` para elementos compartidos, gestos, springs. |
+| Animación | `navAnimation` de Ionic + FLIP propio (`app/transicionPagina.ts`) y CSS | Revisado en S09: sin Motion ni View Transitions, porque no siguen al gesto de volver de Ionic (ver §6, S09). |
 | i18n | i18next + react-i18next (es/eu) | Estándar, pluralización, carga por namespace. |
 | Gráficas | **SVG propio** (`features/jugador/GraficaPartidos.tsx`) con `React.lazy` | La única gráfica son barras agrupadas partido a partido (dos series). chart.js pesaba ~180 KB en la v1 para eso; un SVG de ~100 líneas no añade dependencia, hereda los tokens de tema y es accesible (`role="img"` + descripción). Se carga en diferido al abrir una competición con ≥2 partidos. Si algún día hacen falta ejes, zoom o tooltips, reevaluar uPlot/visx. |
 | Backend | Cloudflare Worker + **Hono** (Pages Functions o Worker con assets) | Proxy allowlist tipado, caché en el edge, base para push. |
@@ -246,7 +246,7 @@ Validación:
   `nombre-<inscripcionId>`) vía `ui/transiciones.ts`; no se anima nada todavía.
 - **Estilo** sin paneles: filas con separador fino, sin bordes ni sombras. La cabecera con el
   equipo elegido y las barras del sistema integradas con el fondo (estilo v1) quedan para una
-  tarea aparte tras S06.
+  tarea aparte tras S06. Las barras fundidas se hicieron en S09 (ver S04).
 - **`ion-router-link` y la maquetación**: pinta un `<a>` en su shadow DOM, así que una rejilla o
   flex puesta en el propio enlace colapsa los hijos en la primera columna (la racha salía con
   ancho 0). La maquetación va en un hijo (`clasif__interior`, `persona__interior`). jsdom no lo
@@ -256,6 +256,56 @@ Validación:
   (`tests/e2e/equipo.spec.ts`); en Vitest las secciones se renderizan directamente.
 - **Pila de navegación y e2e**: las páginas de debajo siguen en el DOM; los selectores deben
   acotarse a la página (`page-partido`, `hoja-info-partido`…).
+
+### Capa wow: decisiones y hallazgos (S09)
+
+- **Transición compartida sin Motion ni View Transitions.** `layoutId` de Motion necesita que
+  origen y destino vivan en el mismo árbol de React, y Ionic monta cada página aparte y anima con
+  su propio motor. View Transitions congela la página mientras dura, no sigue al gesto de volver
+  y depende de la versión de Safari. Se usa la `navAnimation` del router: la de iOS de Ionic más
+  clones FLIP de los elementos con el mismo `data-transicion` (`ui/transiciones.ts`), como hijos
+  de la animación de página. Heredan duración y curva, y el swipe-back los arrastra con el dedo.
+  La geometría (`app/vuelo.ts`) es pura y tiene tests.
+- **Qué vuela**: escudo y nombre de equipo (tabla → cabecera del equipo) y escudos, nombres y
+  marcador (tarjeta → cabecera del partido). Solo se emparejan los elementos que se ven enteros, y
+  si un nombre se repite manda el que está dentro del enlace pulsado (al volver, el enlace desde el
+  que se abrió). Los escudos vuelan como caja y los textos cruzan dos clones con la escala de la
+  fuente.
+- **Destino al instante**: el detalle de partido pinta una cabecera previa con lo que enseñaba la
+  tarjeta (`ui/tarjetaPulsada.ts`), así el vuelo tiene adónde ir aunque el acta tarde. Los
+  originales se ocultan **por nombre** y no por nodo: si la cabecera real sustituye a la previa a
+  mitad del vuelo, el nodo nuevo también queda bajo su clon.
+- **Cabecera que se pliega**: `Pagina` escribe `--pliegue` (0–1) en los `[data-plegable]` con el
+  scroll y el CSS traduce ese valor a `transform` y `opacity`. En la barra, el título deja paso a
+  lo esencial del cruce (escudos y marcador u hora). Con movimiento reducido pasa de 0 a 1 de
+  golpe.
+- **Pastilla del segmento**: sustituye al indicador de Ionic (que salta de botón en botón) y sigue
+  el desplazamiento de la fila de paneles (`ui/pastilla.ts`). De paso, `.segmento` lleva
+  `width: auto`, porque el `width: 100%` de Ionic más el margen lo sacaba 24 px de la pantalla.
+- **Skeleton → contenido** (`Revelado`): solo si la consulta estuvo pendiente; con datos de caché
+  no anima. En el detalle de partido solo entran las pestañas, porque la cabecera previa ya ocupa
+  el sitio.
+- **Marcador que late** (`Cifra`) solo cuando cambia con la pantalla abierta, nunca al montarse.
+  **EN JUEGO** con una onda desde el punto y **racha** con los puntos escalonados.
+- **Confeti** una vez por partido: victoria del Loyola (`ganaLoyola`, que excluye los partidos
+  entre dos equipos del club) vista por primera vez o que termina con la pantalla abierta. Sale
+  cuando acaba la transición, se apunta en `loyola.celebrados` (últimos 50) y con movimiento
+  reducido ni se pinta ni se gasta.
+- **`prefers-reduced-motion` al final de `componentes.css`**: en mitad del archivo quedaba antes
+  de la animación del punto de EN JUEGO y no la anulaba. Lo cazó el e2e que comprueba que no
+  queda ninguna animación CSS. Sin animaciones, la navegación es un fundido de 200 ms.
+- **e2e con animaciones**: mientras algo se mueve, Playwright reintenta el toque desplazando la
+  página y eso plegaba la cabecera antes de tiempo. Hay que esperar a `getAnimations()` antes de
+  tocar. Para medir la pastilla a mitad de gesto se quita el `scroll-snap` de la fila.
+- **Barras fundidas** con el fondo, a petición del usuario: ver S04.
+
+Validación:
+
+| Criterio | Android (APK, emulador Android 16, WebView 133) | iPhone (PWA) |
+|---|---|---|
+| Transiciones compartidas | ✅ tabla → equipo y tarjeta → partido, ida y vuelta (grabado y revisado fotograma a fotograma) | ⚠️ solo e2e WebKit; **sin validar en iPhone real** (swipe-back con vuelo incluido) |
+| Sin jank | ✅ `dumpsys gfxinfo` sin S09 frente a con S09 en el mismo recorrido: 10,5 % frente a 9,9–11,8 % de frames lentos, p50 24 frente a 23 ms y p95 46 frente a 48 ms. S09 no añade jank. ⚠️ El emulador va limitado por la GPU del PC: las cifras absolutas no son las de un Android de gama media, que está **sin medir en dispositivo real** | — |
+| `prefers-reduced-motion` | ✅ «Quitar animaciones» del sistema llega al WebView como `reduce` (comprobado por CDP); el comportamiento está cubierto en e2e (sin vuelos, sin animaciones CSS, sin confeti) | ⚠️ solo e2e WebKit |
 
 ## 7. Fases
 
