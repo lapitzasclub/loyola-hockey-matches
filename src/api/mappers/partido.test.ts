@@ -48,6 +48,13 @@ describe('estado del detalle', () => {
     expect(resultadoPartido(p)).toBeNull();
   });
 
+  it('un partido sin acta (actaEstado null) se lee como programado', () => {
+    // Detalle real de un partido futuro: la federación no crea el acta hasta el día.
+    const p = detalle('programado-sin-acta');
+    expect(p.estado).toBe('programado');
+    expect(resultadoPartido(p)).toBeNull();
+  });
+
   it('en vivo manda el periodo aunque el estado siga en SCHEDULED', () => {
     const d = api('descanso');
     const vivo = partidoDetalleDesdeApi({

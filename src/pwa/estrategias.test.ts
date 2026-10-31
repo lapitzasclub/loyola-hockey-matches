@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import { cachesQueSobran, estrategiaPara, HOST_IMAGENES } from './estrategias';
@@ -74,4 +76,20 @@ describe('cachesQueSobran', () => {
     expect(cachesQueSobran(['shell-a'], 'shell-a')).toEqual([]);
     expect(cachesQueSobran(['shell-a', 'shell-b'], 'shell-b')).toEqual([]);
   });
+});
+
+describe('CSP de public/_headers', () => {
+  const csp = readFileSync('public/_headers', 'utf8')
+    .split(/\r?\n/)
+    .find((l) => l.includes('Content-Security-Policy'));
+
+  // El SW pide los escudos con fetch(): sin esto salen rotos en la PWA y los
+  // e2e no lo ven porque corren sin service worker.
+  it.each(['img-src', 'connect-src'])(
+    '%s admite el host de las imágenes',
+    (directiva) => {
+      const valor = new RegExp(`${directiva}([^;]*)`).exec(csp ?? '')?.[1];
+      expect(valor).toContain(HOST_IMAGENES);
+    },
+  );
 });

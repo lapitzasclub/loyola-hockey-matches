@@ -84,8 +84,11 @@ export const partidoDetalleSchema = z.object({
   id: z.guid(),
   nombre: z.string(),
   estado: z.string(),
-  /** PROGRAMADO, FINALIZADO o REABIERTA. */
-  actaEstado: z.string(),
+  /**
+   * PROGRAMADO, FINALIZADO o REABIERTA. `null` en la mayoría de los partidos
+   * sin empezar (367 de 393 el 2026-10-31): el acta aún no existe.
+   */
+  actaEstado: z.string().nullable(),
   periodo: z.number().int(),
   cronoMin: z.number().int().nullable(),
   cronoSec: z.number().int().nullable(),

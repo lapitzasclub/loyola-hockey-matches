@@ -5,8 +5,10 @@
 # - style-src 'unsafe-inline': Ionic y React ponen estilos en línea.
 # - connect-src data:: ionicons lee sus SVG en data: con fetch.
 # - img-src: escudos y fotos vienen del S3 público de DigitalSport.
+# - connect-src del S3: el service worker pide los escudos con fetch() para
+#   guardarlos, y esa petición se rige por connect-src, no por img-src.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://digitalsport-public-docs.s3.fr-par.scw.cloud; font-src 'self' data:; connect-src 'self' data:; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://digitalsport-public-docs.s3.fr-par.scw.cloud; font-src 'self' data:; connect-src 'self' data: https://digitalsport-public-docs.s3.fr-par.scw.cloud; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
