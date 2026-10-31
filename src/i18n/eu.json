@@ -296,6 +296,15 @@
   "pista": {
     "abrirMapa": "Ireki {{pista}} mapan"
   },
+  "calendario": {
+    "suscribirse": "Gehitu nire egutegira",
+    "explicacion": "Partidak zure egutegian agertzen dira, eta ordua edo pista aldatzen bada, berez eguneratzen dira.",
+    "google": "Google Calendar",
+    "apple": "iPhone, Mac edo Outlook",
+    "copiar": "Kopiatu helbidea",
+    "copiado": "Helbidea kopiatu da",
+    "copiaManual": "Kopiatu helbidea: {{direccion}}"
+  },
   "selector": {
     "titulo": "Aukeratu talde bat",
     "elegir": "Aukeratu taldea",

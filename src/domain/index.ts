@@ -16,3 +16,4 @@ export * from './partido';
 export * from './periodo';
 export * from './pista';
 export * from './racha';
+export * from './suscripcion';

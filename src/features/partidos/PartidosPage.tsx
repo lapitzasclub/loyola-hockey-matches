@@ -27,6 +27,7 @@ import { Pagina } from '../../ui/Pagina';
 import { Revelado, useEspera } from '../../ui/Revelado';
 import { useRutas } from '../../ui/rutas';
 import { useShell } from '../../ui/shell';
+import { SuscribirCalendario } from '../../ui/SuscribirCalendario';
 import {
   TarjetaPartido,
   TarjetaPartidoSkeleton,
@@ -189,6 +190,11 @@ export function PartidosPage() {
       titulo={t('tabs.partidos')}
       testId="page-partidos"
       alRefrescar={refrescar}
+      acciones={
+        elegido?.equipo.equipoId ? (
+          <SuscribirCalendario equipoId={elegido.equipo.equipoId} />
+        ) : undefined
+      }
     >
       {contenido()}
       <div style={{ height: 24 }} />

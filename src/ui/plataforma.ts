@@ -15,3 +15,16 @@ export const modoIonic = (): ModoIonic =>
 /** Qué mapa abrir: el del sistema en Android y en iPhone/iPad, Google en el resto. */
 export const destinoMapa = (): DestinoMapa =>
   isPlatform('android') ? 'geo' : isPlatform('ios') ? 'apple' : 'google';
+
+/**
+ * Abre una dirección como si se pulsara un enlace: `geo:` y `webcal:` los
+ * resuelve el sistema, y las `https` van a otra pestaña. Sirve donde no cabe
+ * un `<a>` (dentro de otro enlace, en el botón de una hoja).
+ */
+export function abrirEnlace(url: string, aparte = /^https?:/.test(url)) {
+  const a = document.createElement('a');
+  a.href = url;
+  if (aparte) a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.click();
+}

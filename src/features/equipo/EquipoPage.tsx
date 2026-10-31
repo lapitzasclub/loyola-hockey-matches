@@ -28,6 +28,7 @@ import { Escudo } from '../../ui/Escudo';
 import { Pagina } from '../../ui/Pagina';
 import type { ParamsEquipo } from '../../ui/rutas';
 import { Skeleton } from '../../ui/Skeleton';
+import { SuscribirCalendario } from '../../ui/SuscribirCalendario';
 import { transicion } from '../../ui/transiciones';
 import { AlineacionesEquipo } from './AlineacionesEquipo';
 import { EstadisticasEquipo } from './EstadisticasEquipo';
@@ -163,6 +164,11 @@ export function EquipoPage() {
       testId="page-equipo"
       detalle
       alRefrescar={refrescar}
+      acciones={
+        datos?.equipo.equipoId ? (
+          <SuscribirCalendario equipoId={datos.equipo.equipoId} />
+        ) : undefined
+      }
     >
       <Consulta
         consulta={calendario}

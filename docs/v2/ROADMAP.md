@@ -444,6 +444,14 @@ Android deja el modo `ios` de Ionic. iPhone y web siguen en `ios`.
   (`https://v2.loyola-hockey-matches.pages.dev`); `cf:deploy` despliega `main` (producción, S12). En
   Chromium y WebKit la preview registra el SW sin errores de consola ni de CSP.
 
+**Recuperado de la v1 y novedades tras probar la preview (S11):**
+
+- Jornada pulsable en la tarjeta: abre `HojaJornada` con los partidos de esa jornada y fase (`partidosDeJornada`: el nombre de la jornada solo es único dentro de su fase), por fecha y hora y con el de origen resaltado. La tarjeta recibe `jornadaDe`; las pantallas pasan el calendario de la división que ya tienen cargado.
+- Mapa de la pista: `PartidoResumen.coordenadas` sale de `pistaLatitud/pistaLongitud` del árbol y de `latitud/longitud` de la agenda. `EnlacePista` lo abre con `geo:` (Android), Apple Maps (iOS) o Google Maps. En la tarjeta va anidado en otro enlace, así que no es un `<a>`.
+- Suscripción al calendario del equipo: la federación sirve `GET /api/public/calendario/equipo/{equipoId}.ics` (público; el `HEAD` da 401, el `GET` no; se refresca cada 6 h). No pasa por nuestro proxy: la app del calendario lo pide directo, así que no hay cambios en el worker ni en la CSP. Botón en la barra de Partidos y del equipo.
+- `actaEstado` es `null` en la mayoría de los partidos sin empezar (367 de 393 el 2026-10-31); el detalle fallaba al validar.
+- El SW pide los escudos con `fetch()`, que obedece `connect-src` y no `img-src`; la CSP admite el host del S3 en ambas (test sobre `public/_headers`).
+
 ## 7. Fases
 
 | Fase | Objetivo | Sesiones |

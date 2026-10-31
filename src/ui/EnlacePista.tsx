@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { enlaceMapa } from '../domain';
 import type { Coordenadas } from '../domain';
-import { destinoMapa } from './plataforma';
+import { abrirEnlace, destinoMapa } from './plataforma';
 
 interface Props {
   pista: string;
@@ -48,14 +48,7 @@ export function EnlacePista({ pista, coordenadas, anidado = false }: Props) {
     );
   }
 
-  const abrir = () => {
-    // Un `<a>` sin insertar en el documento: mismo efecto que pulsar el enlace.
-    const a = document.createElement('a');
-    a.href = href;
-    if (destino !== 'geo') a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.click();
-  };
+  const abrir = () => abrirEnlace(href);
   return (
     <span
       role="link"

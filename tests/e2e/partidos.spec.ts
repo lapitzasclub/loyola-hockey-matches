@@ -132,3 +132,32 @@ test('la pista de una tarjeta abre el mapa sin entrar al detalle', async ({
       '?',
   );
 });
+
+test('el botón del calendario ofrece suscribirse al .ics del equipo', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const abiertos: string[] = [];
+    (window as unknown as { abiertos: string[] }).abiertos = abiertos;
+    HTMLAnchorElement.prototype.click = function () {
+      abiertos.push(this.href);
+    };
+  });
+  await apiDeFixtures(page);
+  await page.goto('/partidos');
+  await page.getByTestId('elegir-equipo').click();
+  await page.getByTestId('selector-equipo').first().click();
+
+  await page
+    .getByTestId('page-partidos')
+    .getByTestId('suscribir-calendario')
+    .click();
+  await page.getByRole('button', { name: 'iPhone, Mac u Outlook' }).click();
+
+  const [abierto] = await page.evaluate(
+    () => (window as unknown as { abiertos: string[] }).abiertos,
+  );
+  expect(abierto).toMatch(
+    /^webcal:\/\/fvpatinaje\.eus\/api\/public\/calendario\/equipo\/[0-9a-f-]{36}\.ics$/,
+  );
+});

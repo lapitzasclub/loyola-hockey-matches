@@ -296,6 +296,15 @@
   "pista": {
     "abrirMapa": "Abrir {{pista}} en el mapa"
   },
+  "calendario": {
+    "suscribirse": "Añadir a mi calendario",
+    "explicacion": "Los partidos aparecen en tu calendario y se actualizan solos si cambian la hora o la pista.",
+    "google": "Google Calendar",
+    "apple": "iPhone, Mac u Outlook",
+    "copiar": "Copiar la dirección",
+    "copiado": "Dirección copiada",
+    "copiaManual": "Copia la dirección: {{direccion}}"
+  },
   "selector": {
     "titulo": "Elige un equipo",
     "elegir": "Elegir equipo",
