@@ -404,7 +404,39 @@ button.cabecera-equipo:active {
 
 /* Pantallas de clasificación y equipo: sin paneles ni bordes, solo separadores finos */
 .segmento {
+  /* El segmento de Ionic trae `width: 100%`: con margen se saldría 24px. */
+  width: auto;
   margin: 8px 12px;
+}
+
+/* La pastilla propia sustituye al indicador de Ionic (ver `ui/Pestanas.tsx`) */
+.segmento--deslizante ion-segment-button {
+  --indicator-color: transparent;
+  --indicator-box-shadow: none;
+}
+
+.segmento__pastilla {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  box-sizing: border-box;
+  padding: 2px;
+  transform-origin: 0 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.segmento__pastilla > span {
+  display: block;
+  height: 100%;
+  border-radius: 7px;
+  background: var(
+    --ion-color-step-350,
+    var(--ion-background-color-step-350, var(--ion-background-color, #fff))
+  );
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.16);
 }
 
 .nota {
@@ -846,6 +878,42 @@ button.cabecera-equipo:active {
   gap: 8px;
   color: var(--app-texto-secundario);
   font-size: 0.75rem;
+}
+
+/* `--pliegue` (0–1) lo escribe `ui/Pagina.tsx` con el scroll */
+.partido-cabecera__meta[data-plegable] {
+  opacity: calc(1 - var(--pliegue, 0) * 4);
+}
+
+.pagina__titulos {
+  display: grid;
+  place-items: center;
+}
+
+.pagina__titulos > * {
+  grid-area: 1 / 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pagina__titulo {
+  opacity: calc(1 - var(--pliegue, 0) * 2);
+  transform: translateY(calc(var(--pliegue, 0) * -6px));
+}
+
+.pagina__compacta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: calc(var(--pliegue, 0) * 2 - 1);
+  transform: translateY(calc((1 - var(--pliegue, 0)) * 6px));
+}
+
+.pagina__compacta-marcador {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .partido-cabecera__cruce {

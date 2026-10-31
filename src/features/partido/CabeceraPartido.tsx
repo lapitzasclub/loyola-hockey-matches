@@ -233,3 +233,34 @@ export function CabeceraPartidoSkeleton() {
     </div>
   );
 }
+
+/**
+ * Lo esencial del cruce (escudos y marcador u hora) para la barra, cuando la
+ * cabecera se ha plegado al bajar. Sin nombres de transición: no vuela.
+ */
+export function CabeceraPartidoCompacta({
+  partido,
+}: {
+  partido: PartidoDetalle;
+}) {
+  const datos = deDetalle(partido);
+  return (
+    <>
+      <Escudo
+        logoUrl={datos.local.logoUrl}
+        nombre={datos.local.nombre}
+        abreviatura={datos.local.nombreAbrev}
+        tamano={22}
+      />
+      <span className="pagina__compacta-marcador">
+        {datos.goles ? resultado(datos.goles) : (datos.hora ?? '--:--')}
+      </span>
+      <Escudo
+        logoUrl={datos.visitante.logoUrl}
+        nombre={datos.visitante.nombre}
+        abreviatura={datos.visitante.nombreAbrev}
+        tamano={22}
+      />
+    </>
+  );
+}

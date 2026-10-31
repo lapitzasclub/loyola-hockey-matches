@@ -12,6 +12,7 @@ import { tarjetaPulsada } from '../../ui/tarjetaPulsada';
 import { AlineacionesPartido } from './AlineacionesPartido';
 import {
   CabeceraPartido,
+  CabeceraPartidoCompacta,
   CabeceraPartidoPrevia,
   CabeceraPartidoSkeleton,
 } from './CabeceraPartido';
@@ -41,6 +42,9 @@ export function PartidoPage() {
       testId="page-partido"
       detalle
       alRefrescar={refrescar}
+      compacta={
+        partido.data && <CabeceraPartidoCompacta partido={partido.data} />
+      }
     >
       <Consulta
         consulta={partido}
