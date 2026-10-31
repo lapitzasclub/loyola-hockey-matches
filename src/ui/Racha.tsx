@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { Racha as RachaDominio } from '../domain';
@@ -25,6 +26,8 @@ export function Racha({ racha, compacta }: Props) {
         <span
           key={i}
           className={`racha__punto racha__punto--${resultado}`}
+          // Entran uno tras otro, del más antiguo al más reciente.
+          style={{ '--i': i } as CSSProperties}
           aria-hidden
         >
           {LETRAS[resultado]}

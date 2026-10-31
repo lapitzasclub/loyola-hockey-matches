@@ -25,6 +25,7 @@ import {
 import { EstadoError } from '../../ui/EstadoError';
 import { EstadoVacio } from '../../ui/EstadoVacio';
 import { Pagina } from '../../ui/Pagina';
+import { Revelado, useEspera } from '../../ui/Revelado';
 import { SelectorEquipo } from '../../ui/SelectorEquipo';
 import {
   TablaClasificacionGrupo,
@@ -53,6 +54,7 @@ function Tablas({ elegido }: { elegido: EquipoCatalogo }) {
     [fase, clasificacion.data],
   );
 
+  const espera = useEspera(fases.isPending || clasificacion.isPending);
   if (fases.isPending) return <TablaClasificacionSkeleton />;
   if (fases.isError) {
     return (
@@ -108,19 +110,21 @@ function Tablas({ elegido }: { elegido: EquipoCatalogo }) {
           }
         />
       ) : (
-        tablas.map((tabla) => (
-          <TablaClasificacionGrupo
-            key={tabla.grupo?.id ?? 'unica'}
-            tabla={tabla}
-            competicionId={competicionId}
-            divisionId={divisionId}
-            rachas={
-              calendario.data
-                ? rachasDeTabla(tabla, calendario.data.partidos)
-                : undefined
-            }
-          />
-        ))
+        <Revelado espera={espera} saliente={<TablaClasificacionSkeleton />}>
+          {tablas.map((tabla) => (
+            <TablaClasificacionGrupo
+              key={tabla.grupo?.id ?? 'unica'}
+              tabla={tabla}
+              competicionId={competicionId}
+              divisionId={divisionId}
+              rachas={
+                calendario.data
+                  ? rachasDeTabla(tabla, calendario.data.partidos)
+                  : undefined
+              }
+            />
+          ))}
+        </Revelado>
       )}
     </>
   );

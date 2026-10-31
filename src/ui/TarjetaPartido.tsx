@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { mismoEquipo } from '../domain';
 import type { Equipo, Marcador, PartidoVisible } from '../domain';
+import { Cifra } from './Cifra';
 import { Escudo } from './Escudo';
 import { formatoDia } from './formato';
 import { InsigniaEstado } from './InsigniaEstado';
@@ -69,7 +70,7 @@ function Centro({
           className="tarjeta__marcador"
           data-transicion={transicion.marcador(partido.id)}
         >
-          {resultado(marcador)}
+          <Cifra valor={resultado(marcador)} />
         </span>
         {oficial && (
           <span className="tarjeta__oficial">

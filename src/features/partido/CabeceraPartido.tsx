@@ -8,6 +8,7 @@ import type {
   PartidoDetalle,
   PartidoVisible,
 } from '../../domain';
+import { Cifra } from '../../ui/Cifra';
 import { Escudo } from '../../ui/Escudo';
 import { formatoDia } from '../../ui/formato';
 import { InsigniaEstado } from '../../ui/InsigniaEstado';
@@ -102,7 +103,7 @@ function Centro({ datos }: { datos: DatosCabecera }) {
           data-testid="marcador"
           data-transicion={transicion.marcador(datos.id)}
         >
-          {resultado(datos.goles)}
+          <Cifra valor={resultado(datos.goles)} />
         </span>
       ) : (
         <span
@@ -253,7 +254,11 @@ export function CabeceraPartidoCompacta({
         tamano={22}
       />
       <span className="pagina__compacta-marcador">
-        {datos.goles ? resultado(datos.goles) : (datos.hora ?? '--:--')}
+        {datos.goles ? (
+          <Cifra valor={resultado(datos.goles)} />
+        ) : (
+          (datos.hora ?? '--:--')
+        )}
       </span>
       <Escudo
         logoUrl={datos.visitante.logoUrl}

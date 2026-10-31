@@ -25,6 +25,7 @@ import {
 import { EstadoError } from '../../ui/EstadoError';
 import { EstadoVacio } from '../../ui/EstadoVacio';
 import { Pagina } from '../../ui/Pagina';
+import { Revelado, useEspera } from '../../ui/Revelado';
 import { SelectorEquipo } from '../../ui/SelectorEquipo';
 import { Skeleton } from '../../ui/Skeleton';
 import { Lideres } from './Lideres';
@@ -68,6 +69,7 @@ function Rankings({ elegido }: { elegido: EquipoCatalogo }) {
   const fase = fases.data ? faseInicial(fases.data) : null;
   const clasificacion = useClasificacion(fase?.id);
 
+  const espera = useEspera(estadisticas.isPending);
   if (estadisticas.isPending) return <RankingsSkeleton />;
   if (estadisticas.isError) {
     return (
@@ -105,7 +107,7 @@ function Rankings({ elegido }: { elegido: EquipoCatalogo }) {
   };
 
   return (
-    <>
+    <Revelado espera={espera} saliente={<RankingsSkeleton />}>
       <Lideres jugadores={jugadores} />
       <IonSegment
         className="segmento"
@@ -121,7 +123,7 @@ function Rankings({ elegido }: { elegido: EquipoCatalogo }) {
         ))}
       </IonSegment>
       {panel()}
-    </>
+    </Revelado>
   );
 }
 

@@ -27,6 +27,7 @@ import { EstadoError } from '../../ui/EstadoError';
 import { EstadoVacio } from '../../ui/EstadoVacio';
 import { formatoMes } from '../../ui/formato';
 import { Pagina } from '../../ui/Pagina';
+import { Revelado, useEspera } from '../../ui/Revelado';
 import { useRutas } from '../../ui/rutas';
 import { SelectorEquipo } from '../../ui/SelectorEquipo';
 import {
@@ -87,6 +88,7 @@ function Calendario({ elegido }: { elegido: EquipoCatalogo }) {
     return () => cancelAnimationFrame(fotograma);
   }, [clave, proximoId]);
 
+  const espera = useEspera(calendario.isPending);
   if (calendario.isPending) return <ListaSkeleton />;
   if (calendario.isError) {
     return (
@@ -107,28 +109,30 @@ function Calendario({ elegido }: { elegido: EquipoCatalogo }) {
   }
 
   return (
-    <div data-testid="partidos">
-      {agruparPorMes(partidos).map(({ mes, partidos: delMes }) => (
-        <section key={mes}>
-          <h2 className="mes">{formatoMes(mes, i18n.language)}</h2>
-          <div className="lista-partidos">
-            {delMes.map((p) => {
-              const esProximo = p.id === proximoId;
-              return (
-                <div key={p.id} ref={esProximo ? proximoRef : undefined}>
-                  <TarjetaPartido
-                    visible={partidoVisible(p, hoy, directos.get(p.id))}
-                    propio={elegido.equipo}
-                    proximo={esProximo}
-                    href={rutas.partido(p.id)}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      ))}
-    </div>
+    <Revelado espera={espera} saliente={<ListaSkeleton />}>
+      <div data-testid="partidos">
+        {agruparPorMes(partidos).map(({ mes, partidos: delMes }) => (
+          <section key={mes}>
+            <h2 className="mes">{formatoMes(mes, i18n.language)}</h2>
+            <div className="lista-partidos">
+              {delMes.map((p) => {
+                const esProximo = p.id === proximoId;
+                return (
+                  <div key={p.id} ref={esProximo ? proximoRef : undefined}>
+                    <TarjetaPartido
+                      visible={partidoVisible(p, hoy, directos.get(p.id))}
+                      propio={elegido.equipo}
+                      proximo={esProximo}
+                      href={rutas.partido(p.id)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+    </Revelado>
   );
 }
 

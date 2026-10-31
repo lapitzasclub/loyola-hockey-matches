@@ -8,6 +8,7 @@ import { claves, usePartido, useRefrescar } from '../../queries';
 import { Consulta } from '../../ui/Consulta';
 import { Pagina } from '../../ui/Pagina';
 import { Pestanas } from '../../ui/Pestanas';
+import { Revelado, useEspera } from '../../ui/Revelado';
 import { tarjetaPulsada } from '../../ui/tarjetaPulsada';
 import { AlineacionesPartido } from './AlineacionesPartido';
 import {
@@ -30,6 +31,7 @@ export function PartidoPage() {
   const partido = usePartido(partidoId);
   const previa = tarjetaPulsada(partidoId);
   const refrescar = useRefrescar(claves.partido(partidoId));
+  const espera = useEspera(partido.isPending);
   const [seccion, setSeccion] = useState<Seccion>('resumen');
   const indice = useMemo(
     () => (partido.data ? indiceAlineacion(partido.data) : SIN_ALINEACION),
@@ -49,6 +51,7 @@ export function PartidoPage() {
       <Consulta
         consulta={partido}
         error={t('partido.error')}
+        revelar={false}
         cargando={
           previa ? (
             <CabeceraPartidoPrevia visible={previa} />
@@ -60,33 +63,35 @@ export function PartidoPage() {
         {(p) => (
           <>
             <CabeceraPartido partido={p} />
-            <Pestanas
-              testId="secciones-partido"
-              valor={seccion}
-              alCambiar={setSeccion}
-              pestanas={[
-                {
-                  id: 'resumen',
-                  etiqueta: t('partido.secciones.resumen'),
-                  contenido: <ResumenPartido partido={p} />,
-                },
-                {
-                  id: 'eventos',
-                  etiqueta: t('partido.secciones.eventos'),
-                  contenido: <EventosPartido partido={p} indice={indice} />,
-                },
-                {
-                  id: 'alineaciones',
-                  etiqueta: t('partido.secciones.alineaciones'),
-                  contenido: (
-                    <AlineacionesPartido
-                      local={p.local}
-                      visitante={p.visitante}
-                    />
-                  ),
-                },
-              ]}
-            />
+            <Revelado espera={espera}>
+              <Pestanas
+                testId="secciones-partido"
+                valor={seccion}
+                alCambiar={setSeccion}
+                pestanas={[
+                  {
+                    id: 'resumen',
+                    etiqueta: t('partido.secciones.resumen'),
+                    contenido: <ResumenPartido partido={p} />,
+                  },
+                  {
+                    id: 'eventos',
+                    etiqueta: t('partido.secciones.eventos'),
+                    contenido: <EventosPartido partido={p} indice={indice} />,
+                  },
+                  {
+                    id: 'alineaciones',
+                    etiqueta: t('partido.secciones.alineaciones'),
+                    contenido: (
+                      <AlineacionesPartido
+                        local={p.local}
+                        visitante={p.visitante}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </Revelado>
           </>
         )}
       </Consulta>

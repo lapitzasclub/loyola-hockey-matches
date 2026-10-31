@@ -36,10 +36,57 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .skeleton,
-  .insignia__punto {
-    animation: none;
+/* Revelado: el skeleton se funde encima del contenido que entra (ui/Revelado.tsx) */
+.revelado {
+  position: relative;
+}
+
+/* Relleno `backwards` y no `both`: al acabar no queda ningún transform aplicado. */
+.revelado > :not(.revelado__saliente) {
+  animation: revelado-entra 320ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+.revelado__saliente {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  animation: revelado-sale 240ms ease-in forwards;
+}
+
+@keyframes revelado-entra {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes revelado-sale {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Cifra: el marcador cae y late al cambiar (ui/Cifra.tsx) */
+.cifra {
+  display: inline-block;
+}
+
+.cifra--cambia {
+  animation: cifra-cambia 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes cifra-cambia {
+  0% {
+    opacity: 0;
+    transform: translateY(-0.4em) scale(0.8);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0) scale(1.18);
+  }
+  100% {
+    transform: none;
   }
 }
 
@@ -84,16 +131,39 @@
 }
 
 .insignia__punto {
+  position: relative;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: currentColor;
-  animation: punto-vivo 1.2s ease-in-out infinite;
+  animation: punto-vivo 1.6s ease-in-out infinite;
+}
+
+/* Onda que sale del punto, desfasada del latido */
+.insignia__punto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  animation: punto-onda 1.6s ease-out infinite;
 }
 
 @keyframes punto-vivo {
   50% {
-    opacity: 0.25;
+    opacity: 0.45;
+  }
+}
+
+@keyframes punto-onda {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.2);
   }
 }
 
@@ -479,6 +549,16 @@ button.cabecera-equipo:active {
   color: var(--app-racha-texto);
   font-size: 0.7rem;
   font-weight: 800;
+  /* --i: posición en la racha (ui/Racha.tsx) */
+  animation: racha-entra 360ms cubic-bezier(0.3, 1.4, 0.5, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+@keyframes racha-entra {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
 }
 
 .racha--compacta {
@@ -1367,4 +1447,23 @@ button.cabecera-equipo:active {
   height: 10px;
   margin-right: 4px;
   border-radius: 2px;
+}
+
+/*
+ * Movimiento reducido: al final del archivo para ganar a las animaciones de
+ * arriba sin subir la especificidad.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .insignia__punto,
+  .insignia__punto::after,
+  .revelado > :not(.revelado__saliente),
+  .cifra--cambia,
+  .racha__punto {
+    animation: none;
+  }
+
+  .revelado__saliente {
+    display: none;
+  }
 }

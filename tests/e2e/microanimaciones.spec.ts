@@ -11,6 +11,11 @@ async function abrirPartido(page: Page) {
   await page.goto(`/partidos/partido/${PARTIDO}`);
   const detalle = page.getByTestId('page-partido');
   await expect(detalle.getByTestId('partido-cabecera')).toBeVisible();
+  // Mientras las pestañas entran, Playwright reintenta el toque desplazando la
+  // página para alcanzarlas, y eso pliega la cabecera antes de tiempo.
+  await detalle
+    .getByTestId('secciones-partido')
+    .evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
   return detalle;
 }
 
@@ -102,4 +107,57 @@ test('con movimiento reducido la cabecera se pliega de golpe, sin pasos intermed
   expect(await opacidad(compacta)).toBe(0);
   await bajar(detalle, 80);
   await expect.poll(() => opacidad(compacta)).toBe(1);
+});
+
+/** Abre la clasificación de Liga Norte, con el Loyola y su racha. */
+async function abrirClasificacion(page: Page) {
+  await page.goto('/clasificacion');
+  await page.getByTestId('elegir-equipo').click();
+  await page
+    .getByTestId('selector-equipo')
+    .filter({
+      has: page.locator('.selector__competicion', { hasText: /^LIGA NORTE$/ }),
+    })
+    .click();
+}
+
+test('el skeleton se funde encima de la clasificación y luego se quita', async ({
+  page,
+}) => {
+  await apiDeFixtures(page);
+  // La red lenta deja ver el skeleton antes de que lleguen los datos.
+  await page.route('**/api/**', async (route) => {
+    await new Promise((r) => setTimeout(r, 300));
+    await route.fallback();
+  });
+  await abrirClasificacion(page);
+
+  const saliente = page.locator('.revelado__saliente');
+  await saliente.waitFor({ state: 'attached' });
+  await expect(page.locator('.revelado .clasif__fila--loyola')).toHaveCount(1);
+  await expect(saliente).toHaveCount(0);
+  await expect(page.getByTestId('racha').first()).toBeVisible();
+});
+
+test('con movimiento reducido no queda ninguna animación CSS', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await apiDeFixtures(page);
+  await page.route('**/api/**', async (route) => {
+    await new Promise((r) => setTimeout(r, 300));
+    await route.fallback();
+  });
+  await abrirClasificacion(page);
+
+  await expect(page.locator('.clasif__fila--loyola')).toHaveCount(1);
+  await expect(page.getByTestId('racha').first()).toBeVisible();
+  await expect(page.locator('.revelado')).toHaveCount(0);
+  const animaciones = await page.evaluate(() =>
+    document
+      .getAnimations()
+      .filter((a) => a instanceof CSSAnimation)
+      .map((a) => (a as CSSAnimation).animationName),
+  );
+  expect(animaciones).toEqual([]);
 });
