@@ -1648,7 +1648,7 @@ ion-content:has(> ion-refresher.desgarro.refresher-active)::part(scroll) {
 }
 
 ion-refresher.desgarro ion-refresher-content {
-  height: 64px;
+  height: 84px;
   color: var(--app-desgarro-texto);
 }
 

@@ -167,6 +167,12 @@ export function Pagina({
           <IonRefresher
             slot="fixed"
             className="desgarro"
+            /* pullMin es lo que baja el contenido mientras actualiza: debe
+                dejar ver entero el icono y el texto. Por defecto, pullMax
+                (pullMin + 60) dispara el refresco solo al pasar de ahí,
+                aunque el dedo siga en pantalla. */
+            pullMin={84}
+            pullMax={1000}
             onIonRefresh={refrescar}
             style={
               {
