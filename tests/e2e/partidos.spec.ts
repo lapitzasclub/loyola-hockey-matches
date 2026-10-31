@@ -98,3 +98,37 @@ test('pulsar la jornada abre sus partidos sin entrar al detalle', async ({
   await expect(page).toHaveURL(/\/partidos\/partido\//);
   await expect(page.getByTestId('hoja-jornada')).toHaveCount(0);
 });
+
+test('la pista de una tarjeta abre el mapa sin entrar al detalle', async ({
+  page,
+}) => {
+  // El clic sobre un enlace creado a mano se anota en lugar de abrir el mapa.
+  await page.addInitScript(() => {
+    const abiertos: string[] = [];
+    (window as unknown as { abiertos: string[] }).abiertos = abiertos;
+    HTMLAnchorElement.prototype.click = function () {
+      abiertos.push(this.href);
+    };
+  });
+  await apiDeFixtures(page);
+  await page.goto('/partidos');
+  await page.getByTestId('elegir-equipo').click();
+  await page.getByTestId('selector-equipo').first().click();
+
+  const pista = page
+    .getByTestId('page-partidos')
+    .getByTestId('enlace-pista')
+    .first();
+  await expect(pista).toBeVisible();
+  await pista.click();
+
+  await expect(page).toHaveURL(/\/partidos$/);
+  const [abierto] = await page.evaluate(
+    () => (window as unknown as { abiertos: string[] }).abiertos,
+  );
+  expect(abierto).toMatch(/^(geo:|https:\/\/maps\.(apple|google)\.com\/)/);
+  expect(abierto).toContain(
+    (await pista.getAttribute('data-href'))?.split('?')[1]?.split('&')[0] ??
+      '?',
+  );
+});

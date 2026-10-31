@@ -1,5 +1,7 @@
 import { isPlatform } from '@ionic/react';
 
+import type { DestinoMapa } from '../domain';
+
 export type ModoIonic = 'ios' | 'md';
 
 /**
@@ -9,3 +11,7 @@ export type ModoIonic = 'ios' | 'md';
  */
 export const modoIonic = (): ModoIonic =>
   isPlatform('android') ? 'md' : 'ios';
+
+/** Qué mapa abrir: el del sistema en Android y en iPhone/iPad, Google en el resto. */
+export const destinoMapa = (): DestinoMapa =>
+  isPlatform('android') ? 'geo' : isPlatform('ios') ? 'apple' : 'google';

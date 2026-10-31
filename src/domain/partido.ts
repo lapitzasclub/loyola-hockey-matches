@@ -1,6 +1,7 @@
 import type { Fase } from './competicion';
 import type { Equipo } from './equipo';
 import type { EstadoPartido } from './estado';
+import type { Coordenadas } from './pista';
 
 export interface Marcador {
   local: number;
@@ -26,6 +27,7 @@ export interface PartidoResumen {
   /** Resultado oficial (`puntaje`), capado en ligas escolares (19-1 → 6-0). */
   marcadorOficial: Marcador | null;
   pista: string | null;
+  coordenadas: Coordenadas | null;
 }
 
 /** Calendario de una división: sus fases y todos sus partidos, por fecha y hora. */

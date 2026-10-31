@@ -293,6 +293,9 @@
     "titulo": "Partidos de la jornada",
     "ver": "Ver los partidos de {{jornada}}"
   },
+  "pista": {
+    "abrirMapa": "Abrir {{pista}} en el mapa"
+  },
   "selector": {
     "titulo": "Elige un equipo",
     "elegir": "Elegir equipo",

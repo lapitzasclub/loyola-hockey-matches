@@ -1,6 +1,7 @@
 import {
   PERIODO_PENALTIS,
   crearAlineacion,
+  crearCoordenadas,
   dorsalDesdeApi,
   esTipoIncidencia,
   estadoDetalle,
@@ -189,10 +190,7 @@ export function partidoDetalleDesdeApi(d: PartidoDetalleApi): PartidoDetalle {
     fecha: d.fechaInicio.slice(0, 10),
     hora: d.hora,
     pista: d.pista,
-    coordenadas:
-      d.pistaLatitud !== null && d.pistaLongitud !== null
-        ? { latitud: d.pistaLatitud, longitud: d.pistaLongitud }
-        : null,
+    coordenadas: crearCoordenadas(d.pistaLatitud, d.pistaLongitud),
     arbitros: [d.arbitro1Nombre, d.arbitro2Nombre].filter(
       (a): a is string => !!a,
     ),

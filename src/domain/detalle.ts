@@ -3,6 +3,7 @@ import { esEquipoLoyola } from './equipo';
 import type { Equipo } from './equipo';
 import type { EstadoPartido } from './estado';
 import type { Incidencia, Lado } from './incidencia';
+import type { Coordenadas } from './pista';
 import {
   marcadorOficial,
   marcadorPorIncidencias,
@@ -37,7 +38,7 @@ export interface PartidoDetalle {
   fecha: string;
   hora: string | null;
   pista: string | null;
-  coordenadas: { latitud: number; longitud: number } | null;
+  coordenadas: Coordenadas | null;
   arbitros: string[];
   estado: EstadoPartido;
   /** Código de periodo de la federación (ver `periodoPartido`). */

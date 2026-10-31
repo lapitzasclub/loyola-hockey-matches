@@ -33,3 +33,14 @@ test('el detalle del partido cambia de sección con el segmento y con el gesto',
   });
   await expect(detalle.getByTestId('eventos-partido')).toBeVisible();
 });
+
+test('la pista del resumen es un enlace al mapa', async ({ page }) => {
+  await apiDeFixtures(page);
+  await page.goto(`/partidos/partido/${PARTIDO}`);
+  const enlace = page.getByTestId('page-partido').getByTestId('enlace-pista');
+  await expect(enlace).toBeVisible();
+  await expect(enlace).toHaveAttribute(
+    'href',
+    /^(geo:|https:\/\/maps\.(apple|google)\.com\/)/,
+  );
+});

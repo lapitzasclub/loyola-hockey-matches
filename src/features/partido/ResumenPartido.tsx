@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { resultadoPartido, totalesPartido } from '../../domain';
 import type { PartidoDetalle, ReglaMarcador } from '../../domain';
+import { EnlacePista } from '../../ui/EnlacePista';
 import { formatoDia } from '../../ui/formato';
 
 const FILAS = [
@@ -13,7 +15,7 @@ const FILAS = [
   'tiemposMuertos',
 ] as const;
 
-function Fila({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+function Fila({ etiqueta, valor }: { etiqueta: string; valor: ReactNode }) {
   return (
     <div className="datos-fila">
       <dt>{etiqueta}</dt>
@@ -123,7 +125,15 @@ export function ResumenPartido({ partido }: { partido: PartidoDetalle }) {
               .join(' · ')}
           />
           {partido.pista && (
-            <Fila etiqueta={t('partido.resumen.pista')} valor={partido.pista} />
+            <Fila
+              etiqueta={t('partido.resumen.pista')}
+              valor={
+                <EnlacePista
+                  pista={partido.pista}
+                  coordenadas={partido.coordenadas}
+                />
+              }
+            />
           )}
           {partido.arbitros.length > 0 && (
             <Fila

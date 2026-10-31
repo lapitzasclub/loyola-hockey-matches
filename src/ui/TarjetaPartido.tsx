@@ -10,6 +10,7 @@ import type {
   PartidoVisible,
 } from '../domain';
 import { Cifra } from './Cifra';
+import { EnlacePista } from './EnlacePista';
 import { Escudo } from './Escudo';
 import { formatoDia } from './formato';
 import { HojaJornada } from './HojaJornada';
@@ -180,7 +181,13 @@ export function TarjetaPartido({
         />
       </div>
       {partido.pista && (
-        <footer className="tarjeta__pie">{partido.pista}</footer>
+        <footer className="tarjeta__pie">
+          <EnlacePista
+            pista={partido.pista}
+            coordenadas={partido.coordenadas}
+            anidado={!!href}
+          />
+        </footer>
       )}
     </>
   );

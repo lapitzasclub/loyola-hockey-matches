@@ -14,4 +14,5 @@ export * from './jugador';
 export * from './marcador';
 export * from './partido';
 export * from './periodo';
+export * from './pista';
 export * from './racha';

@@ -30,6 +30,7 @@ export function partido(extra: Partial<PartidoResumen> = {}): PartidoResumen {
     marcador: null,
     marcadorOficial: null,
     pista: null,
+    coordenadas: null,
     ...extra,
   };
 }

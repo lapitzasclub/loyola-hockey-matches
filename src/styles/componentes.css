@@ -1990,3 +1990,17 @@ body[data-theme='dark'] .menu-ajustes__esquina--derecha {
   text-underline-offset: 2px;
   text-transform: none;
 }
+
+/* Pista con enlace al mapa */
+.enlace-pista {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ion-color-primary);
+  text-decoration: none;
+}
+
+.enlace-pista ion-icon {
+  flex: none;
+  font-size: 1.1em;
+}

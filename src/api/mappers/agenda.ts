@@ -1,4 +1,8 @@
-import { crearMarcador, normalizarEstado } from '../../domain';
+import {
+  crearCoordenadas,
+  crearMarcador,
+  normalizarEstado,
+} from '../../domain';
 import type { Competicion, Equipo, PartidoResumen } from '../../domain';
 import type { AgendaApi, EventoAgendaApi } from '../schemas';
 
@@ -31,6 +35,7 @@ export function partidoDesdeAgenda(evento: EventoAgendaApi): PartidoResumen {
       evento.visitante.puntaje,
     ),
     pista: evento.pista,
+    coordenadas: crearCoordenadas(evento.latitud, evento.longitud),
   };
 }
 

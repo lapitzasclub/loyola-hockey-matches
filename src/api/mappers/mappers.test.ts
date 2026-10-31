@@ -113,12 +113,25 @@ describe('agenda y árbol', () => {
         estado: desdeAgenda.estado,
         jornada: desdeAgenda.jornada,
         marcadorOficial: desdeAgenda.marcadorOficial,
+        pista: desdeAgenda.pista,
+        coordenadas: desdeAgenda.coordenadas,
         local: { nombre: desdeAgenda.local?.nombre },
         visitante: { nombre: desdeAgenda.visitante?.nombre },
       });
       comparados++;
     }
     expect(comparados).toBeGreaterThan(0);
+  });
+
+  it('la pista con coordenadas llega al dominio desde la agenda y el árbol', () => {
+    const conMapa = [...divisionesMuestra.values()]
+      .flatMap((d) => d.partidos)
+      .filter((p) => p.coordenadas !== null);
+    expect(conMapa.length).toBeGreaterThan(0);
+    for (const p of conMapa) {
+      expect(p.pista, `partido ${p.id}`).not.toBeNull();
+      expect(Math.abs(p.coordenadas?.latitud ?? 0)).toBeGreaterThan(0);
+    }
   });
 
   it('la agenda solo da el resultado oficial, no los goles del acta', () => {

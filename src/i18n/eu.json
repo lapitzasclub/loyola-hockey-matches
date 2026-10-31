@@ -293,6 +293,9 @@
     "titulo": "Jardunaldiko partidak",
     "ver": "Ikusi {{jornada}} jardunaldiko partidak"
   },
+  "pista": {
+    "abrirMapa": "Ireki {{pista}} mapan"
+  },
   "selector": {
     "titulo": "Aukeratu talde bat",
     "elegir": "Aukeratu taldea",

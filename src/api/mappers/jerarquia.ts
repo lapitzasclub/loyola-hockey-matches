@@ -1,5 +1,6 @@
 import {
   colorHex,
+  crearCoordenadas,
   crearMarcador,
   normalizarEstado,
   ordenarPartidos,
@@ -124,6 +125,7 @@ export function partidosDeArbol(
               : null,
           marcadorOficial: crearMarcador(local?.puntaje, visitante?.puntaje),
           pista: enf.pista,
+          coordenadas: crearCoordenadas(enf.pistaLatitud, enf.pistaLongitud),
         };
       }),
     ),
