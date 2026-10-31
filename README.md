@@ -15,4 +15,6 @@ npm run e2e
 
 - Arquitectura, reglas y comandos: [`CLAUDE.md`](./CLAUDE.md)
 - Plan de la reescritura: [`docs/v2/ROADMAP.md`](./docs/v2/ROADMAP.md)
+- Cambios por versión: [`CHANGELOG.md`](./CHANGELOG.md)
 - Release Android: [`ANDROID_RELEASE.md`](./ANDROID_RELEASE.md)
+- Deploy web: [`CLOUDFLARE_DEPLOY.md`](./CLOUDFLARE_DEPLOY.md) y [`WEB_RELEASE_CHECKLIST.md`](./WEB_RELEASE_CHECKLIST.md)

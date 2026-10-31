@@ -54,7 +54,9 @@ En `android/app/build.gradle`:
 - `versionCode`
 - `versionName`
 
-Antes de una release real conviene actualizarlos manualmente.
+Antes de una release real conviene actualizarlos manualmente. La 2.0.0 usa `versionCode` 20 (la v1 cerró en 19) y `versionName` "2.0.0"; cada release siguiente debe subir el `versionCode`. Debe coincidir con `version` de `package.json`.
+
+Para que actualice la v1 se mantienen el `applicationId` `com.loyola.hockeymatches` y la misma keystore de firma.
 
 ## Nota
 

@@ -191,7 +191,7 @@
       "title": "Corte de versión 2.0.0",
       "model": "sonnet",
       "effort": "medium",
-      "status": "pending",
+      "status": "in_progress",
       "prompt": "Cierra la v2: repasa la checklist de paridad completa en Android real y PWA iPhone, versión 2.0.0 en package.json y Android (versionCode mayor que el de la v1, mismo appId y firma), changelog, actualización de README y documentos de release, y prepara el merge de `v2` a `main` y el despliegue de producción. Pídeme confirmación antes de cada paso irreversible (merge, tag, push, deploy, subida a Play).",
       "exit": [
         "Checklist de paridad completa",
