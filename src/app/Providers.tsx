@@ -5,6 +5,7 @@ import { useIsRestoring, useQueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useEffect, useState, type ReactNode } from 'react';
 
+import { instalarDirectoEnApp } from '../live';
 import { consultas } from '../queries';
 import { modoIonic } from '../ui/plataforma';
 import {
@@ -58,6 +59,8 @@ export function Providers({ children }: { children: ReactNode }) {
     document.addEventListener('visibilitychange', alOcultar);
     return () => document.removeEventListener('visibilitychange', alOcultar);
   }, [persister]);
+
+  useEffect(() => instalarDirectoEnApp(queryClient), [queryClient]);
 
   return (
     <PersistQueryClientProvider
