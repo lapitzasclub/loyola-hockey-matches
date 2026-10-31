@@ -24,7 +24,7 @@ interface IncidenciaBase {
   /** El reloj va hacia atrás: 24:59 es el principio de un periodo de 25. */
   minuto: number;
   segundo: number;
-  /** Hora local de registro; desempata incidencias del mismo segundo. */
+  /** Hora UTC de registro (sin zona); desempata incidencias del mismo segundo. */
   registro: string;
 }
 

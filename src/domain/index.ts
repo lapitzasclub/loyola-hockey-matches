@@ -6,6 +6,7 @@ export * from './clasificacion';
 export * from './competicion';
 export * from './cronologia';
 export * from './detalle';
+export * from './directo';
 export * from './equipo';
 export * from './estado';
 export * from './incidencia';

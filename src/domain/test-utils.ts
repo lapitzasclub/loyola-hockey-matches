@@ -1,3 +1,4 @@
+import type { LadoDetalle, PartidoDetalle } from './detalle';
 import type { Equipo } from './equipo';
 import type { Gol, Lado, Lanzamiento } from './incidencia';
 import type { PartidoResumen } from './partido';
@@ -29,6 +30,50 @@ export function partido(extra: Partial<PartidoResumen> = {}): PartidoResumen {
     marcador: null,
     marcadorOficial: null,
     pista: null,
+    ...extra,
+  };
+}
+
+function ladoDetalle(nombre: string): LadoDetalle {
+  return {
+    equipo: equipo(nombre, { equipoId: nombre }),
+    puntaje: null,
+    ganoDesempate: false,
+    alineacion: { jugadores: [], staff: [] },
+  };
+}
+
+/** Detalle de un partido programado a dos periodos sin reglas especiales. */
+export function detalle(extra: Partial<PartidoDetalle> = {}): PartidoDetalle {
+  return {
+    id: 'p',
+    competicionId: 'c',
+    competicionNombre: 'Liga',
+    divisionId: 'd',
+    divisionNombre: 'División',
+    faseId: 'f',
+    jornada: null,
+    fecha: '2026-10-03',
+    hora: null,
+    pista: null,
+    coordenadas: null,
+    arbitros: [],
+    estado: 'programado',
+    periodo: 0,
+    reloj: null,
+    local: ladoDetalle('loc'),
+    visitante: ladoDetalle('vis'),
+    incidencias: [],
+    reglas: {
+      marcadorACero: false,
+      maxDiferenciaGoles: 0,
+      puntuacionPorPeriodos: false,
+      numeroPeriodos: 2,
+      puntoBonus: false,
+      desempatePenaltis: false,
+    },
+    duracionPeriodos: [25, 25],
+    cronica: null,
     ...extra,
   };
 }

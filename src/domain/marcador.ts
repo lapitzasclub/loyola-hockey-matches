@@ -24,7 +24,8 @@ export interface ReglasMarcador {
 
 type Goles = Pick<Incidencia, 'tipo' | 'lado' | 'periodo'>;
 
-function esGol(incidencia: Goles): boolean {
+/** Gol que sube al marcador: los de la tanda de penaltis no cuentan. */
+export function esGol(incidencia: Goles): boolean {
   return incidencia.tipo === 'GOL' && incidencia.periodo !== PERIODO_PENALTIS;
 }
 
