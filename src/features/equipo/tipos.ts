@@ -8,6 +8,8 @@ export interface DatosEquipo {
   divisionId: string;
   /** Sus partidos, por fecha y hora. */
   partidos: PartidoResumen[];
+  /** Todos los de la división: de ahí salen los de cada jornada. */
+  calendario: readonly PartidoResumen[];
   /** `YYYY-MM-DD`. */
   hoy: string;
   /** Marcadores de `/marcadores` por partido, para el directo en las listas. */

@@ -60,3 +60,41 @@ test('las tarjetas salen por fecha y hora, no por jornada', async ({
   );
   expect(fechas).toEqual([...fechas].sort());
 });
+
+test('pulsar la jornada abre sus partidos sin entrar al detalle', async ({
+  page,
+}) => {
+  await apiDeFixtures(page);
+  await page.goto('/partidos');
+  await page.getByTestId('elegir-equipo').click();
+  await page.getByTestId('selector-equipo').first().click();
+
+  const pagina = page.getByTestId('page-partidos');
+  const tarjeta = pagina
+    .getByTestId('tarjeta-partido')
+    .filter({ has: page.getByTestId('tarjeta-jornada') })
+    .first();
+  await expect(tarjeta).toBeVisible();
+  const origen = (await tarjeta.getAttribute('data-partido')) ?? '';
+  const jornada = (
+    await tarjeta.getByTestId('tarjeta-jornada').innerText()
+  ).trim();
+
+  await tarjeta.getByTestId('tarjeta-jornada').click();
+  const hoja = page.getByTestId('hoja-jornada');
+  await expect(hoja).toBeVisible();
+  await expect(page).toHaveURL(/\/partidos$/);
+  await expect(hoja).toContainText(jornada);
+
+  const filas = hoja.getByTestId('jornada-partido');
+  expect(await filas.count()).toBeGreaterThan(0);
+  await expect(hoja.locator(`[data-partido="${origen}"]`)).toHaveAttribute(
+    'aria-current',
+    'true',
+  );
+
+  // Tocar una fila lleva a su detalle y cierra la hoja.
+  await filas.first().click();
+  await expect(page).toHaveURL(/\/partidos\/partido\//);
+  await expect(page.getByTestId('hoja-jornada')).toHaveCount(0);
+});

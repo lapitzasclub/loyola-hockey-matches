@@ -7,6 +7,7 @@ import {
   indiceProximoPartido,
   partidoVisible,
   partidosDeEquipo,
+  partidosDeJornada,
 } from './calendario';
 import type { MarcadorDirecto } from './marcador';
 import { equipo, partido } from './test-utils';
@@ -205,5 +206,29 @@ describe('partidoVisible', () => {
         HOY,
       ).oficial,
     ).toBeNull();
+  });
+});
+
+describe('partidosDeJornada', () => {
+  const j9 = (id: string, extra = {}) =>
+    partido({ id, jornada: 'JORNADA 9', faseId: 'f1', ...extra });
+
+  it('reúne los de la misma jornada y fase, por fecha y hora', () => {
+    const tarde = j9('tarde', { fecha: '2026-12-19', hora: '17:00' });
+    const manana = j9('manana', { fecha: '2026-12-19', hora: '10:00' });
+    const aplazado = j9('aplazado', { fecha: '2027-01-09', hora: '10:00' });
+    const otraJornada = j9('otra', { jornada: 'JORNADA 10' });
+    const otraFase = j9('fase', { faseId: 'f2' });
+    expect(
+      partidosDeJornada(
+        [aplazado, otraJornada, tarde, otraFase, manana],
+        tarde,
+      ).map((p) => p.id),
+    ).toEqual(['manana', 'tarde', 'aplazado']);
+  });
+
+  it('un partido sin jornada no tiene con quién agruparse', () => {
+    const suelto = partido({ jornada: null });
+    expect(partidosDeJornada([suelto], suelto)).toEqual([]);
   });
 });

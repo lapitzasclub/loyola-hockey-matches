@@ -8,6 +8,7 @@ import {
   claveEquipo,
   fechaLocal,
   indiceProximoPartido,
+  jornadaVisible,
   partidoVisible,
   partidosDeEquipo,
 } from '../../domain';
@@ -113,6 +114,14 @@ function Calendario({ elegido }: { elegido: EquipoCatalogo }) {
                       propio={elegido.equipo}
                       proximo={esProximo}
                       href={rutas.partido(p.id)}
+                      jornadaDe={(q) =>
+                        jornadaVisible(
+                          calendario.data?.partidos ?? [],
+                          q,
+                          hoy,
+                          directos,
+                        )
+                      }
                     />
                   </div>
                 );

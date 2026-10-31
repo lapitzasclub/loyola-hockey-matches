@@ -128,6 +128,7 @@ export function EquipoPage() {
       inscripcionId,
       divisionId,
       partidos: partidosDeEquipo(partidos, base),
+      calendario: partidos,
       hoy,
       directos,
     };

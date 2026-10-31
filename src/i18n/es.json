@@ -289,6 +289,10 @@
     "golesContra": "{{count}} GC",
     "ranking": "Ranking de {{categoria}}"
   },
+  "jornada": {
+    "titulo": "Partidos de la jornada",
+    "ver": "Ver los partidos de {{jornada}}"
+  },
   "selector": {
     "titulo": "Elige un equipo",
     "elegir": "Elegir equipo",

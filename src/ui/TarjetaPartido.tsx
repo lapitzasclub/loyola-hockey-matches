@@ -1,13 +1,21 @@
 import { IonRouterLink } from '@ionic/react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { mismoEquipo } from '../domain';
-import type { Equipo, Marcador, PartidoVisible } from '../domain';
+import type {
+  Equipo,
+  Marcador,
+  PartidoResumen,
+  PartidoVisible,
+} from '../domain';
 import { Cifra } from './Cifra';
 import { Escudo } from './Escudo';
 import { formatoDia } from './formato';
+import { HojaJornada } from './HojaJornada';
 import { InsigniaEstado } from './InsigniaEstado';
 import { Skeleton } from './Skeleton';
+import { useRutas } from './rutas';
 import { recordarTarjeta } from './tarjetaPulsada';
 import { transicion } from './transiciones';
 
@@ -19,6 +27,11 @@ interface Props {
   proximo?: boolean;
   /** Ruta de detalle; sin ella la tarjeta no es enlace. */
   href?: string;
+  /**
+   * Los partidos de la jornada de uno; con ella el nombre de la jornada se
+   * puede pulsar para verlos. Se llama solo al abrir la hoja.
+   */
+  jornadaDe?: (partido: PartidoResumen) => readonly PartidoVisible[];
 }
 
 function Lado({
@@ -93,8 +106,16 @@ function Centro({
   );
 }
 
-export function TarjetaPartido({ visible, propio, proximo, href }: Props) {
+export function TarjetaPartido({
+  visible,
+  propio,
+  proximo,
+  href,
+  jornadaDe,
+}: Props) {
   const { t, i18n } = useTranslation();
+  const rutas = useRutas();
+  const [hoja, setHoja] = useState(false);
   const { partido, estado } = visible;
   const esPropio = (e: Equipo | null) =>
     !!(propio && e && mismoEquipo(e, propio));
@@ -113,7 +134,33 @@ export function TarjetaPartido({ visible, propio, proximo, href }: Props) {
             <span className="tarjeta__proximo">{t('partidos.proximo')}</span>
           )}
           {formatoDia(partido.fecha, i18n.language)}
-          {partido.jornada && ` · ${partido.jornada}`}
+          {partido.jornada && ' · '}
+          {partido.jornada &&
+            (jornadaDe ? (
+              <span
+                role="button"
+                tabIndex={0}
+                className="tarjeta__jornada"
+                aria-label={t('jornada.ver', { jornada: partido.jornada })}
+                data-testid="tarjeta-jornada"
+                onClick={(e) => {
+                  // La tarjeta es un enlace al detalle: esto no navega.
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setHoja(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setHoja(true);
+                }}
+              >
+                {partido.jornada}
+              </span>
+            ) : (
+              partido.jornada
+            ))}
         </span>
         <InsigniaEstado estado={estado} />
       </header>
@@ -138,7 +185,9 @@ export function TarjetaPartido({ visible, propio, proximo, href }: Props) {
     </>
   );
 
-  return href ? (
+  // Fuera del enlace: los clics dentro de la hoja burbujean por el árbol de
+  // React hasta él y navegarían al detalle.
+  const tarjeta = href ? (
     <IonRouterLink
       routerLink={href}
       onClick={() => recordarTarjeta(visible)}
@@ -158,6 +207,21 @@ export function TarjetaPartido({ visible, propio, proximo, href }: Props) {
     >
       {contenido}
     </article>
+  );
+
+  return (
+    <>
+      {tarjeta}
+      {hoja && jornadaDe && partido.jornada && (
+        <HojaJornada
+          alCerrar={() => setHoja(false)}
+          jornada={partido.jornada}
+          partidos={jornadaDe(partido)}
+          actualId={partido.id}
+          rutaPartido={rutas.partido}
+        />
+      )}
+    </>
   );
 }
 

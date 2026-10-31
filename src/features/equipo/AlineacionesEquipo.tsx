@@ -2,7 +2,7 @@ import { IonRouterLink } from '@ionic/react';
 import { clipboardOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 
-import { mismoEquipo, partidoVisible } from '../../domain';
+import { jornadaVisible, mismoEquipo, partidoVisible } from '../../domain';
 import type { MiembroAlineacion } from '../../domain';
 import { usePartido } from '../../queries';
 import { Consulta } from '../../ui/Consulta';
@@ -114,6 +114,9 @@ export function AlineacionesEquipo({ datos }: { datos: DatosEquipo }) {
               visible={partidoVisible(p, datos.hoy)}
               propio={datos.equipo}
               href={rutas.partido(p.id)}
+              jornadaDe={(q) =>
+                jornadaVisible(datos.calendario, q, datos.hoy, datos.directos)
+              }
             />
           ))}
         </div>

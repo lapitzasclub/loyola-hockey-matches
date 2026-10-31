@@ -1,6 +1,11 @@
 import { useTranslation } from 'react-i18next';
 
-import { balanceEquipo, partidoVisible, PARTIDOS_RACHA } from '../../domain';
+import {
+  balanceEquipo,
+  jornadaVisible,
+  partidoVisible,
+  PARTIDOS_RACHA,
+} from '../../domain';
 import type { FilaClasificacion, Racha } from '../../domain';
 import { Racha as RachaPuntos } from '../../ui/Racha';
 import { TarjetaPartido } from '../../ui/TarjetaPartido';
@@ -52,6 +57,9 @@ export function ResumenEquipo({ datos, fila, racha }: Props) {
       propio={equipo}
       proximo={esProximo}
       href={rutas.partido(p.id)}
+      jornadaDe={(q) =>
+        jornadaVisible(datos.calendario, q, hoy, datos.directos)
+      }
     />
   );
 

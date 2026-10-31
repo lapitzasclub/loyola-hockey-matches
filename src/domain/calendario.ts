@@ -129,3 +129,29 @@ export function partidoVisible(
     oficial: oficial && marcador && !igual(oficial, marcador) ? oficial : null,
   };
 }
+
+/**
+ * Partidos de la misma jornada y fase que `partido`, por fecha y hora. El
+ * nombre de la jornada solo es único dentro de su fase.
+ */
+export function partidosDeJornada(
+  partidos: readonly PartidoResumen[],
+  partido: Pick<PartidoResumen, 'faseId' | 'jornada'>,
+): PartidoResumen[] {
+  if (!partido.jornada) return [];
+  return partidos
+    .filter((p) => p.faseId === partido.faseId && p.jornada === partido.jornada)
+    .sort(compararPorFechaHora);
+}
+
+/** Los de `partidosDeJornada`, con lo que se enseña de cada uno. */
+export function jornadaVisible(
+  partidos: readonly PartidoResumen[],
+  partido: Pick<PartidoResumen, 'faseId' | 'jornada'>,
+  hoy: string,
+  directos: ReadonlyMap<string, MarcadorDirecto>,
+): PartidoVisible[] {
+  return partidosDeJornada(partidos, partido).map((p) =>
+    partidoVisible(p, hoy, directos.get(p.id)),
+  );
+}

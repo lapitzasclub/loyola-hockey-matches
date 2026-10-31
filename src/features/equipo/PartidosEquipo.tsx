@@ -3,7 +3,7 @@ import { calendarOutline } from 'ionicons/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { agruparPorMes, partidoVisible } from '../../domain';
+import { agruparPorMes, jornadaVisible, partidoVisible } from '../../domain';
 import { EstadoVacio } from '../../ui/EstadoVacio';
 import { formatoMes } from '../../ui/formato';
 import { TarjetaPartido } from '../../ui/TarjetaPartido';
@@ -54,6 +54,14 @@ export function PartidosEquipo({ datos }: { datos: DatosEquipo }) {
                   )}
                   propio={datos.equipo}
                   href={rutas.partido(p.id)}
+                  jornadaDe={(q) =>
+                    jornadaVisible(
+                      datos.calendario,
+                      q,
+                      datos.hoy,
+                      datos.directos,
+                    )
+                  }
                 />
               ))}
             </div>
