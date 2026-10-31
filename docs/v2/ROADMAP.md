@@ -481,7 +481,7 @@ Cada casilla se marca cuando la v2 lo hace **igual o mejor** en Android real y e
 - [x] Directo: marcador, incidencias y periodo en tiempo real (web y Android con partidos en juego el 2026-10-31; vibración del gol, ver S10)
 - [ ] Tema claro/oscuro, barras de sistema en Android
 - [ ] Español y euskera en todos los textos
-- [ ] Instalable como PWA en iPhone, funciona offline con datos cacheados
+- [ ] Instalable como PWA en iPhone, funciona offline con datos cacheados (cerrada S11 sin probar en un iPhone real; lo cubren los e2e de WebKit y el SW offline en Chromium. Pendiente de confirmar en S12 si hay dispositivo)
 
 ## 9. Protocolo de sesiones con Claude Code
 
