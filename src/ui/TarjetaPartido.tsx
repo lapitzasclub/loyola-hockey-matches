@@ -7,6 +7,8 @@ import { Escudo } from './Escudo';
 import { formatoDia } from './formato';
 import { InsigniaEstado } from './InsigniaEstado';
 import { Skeleton } from './Skeleton';
+import { recordarTarjeta } from './tarjetaPulsada';
+import { transicion } from './transiciones';
 
 interface Props {
   visible: PartidoVisible;
@@ -18,7 +20,17 @@ interface Props {
   href?: string;
 }
 
-function Lado({ equipo, propio }: { equipo: Equipo | null; propio: boolean }) {
+function Lado({
+  equipo,
+  propio,
+  partidoId,
+  lado,
+}: {
+  equipo: Equipo | null;
+  propio: boolean;
+  partidoId: string;
+  lado: 'local' | 'visitante';
+}) {
   const { t } = useTranslation();
   const nombre = equipo?.nombre ?? t('partidos.porDefinir');
   return (
@@ -27,8 +39,18 @@ function Lado({ equipo, propio }: { equipo: Equipo | null; propio: boolean }) {
         logoUrl={equipo?.logoUrl ?? null}
         nombre={nombre}
         abreviatura={equipo?.nombreAbrev}
+        transicion={
+          equipo ? transicion.escudoPartido(partidoId, lado) : undefined
+        }
       />
-      <span className="tarjeta__nombre">{nombre}</span>
+      <span
+        className="tarjeta__nombre"
+        data-transicion={
+          equipo ? transicion.nombrePartido(partidoId, lado) : undefined
+        }
+      >
+        {nombre}
+      </span>
     </div>
   );
 }
@@ -43,7 +65,12 @@ function Centro({
   if (marcador) {
     return (
       <div className="tarjeta__centro" data-testid="marcador">
-        <span className="tarjeta__marcador">{resultado(marcador)}</span>
+        <span
+          className="tarjeta__marcador"
+          data-transicion={transicion.marcador(partido.id)}
+        >
+          {resultado(marcador)}
+        </span>
         {oficial && (
           <span className="tarjeta__oficial">
             {t('partidos.oficial', { resultado: resultado(oficial) })}
@@ -57,6 +84,7 @@ function Centro({
       <span
         className="tarjeta__hora"
         aria-label={partido.hora ? undefined : t('partidos.sinHora')}
+        data-transicion={transicion.marcador(partido.id)}
       >
         {estado === 'aplazado' ? '—' : (partido.hora ?? '--:--')}
       </span>
@@ -89,9 +117,19 @@ export function TarjetaPartido({ visible, propio, proximo, href }: Props) {
         <InsigniaEstado estado={estado} />
       </header>
       <div className="tarjeta__cruce">
-        <Lado equipo={partido.local} propio={esPropio(partido.local)} />
+        <Lado
+          equipo={partido.local}
+          propio={esPropio(partido.local)}
+          partidoId={partido.id}
+          lado="local"
+        />
         <Centro visible={visible} />
-        <Lado equipo={partido.visitante} propio={esPropio(partido.visitante)} />
+        <Lado
+          equipo={partido.visitante}
+          propio={esPropio(partido.visitante)}
+          partidoId={partido.id}
+          lado="visitante"
+        />
       </div>
       {partido.pista && (
         <footer className="tarjeta__pie">{partido.pista}</footer>
@@ -102,6 +140,7 @@ export function TarjetaPartido({ visible, propio, proximo, href }: Props) {
   return href ? (
     <IonRouterLink
       routerLink={href}
+      onClick={() => recordarTarjeta(visible)}
       className={`${clases} tarjeta--enlace`}
       data-testid="tarjeta-partido"
       data-partido={partido.id}

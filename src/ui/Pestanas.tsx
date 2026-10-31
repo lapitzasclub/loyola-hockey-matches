@@ -8,6 +8,8 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 
+import { movimientoPermitido } from './movimiento';
+
 export interface Pestana<Id extends string> {
   id: Id;
   etiqueta: string;
@@ -20,9 +22,6 @@ interface Props<Id extends string> {
   alCambiar: (id: Id) => void;
   testId: string;
 }
-
-const reducirMovimiento = () =>
-  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
 /**
  * Pestañas deslizables: un segmento de Ionic arriba y los paneles en una fila
@@ -67,7 +66,7 @@ export function Pestanas<Id extends string>({
     guiado.current = true;
     el.scrollTo({
       left: destino,
-      behavior: reducirMovimiento() ? 'auto' : 'smooth',
+      behavior: movimientoPermitido() ? 'smooth' : 'auto',
     });
   }, [indice]);
 

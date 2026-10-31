@@ -12,12 +12,14 @@ import {
   opcionesPersistencia,
 } from './persistencia';
 import { createQueryClient } from './queryClient';
+import { transicionPagina } from './transicionPagina';
 
 setupIonicReact({
   mode: 'ios',
   // En Safari con pestaña el gesto de atrás ya lo hace el navegador y se
   // pisarían; en la PWA instalada (standalone) no hay gesto del sistema.
   swipeBackEnabled: !(isPlatform('ios') && !isPlatform('pwa')),
+  navAnimation: transicionPagina,
 });
 
 /**

@@ -8,8 +8,13 @@ import { claves, usePartido, useRefrescar } from '../../queries';
 import { Consulta } from '../../ui/Consulta';
 import { Pagina } from '../../ui/Pagina';
 import { Pestanas } from '../../ui/Pestanas';
+import { tarjetaPulsada } from '../../ui/tarjetaPulsada';
 import { AlineacionesPartido } from './AlineacionesPartido';
-import { CabeceraPartido, CabeceraPartidoSkeleton } from './CabeceraPartido';
+import {
+  CabeceraPartido,
+  CabeceraPartidoPrevia,
+  CabeceraPartidoSkeleton,
+} from './CabeceraPartido';
 import { EventosPartido } from './EventosPartido';
 import { ResumenPartido } from './ResumenPartido';
 
@@ -22,6 +27,7 @@ export function PartidoPage() {
   const { t } = useTranslation();
   const { partidoId } = useParams<'partidoId'>();
   const partido = usePartido(partidoId);
+  const previa = tarjetaPulsada(partidoId);
   const refrescar = useRefrescar(claves.partido(partidoId));
   const [seccion, setSeccion] = useState<Seccion>('resumen');
   const indice = useMemo(
@@ -39,7 +45,13 @@ export function PartidoPage() {
       <Consulta
         consulta={partido}
         error={t('partido.error')}
-        cargando={<CabeceraPartidoSkeleton />}
+        cargando={
+          previa ? (
+            <CabeceraPartidoPrevia visible={previa} />
+          ) : (
+            <CabeceraPartidoSkeleton />
+          )
+        }
       >
         {(p) => (
           <>

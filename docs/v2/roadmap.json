@@ -149,7 +149,7 @@
       "title": "Capa wow: transiciones y microanimaciones",
       "model": "opus",
       "effort": "xhigh",
-      "status": "pending",
+      "status": "in_progress",
       "prompt": "Añade la capa de efecto wow sobre las pantallas ya hechas, sin tocar la lógica: escudo y nombre de equipo que vuelan de la clasificación/lista a la cabecera del detalle (Motion `layoutId` o View Transitions, lo que funcione mejor con Ionic y en Safari iOS), cabecera de partido que se pliega con el scroll, indicador de pestaña que sigue al deslizamiento, skeletons que se transforman en contenido, pulso de EN JUEGO, animación del marcador al cambiar, racha W/D/L animada, y confeti discreto cuando gana Loyola. Solo `transform` y `opacity`, 60 fps en un Android de gama media, y todo desactivado con `prefers-reduced-motion`. Graba antes/después si es posible.",
       "exit": [
         "Transiciones compartidas funcionando en Android real y PWA iPhone",
