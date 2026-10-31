@@ -40,7 +40,7 @@ const alineacionSchema = z.object({
  */
 export const incidenciaSchema = z.object({
   id: z.guid(),
-  /** Hora local sin zona; desempata incidencias del mismo segundo. */
+  /** UTC sin zona; desempata incidencias del mismo segundo. */
   fechaCreacion: z.iso.datetime({ local: true }),
   periodo: z.number().int(),
   minuto: z.number().int(),

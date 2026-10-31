@@ -34,6 +34,7 @@ import {
   agendaSchema,
   arbolSchema,
   clasificacionSchema,
+  configDirectoSchema,
   divisionesSchema,
   equiposDivisionSchema,
   estadisticasJugadoresSchema,
@@ -42,6 +43,7 @@ import {
   partidoDetalleSchema,
   plantillaSchema,
   statsJugadorSchema,
+  tokenDirectoSchema,
 } from './schemas';
 import { transporte } from './transport';
 import type { PeticionApi, Transporte } from './transport';
@@ -251,6 +253,37 @@ export function crearCliente(transporte: Transporte) {
         signal,
       });
       return marcadoresDesdeApi(marcadores);
+    },
+
+    /** URL del WebSocket de Centrifugo tal como la da la federación. */
+    async configDirecto({ signal }: Opciones = {}): Promise<string> {
+      const config = await pedir(configDirectoSchema, {
+        ruta: '/auth/config',
+        signal,
+      });
+      return config.centrifugoWsUrl;
+    },
+
+    /** JWT de conexión al directo; vale 24 h. */
+    async tokenDirecto({ signal }: Opciones = {}): Promise<string> {
+      const { token } = await pedir(tokenDirectoSchema, {
+        ruta: '/auth/centrifugo-token-public',
+        signal,
+      });
+      return token;
+    },
+
+    /** JWT para suscribirse a un canal del directo; vale 1 h. */
+    async tokenCanal(
+      canal: string,
+      { signal }: Opciones = {},
+    ): Promise<string> {
+      const { token } = await pedir(tokenDirectoSchema, {
+        ruta: '/auth/centrifugo-sub-token',
+        params: { channel: canal },
+        signal,
+      });
+      return token;
     },
 
     /** Solo quien ha jugado algún partido en la división. */

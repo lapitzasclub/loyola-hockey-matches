@@ -178,7 +178,25 @@ const entorno: EntornoTransporte = {
   http: CapacitorHttp,
 };
 
-/** Modo de este runtime; el directo (Centrifugo) lo usará para su URL. */
+/** Modo de este runtime. */
 export const modoTransporte: ModoTransporte = modoDe(entorno);
+
+/**
+ * URL del WebSocket del directo. Android abre la de la federación; la web,
+ * la misma ruta en su propio origen, que el proxy (Vite en desarrollo,
+ * Cloudflare en producción) pasa a la federación.
+ */
+export function urlDirectoPara(
+  modo: ModoTransporte,
+  url: string,
+  origen: Pick<Location, 'protocol' | 'host'>,
+): string {
+  if (modo === 'directo') return url;
+  const protocolo = origen.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocolo}//${origen.host}${new URL(url).pathname}`;
+}
+
+export const urlDirecto = (url: string): string =>
+  urlDirectoPara(modoTransporte, url, location);
 
 export const transporte: Transporte = crearTransporte(entorno);

@@ -30,6 +30,8 @@ export const claves = {
   clasificaciones: () => [RAIZ, 'fase'] as const,
   clasificacion: (faseId: string | undefined) =>
     [RAIZ, 'fase', faseId, 'clasificacion'] as const,
+  /** Todos los detalles de partido: el directo busca aquí qué seguir. */
+  partidos: () => [RAIZ, 'partido'] as const,
   partido: (id: string | undefined) => [RAIZ, 'partido', id] as const,
   fichaJugador: (plantillaEquipoId: string | undefined) =>
     [RAIZ, 'jugador', plantillaEquipoId] as const,

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ErrorContrato, crearCliente } from './cliente';
 import { fixturesJugadores, muestra, partidosMuestra } from './fixtures';
 import { transporteDeFixtures } from './fixtures/transporte';
+import type { PeticionApi } from './transport';
 
 function montar() {
   const transporte = transporteDeFixtures();
@@ -111,6 +112,25 @@ describe('recursos', () => {
     const error = await api.agenda().catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ErrorContrato);
     expect(error).toMatchObject({ ruta: '/public/agenda' });
+  });
+
+  it('config y tokens del directo', async () => {
+    const peticiones: PeticionApi[] = [];
+    const api = crearCliente(async (peticion) => {
+      peticiones.push(peticion);
+      return peticion.ruta === '/auth/config'
+        ? { centrifugoWsUrl: 'wss://fvpatinaje.eus/connection/websocket' }
+        : { token: 'jwt' };
+    });
+    await expect(api.configDirecto()).resolves.toBe(
+      'wss://fvpatinaje.eus/connection/websocket',
+    );
+    await expect(api.tokenDirecto()).resolves.toBe('jwt');
+    await expect(api.tokenCanal('acta_p')).resolves.toBe('jwt');
+    expect(peticiones.at(-1)).toMatchObject({
+      ruta: '/auth/centrifugo-sub-token',
+      params: { channel: 'acta_p' },
+    });
   });
 
   it('lo que no existe es un 404 del transporte', async () => {

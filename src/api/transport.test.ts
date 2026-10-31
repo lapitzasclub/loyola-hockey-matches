@@ -6,6 +6,7 @@ import {
   crearTransporte,
   esReintentable,
   modoDe,
+  urlDirectoPara,
 } from './transport';
 import type { EntornoTransporte } from './transport';
 
@@ -35,6 +36,34 @@ describe('modoDe', () => {
   it('Android va directo y la web por proxy', () => {
     expect(modoDe({ nativo: true })).toBe('directo');
     expect(modoDe({ nativo: false })).toBe('proxy');
+  });
+});
+
+describe('urlDirectoPara', () => {
+  const federacion = 'wss://fvpatinaje.eus/connection/websocket';
+
+  it('Android abre el WebSocket de la federación', () => {
+    expect(
+      urlDirectoPara('directo', federacion, {
+        protocol: 'https:',
+        host: 'x',
+      }),
+    ).toBe(federacion);
+  });
+
+  it('la web lo abre en su origen, que lo pasa por el proxy', () => {
+    expect(
+      urlDirectoPara('proxy', federacion, {
+        protocol: 'https:',
+        host: 'loyola.pages.dev',
+      }),
+    ).toBe('wss://loyola.pages.dev/connection/websocket');
+    expect(
+      urlDirectoPara('proxy', federacion, {
+        protocol: 'http:',
+        host: 'localhost:5173',
+      }),
+    ).toBe('ws://localhost:5173/connection/websocket');
   });
 });
 

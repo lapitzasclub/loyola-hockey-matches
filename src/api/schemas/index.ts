@@ -4,3 +4,4 @@ export * from './jerarquia';
 export * from './jugador';
 export * from './partido';
 export { jsonString } from './json';
+export * from './directo';
