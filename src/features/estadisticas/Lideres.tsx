@@ -29,18 +29,20 @@ export function Lideres({
             className="lider"
             data-testid="lider"
           >
-            <span className="lider__etiqueta">
-              {t(`estadisticas.lider.${categoria}`)}
-            </span>
-            <FotoPersona
-              nombre={jugador.nombre}
-              fotoUrl={jugador.fotoUrl}
-              tamano={48}
-            />
-            <span className="lider__nombre">{jugador.nombre}</span>
-            <span className="lider__equipo">{jugador.equipoNombre}</span>
-            <span className="lider__valor">
-              {textoValor(jugador, categoria)}
+            <span className="lider__interior">
+              <span className="lider__etiqueta">
+                {t(`estadisticas.lider.${categoria}`)}
+              </span>
+              <FotoPersona
+                nombre={jugador.nombre}
+                fotoUrl={jugador.fotoUrl}
+                tamano={48}
+              />
+              <span className="lider__nombre">{jugador.nombre}</span>
+              <span className="lider__equipo">{jugador.equipoNombre}</span>
+              <span className="lider__valor">
+                {textoValor(jugador, categoria)}
+              </span>
             </span>
           </IonRouterLink>
         ))}

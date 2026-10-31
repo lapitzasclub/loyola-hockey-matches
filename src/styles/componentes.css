@@ -495,6 +495,19 @@ button.cabecera-equipo:active {
   margin: 8px 12px;
 }
 
+/*
+ * Si las opciones no caben, el borde derecho se difumina para que se vea que
+ * hay más, y el hueco final deja la última entera al llegar al fondo.
+ */
+.segmento.segment-scrollable {
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 28px);
+  mask-image: linear-gradient(to left, transparent, #000 28px);
+}
+
+.segmento.segment-scrollable ion-segment-button:last-of-type {
+  margin-inline-end: 28px;
+}
+
 /* La pastilla propia sustituye al indicador de Ionic (ver `ui/Pestanas.tsx`) */
 .segmento--deslizante ion-segment-button {
   --indicator-color: transparent;
@@ -1315,18 +1328,25 @@ button.cabecera-equipo:active {
   padding: 0 12px 8px;
 }
 
+/* Como en la clasificación, la columna va en un hijo del <a> de la sombra. */
 .lider {
+  display: block;
+  min-width: 0;
+  border: 1px solid var(--app-superficie-borde);
+  border-radius: 12px;
+  color: var(--ion-text-color);
+  text-decoration: none;
+}
+
+.lider__interior {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
   box-sizing: border-box;
+  height: 100%;
   padding: 10px 8px;
-  border: 1px solid var(--app-superficie-borde);
-  border-radius: 12px;
-  color: var(--ion-text-color);
   text-align: center;
-  text-decoration: none;
 }
 
 .lider:active {
@@ -1334,6 +1354,8 @@ button.cabecera-equipo:active {
 }
 
 .lider__etiqueta {
+  max-width: 100%;
+  min-height: 2.3em;
   color: var(--app-texto-secundario);
   font-size: 0.68rem;
   font-weight: 700;
@@ -1342,12 +1364,15 @@ button.cabecera-equipo:active {
 }
 
 .lider__nombre {
+  display: -webkit-box;
   max-width: 100%;
   overflow: hidden;
   font-size: 0.85rem;
   font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .lider__equipo {
