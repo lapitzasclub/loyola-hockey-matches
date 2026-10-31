@@ -1,6 +1,5 @@
 dist
 android
-functions
 .wrangler
 node_modules
 playwright-report

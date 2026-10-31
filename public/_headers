@@ -1,0 +1,20 @@
+# Cabeceras de los estáticos en Cloudflare Pages. Las respuestas del worker
+# (/api, /connection) llevan las suyas. `vite preview` aplica este mismo
+# fichero, así que los e2e corren con la misma CSP que producción.
+#
+# - style-src 'unsafe-inline': Ionic y React ponen estilos en línea.
+# - connect-src data:: ionicons lee sus SVG en data: con fetch.
+# - img-src: escudos y fotos vienen del S3 público de DigitalSport.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://digitalsport-public-docs.s3.fr-par.scw.cloud; font-src 'self' data:; connect-src 'self' data:; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+
+/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/sw.js
+  Cache-Control: no-cache

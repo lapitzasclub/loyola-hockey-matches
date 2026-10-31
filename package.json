@@ -6,7 +6,7 @@
   "description": "Loyola Hockey Matches v2: partidos, clasificación y directo de los equipos del Loyola (PWA + Android).",
   "scripts": {
     "start": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && vite build -c vite.worker.config.ts",
     "serve": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . && prettier --check .",
@@ -20,11 +20,13 @@
     "e2e": "playwright test",
     "cap:copy": "npx cap copy",
     "cap:sync": "npx cap sync",
-    "android:sync": "npm run build && npx cap sync android",
+    "android:sync": "npm run build && npx cap sync android && node scripts/limpiar-android.ts",
     "android:run": "npm run android:sync && npx cap run android",
     "android:open": "npx cap open android",
     "cf:dev": "npm run build && npx wrangler pages dev dist",
-    "cf:deploy": "npm run build && npx wrangler pages deploy dist"
+    "cf:deploy": "npm run build && npx wrangler pages deploy dist --branch main",
+    "iconos": "node scripts/generar-iconos.ts",
+    "cf:preview": "npm run build && npx wrangler pages deploy dist --branch v2"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",
@@ -37,6 +39,7 @@
     "@tanstack/react-query": "^5.105.0",
     "@tanstack/react-query-persist-client": "^5.105.0",
     "centrifuge": "^5.8.0",
+    "hono": "^4.13.14",
     "i18next": "^26.5.12",
     "idb-keyval": "^6.3.0",
     "ionicons": "^8.1.0",

@@ -9,7 +9,6 @@ export default tseslint.config(
     ignores: [
       'dist/**',
       'android/**',
-      'functions/**',
       '.wrangler/**',
       'node_modules/**',
       'playwright-report/**',
@@ -30,8 +29,13 @@ export default tseslint.config(
   },
   {
     // La red solo se toca desde api/transport.ts, que decide directo o proxy.
+    // El service worker es el que sirve las peticiones de la página.
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/api/transport.ts', 'src/**/*.test.{ts,tsx}'],
+    ignores: [
+      'src/api/transport.ts',
+      'src/pwa/sw.ts',
+      'src/**/*.test.{ts,tsx}',
+    ],
     rules: {
       'no-restricted-globals': [
         'error',
@@ -66,6 +70,11 @@ export default tseslint.config(
   {
     files: ['*.config.{js,ts}'],
     languageOptions: { globals: { ...globals.node } },
+  },
+  {
+    files: ['worker/**/*.ts'],
+    languageOptions: { globals: { ...globals.serviceworker } },
+    rules: { '@typescript-eslint/consistent-type-imports': 'error' },
   },
   {
     files: ['scripts/**/*.ts'],

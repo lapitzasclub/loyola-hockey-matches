@@ -2,11 +2,8 @@ name = "loyola-hockey-matches"
 compatibility_date = "2026-05-13"
 pages_build_output_dir = "dist"
 
+# Bloqueos del rate limit del worker (`worker/limite.ts`).
 [[kv_namespaces]]
 binding = "API_RATE_LIMIT"
 id = "8cbdf962888745728ea7886408449e2c"
 preview_id = "8cbdf962888745728ea7886408449e2c"
-
-[vars]
-PUBLIC_APP_ORIGIN = "https://loyola-hockey-matches.pages.dev"
-SIGNALR_UPSTREAM_BASE = "https://digitalsport.online/signalr"
