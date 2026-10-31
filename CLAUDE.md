@@ -66,7 +66,7 @@ Cada carpeta de `src/` tiene un README corto con su responsabilidad.
 
 ## Convenciones
 
-- Un único UI kit: Ionic, en modo `ios` en todas las plataformas (`setupIonicReact` en `app/Providers.tsx`). Nada de otras librerías de componentes; lo que Ionic no traiga se construye en `ui/` sobre sus componentes y tokens.
+- Un único UI kit: Ionic. Usa el modo `ios` en iPhone y web, y `md` en Android para que tenga aspecto de Android. Lo decide `modoIonic()` en `ui/plataforma.ts`, que usan `setupIonicReact` en `app/Providers.tsx` y `Pagina`. El estilo fundido es el mismo en los dos modos: los ajustes de `md` van bajo `.md` en `styles/componentes.css`. Nada de otras librerías de componentes; lo que Ionic no traiga se construye en `ui/` sobre sus componentes y tokens.
 - TypeScript `strict` (con `noUncheckedIndexedAccess`); `import type` para tipos.
 - Todo texto visible usa `t(...)` de i18next; `es.json` y `eu.json` deben tener las mismas claves (hay test).
 - Los colores de tema por modo se definen bajo `body[data-theme="light"]` / `body[data-theme="dark"]`, no en `:root` global.

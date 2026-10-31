@@ -1503,6 +1503,52 @@ button.cabecera-equipo:active {
   }
 }
 
+/* Modo md (Android, ver `ui/plataforma.ts`): mismo estilo fundido, gestos de Android */
+/* La sombra de Material separaría la cabecera del fondo; Ionic inyecta su
+   estilo después, de ahí el selector con el elemento. */
+ion-header.header-md {
+  box-shadow: none;
+}
+
+.header-md ion-toolbar:last-of-type {
+  --border-width: 0 0 0.55px;
+}
+
+.md .pagina__titulos {
+  place-items: center start;
+}
+
+.md .pagina__compacta {
+  justify-content: flex-start;
+}
+
+/* Sin las mayúsculas de Material 2: en mayúsculas y con su ancho mínimo,
+   cuatro pestañas no caben. */
+.md ion-segment-button,
+.md ion-button {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.md .segmento ion-segment-button {
+  min-width: 0;
+}
+
+/* La pastilla pasa a ser el subrayado de las pestañas de Android. */
+.md .segmento__pastilla {
+  display: flex;
+  align-items: flex-end;
+  padding: 0;
+}
+
+.md .segmento__pastilla > span {
+  flex: 1;
+  height: 2px;
+  border-radius: 0;
+  background: var(--ion-color-primary);
+  box-shadow: none;
+}
+
 /*
  * Movimiento reducido: al final del archivo para ganar a las animaciones de
  * arriba sin subir la especificidad.

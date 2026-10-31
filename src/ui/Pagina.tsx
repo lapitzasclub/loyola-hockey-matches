@@ -18,6 +18,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { movimientoPermitido } from './movimiento';
+import { modoIonic } from './plataforma';
 import { useRutas } from './rutas';
 import { useAccionesShell } from './shell';
 
@@ -82,8 +83,13 @@ export function Pagina({
         <IonToolbar>
           {detalle && (
             <IonButtons slot="start">
-              {/* defaultHref: si se entra por enlace directo, atrás va a la raíz de la pestaña. */}
-              <IonBackButton defaultHref={raiz} text={t('common.atras')} />
+              {/* defaultHref: si se entra por enlace directo, atrás va a la raíz de la pestaña.
+                  En Android, solo la flecha, como en el resto del sistema. */}
+              <IonBackButton
+                defaultHref={raiz}
+                text={modoIonic() === 'md' ? '' : t('common.atras')}
+                aria-label={t('common.atras')}
+              />
             </IonButtons>
           )}
           <IonTitle>

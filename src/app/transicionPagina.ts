@@ -1,4 +1,8 @@
-import { createAnimation, iosTransitionAnimation } from '@ionic/react';
+import {
+  createAnimation,
+  iosTransitionAnimation,
+  mdTransitionAnimation,
+} from '@ionic/react';
 import type { Animation, TransitionOptions } from '@ionic/react';
 
 import { movimientoPermitido } from '../ui/movimiento';
@@ -242,9 +246,9 @@ function fundido({
 }
 
 /**
- * Animación de página para todo el router (`navAnimation`): la de iOS de
- * Ionic más el vuelo de los elementos que comparten `data-transicion` (ver
- * `ui/transiciones.ts`). Se eligió frente a View Transitions y a `layoutId`
+ * Animación de página para todo el router (`navAnimation`): la de Ionic del
+ * modo (iOS, o Android en `md`) más el vuelo de los elementos que comparten
+ * `data-transicion` (ver `ui/transiciones.ts`). Se eligió frente a View Transitions y a `layoutId`
  * de Motion porque es la única que sigue al gesto de volver, no congela la
  * página y no depende de la versión de Safari. Con movimiento reducido, un
  * fundido sin desplazamientos.
@@ -255,7 +259,10 @@ export function transicionPagina(
 ): Animation {
   pendientes.forEach((limpiar) => limpiar());
   if (!movimientoPermitido()) return fundido(opts);
-  const animacion = iosTransitionAnimation(navEl, opts);
+  const animacion =
+    opts.mode === 'md'
+      ? mdTransitionAnimation(navEl, opts)
+      : iosTransitionAnimation(navEl, opts);
   try {
     const extra = vuelos(opts);
     if (extra) animacion.addAnimation(extra);

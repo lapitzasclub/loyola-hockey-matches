@@ -6,6 +6,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { consultas } from '../queries';
+import { modoIonic } from '../ui/plataforma';
 import {
   almacenIndexedDb,
   crearPersister,
@@ -14,11 +15,15 @@ import {
 import { createQueryClient } from './queryClient';
 import { transicionPagina } from './transicionPagina';
 
+const modo = modoIonic();
+
 setupIonicReact({
-  mode: 'ios',
-  // En Safari con pestaña el gesto de atrás ya lo hace el navegador y se
-  // pisarían; en la PWA instalada (standalone) no hay gesto del sistema.
-  swipeBackEnabled: !(isPlatform('ios') && !isPlatform('pwa')),
+  mode: modo,
+  // En Android atrás es el gesto del sistema y en Safari con pestaña lo hace
+  // el navegador: se pisarían. En la PWA instalada (standalone) no hay gesto
+  // del sistema.
+  swipeBackEnabled:
+    modo === 'ios' && !(isPlatform('ios') && !isPlatform('pwa')),
   navAnimation: transicionPagina,
 });
 

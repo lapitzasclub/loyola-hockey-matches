@@ -92,6 +92,18 @@ test('un detalle abierto por enlace vuelve a la raíz de su pestaña', async ({
   await expect(page.getByTestId('sin-equipo')).toBeVisible();
 });
 
+test('Android con aspecto de Android (atrás es solo la flecha) e iPhone con el de iOS', async ({
+  page,
+}, info) => {
+  const android = info.project.name === 'chromium-android';
+  await apiDeFixtures(page);
+  await page.goto(`/partidos/partido/${PARTIDO}`);
+  await expect(page.locator('html')).toHaveClass(
+    android ? /\bmd\b/ : /\bios\b/,
+  );
+  await expect(atras(page, 'page-partido')).toHaveText(android ? '' : 'Atrás');
+});
+
 test('el pull-to-refresh vuelve a pedir los datos de la vista', async ({
   page,
 }) => {

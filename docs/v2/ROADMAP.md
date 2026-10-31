@@ -307,6 +307,32 @@ Validación:
 | Sin jank | ✅ `dumpsys gfxinfo` sin S09 frente a con S09 en el mismo recorrido: 10,5 % frente a 9,9–11,8 % de frames lentos, p50 24 frente a 23 ms y p95 46 frente a 48 ms. S09 no añade jank. ⚠️ El emulador va limitado por la GPU del PC: las cifras absolutas no son las de un Android de gama media, que está **sin medir en dispositivo real** | — |
 | `prefers-reduced-motion` | ✅ «Quitar animaciones» del sistema llega al WebView como `reduce` (comprobado por CDP); el comportamiento está cubierto en e2e (sin vuelos, sin animaciones CSS, sin confeti) | ⚠️ solo e2e WebKit |
 
+### Aspecto de Android: modo `md` (tras S09)
+
+A petición del usuario («el estilo de navegación y esos botones de atrás se me asemejan a iOS»),
+Android deja el modo `ios` de Ionic. iPhone y web siguen en `ios`.
+
+- **Un solo punto decide**: `ui/plataforma.ts` (`modoIonic()`): `md` si `isPlatform('android')`
+  (la app y el navegador de Android), `ios` en el resto. Lo usan `setupIonicReact` y `Pagina`.
+- **Qué cambia en Android**:
+  - atrás es solo la flecha, con `aria-label` «Atrás»;
+  - el título va a la izquierda, y también la versión compacta de la cabecera plegada;
+  - la transición de página es la de Android (`mdTransitionAnimation`), con los mismos vuelos FLIP;
+  - pulsación con ripple y tab bar de Material.
+- **Swipe-back solo en `ios`**: el router lo activa si `swipeBackEnabled` es `true`, sea cual sea
+  el modo. En Android atrás es el gesto del sistema.
+- **Se mantiene el estilo fundido**: sin la sombra de Material bajo la cabecera, que Ionic inyecta
+  después de nuestro CSS (de ahí `ion-header.header-md`), y con la misma línea fina.
+- **Pestañas de Android**: la pastilla pasa a ser el subrayado de 2 px. Van sin las mayúsculas ni el
+  ancho mínimo de Material, porque así cuatro pestañas no cabían («ESTADÍ…»). Lo mismo para los
+  botones («Cerrar»).
+- **Equipo con cinco secciones**: su segmento es `scrollable` y en Android la quinta queda cortada
+  en el borde, como en las pestañas desplazables de Material.
+- **e2e**: el proyecto `chromium-android` (UA de Android) corre ahora en `md`. Los selectores por
+  nombre accesible siguen valiendo. Un test comprueba el modo y el atrás sin texto en cada proyecto.
+- Revisado en el emulador en claro y oscuro: detalle de partido y de equipo, cabecera plegada,
+  hoja de ajustes y transición de ida y vuelta.
+
 ## 7. Fases
 
 | Fase | Objetivo | Sesiones |
