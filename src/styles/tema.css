@@ -33,6 +33,10 @@ body[data-theme='light'] {
   --app-tarjeta-azul: #1d6fd1;
   --app-tarjeta-amarilla: #e8b800;
   --app-tarjeta-roja: #c8102e;
+  --app-confeti-1: #0e3a43;
+  --app-confeti-2: #e8b800;
+  --app-confeti-3: #1f7a3d;
+  --app-confeti-4: #5bb8c8;
 
   --ion-color-primary: #0e3a43;
   --ion-color-primary-rgb: 14, 58, 67;
@@ -77,6 +81,10 @@ body[data-theme='dark'] {
   --app-tarjeta-azul: #4a9bf0;
   --app-tarjeta-amarilla: #f0c82e;
   --app-tarjeta-roja: #ef4560;
+  --app-confeti-1: #ffffff;
+  --app-confeti-2: #f0c82e;
+  --app-confeti-3: #5fd38a;
+  --app-confeti-4: #5bb8c8;
 
   --ion-color-primary: #5bb8c8;
   --ion-color-primary-rgb: 91, 184, 200;

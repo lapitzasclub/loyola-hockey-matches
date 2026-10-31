@@ -17,6 +17,7 @@ import {
   CabeceraPartidoPrevia,
   CabeceraPartidoSkeleton,
 } from './CabeceraPartido';
+import { useCelebracion } from './celebracion';
 import { EventosPartido } from './EventosPartido';
 import { ResumenPartido } from './ResumenPartido';
 
@@ -32,6 +33,7 @@ export function PartidoPage() {
   const previa = tarjetaPulsada(partidoId);
   const refrescar = useRefrescar(claves.partido(partidoId));
   const espera = useEspera(partido.isPending);
+  const celebrar = useCelebracion(partido.data);
   const [seccion, setSeccion] = useState<Seccion>('resumen');
   const indice = useMemo(
     () => (partido.data ? indiceAlineacion(partido.data) : SIN_ALINEACION),
@@ -62,7 +64,7 @@ export function PartidoPage() {
       >
         {(p) => (
           <>
-            <CabeceraPartido partido={p} />
+            <CabeceraPartido partido={p} celebrar={celebrar} />
             <Revelado espera={espera}>
               <Pestanas
                 testId="secciones-partido"

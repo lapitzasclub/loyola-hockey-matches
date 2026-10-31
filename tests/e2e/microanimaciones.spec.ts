@@ -161,3 +161,36 @@ test('con movimiento reducido no queda ninguna animación CSS', async ({
   );
   expect(animaciones).toEqual([]);
 });
+
+/** Laguna Negra 5–6 Loyola Indautxu (Copa): gana el Loyola a domicilio. */
+const VICTORIA = 'b931107f-6c3d-4811-8469-d616167478f6';
+
+test('el confeti celebra la victoria del Loyola una sola vez', async ({
+  page,
+}) => {
+  await apiDeFixtures(page);
+  await page.goto(`/partidos/partido/${VICTORIA}`);
+  const confeti = page.getByTestId('confeti');
+  await expect(confeti).toBeAttached();
+  // Se quita solo al acabar.
+  await expect(confeti).toHaveCount(0, { timeout: 5000 });
+
+  await page.reload();
+  await expect(page.getByTestId('partido-cabecera')).toBeVisible();
+  await page.waitForTimeout(300);
+  await expect(confeti).toHaveCount(0);
+});
+
+test('con movimiento reducido no hay confeti ni se gasta la celebración', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await apiDeFixtures(page);
+  await page.goto(`/partidos/partido/${VICTORIA}`);
+  await expect(page.getByTestId('partido-cabecera')).toBeVisible();
+  await page.waitForTimeout(300);
+  await expect(page.getByTestId('confeti')).toHaveCount(0);
+  expect(
+    await page.evaluate(() => localStorage.getItem('loyola.celebrados')),
+  ).toBeNull();
+});

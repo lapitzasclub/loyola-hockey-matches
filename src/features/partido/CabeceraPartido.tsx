@@ -9,6 +9,7 @@ import type {
   PartidoVisible,
 } from '../../domain';
 import { Cifra } from '../../ui/Cifra';
+import { Confeti } from '../../ui/Confeti';
 import { Escudo } from '../../ui/Escudo';
 import { formatoDia } from '../../ui/formato';
 import { InsigniaEstado } from '../../ui/InsigniaEstado';
@@ -133,7 +134,15 @@ function Centro({ datos }: { datos: DatosCabecera }) {
   );
 }
 
-function Cabecera({ datos, testId }: { datos: DatosCabecera; testId: string }) {
+function Cabecera({
+  datos,
+  testId,
+  celebrar = false,
+}: {
+  datos: DatosCabecera;
+  testId: string;
+  celebrar?: boolean;
+}) {
   const { t, i18n } = useTranslation();
   return (
     <header className="partido-cabecera" data-testid={testId}>
@@ -161,6 +170,7 @@ function Cabecera({ datos, testId }: { datos: DatosCabecera; testId: string }) {
           partidoId={datos.id}
           lado="visitante"
         />
+        {celebrar && <Confeti />}
       </div>
     </header>
   );
@@ -170,8 +180,21 @@ function Cabecera({ datos, testId }: { datos: DatosCabecera; testId: string }) {
  * Cabecera con escudos, marcador y estado. Dos zonas: `__meta` (competición y
  * fecha), que se pliega con el scroll, y `__cruce`, que se queda.
  */
-export function CabeceraPartido({ partido }: { partido: PartidoDetalle }) {
-  return <Cabecera datos={deDetalle(partido)} testId="partido-cabecera" />;
+export function CabeceraPartido({
+  partido,
+  celebrar,
+}: {
+  partido: PartidoDetalle;
+  /** Confeti sobre el marcador: el Loyola acaba de ganar. */
+  celebrar?: boolean;
+}) {
+  return (
+    <Cabecera
+      datos={deDetalle(partido)}
+      testId="partido-cabecera"
+      celebrar={celebrar}
+    />
+  );
 }
 
 /**

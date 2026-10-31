@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ganaLoyola,
+  ladoGanador,
   marcadorOficial,
   marcadorPorIncidencias,
   resultadoPartido,
@@ -71,6 +73,61 @@ describe('estado del detalle', () => {
       periodo: 0,
     });
     expect(previa.estado).toBe('programado');
+  });
+});
+
+describe('ganador y victoria del Loyola', () => {
+  it('gana el Loyola a domicilio por el resultado oficial', () => {
+    const p = detalle('copa');
+    expect(ladoGanador(p)).toBe('visitante');
+    expect(ganaLoyola(p)).toBe(true);
+  });
+
+  it('una derrota o un partido sin el Loyola no cuentan', () => {
+    expect(ganaLoyola(detalle('jugador-sin-dorsal'))).toBe(false);
+    const ajeno = detalle('falta-directa');
+    expect(ladoGanador(ajeno)).toBe('local');
+    expect(ganaLoyola(ajeno)).toBe(false);
+  });
+
+  it('sin terminar no hay ganador aunque el Loyola vaya por delante', () => {
+    expect(ladoGanador(detalle('programado'))).toBeNull();
+    const c = api('copa');
+    const vivo = partidoDetalleDesdeApi({
+      ...c,
+      estado: 'SCHEDULED',
+      actaEstado: 'PROGRAMADO',
+      periodo: 2,
+      local: { ...c.local, puntaje: null },
+      visitante: { ...c.visitante, puntaje: null },
+    });
+    expect(vivo.estado).toBe('en_juego');
+    expect(ganaLoyola(vivo)).toBe(false);
+  });
+
+  it('en tablas gana quien se lleva el desempate, y si no, nadie', () => {
+    expect(ladoGanador(detalle('penaltis-fallados'))).toBeNull();
+    const d = api('penaltis-fallados');
+    const desempate = partidoDetalleDesdeApi({
+      ...d,
+      visitante: {
+        ...d.visitante,
+        nombre: 'LOYOLA INDAUTXU',
+        ganoDesempate: true,
+      },
+    });
+    expect(ladoGanador(desempate)).toBe('visitante');
+    expect(ganaLoyola(desempate)).toBe(true);
+  });
+
+  it('entre dos equipos del Loyola no se celebra', () => {
+    const c = api('copa');
+    const derbi = partidoDetalleDesdeApi({
+      ...c,
+      local: { ...c.local, nombre: 'LOYOLA INDAUTXU B' },
+    });
+    expect(ladoGanador(derbi)).toBe('visitante');
+    expect(ganaLoyola(derbi)).toBe(false);
   });
 });
 

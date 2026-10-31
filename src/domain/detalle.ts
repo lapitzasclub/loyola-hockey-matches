@@ -1,4 +1,5 @@
 import type { Alineacion } from './alineacion';
+import { esEquipoLoyola } from './equipo';
 import type { Equipo } from './equipo';
 import type { EstadoPartido } from './estado';
 import type { Incidencia, Lado } from './incidencia';
@@ -98,4 +99,29 @@ export function resultadoPartido(
     tanda: tandaDePenaltis(incidencias),
     ganadorDesempate: ganador,
   };
+}
+
+/**
+ * Lado que gana un partido terminado según el resultado oficial (el que
+ * cuenta para la clasificación); si acaba en tablas, el del desempate.
+ * null si no ha terminado o es empate.
+ */
+export function ladoGanador(partido: PartidoDetalle): Lado | null {
+  if (partido.estado !== 'finalizado') return null;
+  const r = resultadoPartido(partido);
+  if (!r) return null;
+  const { local, visitante } = r.oficial;
+  if (local > visitante) return 'local';
+  if (visitante > local) return 'visitante';
+  return r.ganadorDesempate;
+}
+
+/** Si un Loyola ha ganado el partido a un rival que no es del club. */
+export function ganaLoyola(partido: PartidoDetalle): boolean {
+  const lado = ladoGanador(partido);
+  if (!lado) return false;
+  const perdedor = lado === 'local' ? partido.visitante : partido.local;
+  return (
+    esEquipoLoyola(partido[lado].equipo) && !esEquipoLoyola(perdedor.equipo)
+  );
 }
