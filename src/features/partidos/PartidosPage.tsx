@@ -1,6 +1,6 @@
 import { IonButton } from '@ionic/react';
 import { calendarOutline, shirtOutline } from 'ionicons/icons';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -19,17 +19,13 @@ import {
   useRefrescar,
   useSeleccionEquipo,
 } from '../../queries';
-import {
-  CabeceraEquipo,
-  CabeceraEquipoSkeleton,
-} from '../../ui/CabeceraEquipo';
 import { EstadoError } from '../../ui/EstadoError';
 import { EstadoVacio } from '../../ui/EstadoVacio';
 import { formatoMes } from '../../ui/formato';
 import { Pagina } from '../../ui/Pagina';
 import { Revelado, useEspera } from '../../ui/Revelado';
 import { useRutas } from '../../ui/rutas';
-import { SelectorEquipo } from '../../ui/SelectorEquipo';
+import { useShell } from '../../ui/shell';
 import {
   TarjetaPartido,
   TarjetaPartidoSkeleton,
@@ -131,8 +127,8 @@ function Calendario({ elegido }: { elegido: EquipoCatalogo }) {
 
 export function PartidosPage() {
   const { t } = useTranslation();
-  const { catalogo, clave, elegir, grupos, elegido } = useSeleccionEquipo();
-  const [selectorAbierto, setSelectorAbierto] = useState(false);
+  const { catalogo, elegido } = useSeleccionEquipo();
+  const { abrirSelector } = useShell();
 
   const refrescar = useRefrescar(
     claves.catalogo(),
@@ -142,13 +138,7 @@ export function PartidosPage() {
 
   const contenido = () => {
     if (catalogo.isPending) {
-      return (
-        <>
-          <CabeceraEquipoSkeleton />
-          <div style={{ height: 12 }} />
-          <ListaSkeleton />
-        </>
-      );
+      return <ListaSkeleton />;
     }
     if (catalogo.isError) {
       return (
@@ -175,28 +165,14 @@ export function PartidosPage() {
           titulo={t('partidos.sinEquipoTitulo')}
           texto={t('partidos.sinEquipoTexto')}
           accion={
-            <IonButton
-              data-testid="elegir-equipo"
-              onClick={() => setSelectorAbierto(true)}
-            >
+            <IonButton data-testid="elegir-equipo" onClick={abrirSelector}>
               {t('selector.elegir')}
             </IonButton>
           }
         />
       );
     }
-    return (
-      <>
-        <CabeceraEquipo
-          nombre={elegido.equipo.nombre}
-          abreviatura={elegido.equipo.nombreAbrev}
-          logoUrl={elegido.equipo.logoUrl}
-          competicion={elegido.competicion.nombre}
-          alCambiar={() => setSelectorAbierto(true)}
-        />
-        <Calendario key={claveEquipo(elegido)} elegido={elegido} />
-      </>
-    );
+    return <Calendario key={claveEquipo(elegido)} elegido={elegido} />;
   };
 
   return (
@@ -207,16 +183,6 @@ export function PartidosPage() {
     >
       {contenido()}
       <div style={{ height: 24 }} />
-      <SelectorEquipo
-        abierto={selectorAbierto}
-        alCerrar={() => setSelectorAbierto(false)}
-        grupos={grupos}
-        elegido={clave}
-        alElegir={(nueva) => {
-          elegir(nueva);
-          setSelectorAbierto(false);
-        }}
-      />
     </Pagina>
   );
 }

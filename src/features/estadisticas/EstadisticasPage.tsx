@@ -18,15 +18,11 @@ import {
   useRefrescar,
   useSeleccionEquipo,
 } from '../../queries';
-import {
-  CabeceraEquipo,
-  CabeceraEquipoSkeleton,
-} from '../../ui/CabeceraEquipo';
 import { EstadoError } from '../../ui/EstadoError';
 import { EstadoVacio } from '../../ui/EstadoVacio';
 import { Pagina } from '../../ui/Pagina';
 import { Revelado, useEspera } from '../../ui/Revelado';
-import { SelectorEquipo } from '../../ui/SelectorEquipo';
+import { useShell } from '../../ui/shell';
 import { Skeleton } from '../../ui/Skeleton';
 import { Lideres } from './Lideres';
 import { RankingEquipos } from './RankingEquipos';
@@ -129,8 +125,8 @@ function Rankings({ elegido }: { elegido: EquipoCatalogo }) {
 
 export function EstadisticasPage() {
   const { t } = useTranslation();
-  const { catalogo, clave, elegir, grupos, elegido } = useSeleccionEquipo();
-  const [selectorAbierto, setSelectorAbierto] = useState(false);
+  const { catalogo, elegido } = useSeleccionEquipo();
+  const { abrirSelector } = useShell();
 
   const refrescar = useRefrescar(
     claves.catalogo(),
@@ -140,12 +136,7 @@ export function EstadisticasPage() {
 
   const contenido = () => {
     if (catalogo.isPending) {
-      return (
-        <>
-          <CabeceraEquipoSkeleton />
-          <RankingsSkeleton />
-        </>
-      );
+      return <RankingsSkeleton />;
     }
     if (catalogo.isError) {
       return (
@@ -163,28 +154,14 @@ export function EstadisticasPage() {
           titulo={t('partidos.sinEquipoTitulo')}
           texto={t('estadisticas.sinEquipoTexto')}
           accion={
-            <IonButton
-              data-testid="elegir-equipo"
-              onClick={() => setSelectorAbierto(true)}
-            >
+            <IonButton data-testid="elegir-equipo" onClick={abrirSelector}>
               {t('selector.elegir')}
             </IonButton>
           }
         />
       );
     }
-    return (
-      <>
-        <CabeceraEquipo
-          nombre={elegido.equipo.nombre}
-          abreviatura={elegido.equipo.nombreAbrev}
-          logoUrl={elegido.equipo.logoUrl}
-          competicion={elegido.competicion.nombre}
-          alCambiar={() => setSelectorAbierto(true)}
-        />
-        <Rankings key={claveEquipo(elegido)} elegido={elegido} />
-      </>
-    );
+    return <Rankings key={claveEquipo(elegido)} elegido={elegido} />;
   };
 
   return (
@@ -195,16 +172,6 @@ export function EstadisticasPage() {
     >
       {contenido()}
       <div style={{ height: 24 }} />
-      <SelectorEquipo
-        abierto={selectorAbierto}
-        alCerrar={() => setSelectorAbierto(false)}
-        grupos={grupos}
-        elegido={clave}
-        alElegir={(nueva) => {
-          elegir(nueva);
-          setSelectorAbierto(false);
-        }}
-      />
     </Pagina>
   );
 }

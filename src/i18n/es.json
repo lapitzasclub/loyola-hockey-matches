@@ -1,6 +1,7 @@
 {
   "app": {
-    "nombre": "Loyola Hockey"
+    "nombre": "Loyola Hockey",
+    "club": "Loyola Indautxu"
   },
   "tabs": {
     "partidos": "Partidos",
@@ -35,12 +36,14 @@
   },
   "ajustes": {
     "titulo": "Ajustes",
+    "abrir": "Abrir menú",
+    "cerrar": "Cerrar menú",
     "tema": "Tema",
     "idioma": "Idioma",
     "temas": {
-      "sistema": "Sistema",
-      "claro": "Claro",
-      "oscuro": "Oscuro"
+      "claro": "Día",
+      "oscuro": "Noche",
+      "sistema": "Auto"
     },
     "idiomas": {
       "es": "Castellano",

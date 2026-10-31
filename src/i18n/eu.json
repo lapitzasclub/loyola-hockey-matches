@@ -1,6 +1,7 @@
 {
   "app": {
-    "nombre": "Loyola Hockey"
+    "nombre": "Loyola Hockey",
+    "club": "Loyola Indautxu"
   },
   "tabs": {
     "partidos": "Partidak",
@@ -35,12 +36,14 @@
   },
   "ajustes": {
     "titulo": "Ezarpenak",
+    "abrir": "Ireki menua",
+    "cerrar": "Itxi menua",
     "tema": "Gaia",
     "idioma": "Hizkuntza",
     "temas": {
-      "sistema": "Sistema",
-      "claro": "Argia",
-      "oscuro": "Iluna"
+      "claro": "Eguna",
+      "oscuro": "Gaua",
+      "sistema": "Auto"
     },
     "idiomas": {
       "es": "Castellano",

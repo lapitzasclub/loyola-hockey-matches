@@ -38,6 +38,17 @@ body[data-theme='light'] {
   --app-confeti-3: #1f7a3d;
   --app-confeti-4: #5bb8c8;
 
+  /* Menú lateral, con el rojo y el amarillo del escudo como en la v1. */
+  --app-menu-fondo: #fbfaf8;
+  --app-menu-tarjeta: #ffffff;
+  --app-menu-borde: rgba(36, 30, 22, 0.1);
+  --app-menu-separador: rgba(23, 26, 31, 0.3);
+  --app-menu-sombra: 0 8px 20px rgba(43, 35, 23, 0.1);
+  --app-menu-acento: #e01f2d;
+  --app-menu-activo: #8f6b00;
+  --app-menu-activo-fondo: #fdf0d0;
+  --app-menu-activo-borde: rgba(245, 197, 27, 0.6);
+
   --ion-color-primary: #0e3a43;
   --ion-color-primary-rgb: 14, 58, 67;
   --ion-color-primary-contrast: #ffffff;
@@ -84,6 +95,16 @@ body[data-theme='dark'] {
   --app-confeti-2: #f0c82e;
   --app-confeti-3: #5fd38a;
   --app-confeti-4: #5bb8c8;
+
+  --app-menu-fondo: #151515;
+  --app-menu-tarjeta: #1d1f24;
+  --app-menu-borde: rgba(255, 255, 255, 0.09);
+  --app-menu-separador: rgba(246, 247, 249, 0.3);
+  --app-menu-sombra: 0 8px 20px rgba(0, 0, 0, 0.18);
+  --app-menu-acento: #f23545;
+  --app-menu-activo: #ff4d5a;
+  --app-menu-activo-fondo: #42171d;
+  --app-menu-activo-borde: rgba(224, 31, 45, 0.6);
 
   --ion-color-primary: #5bb8c8;
   --ion-color-primary-rgb: 91, 184, 200;

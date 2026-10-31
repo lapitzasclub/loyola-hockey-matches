@@ -1,10 +1,9 @@
 import {
   IonBackButton,
-  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
+  IonMenuButton,
   IonPage,
   IonRefresher,
   IonRefresherContent,
@@ -12,7 +11,6 @@ import {
   IonToolbar,
 } from '@ionic/react';
 import type { RefresherEventDetail, ScrollDetail } from '@ionic/react';
-import { settingsOutline } from 'ionicons/icons';
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,12 +18,16 @@ import { useTranslation } from 'react-i18next';
 import { movimientoPermitido } from './movimiento';
 import { modoIonic } from './plataforma';
 import { useRutas } from './rutas';
-import { useAccionesShell } from './shell';
+import { MENU_AJUSTES, useShell } from './shell';
+import { Skeleton } from './Skeleton';
 
 interface Props {
   titulo: string;
   testId: string;
-  /** Pantalla de detalle: lleva botón atrás en vez de ajustes. */
+  /**
+   * Pantalla de detalle: lleva botón atrás y el título. Las raíces de las
+   * pestañas llevan el menú y, en vez del título, el equipo elegido.
+   */
   detalle?: boolean;
   /** Pull-to-refresh; el spinner se queda hasta que la promesa termina. */
   alRefrescar?: () => Promise<unknown>;
@@ -42,7 +44,46 @@ interface Props {
 /** Desplazamiento (px) en el que la cabecera queda plegada del todo. */
 const PLIEGUE_PX = 120;
 
-/** Esqueleto de pantalla: barra con atrás o ajustes, pull-to-refresh y contenido. */
+/**
+ * Equipo elegido y su liga, siempre a la vista en las pestañas; al tocarlo se
+ * cambia. El nombre de la pestaña ya lo dice la tab bar.
+ */
+function CabeceraEquipo() {
+  const { t } = useTranslation();
+  const { equipo, abrirSelector } = useShell();
+  if (equipo === undefined) {
+    return (
+      <span className="cabecera-equipo">
+        <span className="escudo-club" aria-hidden />
+        <span className="cabecera-equipo__textos">
+          <Skeleton ancho={150} alto={16} />
+          <Skeleton ancho={110} alto={10} />
+        </span>
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      className="cabecera-equipo"
+      onClick={abrirSelector}
+      aria-haspopup="dialog"
+      data-testid={equipo ? 'cabecera-equipo' : undefined}
+    >
+      <span className="escudo-club" aria-hidden />
+      <span className="cabecera-equipo__textos">
+        <span className="cabecera-equipo__nombre">
+          {equipo?.nombre ?? t('app.club')}
+        </span>
+        {equipo && (
+          <span className="cabecera-equipo__liga">{equipo.competicion}</span>
+        )}
+      </span>
+    </button>
+  );
+}
+
+/** Esqueleto de pantalla: barra con atrás o menú, pull-to-refresh y contenido. */
 export function Pagina({
   titulo,
   testId,
@@ -54,7 +95,6 @@ export function Pagina({
 }: Props) {
   const { t } = useTranslation();
   const { raiz } = useRutas();
-  const { abrirAjustes } = useAccionesShell();
 
   const refrescar = (e: CustomEvent<RefresherEventDetail>) => {
     void alRefrescar?.().finally(() => void e.detail.complete());
@@ -79,43 +119,43 @@ export function Pagina({
 
   return (
     <IonPage data-testid={testId}>
-      <IonHeader>
+      <IonHeader aria-label={detalle ? undefined : titulo}>
         <IonToolbar>
-          {detalle && (
-            <IonButtons slot="start">
-              {/* defaultHref: si se entra por enlace directo, atrás va a la raíz de la pestaña.
-                  En Android, solo la flecha, como en el resto del sistema. */}
+          <IonButtons slot="start">
+            {detalle ? (
+              /* defaultHref: si se entra por enlace directo, atrás va a la raíz de la pestaña.
+                  En Android, solo la flecha, como en el resto del sistema. */
               <IonBackButton
                 defaultHref={raiz}
                 text={modoIonic() === 'md' ? '' : t('common.atras')}
                 aria-label={t('common.atras')}
               />
-            </IonButtons>
-          )}
-          <IonTitle>
-            {compacta ? (
-              <span className="pagina__titulos" data-plegable>
-                <span className="pagina__titulo">{titulo}</span>
-                <span className="pagina__compacta" aria-hidden>
-                  {compacta}
-                </span>
-              </span>
             ) : (
-              titulo
-            )}
-          </IonTitle>
-          <IonButtons slot="end">
-            {acciones}
-            {!detalle && (
-              <IonButton
-                onClick={abrirAjustes}
-                aria-label={t('ajustes.titulo')}
+              <IonMenuButton
+                menu={MENU_AJUSTES}
+                autoHide={false}
+                aria-label={t('ajustes.abrir')}
                 data-testid="abrir-ajustes"
-              >
-                <IonIcon slot="icon-only" icon={settingsOutline} />
-              </IonButton>
+              />
             )}
           </IonButtons>
+          {detalle ? (
+            <IonTitle>
+              {compacta ? (
+                <span className="pagina__titulos" data-plegable>
+                  <span className="pagina__titulo">{titulo}</span>
+                  <span className="pagina__compacta" aria-hidden>
+                    {compacta}
+                  </span>
+                </span>
+              ) : (
+                titulo
+              )}
+            </IonTitle>
+          ) : (
+            <CabeceraEquipo />
+          )}
+          {acciones && <IonButtons slot="end">{acciones}</IonButtons>}
         </IonToolbar>
       </IonHeader>
       <IonContent scrollEvents={!!compacta} onIonScroll={plegar}>

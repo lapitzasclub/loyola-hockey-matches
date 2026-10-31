@@ -322,50 +322,66 @@
   text-transform: uppercase;
 }
 
-/* Cabecera del equipo elegido */
+/* Escudo del club, en su versión para fondo claro u oscuro */
+.escudo-club {
+  flex: none;
+  width: 34px;
+  height: 40px;
+  background: url('/assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_claro.webp')
+    center / contain no-repeat;
+}
+
+body[data-theme='dark'] .escudo-club {
+  background-image: url('/assets/sidebar-loyola/escudo/escudo_loyola_indautxu_fondo_oscuro.webp');
+}
+
+/* Cabecera de las pestañas: el equipo elegido y su liga, siempre a la vista */
 .cabecera-equipo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   box-sizing: border-box;
-  width: calc(100% - 24px);
-  min-height: 76px;
-  margin: 12px 12px 0;
-  padding: 12px 14px;
-  border: 1px solid var(--app-superficie-borde);
-  border-radius: 16px;
-  background: var(--app-superficie);
-  box-shadow: var(--app-sombra);
-  color: var(--ion-text-color);
+  width: 100%;
+  min-width: 0;
+  padding: 4px 8px 4px 2px;
+  border: 0;
+  background: none;
+  color: inherit;
   font: inherit;
   text-align: left;
 }
 
 button.cabecera-equipo:active {
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
 .cabecera-equipo__textos {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
 }
 
 .cabecera-equipo__nombre {
-  font-size: 1.05rem;
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.cabecera-equipo__liga {
+  overflow: hidden;
+  color: var(--app-texto-secundario);
+  font-size: 0.66rem;
   font-weight: 700;
-  line-height: 1.2;
-}
-
-.cabecera-equipo__competicion {
-  color: var(--app-texto-secundario);
-  font-size: 0.8rem;
-}
-
-.cabecera-equipo__flecha {
-  color: var(--app-texto-secundario);
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 /* Selector de equipo */
@@ -1575,4 +1591,272 @@ ion-header.header-md {
   .confeti {
     display: none;
   }
+}
+
+/* Menú lateral: el equipo elegido, cambiarlo, idioma y tema, sobre las
+   esquinas de marca de la v1. */
+.menu-ajustes {
+  --width: min(320px, 86vw);
+  --background: var(--app-menu-fondo);
+}
+
+.menu-ajustes::part(container) {
+  overflow: hidden;
+  border-start-end-radius: 28px;
+  border-end-end-radius: 28px;
+}
+
+.menu-ajustes__esquina {
+  position: absolute;
+  z-index: 1;
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+}
+
+.menu-ajustes__esquina--arriba {
+  top: 0;
+  right: 0;
+  width: 210px;
+  height: 149px;
+  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_superior_derecha_tema_claro.webp');
+  background-position: top right;
+}
+
+.menu-ajustes__esquina--izquierda {
+  bottom: 0;
+  left: 0;
+  width: 190px;
+  height: 60px;
+  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_inferior_izquierda_tema_claro.png');
+  background-position: bottom left;
+}
+
+.menu-ajustes__esquina--derecha {
+  right: 0;
+  bottom: 0;
+  width: 200px;
+  height: 75px;
+  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/claro/sidebar_esquina_inferior_derecha_tema_claro.png');
+  background-position: bottom right;
+}
+
+body[data-theme='dark'] .menu-ajustes__esquina--arriba {
+  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_superior_derecha_tema_noche.webp');
+}
+
+body[data-theme='dark'] .menu-ajustes__esquina--izquierda {
+  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_inferior_izquierda_tema_noche.png');
+}
+
+body[data-theme='dark'] .menu-ajustes__esquina--derecha {
+  background-image: url('/assets/sidebar-loyola/esquinas_sidebar/noche/sidebar_esquina_inferior_derecha_tema_noche.png');
+}
+
+.menu-ajustes__contenido {
+  --background: transparent;
+  --padding-top: calc(var(--ion-safe-area-top, 0px) + 10px);
+  --padding-bottom: calc(var(--ion-safe-area-bottom, 0px) + 72px);
+  --padding-start: 18px;
+  --padding-end: 18px;
+}
+
+.menu-ajustes__pila {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.menu-ajustes__cerrar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-left: -8px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ion-text-color);
+  font-size: 30px;
+}
+
+.menu-ajustes__cerrar:active {
+  opacity: 0.6;
+}
+
+.menu-ajustes__equipo {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.escudo-club--grande {
+  --alto: clamp(110px, 22vh, 172px);
+  width: calc(var(--alto) * 0.857);
+  height: var(--alto);
+  margin-bottom: 6px;
+}
+
+.menu-ajustes__nombre {
+  margin: 0;
+  font-size: 1.85rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.menu-ajustes__nombre::after {
+  content: '';
+  display: block;
+  width: 42px;
+  height: 4px;
+  margin: 12px auto 0;
+  border-radius: 999px;
+  background: var(--app-menu-acento);
+}
+
+.menu-ajustes__liga {
+  margin: 0;
+  color: var(--app-texto-secundario);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.menu-ajustes__tarjeta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 60px;
+  padding: 0 16px;
+  border: 1px solid var(--app-menu-borde);
+  border-radius: 18px;
+  background: var(--app-menu-tarjeta);
+  box-shadow: var(--app-menu-sombra);
+  color: var(--ion-text-color);
+  font: inherit;
+}
+
+.menu-ajustes__icono {
+  flex: none;
+  color: var(--app-menu-acento);
+  font-size: 24px;
+}
+
+.menu-ajustes__cambiar {
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.menu-ajustes__cambiar > span {
+  flex: 1;
+}
+
+.menu-ajustes__cambiar:active {
+  opacity: 0.75;
+}
+
+.menu-ajustes__idiomas {
+  gap: 8px;
+}
+
+.menu-ajustes__idiomas .menu-ajustes__icono {
+  margin-right: 8px;
+}
+
+.menu-ajustes__idioma {
+  position: relative;
+  min-width: 48px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--app-texto-secundario);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.menu-ajustes__idioma + .menu-ajustes__idioma::before {
+  content: '';
+  position: absolute;
+  top: 13px;
+  bottom: 13px;
+  left: -5px;
+  width: 1.5px;
+  background: var(--app-menu-separador);
+}
+
+.menu-ajustes__idioma[aria-pressed='true'] {
+  color: var(--app-menu-acento);
+}
+
+.menu-ajustes__idioma[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  bottom: 2px;
+  left: 10px;
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.menu-ajustes__apartado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 2px 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.menu-ajustes__apartado ion-icon {
+  font-size: 22px;
+}
+
+.menu-ajustes__temas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  margin-top: 10px;
+  padding: 3px;
+  border: 1px solid var(--app-menu-borde);
+  border-radius: 18px;
+  background: var(--app-menu-tarjeta);
+  box-shadow: var(--app-menu-sombra);
+}
+
+.menu-ajustes__opcion {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 13px 4px 11px;
+  border: 0;
+  border-radius: 15px;
+  background: none;
+  color: var(--ion-text-color);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.menu-ajustes__opcion ion-icon {
+  font-size: 26px;
+}
+
+.menu-ajustes__opcion[aria-pressed='true'] {
+  background: var(--app-menu-activo-fondo);
+  box-shadow: inset 0 0 0 1px var(--app-menu-activo-borde);
+  color: var(--app-menu-activo);
 }

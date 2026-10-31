@@ -12,19 +12,22 @@ import {
   listOutline,
   statsChartOutline,
 } from 'ionicons/icons';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route } from 'react-router-dom';
 
-import { AjustesModal } from '../features/ajustes/AjustesModal';
+import { MenuAjustes } from '../features/ajustes/MenuAjustes';
 import { ClasificacionPage } from '../features/clasificacion/ClasificacionPage';
 import { EquipoPage } from '../features/equipo/EquipoPage';
 import { EstadisticasPage } from '../features/estadisticas/EstadisticasPage';
 import { JugadorPage } from '../features/jugador/JugadorPage';
 import { PartidoPage } from '../features/partido/PartidoPage';
 import { PartidosPage } from '../features/partidos/PartidosPage';
+import { useSeleccionEquipo } from '../queries';
 import { PATRONES, PESTANAS, PESTANA_INICIAL, rutas } from '../ui/rutas';
-import { AccionesShellContext } from '../ui/shell';
+import { SelectorEquipo } from '../ui/SelectorEquipo';
+import { ShellContext } from '../ui/shell';
+import type { Shell as ValorShell } from '../ui/shell';
 import { useBotonAtras } from './botonAtras';
 import { useTema } from './tema';
 
@@ -63,20 +66,44 @@ const rutasDePestanas = PESTANAS.flatMap((p) => [
   />,
 ]);
 
+/** Id del contenido que tapa el menú lateral. */
+const PRINCIPAL = 'principal';
+
 function Shell() {
   const { t } = useTranslation();
   const [tema, cambiarTema] = useTema();
-  const [ajustes, setAjustes] = useState(false);
-  const acciones = useMemo(
-    () => ({ abrirAjustes: () => setAjustes(true) }),
-    [],
-  );
+  const { catalogo, clave, elegir, grupos, elegido } = useSeleccionEquipo();
+  const [selector, setSelector] = useState(false);
+  const menu = useRef<HTMLIonMenuElement>(null);
   useBotonAtras();
 
+  const shell = useMemo<ValorShell>(
+    () => ({
+      abrirSelector: () => setSelector(true),
+      equipo: catalogo.isPending
+        ? undefined
+        : elegido
+          ? {
+              nombre: elegido.equipo.nombre,
+              competicion: elegido.competicion.nombre,
+            }
+          : null,
+    }),
+    [catalogo.isPending, elegido],
+  );
+
   return (
-    <AccionesShellContext.Provider value={acciones}>
+    <ShellContext.Provider value={shell}>
+      <MenuAjustes
+        ref={menu}
+        contentId={PRINCIPAL}
+        equipo={shell.equipo}
+        alCambiarEquipo={() => setSelector(true)}
+        tema={tema}
+        alCambiarTema={cambiarTema}
+      />
       <IonTabs>
-        <IonRouterOutlet>
+        <IonRouterOutlet id={PRINCIPAL}>
           {rutasDePestanas}
           <Route
             path="/"
@@ -92,13 +119,18 @@ function Shell() {
           ))}
         </IonTabBar>
       </IonTabs>
-      <AjustesModal
-        abierto={ajustes}
-        alCerrar={() => setAjustes(false)}
-        tema={tema}
-        alCambiarTema={cambiarTema}
+      <SelectorEquipo
+        abierto={selector}
+        alCerrar={() => setSelector(false)}
+        grupos={grupos}
+        elegido={clave}
+        alElegir={(nueva) => {
+          elegir(nueva);
+          setSelector(false);
+          void menu.current?.close();
+        }}
       />
-    </AccionesShellContext.Provider>
+    </ShellContext.Provider>
   );
 }
 
