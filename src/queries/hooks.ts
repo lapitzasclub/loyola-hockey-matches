@@ -1,17 +1,29 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryKey } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
-import type { Division } from '../domain';
+import type { Division, MarcadorDirecto } from '../domain';
 import { consultas } from './consultas';
 
 export const useAgenda = () => useQuery(consultas.agenda());
 
-/** Con `enDirecto` se vuelve a pedir cada 30 s mientras la pantalla está abierta. */
-export const useMarcadores = (enDirecto = false) =>
-  useQuery({
+/**
+ * Marcadores de los partidos empezados, por id, para pintarlos sobre las
+ * listas. Con `enDirecto` se vuelven a pedir cada 30 s mientras la pantalla
+ * está abierta; los de un partido abierto los pone al día el directo.
+ */
+export function useMarcadoresDirecto(
+  enDirecto = false,
+): ReadonlyMap<string, MarcadorDirecto> {
+  const { data } = useQuery({
     ...consultas.marcadores(),
     refetchInterval: enDirecto ? 30_000 : false,
   });
+  return useMemo(
+    () => new Map((data ?? []).map((m) => [m.partidoId, m])),
+    [data],
+  );
+}
 
 /** Equipos Loyola de la temporada, ordenados por competición y nombre. */
 export const useCatalogo = () => useQuery(consultas.catalogo());

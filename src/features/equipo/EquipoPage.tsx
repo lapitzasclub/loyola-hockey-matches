@@ -20,6 +20,7 @@ import {
   useClasificacion,
   useEquiposDivision,
   useFases,
+  useMarcadoresDirecto,
   useRefrescar,
 } from '../../queries';
 import { Consulta } from '../../ui/Consulta';
@@ -99,6 +100,11 @@ export function EquipoPage() {
   // `/equipos` y el catálogo traen el `equipoId` que pide la plantilla.
   const equiposDivision = useEquiposDivision(divisionId);
   const catalogo = useCatalogo();
+  const hoy = fechaLocal(new Date());
+  // Con partidos hoy en la división se vuelve a pedir /marcadores.
+  const directos = useMarcadoresDirecto(
+    !!calendario.data?.partidos.some((p) => p.fecha === hoy),
+  );
 
   const refrescar = useRefrescar(
     claves.division(divisionId),
@@ -122,9 +128,12 @@ export function EquipoPage() {
       inscripcionId,
       divisionId,
       partidos: partidosDeEquipo(partidos, base),
-      hoy: fechaLocal(new Date()),
+      hoy,
+      directos,
     };
   }, [
+    hoy,
+    directos,
     calendario.data,
     equiposDivision.data,
     catalogo.data,

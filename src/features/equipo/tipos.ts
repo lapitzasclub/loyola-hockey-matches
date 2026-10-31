@@ -1,4 +1,4 @@
-import type { Equipo, PartidoResumen } from '../../domain';
+import type { Equipo, MarcadorDirecto, PartidoResumen } from '../../domain';
 
 /** Lo que cada sección del detalle necesita saber del equipo abierto. */
 export interface DatosEquipo {
@@ -10,4 +10,6 @@ export interface DatosEquipo {
   partidos: PartidoResumen[];
   /** `YYYY-MM-DD`. */
   hoy: string;
+  /** Marcadores de `/marcadores` por partido, para el directo en las listas. */
+  directos: ReadonlyMap<string, MarcadorDirecto>;
 }

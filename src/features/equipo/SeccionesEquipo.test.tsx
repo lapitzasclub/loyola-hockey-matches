@@ -40,6 +40,7 @@ function datos(partidos: DatosEquipo['partidos'] = []): DatosEquipo {
     divisionId,
     partidos,
     hoy: '2026-11-15',
+    directos: new Map(),
   };
 }
 

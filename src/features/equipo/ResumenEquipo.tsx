@@ -48,7 +48,7 @@ export function ResumenEquipo({ datos, fila, racha }: Props) {
   const ultimo = partidos.findLast((p) => p.estado === 'finalizado');
   const tarjeta = (p: (typeof partidos)[number], esProximo = false) => (
     <TarjetaPartido
-      visible={partidoVisible(p, hoy)}
+      visible={partidoVisible(p, hoy, datos.directos.get(p.id))}
       propio={equipo}
       proximo={esProximo}
       href={rutas.partido(p.id)}

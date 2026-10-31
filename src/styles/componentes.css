@@ -1049,6 +1049,14 @@ button.cabecera-equipo:active {
   text-align: center;
 }
 
+.partido-cabecera__reloj {
+  font-variant-numeric: tabular-nums;
+}
+
+.partido-cabecera__reloj::before {
+  content: ' · ';
+}
+
 /* Línea de eventos */
 .eventos {
   margin: 0;

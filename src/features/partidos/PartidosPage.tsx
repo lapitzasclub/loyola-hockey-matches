@@ -11,11 +11,11 @@ import {
   partidoVisible,
   partidosDeEquipo,
 } from '../../domain';
-import type { EquipoCatalogo, MarcadorDirecto } from '../../domain';
+import type { EquipoCatalogo } from '../../domain';
 import {
   claves,
   useCalendario,
-  useMarcadores,
+  useMarcadoresDirecto,
   useRefrescar,
   useSeleccionEquipo,
 } from '../../queries';
@@ -65,14 +65,7 @@ function Calendario({ elegido }: { elegido: EquipoCatalogo }) {
 
   // Con partidos hoy se vuelve a pedir /marcadores mientras la pantalla está abierta.
   const hayPartidoHoy = partidos.some((p) => p.fecha === hoy);
-  const marcadores = useMarcadores(hayPartidoHoy);
-  const directos = useMemo(
-    () =>
-      new Map<string, MarcadorDirecto>(
-        (marcadores.data ?? []).map((m) => [m.partidoId, m]),
-      ),
-    [marcadores.data],
-  );
+  const directos = useMarcadoresDirecto(hayPartidoHoy);
 
   // Una sola vez por equipo: no se mueve la lista bajo el dedo en cada refresco.
   const proximoRef = useRef<HTMLDivElement | null>(null);

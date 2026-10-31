@@ -47,7 +47,11 @@ export function PartidosEquipo({ datos }: { datos: DatosEquipo }) {
               {partidos.map((p) => (
                 <TarjetaPartido
                   key={p.id}
-                  visible={partidoVisible(p, datos.hoy)}
+                  visible={partidoVisible(
+                    p,
+                    datos.hoy,
+                    datos.directos.get(p.id),
+                  )}
                   propio={datos.equipo}
                   href={rutas.partido(p.id)}
                 />

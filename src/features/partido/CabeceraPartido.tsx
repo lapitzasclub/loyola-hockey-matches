@@ -16,6 +16,7 @@ import { InsigniaEstado } from '../../ui/InsigniaEstado';
 import { Skeleton } from '../../ui/Skeleton';
 import { transicion } from '../../ui/transiciones';
 import { etiquetaPeriodo } from './periodo';
+import { RelojPartido } from './RelojPartido';
 
 const resultado = (m: Marcador) => `${m.local}–${m.visitante}`;
 
@@ -29,6 +30,7 @@ interface DatosCabecera {
   hora: string | null;
   estado: EstadoVisible;
   periodo: number | null;
+  reloj: PartidoDetalle['reloj'];
   local: EquipoDominio;
   visitante: EquipoDominio;
   goles: Marcador | null;
@@ -52,6 +54,7 @@ function deDetalle(partido: PartidoDetalle): DatosCabecera {
     hora: partido.hora,
     estado: partido.estado,
     periodo: partido.periodo,
+    reloj: partido.reloj,
     local: partido.local.equipo,
     visitante: partido.visitante.equipo,
     goles: datos?.goles ?? null,
@@ -96,6 +99,7 @@ function Centro({ datos }: { datos: DatosCabecera }) {
       {datos.estado === 'en_juego' && datos.periodo !== null && (
         <span className="partido-cabecera__periodo" data-testid="periodo">
           {etiquetaPeriodo(t, datos.periodo)}
+          {datos.reloj && <RelojPartido reloj={datos.reloj} />}
         </span>
       )}
       {datos.goles ? (
@@ -220,6 +224,7 @@ export function CabeceraPartidoPrevia({
         hora: partido.hora,
         estado: visible.estado,
         periodo: null,
+        reloj: null,
         local: partido.local,
         visitante: partido.visitante,
         goles: visible.marcador,
