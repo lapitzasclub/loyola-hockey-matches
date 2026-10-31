@@ -163,7 +163,7 @@
       "title": "Directo con Centrifugo",
       "model": "opus",
       "effort": "xhigh",
-      "status": "pending",
+      "status": "done",
       "prompt": "Implementa `src/live/`: conexión Centrifugo (config de `/api/auth/config`, token público, sub-token por canal `acta_${id}`), reconexión, suspensión en segundo plano y reanudación, y un reducer puro y testeado que aplica `incidencia_creada`, `incidencia_eliminada`, `periodo_actualizado`, `acta_cerrada`, `acta_reabierta` y `alineacion_actualizada` a la caché de TanStack Query. Overlay de `/public/partidos/marcadores` para listas (ignorando periodo <= 0). Animación y vibración (Android) al recibir un gol. En web, el WebSocket pasa por el proxy si hace falta según la política dual-target. Revisa la memoria `pendiente-partidos-jugados`: lo que solo pueda validarse con un partido en juego queda listado como pendiente explícito.",
       "exit": [
         "Reducer de eventos con tests sobre mensajes reales grabados",

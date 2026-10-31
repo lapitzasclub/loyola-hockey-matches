@@ -333,6 +333,9 @@ Validación:
   `functions/connection/[[path]].js` en Cloudflare (solo esa ruta y solo con `Upgrade: websocket`).
 - **Gol**: animación del marcador (solo `transform`/`opacity`, sin ella con movimiento reducido) y,
   en Android, vibración con `@capacitor/haptics`.
+- **Validado el 2026-10-31 con partidos en juego**: web (dev y preview de Cloudflare) y Android
+  (emulador, modo `md`) siguen marcador, reloj y periodo sin recargar, al mismo valor que la API; un
+  gol real (0–5 → 0–6) vibró en Android (`dumpsys vibrator_manager`).
 - **Pendiente para S11 (worker)**: el proxy de Pages cachea `/api/public/*` 120 s en el edge. En web,
   el detalle que el directo pide tras `acta_cerrada` o una alineación nueva puede llegar con hasta
   2 minutos de retraso (el marcador no, que lo pone el reducer). El worker debe no cachear, o cachear
