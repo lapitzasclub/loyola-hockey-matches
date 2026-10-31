@@ -125,6 +125,11 @@
   background: var(--app-aviso-fondo);
 }
 
+.insignia--proximo {
+  color: var(--app-proximo);
+  background: var(--app-proximo-fondo);
+}
+
 .insignia--en_juego {
   color: #ffffff;
   background: var(--app-vivo);
@@ -215,23 +220,17 @@
 .tarjeta__fecha {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
   color: var(--app-texto-secundario);
   font-size: 0.8rem;
   font-weight: 600;
-  text-transform: capitalize;
+  white-space: nowrap;
 }
 
-.tarjeta__proximo {
-  padding: 2px 7px;
-  border-radius: 6px;
-  background: var(--app-proximo-fondo);
-  color: var(--app-proximo);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+.tarjeta__dia {
+  flex: none;
+  text-transform: capitalize;
 }
 
 .tarjeta__cruce {
@@ -256,22 +255,24 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
   min-height: 2.4em;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   line-height: 1.2;
-  color: var(--app-texto-secundario);
+  color: var(--ion-text-color);
 }
 
 .tarjeta__lado--propio .tarjeta__nombre {
-  color: var(--ion-text-color);
-  font-weight: 700;
+  font-weight: 800;
 }
 
+/* Centrado en la altura del escudo (44px) */
 .tarjeta__centro {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   min-width: 76px;
-  padding-top: 6px;
+  min-height: 44px;
 }
 
 .tarjeta__marcador {
@@ -293,6 +294,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+.tarjeta__hora--sin {
+  max-width: 76px;
+  color: var(--app-texto-secundario);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
 .tarjeta__oficial {
   margin-top: 2px;
   color: var(--app-texto-secundario);
@@ -300,11 +310,20 @@
 }
 
 .tarjeta__pie {
+  display: flex;
+  justify-content: center;
   margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px dashed var(--app-superficie-borde);
+  border-top: 1px solid var(--app-superficie-borde);
   color: var(--app-texto-secundario);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.tarjeta__pie .enlace-pista {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tarjeta--skeleton {
@@ -1979,16 +1998,38 @@ body[data-theme='dark'] .menu-ajustes__esquina--derecha {
   transform: translateY(-50%);
 }
 
-/* Jornada pulsable en la cabecera de la tarjeta */
+/* Jornada en la cabecera de la tarjeta: la API la da en mayúsculas */
 .tarjeta__jornada {
-  padding: 0;
-  border: 0;
-  background: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--app-programado-fondo);
+  color: var(--app-texto-secundario);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.tarjeta__jornada-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: lowercase;
+}
+
+.tarjeta__jornada-texto::first-letter {
+  text-transform: uppercase;
+}
+
+.tarjeta__jornada--boton {
   color: var(--ion-color-primary);
-  font: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  text-transform: none;
+}
+
+.tarjeta__jornada ion-icon {
+  flex: none;
+  font-size: 0.9em;
 }
 
 /* Pista con enlace al mapa */

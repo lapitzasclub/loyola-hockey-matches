@@ -1,4 +1,5 @@
-import { IonRouterLink } from '@ionic/react';
+import { IonIcon, IonRouterLink } from '@ionic/react';
+import { chevronForward } from 'ionicons/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -96,13 +97,21 @@ function Centro({
   }
   return (
     <div className="tarjeta__centro">
-      <span
-        className="tarjeta__hora"
-        aria-label={partido.hora ? undefined : t('partidos.sinHora')}
-        data-transicion={transicion.marcador(partido.id)}
-      >
-        {estado === 'aplazado' ? '—' : (partido.hora ?? '--:--')}
-      </span>
+      {estado !== 'aplazado' && !partido.hora ? (
+        <span
+          className="tarjeta__hora tarjeta__hora--sin"
+          data-transicion={transicion.marcador(partido.id)}
+        >
+          {t('partidos.sinHora')}
+        </span>
+      ) : (
+        <span
+          className="tarjeta__hora"
+          data-transicion={transicion.marcador(partido.id)}
+        >
+          {estado === 'aplazado' ? '—' : partido.hora}
+        </span>
+      )}
     </div>
   );
 }
@@ -131,17 +140,15 @@ export function TarjetaPartido({
     <>
       <header className="tarjeta__cabecera">
         <span className="tarjeta__fecha">
-          {proximo && (
-            <span className="tarjeta__proximo">{t('partidos.proximo')}</span>
-          )}
-          {formatoDia(partido.fecha, i18n.language)}
-          {partido.jornada && ' · '}
+          <span className="tarjeta__dia">
+            {formatoDia(partido.fecha, i18n.language)}
+          </span>
           {partido.jornada &&
             (jornadaDe ? (
               <span
                 role="button"
                 tabIndex={0}
-                className="tarjeta__jornada"
+                className="tarjeta__jornada tarjeta__jornada--boton"
                 aria-label={t('jornada.ver', { jornada: partido.jornada })}
                 data-testid="tarjeta-jornada"
                 onClick={(e) => {
@@ -157,13 +164,27 @@ export function TarjetaPartido({
                   setHoja(true);
                 }}
               >
-                {partido.jornada}
+                <span className="tarjeta__jornada-texto">
+                  {partido.jornada}
+                </span>
+                <IonIcon icon={chevronForward} aria-hidden="true" />
               </span>
             ) : (
-              partido.jornada
+              <span className="tarjeta__jornada">
+                <span className="tarjeta__jornada-texto">
+                  {partido.jornada}
+                </span>
+              </span>
             ))}
         </span>
-        <InsigniaEstado estado={estado} />
+        {/* «Próximo» sustituye a «Programado»: dos pastillas sobran. */}
+        {proximo && estado === 'programado' ? (
+          <span className="insignia insignia--proximo" data-estado={estado}>
+            {t('partidos.proximo')}
+          </span>
+        ) : (
+          <InsigniaEstado estado={estado} />
+        )}
       </header>
       <div className="tarjeta__cruce">
         <Lado

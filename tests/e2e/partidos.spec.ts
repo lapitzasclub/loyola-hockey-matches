@@ -76,8 +76,9 @@ test('pulsar la jornada abre sus partidos sin entrar al detalle', async ({
     .first();
   await expect(tarjeta).toBeVisible();
   const origen = (await tarjeta.getAttribute('data-partido')) ?? '';
+  // textContent: el CSS cambia las mayúsculas de la jornada en la tarjeta.
   const jornada = (
-    await tarjeta.getByTestId('tarjeta-jornada').innerText()
+    (await tarjeta.getByTestId('tarjeta-jornada').textContent()) ?? ''
   ).trim();
 
   await tarjeta.getByTestId('tarjeta-jornada').click();
