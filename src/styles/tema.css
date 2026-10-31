@@ -62,6 +62,17 @@ body[data-theme='light'] {
   --ion-text-color-rgb: 0, 0, 0;
   --ion-item-background: #ffffff;
   --ion-card-background: #ffffff;
+
+  /* Hueco del pull-to-refresh, cuero tostado como en la v1 */
+  --app-desgarro-fondo: linear-gradient(
+    180deg,
+    #c9ab8c 0%,
+    #b48a6f 46%,
+    #a77d68 100%
+  );
+  --app-desgarro-texto: #fff6ef;
+  --app-desgarro-pastilla: transparent;
+  --app-desgarro-sombra: rgba(59, 33, 24, 0.45);
 }
 
 body[data-theme='dark'] {
@@ -95,6 +106,17 @@ body[data-theme='dark'] {
   --app-confeti-2: #f0c82e;
   --app-confeti-3: #5fd38a;
   --app-confeti-4: #5bb8c8;
+
+  /* Hueco del pull-to-refresh, azul noche como en la v1 */
+  --app-desgarro-fondo: linear-gradient(
+    180deg,
+    #162733 0%,
+    #1d3442 42%,
+    #162733 100%
+  );
+  --app-desgarro-texto: #7fdcec;
+  --app-desgarro-pastilla: rgba(0, 0, 0, 0.18);
+  --app-desgarro-sombra: rgba(0, 0, 0, 0.55);
 
   --app-menu-fondo: #151515;
   --app-menu-tarjeta: #1d1f24;

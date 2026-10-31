@@ -15,7 +15,12 @@
     "atras": "Atrás",
     "cerrar": "Cerrar",
     "cancelar": "Cancelar",
-    "error": "Algo ha fallado"
+    "error": "Algo ha fallado",
+    "refresco": {
+      "tirar": "Sigue tirando para refrescar…",
+      "soltar": "Suelta para refrescar…",
+      "actualizando": "Actualizando…"
+    }
   },
   "partidos": {
     "error": "No se han podido cargar los partidos.",

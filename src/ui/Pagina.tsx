@@ -11,8 +11,9 @@ import {
   IonToolbar,
 } from '@ionic/react';
 import type { RefresherEventDetail, ScrollDetail } from '@ionic/react';
+import { chevronDown } from 'ionicons/icons';
 import { useRef } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { movimientoPermitido } from './movimiento';
@@ -160,8 +161,25 @@ export function Pagina({
       </IonHeader>
       <IonContent scrollEvents={!!compacta} onIonScroll={plegar}>
         {alRefrescar && (
-          <IonRefresher slot="fixed" onIonRefresh={refrescar}>
-            <IonRefresherContent />
+          /* Con un icono propio Ionic usa el refresher clásico también en md: el
+              contenido baja y deja ver el hueco «desgarrado» de detrás, como en
+              la v1. «Suelta…» no tiene texto propio en Ionic: lo pinta el CSS. */
+          <IonRefresher
+            slot="fixed"
+            className="desgarro"
+            onIonRefresh={refrescar}
+            style={
+              {
+                '--texto-soltar': JSON.stringify(t('common.refresco.soltar')),
+              } as CSSProperties
+            }
+          >
+            <IonRefresherContent
+              pullingIcon={chevronDown}
+              pullingText={t('common.refresco.tirar')}
+              refreshingSpinner="crescent"
+              refreshingText={t('common.refresco.actualizando')}
+            />
           </IonRefresher>
         )}
         {children}

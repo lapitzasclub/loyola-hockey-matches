@@ -15,7 +15,12 @@
     "atras": "Atzera",
     "cerrar": "Itxi",
     "cancelar": "Utzi",
-    "error": "Zerbait gaizki atera da"
+    "error": "Zerbait gaizki atera da",
+    "refresco": {
+      "tirar": "Jarraitu tira freskatzeko…",
+      "soltar": "Askatu freskatzeko…",
+      "actualizando": "Eguneratzen…"
+    }
   },
   "partidos": {
     "error": "Ezin izan dira partidak kargatu.",

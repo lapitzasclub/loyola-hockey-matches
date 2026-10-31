@@ -1618,6 +1618,90 @@ ion-header.header-md {
 }
 
 /*
+ * Pull-to-refresh «desgarrado», como el de la v1: la página se separa y deja
+ * ver un hueco hundido con sombras en los dos bordes. Es el refresher clásico
+ * de Ionic (ver `Pagina`): el contenido baja y el refresher queda detrás.
+ */
+/* Ionic lo deja en z-index -1, detrás del fondo de ion-content: se sube y el
+   contenido pasa por encima mientras se tira. */
+ion-refresher.desgarro {
+  z-index: 0;
+  height: 140px;
+  background: var(--app-desgarro-fondo);
+}
+
+/* Sombra de la cabecera sobre el hueco */
+ion-refresher.desgarro::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 14px;
+  background: linear-gradient(180deg, var(--app-desgarro-sombra), transparent);
+  pointer-events: none;
+}
+
+/* El contenido tapa el hueco con su fondo y proyecta su borde hacia arriba. */
+ion-content:has(> ion-refresher.desgarro.refresher-active)::part(scroll) {
+  z-index: 1;
+  background: var(--background);
+  box-shadow: 0 -10px 12px var(--app-desgarro-sombra);
+}
+
+ion-refresher.desgarro ion-refresher-content {
+  height: 64px;
+  color: var(--app-desgarro-texto);
+}
+
+ion-refresher.desgarro .refresher-pulling-icon,
+ion-refresher.desgarro .refresher-refreshing-icon {
+  color: var(--app-desgarro-texto);
+}
+
+ion-refresher.desgarro .refresher-refreshing ion-spinner {
+  color: var(--app-desgarro-texto);
+}
+
+ion-refresher.desgarro .refresher-pulling-text,
+ion-refresher.desgarro .refresher-refreshing-text {
+  position: relative;
+  width: fit-content;
+  margin: 2px auto 0;
+  padding: 3px 14px;
+  border-radius: 999px;
+  background: var(--app-desgarro-pastilla);
+  color: var(--app-desgarro-texto);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* «Suelta para refrescar…»: Ionic solo tiene un texto para tirar. */
+ion-refresher.desgarro.refresher-ready .refresher-pulling-text {
+  color: transparent;
+}
+
+ion-refresher.desgarro.refresher-ready .refresher-pulling-text::after {
+  content: var(--texto-soltar);
+  position: absolute;
+  inset: 3px 0 auto;
+  color: var(--app-desgarro-texto);
+  text-align: center;
+}
+
+ion-refresher.desgarro.refresher-ready .refresher-pulling-icon {
+  animation: desgarro-flecha 0.62s ease-in-out infinite alternate;
+}
+
+@keyframes desgarro-flecha {
+  from {
+    transform: rotate(180deg) translateY(1px);
+  }
+  to {
+    transform: rotate(180deg) translateY(-3px);
+  }
+}
+
+/*
  * Movimiento reducido: al final del archivo para ganar a las animaciones de
  * arriba sin subir la especificidad.
  */
@@ -1627,7 +1711,8 @@ ion-header.header-md {
   .insignia__punto::after,
   .revelado > :not(.revelado__saliente),
   .cifra--cambia,
-  .racha__punto {
+  .racha__punto,
+  ion-refresher.desgarro.refresher-ready .refresher-pulling-icon {
     animation: none;
   }
 
