@@ -14,6 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fixtures:capture": "node scripts/capture-fixtures.ts",
+    "directo:grabar": "node scripts/grabar-directo.ts",
+    "directo:fixtures": "node scripts/fixtures-directo.ts",
     "medir:arranque": "vitest run --mode medir --silent=false src/api/arranque.medir.test.ts",
     "e2e": "playwright test",
     "cap:copy": "npx cap copy",

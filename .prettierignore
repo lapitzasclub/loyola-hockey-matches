@@ -17,3 +17,5 @@ artifacts
 *.md
 # Generados por scripts/capture-fixtures.ts
 src/api/fixtures/**/*.json
+# Generados por scripts/fixtures-directo.ts
+src/live/fixtures/*.json

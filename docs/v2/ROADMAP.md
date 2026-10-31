@@ -307,6 +307,37 @@ Validación:
 | Sin jank | ✅ `dumpsys gfxinfo` sin S09 frente a con S09 en el mismo recorrido: 10,5 % frente a 9,9–11,8 % de frames lentos, p50 24 frente a 23 ms y p95 46 frente a 48 ms. S09 no añade jank. ⚠️ El emulador va limitado por la GPU del PC: las cifras absolutas no son las de un Android de gama media, que está **sin medir en dispositivo real** | — |
 | `prefers-reduced-motion` | ✅ «Quitar animaciones» del sistema llega al WebView como `reduce` (comprobado por CDP); el comportamiento está cubierto en e2e (sin vuelos, sin animaciones CSS, sin confeti) | ⚠️ solo e2e WebKit |
 
+### Directo: decisiones y hallazgos (S10)
+
+- **`src/live/`**: `conexion.ts` abre Centrifugo con la config de `/api/auth/config`, el token
+  público y un sub-token por canal `acta_${id}`. `gestor.ts` sigue los partidos cuyo detalle está en
+  la caché y que `seguirEnDirecto` da por vivos hoy, se suscribe al montarse la query y se da de baja
+  al quedar sin observadores (test de navegación: sin fugas). Con la app oculta o sin partidos que
+  seguir, el WebSocket se cierra tras una espera; al volver se reabre y se pide el detalle.
+- **Reducer puro** (`reducer.ts`): aplica `incidencia_creada`, `incidencia_eliminada`,
+  `periodo_actualizado`, `crono`, `acta_cerrada`, `acta_reabierta` y `alineacion_actualizada` al
+  detalle. Lo que el mensaje no basta para reconstruir (alineación nueva, resultado oficial al
+  cerrar, alguien fuera de la alineación) se marca para pedir el detalle, en ráfaga; sobre la
+  respuesta se vuelven a aplicar los mensajes de los 2 s previos a pedirla. `firma_guardada` y
+  `atleta_verificado` no tienen efecto.
+- **Grabaciones reales**: `npm run directo:grabar -- <carpeta> [minutos]` guarda los frames tal cual
+  y el detalle REST tras cada ráfaga; `npm run directo:fixtures -- <carpeta> <clave>=<id>` saca
+  `src/live/fixtures/`. `reducer.grabado.test.ts` reproduce dos partidos del 2026-10-31 (LOY A–VOT y
+  uno con 7 incidencias eliminadas) y comprueba que el reducer llega al mismo estado, periodo,
+  incidencias y goles que la API en cada detalle grabado.
+- **Mensajes vistos el 2026-10-31** (57 partidos, 12 h): además de los documentados llega `crono`
+  (`periodo`, `min`, `sec`, `enMarcha`) cada pocos segundos con el reloj en marcha; es el que mueve
+  el reloj del periodo. `acta_reabierta` no apareció.
+- **Listas**: `/public/partidos/marcadores` se superpone al calendario ignorando `periodo <= 0`.
+- **Web**: el WebSocket va al propio origen (`/connection/websocket`) y lo pasa Vite en desarrollo y
+  `functions/connection/[[path]].js` en Cloudflare (solo esa ruta y solo con `Upgrade: websocket`).
+- **Gol**: animación del marcador (solo `transform`/`opacity`, sin ella con movimiento reducido) y,
+  en Android, vibración con `@capacitor/haptics`.
+- **Pendiente para S11 (worker)**: el proxy de Pages cachea `/api/public/*` 120 s en el edge. En web,
+  el detalle que el directo pide tras `acta_cerrada` o una alineación nueva puede llegar con hasta
+  2 minutos de retraso (el marcador no, que lo pone el reducer). El worker debe no cachear, o cachear
+  segundos, el detalle de partidos de hoy no finalizados y `marcadores`.
+
 ### Aspecto de Android: modo `md` (tras S09)
 
 A petición del usuario («el estilo de navegación y esos botones de atrás se me asemejan a iOS»),
@@ -359,7 +390,7 @@ Cada casilla se marca cuando la v2 lo hace **igual o mejor** en Android real y e
 - [x] Jugador: cabecera compacta y estadísticas
 - [x] Pestaña de estadísticas y rankings (goleadores)
 - [ ] Navegación clasificación → equipo → partido → jugador → atrás, con back de Android y swipe iOS (pila cubierta en e2e; back de Android y swipe iOS sin validar en dispositivo)
-- [ ] Directo: marcador, incidencias y periodo en tiempo real
+- [x] Directo: marcador, incidencias y periodo en tiempo real (web y Android con partidos en juego el 2026-10-31; vibración del gol, ver S10)
 - [ ] Tema claro/oscuro, barras de sistema en Android
 - [ ] Español y euskera en todos los textos
 - [ ] Instalable como PWA en iPhone, funciona offline con datos cacheados
