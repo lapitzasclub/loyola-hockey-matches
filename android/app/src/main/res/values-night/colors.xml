@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fondo de la página en tema oscuro (barras de tema.css). -->
+    <color name="fondo_barras">#0b1113</color>
+</resources>

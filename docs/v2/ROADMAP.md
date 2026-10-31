@@ -159,10 +159,17 @@ Medido en S03 con la API real (`npm run medir:arranque`, 2026-10-30):
 - **WebView Chromium < 140** (visto en el emulador de Android 16 con WebView 133): Capacitor no
   pasa las safe areas a la web, la aparta de forma nativa y bajo las barras queda el
   `windowBackground` de Android, no la cabecera. Con el tema por defecto salía gris claro con
-  iconos blancos, ilegible. Se fija `windowBackground` al teal de marca (`styles.xml`) y, si el
-  WebView es < 140, los iconos de ambas barras van claros (`webViewApartaDeFormaNativa`). En modo
-  oscuro se nota el corte entre las barras teal y la cabecera casi negra; desaparece con WebView
-  140 o superior, que deja las barras transparentes sobre la web.
+  iconos blancos, ilegible. `windowBackground` es `fondo_barras`, el fondo de la página en claro y
+  en oscuro (`values-night`), y si el WebView es < 140 los iconos siguen al modo del sistema
+  (`SystemBarsStyle.Default`, `webViewApartaDeFormaNativa`). Solo se nota el corte si se fuerza en
+  la app un tema distinto al del sistema; con WebView 140 o superior las barras son transparentes
+  sobre la web y no hay corte.
+- **Barras fundidas, como en la v1** (S09, a petición del usuario): cabecera, tab bar, barras del
+  sistema y `theme-color` llevan el mismo fondo que la página (`--app-barra-superior/-inferior`),
+  sin la franja teal. En la PWA de iOS la barra de estado pasa de `black-translucent` (texto
+  siempre blanco, ilegible sobre marfil) a `default`; **sin validar en iPhone real** que iOS pinte
+  la barra con `theme-color`. Si no lo hace, queda blanca o negra según el sistema, casi igual al
+  fondo.
 - **Fuera el trust-all de certificados** de la v1 (`MainActivity`). La cadena de `fvpatinaje.eus`
   (Let's Encrypt, ISRG Root X1) es válida desde Android 7.1.1, y minSdk 24 cubre ese caso.
 - **Una pila por pestaña.** Las rutas de detalle cuelgan de cada pestaña

@@ -8,7 +8,7 @@
   "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
   "background_color": "#0e3a43",
-  "theme_color": "#0e3a43",
+  "theme_color": "#f6f3ec",
   "lang": "es",
   "icons": [
     {

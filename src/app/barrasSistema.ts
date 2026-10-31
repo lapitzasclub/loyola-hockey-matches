@@ -23,8 +23,9 @@ export function colorDelTema(variable: string): string | null {
 
 /**
  * Con WebView < 140 Capacitor no pasa las safe areas a la web: la aparta de
- * forma nativa y bajo las barras queda el `windowBackground` de Android (el
- * teal de `styles.xml`), no la cabecera ni la tab bar.
+ * forma nativa y bajo las barras queda el `windowBackground` de Android
+ * (`fondo_barras`, que sigue al modo claro u oscuro del sistema), no la
+ * cabecera ni la tab bar.
  */
 export function webViewApartaDeFormaNativa(userAgent: string): boolean {
   const version = /Chrome\/(\d+)/.exec(userAgent)?.[1];
@@ -44,17 +45,18 @@ const estiloSobre = (fondo: string | null) =>
  */
 export async function pintarBarrasSistema() {
   if (Capacitor.getPlatform() !== 'android') return;
+  // Debajo está `fondo_barras`, que va con el modo del sistema: Default también.
   const nativa = webViewApartaDeFormaNativa(navigator.userAgent);
   try {
     await SystemBars.setStyle({
       style: nativa
-        ? SystemBarsStyle.Dark
+        ? SystemBarsStyle.Default
         : estiloSobre(colorDelTema('--app-barra-superior')),
       bar: SystemBarType.StatusBar,
     });
     await SystemBars.setStyle({
       style: nativa
-        ? SystemBarsStyle.Dark
+        ? SystemBarsStyle.Default
         : estiloSobre(colorDelTema('--app-barra-inferior')),
       bar: SystemBarType.NavigationBar,
     });

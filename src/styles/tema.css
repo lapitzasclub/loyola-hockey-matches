@@ -2,14 +2,14 @@
  * Tema claro y oscuro. `app/tema.ts` pone body[data-theme] antes del primer
  * pintado y lo cambia en caliente. Las barras de sistema de Android y el
  * theme-color de la PWA se leen de --app-barra-superior y --app-barra-inferior:
- * deben ser hex.
+ * deben ser hex. Las dos llevan el fondo de la página, como en la v1: cabecera,
+ * contenido, tab bar y barras del sistema se funden en una sola superficie.
  */
 body[data-theme='light'] {
   color-scheme: light;
 
-  --app-barra-superior: #0e3a43;
-  --app-barra-superior-texto: #ffffff;
-  --app-barra-inferior: #ffffff;
+  --app-barra-superior: #f6f3ec;
+  --app-barra-inferior: #f6f3ec;
   --app-texto-secundario: #5c6b6e;
   --app-superficie: #ffffff;
   --app-superficie-borde: #e6e0d2;
@@ -56,9 +56,8 @@ body[data-theme='light'] {
 body[data-theme='dark'] {
   color-scheme: dark;
 
-  --app-barra-superior: #0a1b1f;
-  --app-barra-superior-texto: #ffffff;
-  --app-barra-inferior: #121212;
+  --app-barra-superior: #0b1113;
+  --app-barra-inferior: #0b1113;
   --app-texto-secundario: #9aa7aa;
   --app-superficie: #172023;
   --app-superficie-borde: #26333a;
@@ -144,23 +143,9 @@ body[data-theme='dark'] {
 body[data-theme='light'],
 body[data-theme='dark'] {
   --ion-toolbar-background: var(--app-barra-superior);
-  --ion-toolbar-color: var(--app-barra-superior-texto);
-  --ion-tab-bar-background: var(--app-barra-inferior);
-  --ion-tab-bar-color-selected: var(--ion-color-primary);
-}
-
-/* En modo ios los botones de la barra salen en color primario, que se pierde sobre la barra. */
-ion-toolbar ion-back-button,
-ion-toolbar ion-button {
-  --color: var(--app-barra-superior-texto);
-}
-
-/* Las hojas y modales llevan su propia barra, clara en tema claro. */
-ion-modal ion-toolbar {
-  --ion-toolbar-background: var(--ion-background-color);
   --ion-toolbar-color: var(--ion-text-color);
-}
-
-ion-modal ion-toolbar ion-button {
-  --color: var(--ion-color-primary);
+  --ion-toolbar-border-color: var(--app-superficie-borde);
+  --ion-tab-bar-background: var(--app-barra-inferior);
+  --ion-tab-bar-border-color: var(--app-superficie-borde);
+  --ion-tab-bar-color-selected: var(--ion-color-primary);
 }
