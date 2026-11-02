@@ -35,7 +35,7 @@ test('la clasificación destaca al Loyola y enseña la racha', async ({
   await expect(page.getByTestId('racha').first()).toBeVisible();
 });
 
-test('el detalle del equipo cambia de sección con el segmento', async ({
+test('el detalle del equipo cambia de sección con las pastillas', async ({
   page,
 }) => {
   await abrirEquipo(page);

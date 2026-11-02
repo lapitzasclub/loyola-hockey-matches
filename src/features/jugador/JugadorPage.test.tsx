@@ -34,7 +34,9 @@ describe('JugadorPage', () => {
     expect(cabecera).toHaveTextContent('Jugador');
     expect(cabecera).toHaveTextContent('Nacido en 2000');
     expect(screen.getAllByTestId('contador').length).toBeGreaterThan(0);
-    expect(screen.getByTestId('ficha-jugador')).toHaveTextContent(/G\s*11/);
+    expect(screen.getByTestId('jugador-cifras')).toHaveTextContent(
+      /11\s*Goles/,
+    );
   });
 
   it('un portero lleva contadores de portero', async () => {
@@ -42,9 +44,9 @@ describe('JugadorPage', () => {
 
     const cabecera = await screen.findByTestId('jugador-cabecera');
     expect(cabecera).toHaveTextContent('Portero');
-    const ficha = screen.getByTestId('ficha-jugador');
-    expect(ficha).toHaveTextContent(/GE\s*12/);
-    expect(ficha).toHaveTextContent(/%Par\s*75\.0%/);
+    const cifras = screen.getByTestId('jugador-cifras');
+    expect(cifras).toHaveTextContent(/12\s*Encajados/);
+    expect(cifras).toHaveTextContent(/75\.0%\s*% de paradas/);
   });
 
   it('agrupa los partidos por competición y enlaza cada uno a su detalle', async () => {

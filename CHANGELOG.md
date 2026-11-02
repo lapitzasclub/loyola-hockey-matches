@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.0.1 — 2026-11-02
+
+Pulido de interfaz tras la 2.0.0: tarjetas de partido, jornadas, ficha de jugador y pull-to-refresh.
+(`versionCode` 21.)
+
+### Novedades
+
+- Ficha de jugador rehecha: cabecera centrada, totales en cifras grandes y enlace a la ficha de su
+  equipo (se deduce de sus partidos y de los calendarios de su competición).
+- Tarjetas de partido en estilo fundido, sin fondo propio, como en la v1.
+- Próximo partido destacado con panel propio y etiqueta rellena.
+- Hoja de jornada más legible y enlaces a la ficha de cada equipo desde el detalle del partido.
+- Suscripción al calendario desde Google Calendar en el móvil: copia la URL y explica los pasos.
+- Pull-to-refresh «desgarrado» propio, con tope de recorrido, sombras cortas y vibración en Android.
+
+### Correcciones
+
+- Al soltar el pull-to-refresh con ratón, la tarjeta de debajo ya no se abre.
+- Los partidos de la clasificación se agrupan por fase y grupo con nombres legibles.
+
 ## 2.0.0 — 2026-10-31
 
 Reescritura completa de la app (React + TypeScript + Ionic + TanStack Query) sobre la API nueva de

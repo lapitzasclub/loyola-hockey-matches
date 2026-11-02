@@ -1,4 +1,3 @@
-import { IonSegment, IonSegmentButton } from '@ionic/react';
 import { calendarOutline } from 'ionicons/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { agruparPorMes, jornadaVisible, partidoVisible } from '../../domain';
 import { EstadoVacio } from '../../ui/EstadoVacio';
 import { formatoMes } from '../../ui/formato';
+import { Pastillas } from '../../ui/Pastillas';
 import { TarjetaPartido } from '../../ui/TarjetaPartido';
 import { useRutas } from '../../ui/rutas';
 import type { DatosEquipo } from './tipos';
@@ -26,17 +26,18 @@ export function PartidosEquipo({ datos }: { datos: DatosEquipo }) {
 
   return (
     <div data-testid="partidos-equipo">
-      <IonSegment
-        className="segmento segmento--filtro"
-        value={filtro}
-        onIonChange={(e) => setFiltro(e.detail.value as Filtro)}
-      >
-        {(['todos', 'jugados', 'pendientes'] as const).map((f) => (
-          <IonSegmentButton key={f} value={f} data-testid={`filtro-${f}`}>
-            {t(`equipo.filtros.${f}`)}
-          </IonSegmentButton>
-        ))}
-      </IonSegment>
+      <Pastillas
+        tipo="filtro"
+        testId="filtros-equipo"
+        etiqueta={t('equipo.filtrosAria')}
+        opciones={(['todos', 'jugados', 'pendientes'] as const).map((f) => ({
+          id: f,
+          etiqueta: t(`equipo.filtros.${f}`),
+        }))}
+        valor={filtro}
+        alCambiar={setFiltro}
+        testIdOpcion={(f) => `filtro-${f}`}
+      />
       {visibles.length === 0 ? (
         <EstadoVacio icono={calendarOutline} titulo={t('equipo.sinPartidos')} />
       ) : (

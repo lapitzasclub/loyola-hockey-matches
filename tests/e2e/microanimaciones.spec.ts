@@ -27,8 +27,6 @@ async function abrirEventos(page: Page) {
   return detalle;
 }
 
-const izquierda = async (el: Locator) => (await el.boundingBox())?.x ?? NaN;
-
 const opacidad = (el: Locator) =>
   el.evaluate((e) => Number(getComputedStyle(e).opacity));
 
@@ -41,32 +39,26 @@ async function bajar(detalle: Locator, top: number) {
     );
 }
 
-test('la pastilla del segmento sigue al gesto y acompaña al cambio por toque', async ({
+test('las pastillas marcan la sección activa y caben sin scroll horizontal', async ({
   page,
 }) => {
   const detalle = await abrirPartido(page);
-  const pastilla = detalle.locator('.segmento__pastilla');
   const resumen = detalle.getByTestId('secciones-partido-resumen');
-  const eventos = detalle.getByTestId('secciones-partido-eventos');
   const alineaciones = detalle.getByTestId('secciones-partido-alineaciones');
-  await expect.poll(() => izquierda(pastilla)).toBe(await izquierda(resumen));
 
-  // A mitad de gesto (sin imán, sin llegar a cambiar de panel) la pastilla
-  // está entre los dos botones.
-  await detalle.locator('.pestanas__fila').evaluate((fila) => {
-    (fila as HTMLElement).style.scrollSnapType = 'none';
-    fila.scrollTo({ left: fila.clientWidth * 0.4, behavior: 'instant' });
-  });
-  const desde = await izquierda(resumen);
-  const hasta = await izquierda(eventos);
-  await expect
-    .poll(() => izquierda(pastilla))
-    .toBeCloseTo(desde + (hasta - desde) * 0.4, 0);
+  await expect(resumen).toHaveAttribute('aria-selected', 'true');
+  await expect(alineaciones).toHaveAttribute('aria-selected', 'false');
+
+  // Todas las opciones se ven a la vez: la botonera no desborda.
+  const ancho = await detalle.locator('.pastillas').evaluate((el) => ({
+    contenido: el.scrollWidth,
+    caja: el.clientWidth,
+  }));
+  expect(ancho.contenido).toBeLessThanOrEqual(ancho.caja);
 
   await alineaciones.click();
-  await expect
-    .poll(() => izquierda(pastilla))
-    .toBeCloseTo(await izquierda(alineaciones), 0);
+  await expect(alineaciones).toHaveAttribute('aria-selected', 'true');
+  await expect(resumen).toHaveAttribute('aria-selected', 'false');
 });
 
 test('la cabecera del partido se pliega en la barra al bajar', async ({

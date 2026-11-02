@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryKey } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
@@ -69,4 +69,13 @@ export function useRefrescar(...vista: QueryKey[]) {
     Promise.all(
       vista.map((queryKey) => queryClient.invalidateQueries({ queryKey })),
     );
+}
+
+/** Calendarios de varias divisiones a la vez (cada uno con su caché). */
+export function useCalendarios(
+  divisiones: readonly Pick<Division, 'id' | 'competicionId'>[],
+) {
+  return useQueries({
+    queries: divisiones.map((d) => consultas.calendario(d)),
+  });
 }

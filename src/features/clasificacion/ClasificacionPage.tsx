@@ -1,4 +1,4 @@
-import { IonButton, IonSegment, IonSegmentButton } from '@ionic/react';
+import { IonButton } from '@ionic/react';
 import { listOutline, shirtOutline } from 'ionicons/icons';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,7 @@ import {
 import { EstadoError } from '../../ui/EstadoError';
 import { EstadoVacio } from '../../ui/EstadoVacio';
 import { Pagina } from '../../ui/Pagina';
+import { Pastillas } from '../../ui/Pastillas';
 import { Revelado, useEspera } from '../../ui/Revelado';
 import { useShell } from '../../ui/shell';
 import {
@@ -73,19 +74,17 @@ function Tablas({ elegido }: { elegido: EquipoCatalogo }) {
   return (
     <>
       {fases.data.length > 1 && (
-        <IonSegment
-          className="segmento"
-          scrollable
-          value={fase.id}
-          onIonChange={(e) => setFaseElegida(String(e.detail.value))}
-          data-testid="fases"
-        >
-          {fases.data.map((f) => (
-            <IonSegmentButton key={f.id} value={f.id} data-testid="fase">
-              {f.nombre}
-            </IonSegmentButton>
-          ))}
-        </IonSegment>
+        <Pastillas
+          testId="fases"
+          etiqueta={t('clasificacion.fasesAria')}
+          opciones={fases.data.map((f) => ({
+            id: f.id,
+            etiqueta: f.nombre,
+          }))}
+          valor={fase.id}
+          alCambiar={setFaseElegida}
+          testIdOpcion={() => 'fase'}
+        />
       )}
       {clasificacion.isPending ? (
         <TablaClasificacionSkeleton />

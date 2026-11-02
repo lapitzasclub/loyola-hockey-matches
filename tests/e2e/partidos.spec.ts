@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { apiDeFixtures } from './api';
+import { tirarParaRefrescar } from './gestos';
 
 test('elegir equipo enseña su calendario y se recuerda al recargar', async ({
   page,
@@ -33,15 +34,7 @@ test('el pull-to-refresh vuelve a pedir calendario y marcadores', async ({
     pedidas.filter((r) => r === '/public/partidos/marcadores').length;
   const antes = marcadores();
 
-  // El gesto táctil no es reproducible entre motores: se lanza el evento del refresher.
-  await page
-    .locator('ion-refresher')
-    .first()
-    .evaluate((el) => {
-      el.dispatchEvent(
-        new CustomEvent('ionRefresh', { detail: { complete: () => {} } }),
-      );
-    });
+  await tirarParaRefrescar(page, 'page-partidos');
   await expect.poll(marcadores).toBeGreaterThan(antes);
 });
 
@@ -153,7 +146,11 @@ test('el botón del calendario ofrece suscribirse al .ics del equipo', async ({
     .getByTestId('page-partidos')
     .getByTestId('suscribir-calendario')
     .click();
-  await page.getByRole('button', { name: 'iPhone, Mac u Outlook' }).click();
+  await page
+    .getByRole('button', {
+      name: /^(iPhone, Mac u Outlook|Otra app de calendario)$/,
+    })
+    .click();
 
   const [abierto] = await page.evaluate(
     () => (window as unknown as { abiertos: string[] }).abiertos,

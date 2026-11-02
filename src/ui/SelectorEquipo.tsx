@@ -8,7 +8,8 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { checkmarkCircle } from 'ionicons/icons';
+import { checkmarkCircle, closeOutline } from 'ionicons/icons';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { claveEquipo } from '../domain';
@@ -34,19 +35,35 @@ export function SelectorEquipo({
 }: Props) {
   const { t } = useTranslation();
   return (
-    <IonModal isOpen={abierto} onDidDismiss={alCerrar} data-testid="selector">
+    <IonModal
+      isOpen={abierto}
+      onDidDismiss={alCerrar}
+      data-testid="selector"
+      className="selector-hoja"
+      /* Hoja que deja ver la app detrás: el cambio de equipo no saca de la
+         pantalla en la que se estaba. */
+      breakpoints={[0, 0.94]}
+      initialBreakpoint={0.94}
+      handle
+    >
       <IonHeader>
         <IonToolbar>
           <IonTitle>{t('selector.titulo')}</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={alCerrar}>{t('common.cerrar')}</IonButton>
+            <IonButton onClick={alCerrar} aria-label={t('common.cerrar')}>
+              <IonIcon slot="icon-only" icon={closeOutline} aria-hidden />
+            </IonButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
       <IonContent>
         <div className="selector">
-          {grupos.map(({ categoria, equipos }) => (
-            <section key={categoria} className="selector__grupo">
+          {grupos.map(({ categoria, equipos }, i) => (
+            <section
+              key={categoria}
+              className="selector__grupo"
+              style={{ '--i': i } as CSSProperties}
+            >
               <h3 className="selector__categoria">{categoria}</h3>
               <ul>
                 {equipos.map((entrada) => {

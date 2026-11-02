@@ -1,3 +1,4 @@
+import { IonRouterLink } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 
 import { resultadoPartido } from '../../domain';
@@ -14,6 +15,7 @@ import { Escudo } from '../../ui/Escudo';
 import { formatoDia } from '../../ui/formato';
 import { InsigniaEstado } from '../../ui/InsigniaEstado';
 import { Skeleton } from '../../ui/Skeleton';
+import { useRutas } from '../../ui/rutas';
 import { transicion } from '../../ui/transiciones';
 import { etiquetaPeriodo } from './periodo';
 import { RelojPartido } from './RelojPartido';
@@ -36,6 +38,9 @@ interface DatosCabecera {
   goles: Marcador | null;
   oficial: Marcador | null;
   tanda: Marcador | null;
+  /** Para enlazar a los equipos; null en la previa (la tarjeta no la trae). */
+  divisionId: string | null;
+  competicionId: string | null;
 }
 
 function deDetalle(partido: PartidoDetalle): DatosCabecera {
@@ -60,6 +65,8 @@ function deDetalle(partido: PartidoDetalle): DatosCabecera {
     goles: datos?.goles ?? null,
     oficial,
     tanda: datos?.tanda?.marcador ?? null,
+    divisionId: partido.divisionId,
+    competicionId: partido.competicionId,
   };
 }
 
@@ -67,13 +74,17 @@ function Equipo({
   equipo,
   partidoId,
   lado,
+  href,
 }: {
   equipo: EquipoDominio;
   partidoId: string;
   lado: 'local' | 'visitante';
+  /** Ficha del equipo; sin ella no es enlace. */
+  href: string | null;
 }) {
-  return (
-    <div className="partido-cabecera__equipo">
+  const { t } = useTranslation();
+  const contenido = (
+    <>
       <Escudo
         logoUrl={equipo.logoUrl}
         nombre={equipo.nombre}
@@ -87,7 +98,19 @@ function Equipo({
       >
         {equipo.nombre}
       </span>
-    </div>
+    </>
+  );
+  return href ? (
+    <IonRouterLink
+      routerLink={href}
+      className="partido-cabecera__enlace"
+      aria-label={t('partido.verEquipo', { equipo: equipo.nombre })}
+      data-testid={`partido-equipo-${lado}`}
+    >
+      <span className="partido-cabecera__equipo">{contenido}</span>
+    </IonRouterLink>
+  ) : (
+    <div className="partido-cabecera__equipo">{contenido}</div>
   );
 }
 
@@ -148,6 +171,15 @@ function Cabecera({
   celebrar?: boolean;
 }) {
   const { t, i18n } = useTranslation();
+  const rutas = useRutas();
+  const enlace = (equipo: EquipoDominio) =>
+    datos.competicionId && datos.divisionId && equipo.inscripcionId
+      ? rutas.equipo({
+          competicionId: datos.competicionId,
+          divisionId: datos.divisionId,
+          inscripcionId: equipo.inscripcionId,
+        })
+      : null;
   return (
     <header className="partido-cabecera" data-testid={testId}>
       <div className="partido-cabecera__meta" data-plegable>
@@ -167,12 +199,18 @@ function Cabecera({
         </span>
       </div>
       <div className="partido-cabecera__cruce">
-        <Equipo equipo={datos.local} partidoId={datos.id} lado="local" />
+        <Equipo
+          equipo={datos.local}
+          partidoId={datos.id}
+          lado="local"
+          href={enlace(datos.local)}
+        />
         <Centro datos={datos} />
         <Equipo
           equipo={datos.visitante}
           partidoId={datos.id}
           lado="visitante"
+          href={enlace(datos.visitante)}
         />
         {celebrar && <Confeti />}
       </div>
@@ -230,6 +268,8 @@ export function CabeceraPartidoPrevia({
         goles: visible.marcador,
         oficial: visible.oficial,
         tanda: null,
+        divisionId: null,
+        competicionId: null,
       }}
     />
   );

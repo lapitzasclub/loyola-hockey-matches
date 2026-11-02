@@ -1,4 +1,3 @@
-import { IonSegment, IonSegmentButton } from '@ionic/react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -26,6 +25,7 @@ import {
 import { Consulta } from '../../ui/Consulta';
 import { Escudo } from '../../ui/Escudo';
 import { Pagina } from '../../ui/Pagina';
+import { Pastillas } from '../../ui/Pastillas';
 import type { ParamsEquipo } from '../../ui/rutas';
 import { Skeleton } from '../../ui/Skeleton';
 import { SuscribirCalendario } from '../../ui/SuscribirCalendario';
@@ -193,23 +193,17 @@ export function EquipoPage() {
                   {datos.equipo.nombre}
                 </h1>
               </header>
-              <IonSegment
-                className="segmento"
-                scrollable
-                value={seccion}
-                onIonChange={(e) => setSeccion(e.detail.value as Seccion)}
-                data-testid="secciones-equipo"
-              >
-                {SECCIONES.map((s) => (
-                  <IonSegmentButton
-                    key={s}
-                    value={s}
-                    data-testid={`seccion-${s}`}
-                  >
-                    {t(`equipo.secciones.${s}`)}
-                  </IonSegmentButton>
-                ))}
-              </IonSegment>
+              <Pastillas
+                testId="secciones-equipo"
+                etiqueta={t('equipo.seccionesAria')}
+                opciones={SECCIONES.map((s) => ({
+                  id: s,
+                  etiqueta: t(`equipo.secciones.${s}`),
+                }))}
+                valor={seccion}
+                alCambiar={setSeccion}
+                testIdOpcion={(s) => `seccion-${s}`}
+              />
               {contenido(datos)}
             </>
           ) : (

@@ -11,6 +11,7 @@ export * from './equipo';
 export * from './estado';
 export * from './incidencia';
 export * from './jugador';
+export * from './equipoJugador';
 export * from './marcador';
 export * from './partido';
 export * from './periodo';

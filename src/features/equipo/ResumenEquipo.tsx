@@ -98,13 +98,13 @@ export function ResumenEquipo({ datos, fila, racha }: Props) {
       {proximo && (
         <section className="seccion">
           <h2 className="seccion__titulo">{t('equipo.proximoPartido')}</h2>
-          {tarjeta(proximo, true)}
+          <div className="lista-partidos">{tarjeta(proximo, true)}</div>
         </section>
       )}
       {ultimo && (
         <section className="seccion">
           <h2 className="seccion__titulo">{t('equipo.ultimoPartido')}</h2>
-          {tarjeta(ultimo)}
+          <div className="lista-partidos">{tarjeta(ultimo)}</div>
         </section>
       )}
     </div>

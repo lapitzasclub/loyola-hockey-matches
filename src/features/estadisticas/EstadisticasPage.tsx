@@ -1,4 +1,4 @@
-import { IonButton, IonSegment, IonSegmentButton } from '@ionic/react';
+import { IonButton } from '@ionic/react';
 import { shirtOutline, statsChartOutline } from 'ionicons/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,7 @@ import {
 import { EstadoError } from '../../ui/EstadoError';
 import { EstadoVacio } from '../../ui/EstadoVacio';
 import { Pagina } from '../../ui/Pagina';
+import { Pastillas } from '../../ui/Pastillas';
 import { Revelado, useEspera } from '../../ui/Revelado';
 import { useShell } from '../../ui/shell';
 import { Skeleton } from '../../ui/Skeleton';
@@ -105,19 +106,17 @@ function Rankings({ elegido }: { elegido: EquipoCatalogo }) {
   return (
     <Revelado espera={espera} saliente={<RankingsSkeleton />}>
       <Lideres jugadores={jugadores} />
-      <IonSegment
-        className="segmento"
-        scrollable
-        value={categoria}
-        onIonChange={(e) => setCategoria(e.detail.value as Categoria)}
-        data-testid="categorias"
-      >
-        {CATEGORIAS.map((c) => (
-          <IonSegmentButton key={c} value={c} data-testid={`categoria-${c}`}>
-            {t(`estadisticas.categorias.${c}`)}
-          </IonSegmentButton>
-        ))}
-      </IonSegment>
+      <Pastillas
+        testId="categorias"
+        etiqueta={t('estadisticas.categoriasAria')}
+        opciones={CATEGORIAS.map((c) => ({
+          id: c,
+          etiqueta: t(`estadisticas.categorias.${c}`),
+        }))}
+        valor={categoria}
+        alCambiar={setCategoria}
+        testIdOpcion={(c) => `categoria-${c}`}
+      />
       {panel()}
     </Revelado>
   );

@@ -1,16 +1,8 @@
-import { IonSegment, IonSegmentButton } from '@ionic/react';
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { movimientoPermitido } from './movimiento';
-import { pastillaEn } from './pastilla';
-import type { Tramo } from './pastilla';
+import { Pastillas } from './Pastillas';
 
 export interface Pestana<Id extends string> {
   id: Id;
@@ -22,31 +14,31 @@ interface Props<Id extends string> {
   pestanas: readonly Pestana<Id>[];
   valor: Id;
   alCambiar: (id: Id) => void;
+  /** Etiqueta accesible del grupo de pastillas. */
+  etiqueta: string;
   testId: string;
 }
 
 /**
- * Pestañas deslizables: un segmento de Ionic arriba y los paneles en una fila
- * con `scroll-snap`, así el gesto lo resuelve el navegador. Todos los paneles
- * están montados; los inactivos se recortan a la altura del activo para que la
- * página no mida lo que el más alto. La pastilla del segmento es propia y
- * sigue al desplazamiento de los paneles también a mitad de gesto (la de
- * Ionic solo salta al cambiar de valor). Cada `data-testid` sale de `testId`:
- * `{testId}`, `{testId}-{id}` (botón) y `{testId}-panel-{id}`.
+ * Secciones con pastillas (como en la v1) y paneles deslizables: las opciones
+ * se reparten en varias líneas si no caben, así que ninguna queda cortada, y
+ * los paneles siguen en una fila con `scroll-snap` para poder cambiar de
+ * sección con el gesto. Todos los paneles están montados; los inactivos se
+ * recortan a la altura del activo para que la página no mida lo que el más
+ * alto. Cada `data-testid` sale de `testId`: `{testId}`, `{testId}-{id}`
+ * (botón) y `{testId}-panel-{id}`.
  */
 export function Pestanas<Id extends string>({
   pestanas,
   valor,
   alCambiar,
+  etiqueta,
   testId,
 }: Props<Id>) {
   const fila = useRef<HTMLDivElement>(null);
   const activo = useRef<HTMLDivElement>(null);
-  const segmento = useRef<HTMLIonSegmentElement>(null);
-  const pastilla = useRef<HTMLDivElement>(null);
-  const tramos = useRef<Tramo[]>([]);
   const [alto, setAlto] = useState<number | null>(null);
-  // Mientras el desplazamiento lo causa el segmento, no se lee como gesto.
+  // Mientras el desplazamiento lo causa una pastilla, no se lee como gesto.
   const guiado = useRef(false);
   const indice = Math.max(
     0,
@@ -63,39 +55,6 @@ export function Pestanas<Id extends string>({
     return () => observador.disconnect();
   }, [valor]);
 
-  const colocarPastilla = useCallback(() => {
-    const el = fila.current;
-    const base = tramos.current[0];
-    if (!el || !pastilla.current || !base || el.clientWidth === 0) return;
-    const hueco = pastillaEn(tramos.current, el.scrollLeft / el.clientWidth);
-    if (!hueco) return;
-    // Con botones de igual ancho la escala es 1 y solo se traslada.
-    pastilla.current.style.transform = `translateX(${hueco.x}px) scaleX(${hueco.ancho / base.ancho})`;
-  }, []);
-
-  useLayoutEffect(() => {
-    const seg = segmento.current;
-    if (!seg || typeof ResizeObserver === 'undefined') return;
-    const botones = [...seg.querySelectorAll('ion-segment-button')];
-    const medir = () => {
-      const caja = seg.getBoundingClientRect();
-      tramos.current = botones.map((b) => {
-        const r = b.getBoundingClientRect();
-        return { x: r.left - caja.left + seg.scrollLeft, ancho: r.width };
-      });
-      const base = tramos.current[0];
-      if (pastilla.current && base) {
-        pastilla.current.style.width = `${base.ancho}px`;
-      }
-      colocarPastilla();
-    };
-    medir();
-    // Se vuelve a medir cuando Ionic hidrata los botones y al cambiar de idioma.
-    const observador = new ResizeObserver(medir);
-    [seg, ...botones].forEach((el) => observador.observe(el));
-    return () => observador.disconnect();
-  }, [pestanas.length, colocarPastilla]);
-
   useEffect(() => {
     const el = fila.current;
     if (!el || el.clientWidth === 0) return;
@@ -110,10 +69,9 @@ export function Pestanas<Id extends string>({
     });
   }, [indice]);
 
-  const alDeslizar = useCallback(() => {
+  const alDeslizar = () => {
     const el = fila.current;
     if (!el || el.clientWidth === 0) return;
-    colocarPastilla();
     const cerca = Math.round(el.scrollLeft / el.clientWidth);
     if (guiado.current) {
       if (cerca === indice) guiado.current = false;
@@ -121,32 +79,17 @@ export function Pestanas<Id extends string>({
     }
     const pestana = pestanas[cerca];
     if (pestana && pestana.id !== valor) alCambiar(pestana.id);
-  }, [indice, pestanas, valor, alCambiar, colocarPastilla]);
+  };
 
   return (
     <div data-testid={testId}>
-      <IonSegment
-        ref={segmento}
-        className="segmento segmento--deslizante"
-        value={valor}
-        onIonChange={(e) => {
-          const id = pestanas.find((p) => p.id === e.detail.value)?.id;
-          if (id && id !== valor) alCambiar(id);
-        }}
-      >
-        <div ref={pastilla} className="segmento__pastilla" aria-hidden>
-          <span />
-        </div>
-        {pestanas.map((p) => (
-          <IonSegmentButton
-            key={p.id}
-            value={p.id}
-            data-testid={`${testId}-${p.id}`}
-          >
-            {p.etiqueta}
-          </IonSegmentButton>
-        ))}
-      </IonSegment>
+      <Pastillas
+        opciones={pestanas}
+        valor={valor}
+        alCambiar={alCambiar}
+        etiqueta={etiqueta}
+        testIdOpcion={(id) => `${testId}-${id}`}
+      />
       <div ref={fila} className="pestanas__fila" onScroll={alDeslizar}>
         {pestanas.map((p) => {
           const esActivo = p.id === valor;

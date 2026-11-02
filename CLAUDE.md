@@ -77,11 +77,9 @@ Cada carpeta de `src/` tiene un README corto con su responsabilidad.
 - Prettier manda en el formato (`npm run format`); los `.md` no se formatean.
 - No versionados: `dist/`, `.wrangler/`, `playwright-report/`, `test-results/`, `tmp_*.js`.
 
-## Protocolo de roadmap (sesiones con Claude Code)
+## Sesiones del roadmap
 
-- El hook `SessionStart` (`.claude/hooks/roadmap.mjs`, cableado en `.claude/settings.json`) muestra la sesión actual: modelo, esfuerzo y prompt inicial. Antes de pegar el prompt: `/model` y `/effort` según indique.
-- Al empezar: `node .claude/hooks/roadmap.mjs start SXX`. Al cumplir los criterios de salida: `node .claude/hooks/roadmap.mjs done SXX`.
-- Tras marcar una sesión como hecha, el hook `Stop` avisa una vez de la siguiente; conviene abrir sesión nueva (`/clear`).
-- `node .claude/hooks/roadmap.mjs status` muestra la tabla y `next` el prompt de la siguiente.
+- Las sesiones (modelo, esfuerzo y prompt inicial) están en `docs/v2/roadmap.json`; el plan en `docs/v2/ROADMAP.md`.
+- Antes de pegar el prompt: `/model` y `/effort` según indique la sesión.
 - Si una sesión crece demasiado, se parte añadiendo `SXXb` en `roadmap.json`.
 - No marcar una sesión como hecha con criterios de salida sin verificar.

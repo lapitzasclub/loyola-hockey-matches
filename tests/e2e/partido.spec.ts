@@ -5,7 +5,7 @@ import { apiDeFixtures } from './api';
 /** Partido de la muestra (Santutxu – Burgos, Liga Norte). */
 const PARTIDO = '6636af38-a791-4002-ab03-402a765a7d7f';
 
-test('el detalle del partido cambia de sección con el segmento y con el gesto', async ({
+test('el detalle del partido cambia de sección con las pastillas y con el gesto', async ({
   page,
 }) => {
   await apiDeFixtures(page);

@@ -22,7 +22,7 @@ async function abrirEstadisticas(page: Page) {
   await expect(page.getByTestId('lideres')).toBeVisible();
 }
 
-test('las estadísticas cambian de ranking con el segmento', async ({
+test('las estadísticas cambian de ranking con las pastillas', async ({
   page,
 }) => {
   await abrirEstadisticas(page);

@@ -5,17 +5,15 @@ import {
   IonHeader,
   IonMenuButton,
   IonPage,
-  IonRefresher,
-  IonRefresherContent,
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import type { RefresherEventDetail, ScrollDetail } from '@ionic/react';
-import { chevronDown } from 'ionicons/icons';
+import type { ScrollDetail } from '@ionic/react';
 import { useRef } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Desgarro } from './Desgarro';
 import { movimientoPermitido } from './movimiento';
 import { modoIonic } from './plataforma';
 import { useRutas } from './rutas';
@@ -97,10 +95,6 @@ export function Pagina({
   const { t } = useTranslation();
   const { raiz } = useRutas();
 
-  const refrescar = (e: CustomEvent<RefresherEventDetail>) => {
-    void alRefrescar?.().finally(() => void e.detail.complete());
-  };
-
   const pliegue = useRef(0);
   // El avance (0–1) se escribe solo en los elementos `data-plegable` y no en
   // la página: una variable heredada en la raíz recalcularía todo el árbol en
@@ -160,34 +154,7 @@ export function Pagina({
         </IonToolbar>
       </IonHeader>
       <IonContent scrollEvents={!!compacta} onIonScroll={plegar}>
-        {alRefrescar && (
-          /* Con un icono propio Ionic usa el refresher clásico también en md: el
-              contenido baja y deja ver el hueco «desgarrado» de detrás, como en
-              la v1. «Suelta…» no tiene texto propio en Ionic: lo pinta el CSS. */
-          <IonRefresher
-            slot="fixed"
-            className="desgarro"
-            /* pullMin es lo que baja el contenido mientras actualiza: debe
-                dejar ver entero el icono y el texto. Por defecto, pullMax
-                (pullMin + 60) dispara el refresco solo al pasar de ahí,
-                aunque el dedo siga en pantalla. */
-            pullMin={84}
-            pullMax={1000}
-            onIonRefresh={refrescar}
-            style={
-              {
-                '--texto-soltar': JSON.stringify(t('common.refresco.soltar')),
-              } as CSSProperties
-            }
-          >
-            <IonRefresherContent
-              pullingIcon={chevronDown}
-              pullingText={t('common.refresco.tirar')}
-              refreshingSpinner="crescent"
-              refreshingText={t('common.refresco.actualizando')}
-            />
-          </IonRefresher>
-        )}
+        {alRefrescar && <Desgarro alRefrescar={alRefrescar} />}
         {children}
       </IonContent>
     </IonPage>

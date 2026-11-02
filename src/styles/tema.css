@@ -71,7 +71,6 @@ body[data-theme='light'] {
     #a77d68 100%
   );
   --app-desgarro-texto: #fff6ef;
-  --app-desgarro-pastilla: transparent;
   --app-desgarro-sombra: rgba(59, 33, 24, 0.45);
 }
 
@@ -115,7 +114,6 @@ body[data-theme='dark'] {
     #162733 100%
   );
   --app-desgarro-texto: #7fdcec;
-  --app-desgarro-pastilla: rgba(0, 0, 0, 0.18);
   --app-desgarro-sombra: rgba(0, 0, 0, 0.55);
 
   --app-menu-fondo: #151515;

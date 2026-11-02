@@ -55,9 +55,6 @@ captures/
 # Superpowers subagent-driven-development scratch workspace
 .superpowers/
 
-# Estado local del guardarraíl del roadmap v2
-.claude/roadmap-state.json
-
 # Playwright
 playwright-report/
 test-results/

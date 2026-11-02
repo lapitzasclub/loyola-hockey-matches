@@ -1,6 +1,6 @@
 {
   "name": "loyola-hockey-matches",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "type": "module",
   "description": "Loyola Hockey Matches v2: partidos, clasificación y directo de los equipos del Loyola (PWA + Android).",

@@ -68,6 +68,7 @@ export function PartidoPage() {
             <Revelado espera={espera}>
               <Pestanas
                 testId="secciones-partido"
+                etiqueta={t('partido.seccionesAria')}
                 valor={seccion}
                 alCambiar={setSeccion}
                 pestanas={[

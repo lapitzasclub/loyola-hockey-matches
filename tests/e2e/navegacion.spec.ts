@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 import { apiDeFixtures } from './api';
+import { tirarParaRefrescar } from './gestos';
 
 /** Partido de la muestra (Santutxu – Burgos, Liga Norte). */
 const PARTIDO = '6636af38-a791-4002-ab03-402a765a7d7f';
@@ -113,18 +114,6 @@ test('el pull-to-refresh vuelve a pedir los datos de la vista', async ({
   const agenda = () => pedidas.filter((r) => r === '/public/agenda').length;
   const antes = agenda();
 
-  // El gesto lo resuelve Ionic; aquí se dispara el evento que emite al soltar.
-  const completado = page.evaluate(
-    () =>
-      new Promise<void>((resolver) => {
-        const refresher = document.querySelector(
-          '[data-testid=page-partidos] ion-refresher',
-        );
-        refresher?.dispatchEvent(
-          new CustomEvent('ionRefresh', { detail: { complete: resolver } }),
-        );
-      }),
-  );
-  await completado;
-  expect(agenda()).toBe(antes + 1);
+  await tirarParaRefrescar(page, 'page-partidos');
+  await expect.poll(agenda).toBe(antes + 1);
 });

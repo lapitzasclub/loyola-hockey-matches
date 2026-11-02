@@ -117,3 +117,14 @@ export function filaDeEquipo(
 export function faseInicial(fases: readonly Fase[]): Fase | null {
   return fases.find((f) => f.formato === 'liga') ?? fases[0] ?? null;
 }
+
+/**
+ * Nombre de grupo para mostrar. La federación los escribe en minúsculas y con
+ * el nombre de la competición delante («liga escolar alevín r -clasificación
+ * general»): se queda la parte del grupo, con mayúscula inicial.
+ */
+export function nombreGrupo(nombre: string): string {
+  const partes = nombre.split(/\s+-\s*|\s*-\s+/);
+  const grupo = (partes.at(-1) ?? '').trim() || nombre.trim();
+  return grupo.charAt(0).toLocaleUpperCase('es') + grupo.slice(1);
+}

@@ -176,36 +176,68 @@
 .lista-partidos {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   padding: 0 12px;
 }
 
+/*
+ * Estilo fundido, como la v1: el cruce va sobre el fondo de la página, sin
+ * caja propia. Solo la franja de la fecha lleva un tostado suave y las
+ * tarjetas se separan con un filete. El próximo partido se marca con una
+ * barra dorada a la izquierda y la franja en dorado.
+ */
 .tarjeta {
+  position: relative;
   display: block;
   box-sizing: border-box;
   min-height: 132px;
-  padding: 12px 14px;
-  border: 1px solid var(--app-superficie-borde);
-  border-radius: 16px;
-  background: var(--app-superficie);
-  box-shadow: var(--app-sombra);
+  padding: 10px 0 2px;
+  border: 0;
+  background: transparent;
   color: var(--ion-text-color);
   text-decoration: none;
 }
 
+/* Filete entre tarjetas; en la lista de partidos van envueltas en un div. */
+.lista-partidos > * + * {
+  border-top: 1px solid
+    color-mix(in srgb, var(--app-superficie-borde) 70%, transparent);
+}
+
 .tarjeta--enlace:active {
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
-.tarjeta--en_juego {
-  border-color: var(--app-vivo);
+.tarjeta--en_juego::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: -8px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--app-vivo);
 }
 
+/*
+ * El próximo partido es lo primero que se busca al abrir la lista: va en un
+ * panel dorado con borde, separado de las tarjetas vecinas.
+ */
 .tarjeta--proximo {
-  border-color: var(--app-proximo);
-  box-shadow:
-    0 0 0 1px var(--app-proximo),
-    var(--app-sombra);
+  margin: 8px -4px;
+  padding: 6px 6px 2px;
+  border-radius: 16px;
+  background: color-mix(
+    in srgb,
+    var(--app-proximo-fondo) 70%,
+    var(--ion-background-color)
+  );
+  box-shadow: inset 0 0 0 1.5px
+    color-mix(in srgb, var(--app-proximo) 55%, transparent);
+}
+
+.lista-partidos > :is(.tarjeta--proximo, :has(.tarjeta--proximo)),
+.lista-partidos > :is(.tarjeta--proximo, :has(.tarjeta--proximo)) + * {
+  border-top-color: transparent;
 }
 
 .tarjeta__cabecera {
@@ -213,8 +245,24 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 22px;
-  margin-bottom: 10px;
+  min-height: 24px;
+  padding: 6px 8px 6px 12px;
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--app-resalte) 70%,
+    var(--ion-background-color)
+  );
+}
+
+.tarjeta--proximo .tarjeta__cabecera {
+  background: var(--app-proximo-fondo);
+}
+
+/* En la tarjeta, la pastilla «Próximo» va rellena para que se vea de lejos. */
+.tarjeta--proximo .insignia--proximo {
+  background: var(--app-proximo);
+  color: var(--ion-background-color);
 }
 
 .tarjeta__fecha {
@@ -238,6 +286,7 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: start;
   gap: 8px;
+  padding: 14px 4px 10px;
 }
 
 .tarjeta__lado {
@@ -312,9 +361,7 @@
 .tarjeta__pie {
   display: flex;
   justify-content: center;
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid var(--app-superficie-borde);
+  padding: 0 14px 10px;
   color: var(--app-texto-secundario);
   font-size: 0.72rem;
   white-space: nowrap;
@@ -403,13 +450,65 @@ button.cabecera-equipo:active {
   white-space: nowrap;
 }
 
-/* Selector de equipo */
+/* Selector de equipo: hoja inferior con la superficie de las tarjetas. */
+.selector-hoja,
+.hoja-jornada {
+  --border-radius: 24px 24px 0 0;
+  --backdrop-opacity: 0.38;
+}
+
+.selector-hoja::part(backdrop),
+.hoja-jornada::part(backdrop) {
+  backdrop-filter: blur(3px);
+}
+
+.selector-hoja::part(content),
+.hoja-jornada::part(content) {
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -12px 40px rgba(14, 58, 67, 0.18);
+}
+
+.selector-hoja ion-toolbar,
+.hoja-jornada ion-toolbar {
+  --background: transparent;
+  --border-width: 0;
+  padding-inline: 4px;
+}
+
+.selector-hoja ion-title,
+.hoja-jornada ion-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.selector-hoja ion-content,
+.hoja-jornada ion-content {
+  --background: var(--ion-background-color);
+}
+
 .selector {
-  padding: 4px 12px 24px;
+  padding: 0 12px calc(28px + env(safe-area-inset-bottom));
+}
+
+.selector__grupo {
+  animation: selector-entra 380ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+@keyframes selector-entra {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
 
 .selector__categoria {
-  margin: 16px 4px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 14px 4px 8px;
+  background: var(--ion-background-color);
   color: var(--app-texto-secundario);
   font-size: 0.75rem;
   font-weight: 700;
@@ -420,12 +519,12 @@ button.cabecera-equipo:active {
 .selector ul {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* Filas planas separadas por un hilo fino, como el resto de listas. */
 .selector__equipo {
   display: flex;
   align-items: center;
@@ -433,22 +532,31 @@ button.cabecera-equipo:active {
   box-sizing: border-box;
   width: 100%;
   min-height: 60px;
-  padding: 10px 14px;
-  border: 1px solid var(--app-superficie-borde);
-  border-radius: 14px;
-  background: var(--app-superficie);
+  padding: 10px 6px;
+  border: 0;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--app-superficie-borde) 60%, transparent);
+  border-radius: 0;
+  background: transparent;
   color: var(--ion-text-color);
   font: inherit;
   text-align: left;
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.selector li:last-child .selector__equipo {
+  border-bottom: 0;
 }
 
 .selector__equipo:active {
-  opacity: 0.75;
+  background: var(--app-resalte);
 }
 
 .selector__equipo--activo {
-  border-color: var(--ion-color-primary);
-  box-shadow: 0 0 0 1px var(--ion-color-primary);
+  background: color-mix(in srgb, var(--ion-color-primary) 7%, transparent);
+  box-shadow: inset 3px 0 0 var(--ion-color-primary);
 }
 
 .selector__textos {
@@ -460,7 +568,7 @@ button.cabecera-equipo:active {
 }
 
 .selector__nombre {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .selector__competicion {
@@ -471,6 +579,12 @@ button.cabecera-equipo:active {
 .selector__marca {
   color: var(--ion-color-primary);
   font-size: 1.4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selector__grupo {
+    animation: none;
+  }
 }
 
 /* Estado vacío o de error */
@@ -507,54 +621,100 @@ button.cabecera-equipo:active {
   font-size: 2rem;
 }
 
-/* Pantallas de clasificación y equipo: sin paneles ni bordes, solo separadores finos */
-.segmento {
-  /* El segmento de Ionic trae `width: 100%`: con margen se saldría 24px. */
-  width: auto;
-  margin: 8px 12px;
+/*
+ * Pastillas de secciones y filtros (ui/Pastillas.tsx), como en la v1: todas
+ * visibles, repartidas en varias líneas si no caben y sin scroll horizontal.
+ */
+.pastillas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 12px 12px;
+}
+
+.pastillas__boton {
+  flex: 1 1 30%;
+  min-width: 0;
+  min-height: 38px;
+  padding: 7px 9px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--ion-color-primary) 18%,
+      var(--app-superficie-borde)
+    );
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--ion-color-primary) 7%,
+    var(--app-superficie)
+  );
+  color: var(--ion-color-primary);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.pastillas__boton:active {
+  transform: scale(0.97);
+}
+
+.pastillas__boton:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
+
+.pastillas__boton--activo {
+  border-color: var(--ion-color-primary);
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  box-shadow: 0 4px 12px
+    color-mix(in srgb, var(--ion-color-primary) 26%, transparent);
+  animation: pastilla-marca 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes pastilla-marca {
+  from {
+    transform: scale(0.94);
+  }
 }
 
 /*
- * Si las opciones no caben, el borde derecho se difumina para que se vea que
- * hay más, y el hueco final deja la última entera al llegar al fondo.
+ * Subpestañas (filtros): un escalón por debajo de las secciones. Chips más
+ * pequeños y sueltos, sin relleno sólido, para que no compitan con la pastilla
+ * de sección activa.
  */
-.segmento.segment-scrollable {
-  -webkit-mask-image: linear-gradient(to left, transparent, #000 28px);
-  mask-image: linear-gradient(to left, transparent, #000 28px);
+.pastillas--filtro {
+  gap: 8px;
+  margin: 2px 12px 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--app-superficie-borde) 55%, transparent);
 }
 
-.segmento.segment-scrollable ion-segment-button:last-of-type {
-  margin-inline-end: 28px;
+.pastillas--filtro .pastillas__boton {
+  flex: 0 1 auto;
+  min-height: 30px;
+  padding: 4px 12px;
+  border-color: transparent;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
-/* La pastilla propia sustituye al indicador de Ionic (ver `ui/Pestanas.tsx`) */
-.segmento--deslizante ion-segment-button {
-  --indicator-color: transparent;
-  --indicator-box-shadow: none;
-}
-
-.segmento__pastilla {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  z-index: -1;
-  box-sizing: border-box;
-  padding: 2px;
-  transform-origin: 0 0;
-  pointer-events: none;
-  will-change: transform;
-}
-
-.segmento__pastilla > span {
-  display: block;
-  height: 100%;
-  border-radius: 7px;
-  background: var(
-    --ion-color-step-350,
-    var(--ion-background-color-step-350, var(--ion-background-color, #fff))
-  );
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.16);
+.pastillas--filtro .pastillas__boton--activo {
+  border-color: color-mix(in srgb, var(--ion-color-primary) 22%, transparent);
+  background: color-mix(in srgb, var(--ion-color-primary) 12%, transparent);
+  color: var(--ion-color-primary);
+  box-shadow: none;
+  animation: none;
 }
 
 .nota {
@@ -995,6 +1155,68 @@ button.cabecera-equipo:active {
   scroll-snap-stop: always;
 }
 
+/*
+ * Bottom nav: la pestaña activa lleva la barra superior de la v1, el icono a
+ * plena opacidad y la etiqueta en negrita; las demás quedan atenuadas.
+ */
+ion-tab-button {
+  --background: transparent;
+  --color: var(--app-texto-secundario);
+  --color-selected: var(--ion-color-primary);
+  position: relative;
+}
+
+ion-tab-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 36px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--ion-color-primary);
+  opacity: 0;
+  transform: translateX(-50%) scaleX(0.25);
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms ease;
+}
+
+ion-tab-button.tab-selected::before {
+  opacity: 1;
+  transform: translateX(-50%) scaleX(1);
+}
+
+ion-tab-button ion-icon {
+  opacity: 0.55;
+  transition:
+    opacity 180ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+ion-tab-button.tab-selected ion-icon {
+  opacity: 1;
+  transform: translateY(-1px);
+  filter: drop-shadow(
+    0 0 6px color-mix(in srgb, var(--ion-color-primary) 45%, transparent)
+  );
+}
+
+ion-tab-button ion-label {
+  font-weight: 600;
+}
+
+ion-tab-button.tab-selected ion-label {
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ion-tab-button::before,
+  ion-tab-button ion-icon {
+    transition: none;
+  }
+}
+
 /* Detalle de partido */
 .partido-cabecera {
   padding: 12px 16px 8px;
@@ -1060,6 +1282,17 @@ button.cabecera-equipo:active {
   gap: 8px;
   min-width: 0;
   text-align: center;
+}
+
+.partido-cabecera__enlace {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.partido-cabecera__enlace:active {
+  opacity: 0.7;
 }
 
 .partido-cabecera__nombre {
@@ -1412,21 +1645,114 @@ button.cabecera-equipo:active {
 /* Ficha de jugador */
 .jugador-cabecera {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 16px;
+  gap: 6px;
+  padding: 20px 16px 8px;
+  text-align: center;
 }
 
 .jugador-cabecera__nombre {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
+  margin: 6px 0 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
 }
 
 .jugador-cabecera__datos {
-  margin: 2px 0 0;
+  margin: 0;
   color: var(--app-texto-secundario);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+}
+
+/* Equipo del jugador: pastilla con escudo que lleva a su ficha */
+.jugador-equipo {
+  max-width: 100%;
+  margin-top: 8px;
+  color: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.jugador-equipo__interior {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 6px 12px 6px 8px;
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--app-resalte) 70%,
+    var(--ion-background-color)
+  );
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.jugador-equipo--enlace:active {
+  opacity: 0.7;
+}
+
+.jugador-equipo__nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jugador-equipo ion-icon {
+  flex: none;
+  color: var(--app-texto-secundario);
+  font-size: 0.95rem;
+}
+
+/* Cifras de la temporada */
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 4px 16px 8px;
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--app-resalte) 70%,
+    var(--ion-background-color)
+  );
+  text-align: center;
+}
+
+.cifra__valor {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.cifra__etiqueta {
+  color: var(--app-texto-secundario);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+/* Competiciones: el acordeón sin franja blanca, fundido con el fondo */
+.jugador-competiciones ion-item {
+  --background: transparent;
+  --background-activated: var(--app-resalte);
+}
+
+.jugador-competiciones ion-item h3 {
+  font-weight: 700;
 }
 
 .dato-chips {
@@ -1448,22 +1774,50 @@ button.cabecera-equipo:active {
 .jugador-partido {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 8px 0;
+  gap: 4px;
+  padding: 10px 0 6px;
 }
 
 .jugador-partido__fecha {
   padding: 0 16px;
   color: var(--app-texto-secundario);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .jugador-partido__cruce {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  font-size: 0.92rem;
+}
+
+.jugador-partido__lado {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 16px;
-  font-size: 0.9rem;
+  gap: 6px;
+  min-width: 0;
+  color: var(--app-texto-secundario);
+}
+
+.jugador-partido__lado:first-child {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.jugador-partido__lado--suyo {
+  color: var(--ion-text-color);
+  font-weight: 700;
+}
+
+.jugador-partido__marcador {
+  font-variant-numeric: tabular-nums;
+}
+
+.jugador-partido .dato-chips {
+  justify-content: center;
+  padding-top: 2px;
 }
 
 /* Gráfica de partidos: SVG propio; solo se pinta, no se anima */
@@ -1592,113 +1946,103 @@ ion-header.header-md {
 
 /* Sin las mayúsculas de Material 2: en mayúsculas y con su ancho mínimo,
    cuatro pestañas no caben. */
-.md ion-segment-button,
 .md ion-button {
   letter-spacing: normal;
   text-transform: none;
 }
 
-.md .segmento ion-segment-button {
-  min-width: 0;
-}
-
-/* La pastilla pasa a ser el subrayado de las pestañas de Android. */
-.md .segmento__pastilla {
-  display: flex;
-  align-items: flex-end;
-  padding: 0;
-}
-
-.md .segmento__pastilla > span {
-  flex: 1;
-  height: 2px;
-  border-radius: 0;
-  background: var(--ion-color-primary);
-  box-shadow: none;
-}
-
 /*
- * Pull-to-refresh «desgarrado», como el de la v1: la página se separa y deja
- * ver un hueco hundido con sombras en los dos bordes. Es el refresher clásico
- * de Ionic (ver `Pagina`): el contenido baja y el refresher queda detrás.
+ * Pull-to-refresh «desgarrado», como el de la v1 (ver `ui/Desgarro.tsx`): el
+ * contenido baja como mucho `HUECO_MAX` y deja ver detrás un hueco hundido.
+ * Sombras cortas e intensas en los dos bordes: el hueco queda por debajo.
+ * `--hueco` (px) y `--avance` (0–1, 1 al poder soltar) los escribe el gesto.
  */
-/* Ionic lo deja en z-index -1, detrás del fondo de ion-content: se sube y el
-   contenido pasa por encima mientras se tira. */
-ion-refresher.desgarro {
-  z-index: 0;
-  height: 140px;
-  background: var(--app-desgarro-fondo);
-}
-
-/* Sombra de la cabecera sobre el hueco */
-ion-refresher.desgarro::before {
-  content: '';
+.desgarro {
   position: absolute;
   inset: 0 0 auto;
-  height: 14px;
-  background: linear-gradient(180deg, var(--app-desgarro-sombra), transparent);
+  z-index: 0;
+  overflow: hidden;
+  background: var(--app-desgarro-fondo);
+  color: var(--app-desgarro-texto);
   pointer-events: none;
 }
 
-/* El contenido tapa el hueco con su fondo y proyecta su borde hacia arriba. */
-ion-content:has(> ion-refresher.desgarro.refresher-active)::part(scroll) {
+.desgarro--reposo {
+  visibility: hidden;
+}
+
+/* El borde de la cabecera, que queda encima */
+.desgarro::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 7px;
+  background: linear-gradient(180deg, var(--app-desgarro-sombra), transparent);
+}
+
+/* Spinner y texto, centrados en la parte que se ve del hueco */
+.desgarro__centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transform: translateY(calc((var(--hueco, 0px) - 100%) / 2));
+  transition: transform var(--transicion, 0ms) ease-out;
+}
+
+/* El contenido tapa el hueco con su fondo y su borde echa sombra sobre él. */
+ion-content.desgarro-abierto::part(scroll) {
   z-index: 1;
   background: var(--background);
-  box-shadow: 0 -10px 12px var(--app-desgarro-sombra);
+  box-shadow:
+    0 -1px 0 var(--app-desgarro-sombra),
+    0 -3px 6px var(--app-desgarro-sombra);
 }
 
-ion-refresher.desgarro ion-refresher-content {
-  height: 84px;
+/* El spinner manda: círculo con la flecha, que gira al poder soltar. */
+.desgarro__icono {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--app-desgarro-sombra) 45%, transparent);
+  box-shadow: inset 0 0 0 2px var(--app-desgarro-texto);
+  font-size: 18px;
+  opacity: calc(var(--avance, 0) * 1.5);
+  transform: scale(calc(0.6 + var(--avance, 0) * 0.4));
+}
+
+.desgarro__icono ion-icon {
+  transition: transform 200ms ease-out;
+}
+
+.desgarro--listo .desgarro__icono ion-icon {
+  transform: rotate(180deg);
+}
+
+.desgarro--refrescando .desgarro__icono {
+  box-shadow: none;
+}
+
+.desgarro__icono ion-spinner {
+  width: 26px;
+  height: 26px;
   color: var(--app-desgarro-texto);
 }
 
-ion-refresher.desgarro .refresher-pulling-icon,
-ion-refresher.desgarro .refresher-refreshing-icon {
-  color: var(--app-desgarro-texto);
-}
-
-ion-refresher.desgarro .refresher-refreshing ion-spinner {
-  color: var(--app-desgarro-texto);
-}
-
-ion-refresher.desgarro .refresher-pulling-text,
-ion-refresher.desgarro .refresher-refreshing-text {
-  position: relative;
-  width: fit-content;
-  margin: 2px auto 0;
-  padding: 3px 14px;
-  border-radius: 999px;
-  background: var(--app-desgarro-pastilla);
-  color: var(--app-desgarro-texto);
-  font-size: 0.85rem;
+.desgarro__texto {
+  min-height: 1em;
+  font-size: 0.78rem;
   font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
   white-space: nowrap;
-}
-
-/* «Suelta para refrescar…»: Ionic solo tiene un texto para tirar. */
-ion-refresher.desgarro.refresher-ready .refresher-pulling-text {
-  color: transparent;
-}
-
-ion-refresher.desgarro.refresher-ready .refresher-pulling-text::after {
-  content: var(--texto-soltar);
-  position: absolute;
-  inset: 3px 0 auto;
-  color: var(--app-desgarro-texto);
-  text-align: center;
-}
-
-ion-refresher.desgarro.refresher-ready .refresher-pulling-icon {
-  animation: desgarro-flecha 0.62s ease-in-out infinite alternate;
-}
-
-@keyframes desgarro-flecha {
-  from {
-    transform: rotate(180deg) translateY(1px);
-  }
-  to {
-    transform: rotate(180deg) translateY(-3px);
-  }
+  /* Solo cuando el hueco deja sitio para leerlo */
+  opacity: calc((var(--avance, 0) - 0.7) * 3.4);
 }
 
 /*
@@ -1711,8 +2055,7 @@ ion-refresher.desgarro.refresher-ready .refresher-pulling-icon {
   .insignia__punto::after,
   .revelado > :not(.revelado__saliente),
   .cifra--cambia,
-  .racha__punto,
-  ion-refresher.desgarro.refresher-ready .refresher-pulling-icon {
+  .racha__punto {
     animation: none;
   }
 
@@ -1990,46 +2333,51 @@ body[data-theme='dark'] .menu-ajustes__esquina--derecha {
   color: var(--app-menu-activo);
 }
 
-/* Hoja con los partidos de una jornada */
+/* Hoja con los partidos de una jornada, fundida con el fondo */
 .jornada__titulo {
-  margin: 0;
-  padding: 16px 16px 4px;
-  color: var(--app-texto-secundario);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  display: inline-block;
+  text-transform: lowercase;
+}
+
+.jornada__titulo::first-letter {
   text-transform: uppercase;
 }
 
 .jornada {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   margin: 0;
-  padding: 8px 12px 24px;
+  padding: 4px 12px calc(24px + var(--ion-safe-area-bottom, 0px));
   list-style: none;
+}
+
+.jornada > li + li {
+  border-top: 1px solid
+    color-mix(in srgb, var(--app-superficie-borde) 70%, transparent);
 }
 
 .jornada__fila {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 36px 10px 14px;
-  border: 1px solid var(--app-superficie-borde);
-  border-radius: 14px;
-  background: var(--app-superficie);
+  gap: 6px;
+  margin: 4px 0;
+  padding: 10px 32px 10px 10px;
+  border-radius: 12px;
   color: var(--ion-text-color);
   text-decoration: none;
 }
 
 .jornada__fila:active {
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
 .jornada__fila--actual {
-  border-color: var(--ion-color-primary);
-  box-shadow: 0 0 0 1px var(--ion-color-primary);
+  background: color-mix(
+    in srgb,
+    var(--app-resalte) 70%,
+    var(--ion-background-color)
+  );
 }
 
 .jornada__fecha {
@@ -2037,48 +2385,55 @@ body[data-theme='dark'] .menu-ajustes__esquina--derecha {
   align-items: center;
   justify-content: space-between;
   gap: 6px;
+  margin-bottom: 2px;
   color: var(--app-texto-secundario);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
-  text-transform: capitalize;
 }
 
-.jornada__cruce {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 8px;
+.jornada__fecha > span:first-child {
+  text-transform: capitalize;
 }
 
 .jornada__lado {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
-}
-
-.jornada__lado:last-child {
-  flex-direction: row-reverse;
-  text-align: right;
 }
 
 .jornada__nombre {
+  flex: 1;
   min-width: 0;
   overflow: hidden;
-  font-size: 0.82rem;
+  font-size: 0.86rem;
   font-weight: 600;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.jornada__centro {
+.jornada__goles {
+  min-width: 1.6em;
+  font-size: 1rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
+  text-align: right;
+  color: var(--app-texto-secundario);
+}
+
+.jornada__lado--gana .jornada__nombre {
+  font-weight: 800;
+}
+
+.jornada__lado--gana .jornada__goles {
+  font-weight: 800;
+  color: var(--ion-text-color);
 }
 
 .jornada__flecha {
   position: absolute;
   top: 50%;
-  right: 10px;
+  right: 8px;
   color: var(--app-texto-secundario);
   transform: translateY(-50%);
 }
@@ -2090,12 +2445,10 @@ body[data-theme='dark'] .menu-ajustes__esquina--derecha {
   gap: 2px;
   min-width: 0;
   overflow: hidden;
-  padding: 2px 8px;
-  border-radius: 8px;
-  background: var(--app-programado-fondo);
+  padding: 0;
   color: var(--app-texto-secundario);
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .tarjeta__jornada-texto {

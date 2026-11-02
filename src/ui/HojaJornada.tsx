@@ -9,7 +9,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { chevronForward } from 'ionicons/icons';
+import { chevronForward, closeOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 
 import type { Equipo, Marcador, PartidoVisible } from '../domain';
@@ -28,25 +28,38 @@ interface Props {
   rutaPartido: (id: string) => string;
 }
 
-const resultado = (m: Marcador) => `${m.local} – ${m.visitante}`;
-
-function Lado({ equipo }: { equipo: Equipo | null }) {
+function Lado({
+  equipo,
+  goles,
+  gana,
+}: {
+  equipo: Equipo | null;
+  goles: number | null;
+  gana: boolean;
+}) {
   const { t } = useTranslation();
   const nombre = equipo?.nombre ?? t('partidos.porDefinir');
   return (
-    <span className="jornada__lado">
+    <span className={`jornada__lado${gana ? ' jornada__lado--gana' : ''}`}>
       <Escudo
         logoUrl={equipo?.logoUrl ?? null}
         nombre={nombre}
         abreviatura={equipo?.nombreAbrev}
-        tamano={28}
+        tamano={26}
       />
       <span className="jornada__nombre">{nombre}</span>
+      {goles !== null && <span className="jornada__goles">{goles}</span>}
     </span>
   );
 }
 
-/** Hoja con todos los partidos de una jornada; tocar uno abre su detalle. */
+const gana = (m: Marcador | null, lado: 'local' | 'visitante') =>
+  !!m && m[lado] > m[lado === 'local' ? 'visitante' : 'local'];
+
+/**
+ * Hoja con todos los partidos de una jornada, en forma de marcador: un equipo
+ * por línea y sus goles a la derecha. Tocar uno abre su detalle.
+ */
 export function HojaJornada({
   alCerrar,
   jornada,
@@ -56,20 +69,33 @@ export function HojaJornada({
 }: Props) {
   const { t, i18n } = useTranslation();
   return (
-    <IonModal isOpen onDidDismiss={alCerrar} data-testid="hoja-jornada">
+    <IonModal
+      isOpen
+      onDidDismiss={alCerrar}
+      data-testid="hoja-jornada"
+      className="hoja-jornada"
+      breakpoints={[0, 0.75, 1]}
+      initialBreakpoint={0.75}
+      handle
+    >
       <IonHeader>
         <IonToolbar>
-          <IonTitle>{jornada}</IonTitle>
+          <IonTitle>
+            <span className="jornada__titulo">{jornada}</span>
+          </IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={alCerrar}>{t('common.cerrar')}</IonButton>
+            <IonButton onClick={alCerrar} aria-label={t('common.cerrar')}>
+              <IonIcon slot="icon-only" icon={closeOutline} aria-hidden />
+            </IonButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <h2 className="jornada__titulo">{t('jornada.titulo')}</h2>
-        <ul className="jornada">
+        <ul className="jornada" aria-label={t('jornada.titulo')}>
           {partidos.map(({ partido, estado, marcador }) => {
             const actual = partido.id === actualId;
+            const hora =
+              estado === 'aplazado' || marcador ? null : partido.hora;
             return (
               <li key={partido.id}>
                 <IonRouterLink
@@ -81,21 +107,28 @@ export function HojaJornada({
                   onClick={alCerrar}
                 >
                   <span className="jornada__fecha">
-                    {formatoDia(partido.fecha, i18n.language)}
+                    <span>
+                      {[formatoDia(partido.fecha, i18n.language), hora]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </span>
                     <InsigniaEstado estado={estado} />
                   </span>
-                  <span className="jornada__cruce">
-                    <Lado equipo={partido.local} />
-                    <span className="jornada__centro">
-                      {marcador
-                        ? resultado(marcador)
-                        : estado === 'aplazado'
-                          ? '—'
-                          : (partido.hora ?? '--:--')}
-                    </span>
-                    <Lado equipo={partido.visitante} />
-                  </span>
-                  <IonIcon className="jornada__flecha" icon={chevronForward} />
+                  <Lado
+                    equipo={partido.local}
+                    goles={marcador?.local ?? null}
+                    gana={gana(marcador, 'local')}
+                  />
+                  <Lado
+                    equipo={partido.visitante}
+                    goles={marcador?.visitante ?? null}
+                    gana={gana(marcador, 'visitante')}
+                  />
+                  <IonIcon
+                    className="jornada__flecha"
+                    icon={chevronForward}
+                    aria-hidden
+                  />
                 </IonRouterLink>
               </li>
             );

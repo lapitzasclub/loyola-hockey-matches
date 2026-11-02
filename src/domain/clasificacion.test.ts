@@ -3,6 +3,7 @@ import {
   agruparClasificacion,
   faseInicial,
   filaDeEquipo,
+  nombreGrupo,
   rachasDeTabla,
 } from './clasificacion';
 import type { FilaClasificacion } from './clasificacion';
@@ -202,5 +203,24 @@ describe('filaDeEquipo y faseInicial', () => {
     ).toBe('liga');
     expect(faseInicial([f('copa', 'eliminatoria')])?.id).toBe('copa');
     expect(faseInicial([])).toBeNull();
+  });
+});
+
+describe('nombreGrupo', () => {
+  it('quita la competición del principio y pone mayúscula inicial', () => {
+    expect(nombreGrupo('liga escolar alevín r -clasificación general')).toBe(
+      'Clasificación general',
+    );
+    expect(
+      nombreGrupo('liga escolar infantil r - clasificación sector infantil'),
+    ).toBe('Clasificación sector infantil');
+  });
+
+  it('no parte guiones dentro de una palabra', () => {
+    expect(nombreGrupo('grupo a-1')).toBe('Grupo a-1');
+  });
+
+  it('deja tal cual un nombre sin competición', () => {
+    expect(nombreGrupo('Grupo A')).toBe('Grupo A');
   });
 });

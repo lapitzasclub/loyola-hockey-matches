@@ -5,6 +5,7 @@ import {
   colorHex,
   esEquipoLoyola,
   leyendaDePuesto,
+  nombreGrupo,
   PARTIDOS_RACHA,
 } from '../../domain';
 import type {
@@ -118,7 +119,9 @@ export function TablaClasificacionGrupo({
 
   return (
     <section className="clasif" data-testid="clasificacion">
-      {tabla.grupo && <h2 className="clasif__grupo">{tabla.grupo.nombre}</h2>}
+      {tabla.grupo && (
+        <h2 className="clasif__grupo">{nombreGrupo(tabla.grupo.nombre)}</h2>
+      )}
       <div className="clasif__tabla" role="table">
         <div className="clasif__fila clasif__cabecera" role="row">
           <span>#</span>

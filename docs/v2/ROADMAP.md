@@ -1,8 +1,7 @@
 # Roadmap v2 — Loyola Hockey Matches
 
 > Documento vivo. Las sesiones de trabajo, su modelo, esfuerzo y prompt inicial están en
-> [`roadmap.json`](./roadmap.json). Un hook de Claude Code (`.claude/hooks/roadmap.mjs`) avisa al
-> empezar cada sesión de cuál toca y, cuando una se marca como terminada, de cuál es la siguiente.
+> [`roadmap.json`](./roadmap.json).
 
 ## 1. Por qué una v2
 
@@ -485,15 +484,9 @@ Cada casilla se marca cuando la v2 lo hace **igual o mejor** en Android real y e
 
 ## 9. Protocolo de sesiones con Claude Code
 
-1. Al abrir Claude Code en el repo, el hook `SessionStart` muestra la sesión actual del roadmap:
-   modelo, esfuerzo y prompt inicial.
+1. Cada sesión de `roadmap.json` indica modelo, esfuerzo y prompt inicial.
 2. Antes de pegar el prompt: `/model <modelo>` y `/effort <nivel>` según indique.
-3. Al empezar a trabajar: `node .claude/hooks/roadmap.mjs start SXX`.
-4. Al cumplir los criterios de salida: `node .claude/hooks/roadmap.mjs done SXX`. En el siguiente
-   fin de turno, el hook `Stop` avisa (una sola vez) de que conviene abrir una sesión nueva
-   (`/clear`) y muestra la siguiente con su modelo, esfuerzo y prompt.
-5. Comandos útiles: `node .claude/hooks/roadmap.mjs status` (tabla) y `next` (prompt de la siguiente).
-6. Si una sesión crece demasiado, se parte: añadir `SXXb` en `roadmap.json` en lugar de alargarla.
+3. Si una sesión crece demasiado, se parte: añadir `SXXb` en `roadmap.json` en lugar de alargarla.
 
 Criterio de modelo: **Opus 5.5** para arquitectura, dominio con trampas, directo y animación
 compleja; **Sonnet 5.5** para esqueleto, pantallas que siguen patrones ya establecidos y tareas
